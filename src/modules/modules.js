@@ -1,8 +1,8 @@
 const files = require.context('.', false, /\.js/)
 const MODULES = {};
 files.keys().forEach((key) => {
-     if (key === './index.js') return
-     MODULES[key.replace(/(\.\/|\.vue)/g, '')] = files(key)
+     if (key === './index.js' || key === './modules.js') return
+     MODULES[key.replace(/(\.\/|\.js)/g, '')] = files(key)
 })
 
 //Add new modules to this constant.

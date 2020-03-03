@@ -1,11 +1,13 @@
 <template>
-    <li class="list-group-item">{{ title }}</li>
+    <a v-on:click="setActive(title)"><li class="list-group-item">{{ title }}</li></a>
 </template>
 
 <script>
 export default {
     name: 'ToolSelector',
-    props: ['title']
+    props: {
+        title: String,
+    }
 }
 </script>
 
