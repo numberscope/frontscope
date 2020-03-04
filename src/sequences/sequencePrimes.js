@@ -6,7 +6,6 @@ function GEN_Primes() {
             cache.push(5);
         }
         let i = cache[cache.length - 1] + 1;
-        let k = 0;
         while (cache.length <= n) {
             let isPrime = true;
             for (let j = 0; j < cache.length; j++) {

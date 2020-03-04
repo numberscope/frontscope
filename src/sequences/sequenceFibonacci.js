@@ -1,4 +1,4 @@
-SEQ_linearRecurrence = require('./sequenceLinRec.js');
+const SEQ_linearRecurrence = require('./sequenceLinRec.js');
 
 function GEN_fibonacci({
     m

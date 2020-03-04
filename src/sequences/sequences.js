@@ -1,3 +1,4 @@
+const $ = require('jquery')
 /**
  *
  * @class SequenceGenerator
@@ -154,13 +155,14 @@ function OEISToSeq(ID, OEIS) {
 
 const BuiltInSeqs = {};
 
-
-module.exports = {
+var sequences = {
     'BuiltInNameToSeq': BuiltInNameToSeq,
     'ListToSeq': ListToSeq,
     'OEISToSeq': OEISToSeq,
     'BuiltInSeqs': BuiltInSeqs
 };
+
+export default sequences;
 
 /*jshint ignore: start */
 BuiltInSeqs["Fibonacci"] = require('./sequenceFibonacci.js');
