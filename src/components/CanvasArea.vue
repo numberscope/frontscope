@@ -13,19 +13,19 @@ export default {
     methods:{
         draw: function(){
             console.log('Drawing with', Scope.state.activeViz);
-            var sequence = Scope.sequences.sequenceNatural;
-            console.log(sequence);
-            var activeViz = Scope.state.activeViz;
-            console.log(activeViz)
-            var visualizer = activeViz.viz(sequence);
+            console.log('sequence', Scope.sequences.default);
+            var sequence = Scope.sequences.default.BuiltInSeqs.Naturals;
+            var activeTool = Scope.state.activeViz;
+            console.log('active visualizer', activeTool)
             var drawing = new p5(function(sketch){
+                var visualizer = new activeTool.viz(sequence, sketch, {});
                 sketch.setup = function(){
                     sketch.createCanvas(200, 200);
                     sketch.background("white");
                     visualizer.setup();
                 }
                 sketch.draw = function(){
-                    activeViz.draw();
+                    visualizer.draw();
                 }
             }, 'p5-goes-here');
             drawing.setup();
