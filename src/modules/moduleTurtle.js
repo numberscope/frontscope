@@ -21,6 +21,7 @@ class VIZ_Turtle {
 			this.X = null;
 			this.Y = null;
 		}
+		console.log('inside the turtle', this.seq)
 
 	}
 	stepDraw() {
@@ -29,6 +30,7 @@ class VIZ_Turtle {
 		let currElement = this.seq.getElement(this.currentIndex++);
 		let angle = this.rotMap[currElement];
 		if (angle == undefined) {
+			console.log(currElement)
 			throw ('angle undefined for element: ' + currElement);
 		}
 		this.orientation = (this.orientation + angle);

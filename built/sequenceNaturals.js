@@ -1,4 +1,3 @@
-"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -12,9 +11,8 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-exports.__esModule = true;
-var sequenceClassDefault_1 = require("./sequenceClassDefault");
-var sequenceInterface_1 = require("./sequenceInterface");
+import { SequenceClassDefault } from './sequenceClassDefault';
+import { SequenceParamsSchema } from './sequenceInterface';
 /**
  *
  * @class SequenceClassNaturals
@@ -34,7 +32,7 @@ var SequenceNaturals = /** @class */ (function (_super) {
         var _this = _super.call(this, ID, finite) || this;
         _this.name = "Naturals";
         _this.description = "A sequence of the natural numbers";
-        _this.paramsSchema = new sequenceInterface_1.SequenceParamsSchema('includeZero', 'boolean', 'Include Zero', 'false', false);
+        _this.paramsSchema = new SequenceParamsSchema('includeZero', 'boolean', 'Include Zero', 'false', false);
         return _this;
     }
     SequenceNaturals.prototype.initialize = function (paramsFromUser) {
@@ -62,5 +60,6 @@ var SequenceNaturals = /** @class */ (function (_super) {
         }
     };
     return SequenceNaturals;
-}(sequenceClassDefault_1.SequenceClassDefault));
-exports.SequenceNaturals = SequenceNaturals;
+}(SequenceClassDefault));
+export { SequenceNaturals };
+//# sourceMappingURL=sequenceNaturals.js.map

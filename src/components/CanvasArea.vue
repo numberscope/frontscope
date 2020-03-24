@@ -13,21 +13,38 @@ export default {
     methods:{
         draw: function(){
             console.log('Drawing with', Scope.state.activeViz);
-            console.log('sequence', Scope.sequences.default);
-            var sequence = Scope.sequences.default.BuiltInSeqs.Naturals;
-            var activeTool = Scope.state.activeViz;
-            console.log('active visualizer', activeTool)
+            console.log('sequence', Scope.state.activeSeq);
+            var sequence = new Scope.sequence.SequenceNaturals(1, false);
+            sequence.initialize();
+
+            let activeVizName = Scope.state.activeViz;
+            var activeTool = Scope.modules[activeVizName];
+
             var drawing = new p5(function(sketch){
-                var visualizer = new activeTool.viz(sequence, sketch, {});
+
+                var visualizer = new activeTool.viz(sequence, sketch, {
+                    domain: [1,2,3,4,5],
+                    range: [10,20,30,40,50],
+                    stepSize: 20,
+                    strokeWeight: 5,
+                    startingX: 0,
+                    startingY: 0,
+                    bgColor: "#666666",
+                    strokeColor: '#ff0000',
+                });
+
                 sketch.setup = function(){
                     sketch.createCanvas(200, 200);
                     sketch.background("white");
                     visualizer.setup();
                 }
+
                 sketch.draw = function(){
                     visualizer.draw();
                 }
+
             }, 'p5-goes-here');
+
             drawing.setup();
             drawing.draw();
         }

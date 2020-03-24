@@ -4,8 +4,10 @@ const SEQUENCES = require('../sequences/sequences.js');
 const Scope = {
     modules: MODULES,
     sequences: SEQUENCES,
+    sequence: SEQUENCES['sequenceNaturals'],
     state: {
-        activeViz: 'turtle'
+        activeViz: 'moduleTurtle',
+        activeSeq: 'sequenceNaturals'
     }
 }
 

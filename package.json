@@ -9,17 +9,23 @@
   },
   "dependencies": {
     "core-js": "^3.6.4",
-    "jquery": "^3.4.1",
-    "vue": "^2.6.11"
+    "jquery": "^3.4.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.2.0",
     "@vue/cli-plugin-eslint": "~4.2.0",
     "@vue/cli-service": "~4.2.0",
     "babel-eslint": "^10.0.3",
-    "eslint": "^6.7.2",
+    "css-loader": "^3.4.2",
+    "eslint": "^6.8.0",
     "eslint-plugin-vue": "^6.1.2",
-    "vue-template-compiler": "^2.6.11"
+    "ts-loader": "^6.2.2",
+    "typescript": "^3.8.3",
+    "vue": "^2.6.11",
+    "vue-loader": "^15.9.1",
+    "vue-template-compiler": "^2.6.11",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
   },
   "eslintConfig": {
     "root": true,
