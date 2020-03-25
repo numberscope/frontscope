@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% if title %}
+    <title>{{title}} - Numberscope</title>
+    {% else %}
+    <title>Numberscope</title>
+    {% endif %}
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial=scale=1">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+
+    {% block head %}
+    {% endblock %}
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <center>
+    <div class="jumbotron" style="background: red;">
+     <ul class="flashes">
+        {% for message in messages %}
+         <h4>{{ message }}</h4>
+        {% endfor %}
+    </ul>
+    </div>
+    </center>
+    {% endif %}
+    {% endwith %}
+
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top" data-toggle="collapse"
+        style="background-color: #45ada1;">
+
+        <a class="navbar-brand" href="#">Numberscope</a>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+            <ul class="navbar-nav mr-auto">
+
+                <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('nscope.index') }}">Home</a>
+                </li>
+
+                {% if g.user %}
+
+                <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out</a>
+                </li>
+
+                {% else %}
+                <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+                </li>
+
+                <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Log In</a>
+                </li>
+                {% endif %}
+
+            </ul>
+
+            {% if g.user %}
+                <h6>Logged in as {{ g.user['first_name'] }} {{ g.user['last_name'] }}</h6>
+            {% endif %}
+
+        </div>
+    </nav>
+
+    {% block content %}
+    {% endblock %}
+</body>
+
+</html>

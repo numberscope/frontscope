@@ -1,6 +1,11 @@
 .DS_Store
 node_modules
 /dist
+migrations
+
+# Python specific
+__pycache__/
+*.py[cod]
 
 # local env files
 .env.local
@@ -19,3 +24,4 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+*.venv
