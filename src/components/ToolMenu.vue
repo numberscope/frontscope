@@ -19,8 +19,8 @@
 </template>
 
 <script>
-import ToolSelector from './ToolSelector.vue'
-import Scope from '../global/ScopeState.js'
+import ToolSelector from '@/components/ToolSelector.vue'
+import Scope from '@/global/ScopeState.js'
 
 export default {
   name: 'ToolMenu',

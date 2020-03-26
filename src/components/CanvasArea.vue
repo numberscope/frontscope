@@ -1,24 +1,27 @@
 <template>
     <div id="canvas-container">
-        <button v-on:click="draw">Draw an Ellipse</button>
+        <button type="button" class="btn btn-warning" v-on:click="draw">Draw</button>
         <div id="p5-goes-here"></div>
     </div>
 </template>
 
+
 <script>
-import p5 from '../assets/p5.min.js'
-import Scope from '../global/ScopeState.js'
+import p5 from '@/assets/p5.min.js'
+import Scope from '@/global/ScopeState.js'
 
 export default {
     methods:{
         draw: function(){
-            console.log('Drawing with', Scope.state.activeViz);
+
+            console.log('Drawing with Module: ', Scope.state.activeViz.name);
             console.log('sequence', Scope.state.activeSeq);
+
             var sequence = new Scope.sequence.SequenceNaturals(1, false);
             sequence.initialize();
 
-            let activeVizName = Scope.state.activeViz;
-            var activeTool = Scope.modules[activeVizName];
+            // Scope.state.activeViz is an object
+            var activeTool = Scope.state.activeViz;
 
             var drawing = new p5(function(sketch){
 
