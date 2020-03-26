@@ -1,31 +1,24 @@
 <template>
-  <div id="app">
-    <NavBar />
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-2">
-                <ToolMenu />
-            </div>
-            <div class="col-sm-10">
-                <CanvasArea />
-            </div>
-        </div>
+        <div class="pagecontainer" id="app">
+                <div id="containerwrap">
+                        <nav-bar/>
+                        <router-view></router-view>
+                </div>
+        <footer-component/>
     </div>
-  </div>
 </template>
 
 <script>
-import NavBar from './components/NavBar.vue'
-import ToolMenu from './components/ToolMenu.vue'
-import CanvasArea from './components/CanvasArea.vue'
+
+import NavBar from "@/views/minor/NavBar.vue";
+import FooterComponent from "@/views/minor/Footer.vue";
 
 export default {
-  name: 'App',
-  components: {
-    NavBar,
-    ToolMenu,
-    CanvasArea
-  }
+        name: "app",
+        components: {
+                NavBar,
+                FooterComponent,
+        },
 }
 </script>
 
@@ -37,4 +30,27 @@ export default {
   text-align: center;
   color: #2c3e50;
 }
+
+#nav {
+  padding: 30px;
+}
+
+#nav a {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+#nav a.router-link-exact-active {
+  color: #42b983;
+}
+
+.pagecontainer {
+        position: relative;
+        min-height: 100vh;
+}
+
+#containerwrap {
+        padding-bottom: 100px;    /* Footer height */
+}
+
 </style>

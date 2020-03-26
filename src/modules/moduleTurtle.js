@@ -1,3 +1,7 @@
+
+
+// Turtle needs work
+// Throwing the same error on previous numberscope website
 class VIZ_Turtle {
 	constructor(seq, sketch, config) {
 		var domain = config.domain;
@@ -24,6 +28,7 @@ class VIZ_Turtle {
 		console.log('inside the turtle', this.seq)
 
 	}
+
 	stepDraw() {
 		let oldX = this.X;
 		let oldY = this.Y;
@@ -31,22 +36,29 @@ class VIZ_Turtle {
 		let angle = this.rotMap[currElement];
 		if (angle == undefined) {
 			console.log(currElement)
-			throw ('angle undefined for element: ' + currElement);
+                        return false;
 		}
 		this.orientation = (this.orientation + angle);
 		this.X += this.stepSize * Math.cos(this.orientation);
 		this.Y += this.stepSize * Math.sin(this.orientation);
 		this.sketch.line(oldX, oldY, this.X, this.Y);
+                return true;
 	}
+
 	setup() {
 		this.X = this.sketch.width / 2;
 		this.Y = this.sketch.height / 2;
 		this.sketch.background(this.bgColor);
 		this.sketch.stroke(this.strokeColor);
 		this.sketch.strokeWeight(this.strokeWidth);
+                this.sketch.noLoop();
 	}
 	draw() {
-		this.stepDraw();
+                var stat = true;
+		while(stat)
+                {
+                        stat = this.stepDraw();
+                }
 	}
 }
 
