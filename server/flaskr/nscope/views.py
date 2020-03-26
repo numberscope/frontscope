@@ -30,6 +30,6 @@ bp = Blueprint("nscope", __name__)
 def index():
     return render_template("index.html")
 
-@bp.route("/vuetest", methods=["GET"])
+@bp.route("/api/vuetest", methods=["GET"])
 def vuetest():
     return jsonify({"Answer" : "This is a test", "Data" : [4.5123, 4.123, 9.123, 1.12309]})

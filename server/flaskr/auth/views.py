@@ -73,7 +73,7 @@ def register():
             error = "Passwords do not match"
         elif db.session.query(
             User.query.filter_by(email=email).exists()).scalar():
-            error = f"Email {email} is already registered."
+            error = "Email is already registered."
 
         if error is None:
             print("SUccess")
