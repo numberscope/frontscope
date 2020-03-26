@@ -1,10 +1,9 @@
 <template>
-    <a v-on:click="$emit('set-active-tool', title)"><li class="list-group-item">{{ title }}</li></a>
+    <a v-on:click="$emit('set-active-viz', title)"><li class="list-group-item">{{ title }}</li></a>
 </template>
 
 
 <script>
-import Scope from '@/global/ScopeState.js';
 
 export default {
     name: 'ToolSelector',

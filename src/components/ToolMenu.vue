@@ -2,17 +2,16 @@
   <div>
     <ul class="list-group">
         <ToolSelector
-            v-for="tool in tools"
-            v-bind:title="tool.name"
-            v-bind:key="tool.id"
-            v-on:set-active-tool="activeTool = $event"
+            v-for="viz in visualizers"
+            v-bind:title="viz.name"
+            v-bind:key="viz.id"
+            v-on:set-active-viz="$emit('set-active-viz', viz)"
             >
             </ToolSelector>
     </ul>
-    <div v-if="activeTool !== null">
-      <p>Active Tool Selected</p>
+    <div v-if="activeViz">
       <VizualizationSettingsPane
-        v-bind:vizParams="activeTool.params">
+        v-bind:vizParams="activeViz.params">
       </VizualizationSettingsPane>
     </div>
   </div>
@@ -20,10 +19,16 @@
 
 <script>
 import ToolSelector from '@/components/ToolSelector.vue'
-import Scope from '@/global/ScopeState.js'
+import VizualizationSettingsPane from '@/components/VizualizationSettingsPane.vue'
 
 export default {
   name: 'ToolMenu',
+  props: {
+    visualizers: Object,
+    sequences: Object,
+    activeViz: Object,
+    activeSeq: Object
+  },
   components: {
     ToolSelector,
     VizualizationSettingsPane
@@ -31,16 +36,11 @@ export default {
   methods: {
     setActive: function(active) {
         console.log(active);
-        const moduleKey = 'module' + active.replace(' ','');
-        Scope.state.activeViz = Scope.modules[moduleKey]
-        console.log(Scope.state.activeViz);
         }
   },
   data: function(){
-    return{
-      tools: Scope.modules,
-      activeTool: null
-    }
+    return {
+    } 
   }
 }
 

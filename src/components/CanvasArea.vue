@@ -8,20 +8,21 @@
 
 <script>
 import p5 from '@/assets/p5.min.js'
-import Scope from '@/global/ScopeState.js'
 
 export default {
+    props: {
+        activeSeq: Object,
+        activeViz: Object
+    },
     methods:{
         draw: function(){
+            console.log('Drawing with Module: ', this.activeViz.name);
+            console.log('sequence', this.activeSeq);
 
-            console.log('Drawing with Module: ', Scope.state.activeViz.name);
-            console.log('sequence', Scope.state.activeSeq);
-
-            var sequence = new Scope.sequence.SequenceNaturals(1, false);
+            const sequence = new this.activeSeq.SequenceNaturals(1, false);
             sequence.initialize();
 
-            // Scope.state.activeViz is an object
-            var activeTool = Scope.state.activeViz;
+            const activeTool = this.activeViz;
 
             var drawing = new p5(function(sketch){
 
