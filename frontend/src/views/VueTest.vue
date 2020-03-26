@@ -9,6 +9,7 @@
 
 import axios from 'axios';
 
+
 export default {
   name: 'VueTest',
   data() {
@@ -18,7 +19,7 @@ export default {
   },
   methods: {
     getMessage() {
-      const path = 'http://localhost:5000/vuetest';
+      const path = `http://128.138.150.182/api/vuetest`;
       axios.get(path)
         .then((res) => {
           this.msg = JSON.stringify(res.data);
