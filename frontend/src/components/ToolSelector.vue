@@ -1,9 +1,9 @@
 <template>
-    <a v-on:click="setActive(title)"><li class="list-group-item">{{ title }}</li></a>
+    <a style="cursor: pointer;" v-on:click="setActive(title)"><li class="list-group-item orange">{{ title }}</li></a>
 </template>
 
 <script>
-import Scope from '../global/ScopeState.js';
+import Scope from '@/global/ScopeState.js';
 
 export default {
     name: 'ToolSelector',
@@ -13,10 +13,8 @@ export default {
     },
     methods: {
         setActive: function(active) {
-            console.log(active);
             const moduleKey = 'module' + active.replace(' ','');
-            Scope.state.activeViz = Scope.modules[moduleKey]
-            console.log(Scope.state.activeViz);
+            Scope.state.activeViz = Scope.modules[moduleKey];
             }
         }
 }
