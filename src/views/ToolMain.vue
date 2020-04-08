@@ -36,6 +36,9 @@ export default {
   methods: {
     setActiveViz: function(newViz){
       this.activeViz = newViz
+      console.log(this.sequences)
+      const test = new this.sequences.sequenceGetter.SequenceGetter();
+      test.initialize();
       console.log(this.sequences.sequenceNaturals.SequenceNaturals)
       this.activeSeq = this.sequences.sequenceNaturals
       console.log(this.activeViz)
