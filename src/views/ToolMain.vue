@@ -53,9 +53,9 @@ export default {
     const sequences = []
     for (const seqKey in SEQUENCES){
       const theModule = SEQUENCES[seqKey]
-      if(theModule.module){
-        console.log(theModule.module);
-        sequences.push(theModule.module);
+      if(theModule.exportModule){
+        console.log(theModule.exportModule);
+        sequences.push(theModule.exportModule);
       }
     }
     const state = {

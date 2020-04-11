@@ -1,5 +1,5 @@
 import { SequenceClassDefault } from './sequenceClassDefault';
-import { SequenceParamsSchema } from './sequenceInterface';
+import { SequenceParamsSchema, SequenceExportModule} from './sequenceInterface';
 /**
  *
  * @class SequenceClassNaturals
@@ -52,7 +52,7 @@ class SequenceNaturals extends SequenceClassDefault{
     }
 }
 
-export const module = {
-    sequence: SequenceNaturals,
-    name: "Natural Numbers"
-}
+export const exportModule = new SequenceExportModule(
+    SequenceNaturals,
+    "Natural Numbers"
+);
