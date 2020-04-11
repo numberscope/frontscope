@@ -30,11 +30,6 @@
                                                 <font color="#fff"><b>User Manual</b></font>
                                         </router-link>
                                 </li>
-                                <li class="nav-item">
-                                        <router-link :to="{ name: 'VueTest' }" class="orange nav-link">
-                                                <font color="#fff"><b>Flask Test</b></font>
-                                        </router-link>
-                                </li>
                         </ul>
                 </div>
         </nav>

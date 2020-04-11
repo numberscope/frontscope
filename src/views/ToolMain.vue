@@ -2,11 +2,14 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-2">
+                <SequenceMenu
+                  v-bind:sequences="sequences"
+                  v-bind:activeSeq="activeSeq"
+                  v-on:set-active-viz="setActiveViz($event)"
+                />
                 <ToolMenu 
                   v-bind:visualizers="visualizers"
-                  v-bind:sequences="sequences"
                   v-bind:activeViz="activeViz" 
-                  v-bind:activeSeq="activeSeq"
                   v-on:set-active-viz="setActiveViz($event)"
                 />
             </div>
@@ -23,25 +26,27 @@
 <script>
 
 import ToolMenu from '@/components/ToolMenu.vue'
+import SequenceMenu from '@/components/SequenceMenu.vue'
 import CanvasArea from '@/components/CanvasArea.vue'
 import MODULES from '@/modules/modules.js';
 import SEQUENCES from '@/sequences/sequences.js';
+
+console.log(SEQUENCES)
 
 export default {
   name: 'App',
   components: {
     ToolMenu,
+    SequenceMenu,
     CanvasArea
   },
   methods: {
     setActiveViz: function(newViz){
       this.activeViz = newViz
-      console.log(this.sequences)
-      const test = new this.sequences.sequenceGetter.SequenceGetter();
-      test.initialize();
-      console.log(this.sequences.sequenceNaturals.SequenceNaturals)
-      this.activeSeq = this.sequences.sequenceNaturals
-      console.log(this.activeViz)
+      console.log(this.activeViz);
+    },
+    setActiveSeq: function(newSeq){
+        console.log(newSeq);
     }
   },
   data: function(){

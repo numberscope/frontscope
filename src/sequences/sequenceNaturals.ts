@@ -9,13 +9,13 @@ import { SequenceParamsSchema } from './sequenceInterface';
 export class SequenceNaturals extends SequenceClassDefault{
     name: string = "Naturals";
     description: string = "A sequence of the natural numbers";
-    paramsSchema: SequenceParamsSchema = new SequenceParamsSchema(
+    paramsSchema: SequenceParamsSchema[] = [new SequenceParamsSchema(
         'includeZero',
         'boolean',
         'Include Zero',
         'false',
         false
-    );
+    )];
 
     /**
      *Creates an instance of SequenceGenerator.
