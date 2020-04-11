@@ -1,5 +1,6 @@
 <template>
   <div>
+    <h2>Visualizers</h2>
     <ul class="list-group">
         <ToolSelector
             v-for="viz in visualizers"

@@ -1,5 +1,6 @@
 <template>
   <div>
+    <h2>Sequences</h2>
     <ul class="list-group">
         <SeqSelector
             v-for="seq in sequences"
@@ -26,14 +27,12 @@ import SeqSelector from '@/components/SeqSelector.vue'
 export default {
   name: 'ToolMenu',
   props: {
-    visualizers: Object,
-    sequences: Object,
+    sequences: Array,
     activeViz: Object,
     activeSeq: Object
   },
   components: {
     SeqSelector,
-    //VizualizationSettingsPane
   },
   methods: {
     setActive: function(active) {

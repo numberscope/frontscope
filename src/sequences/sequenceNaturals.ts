@@ -6,9 +6,9 @@ import { SequenceParamsSchema } from './sequenceInterface';
  * extends the sequenceClassDefault, by setting params and some custom implementation
  * for the generator and the fillCache function.
  */
-export class SequenceNaturals extends SequenceClassDefault{
-    name: string = "Naturals";
-    description: string = "A sequence of the natural numbers";
+class SequenceNaturals extends SequenceClassDefault{
+    name = "Natural Numbers";
+    description = "A sequence of the natural numbers";
     paramsSchema: SequenceParamsSchema[] = [new SequenceParamsSchema(
         'includeZero',
         'boolean',
@@ -34,7 +34,7 @@ export class SequenceNaturals extends SequenceClassDefault{
                 this.generatorSettings[param.name] = param.value;
             });    
         }
-        this.generator = function(n:number) {
+        this.generator = function(n: number) {
             if (this.generatorSettings['includeZero']) return n+1 ;
             else return n ;
         }
@@ -50,4 +50,9 @@ export class SequenceNaturals extends SequenceClassDefault{
             this.cache[i] = this.generator(i);
         }
     }
+}
+
+export const module = {
+    sequence: SequenceNaturals,
+    name: "Natural Numbers"
 }

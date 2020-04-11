@@ -29,7 +29,7 @@ import ToolMenu from '@/components/ToolMenu.vue'
 import SequenceMenu from '@/components/SequenceMenu.vue'
 import CanvasArea from '@/components/CanvasArea.vue'
 import MODULES from '@/modules/modules.js';
-import SEQUENCES from '@/sequences/sequences.js';
+import SEQUENCES from '@/sequences/sequences';
 
 console.log(SEQUENCES)
 
@@ -50,9 +50,17 @@ export default {
     }
   },
   data: function(){
-    var state = {
+    const sequences = []
+    for (const seqKey in SEQUENCES){
+      const theModule = SEQUENCES[seqKey]
+      if(theModule.module){
+        console.log(theModule.module);
+        sequences.push(theModule.module);
+      }
+    }
+    const state = {
       visualizers: MODULES,
-      sequences: SEQUENCES,
+      sequences: sequences,
       activeViz: {},
       activeSeq: {}
     }
