@@ -1,7 +1,13 @@
 <template>
   <div class="container">
         <p>{{ msg }}</p>
+        <ul>
+                <li v-for="number in data" :key="number">
+                        {{ number }}
+                </li>
+        </ul>
   </div>
+
 </template>
 
 
@@ -15,16 +21,23 @@ export default {
   data() {
     return {
       msg: '',
+      data: [],
     };
   },
   methods: {
     getMessage() {
-      const path = `http://128.138.150.182/api/vuetest`;
+
+      const path = `http://128.138.150.182/get_sequence/A0001`;
+      /* const path = `http://localhost:5000/get_sequence/A0001`; */
+
       axios.get(path)
         .then((res) => {
-          this.msg = JSON.stringify(res.data);
-          console.log(this.msg);
+
+          this.msg = res.data["name"];
+          this.data = res.data["values"];
+
         })
+
         .catch((error) => {
           // eslint-disable-next-line
           console.error(error);
