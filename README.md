@@ -1,4 +1,4 @@
-# test
+# Numberscope Frontend
 
 ## Project setup
 ```
