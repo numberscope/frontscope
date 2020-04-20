@@ -2,7 +2,6 @@ import Vue from 'vue';
 import Router from 'vue-router';
 import Home from '@/views/Home.vue';
 import ToolMain from '@/views/ToolMain.vue';
-import VueTest from '@/views/VueTest.vue';
 
 Vue.use(Router);
 
@@ -19,11 +18,6 @@ export default new Router({
                 path: '/canvas',
                 name: 'Canvas',
                 component: ToolMain,
-        },
-        {
-                path: '/vuetest',
-                name: 'VueTest',
-                component: VueTest,
-        },
+        }
   ],
 });

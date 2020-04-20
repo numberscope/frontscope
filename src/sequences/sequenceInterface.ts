@@ -37,7 +37,7 @@ export interface GeneratorSettings {
  */
 
 export interface SequenceInterface {
-    ID:number;
+    ID: number;
     name: string;
     description: string;
     sequenceParams: SequenceParamsSchema[];
@@ -60,4 +60,14 @@ export interface SequenceInterface {
      * @memberof SequenceGenerator
      */
     getElement(n: number): number | SequenceError;
+}
+
+export class SequenceExportModule{
+    sequence: any;
+    name: string;
+
+    constructor(sequence: any, name: string){
+        this.sequence = sequence;
+        this.name = name;
+    }
 }
