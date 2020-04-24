@@ -26,7 +26,7 @@
                                 </li>
 
                                 <li class="nav-item">
-                                        <router-link :to="{ name: 'Home' }" class="orange nav-link">
+                                        <router-link :to="{ name: 'UserManual' }" class="orange nav-link">
                                                 <font color="#fff"><b>User Manual</b></font>
                                         </router-link>
                                 </li>
