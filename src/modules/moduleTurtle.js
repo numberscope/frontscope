@@ -2,10 +2,10 @@
 
 // Turtle needs work
 // Throwing the same error on previous numberscope website
-class VIZ_Turtle {
+class VisualizerTurtle {
 	constructor(seq, sketch, config) {
-		var domain = config.domain;
-		var range = config.range;
+		const domain = config.domain;
+		const range = config.range;
 		this.rotMap = {};
 		for (let i = 0; i < domain.length; i++) {
 			this.rotMap[domain[i]] = (Math.PI / 180) * range[i];
@@ -30,10 +30,10 @@ class VIZ_Turtle {
 	}
 
 	stepDraw() {
-		let oldX = this.X;
-		let oldY = this.Y;
-		let currElement = this.seq.getElement(this.currentIndex++);
-		let angle = this.rotMap[currElement];
+		const oldX = this.X;
+		const oldY = this.Y;
+		const currElement = this.seq.getElement(this.currentIndex++);
+		const angle = this.rotMap[currElement];
 		if (angle == undefined) {
 			console.log(currElement)
                         return false;
@@ -54,7 +54,7 @@ class VIZ_Turtle {
                 this.sketch.noLoop();
 	}
 	draw() {
-                var stat = true;
+                let stat = true;
 		while(stat)
                 {
                         stat = this.stepDraw();
@@ -63,7 +63,7 @@ class VIZ_Turtle {
 }
 
 
-const SCHEMA_Turtle = {
+const schemaTurtle = {
 	domain: {
 		type: 'string',
 		title: 'Sequence Domain',
@@ -116,12 +116,12 @@ const SCHEMA_Turtle = {
 	},
 };
 
-const MODULE_Turtle = {
-	viz: VIZ_Turtle,
+const moduleTurtle = {
+	viz: VisualizerTurtle,
 	name: "Turtle",
 	description: "",
-	configSchema: SCHEMA_Turtle
+	configSchema: schemaTurtle
 };
 
 
-module.exports = MODULE_Turtle;
+module.exports = moduleTurtle;
