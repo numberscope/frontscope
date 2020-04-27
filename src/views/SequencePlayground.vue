@@ -10,7 +10,7 @@
           <div class="form-row">
             <div class="col">
               <label for="seq_type">Sequence Type</label>
-              <select class="form-control" id="seq_type" v-model="sequence_type">
+              <select class="form-control" id="seq_type" v-model="sequenceType">
 
                 <option v-for="seq in options" v-bind:value="seq.value" :key="seq">
                   {{ seq.text }}
@@ -25,21 +25,21 @@
             </div>
 
             <div class="col">
-              <label for="num_elements">Number of Elements</label>
-              <input type="number" class="form-control" id="num_elements" v-model="num_elements" min="10" max="100">
+              <label for="numElements">Number of Elements</label>
+              <input type="number" class="form-control" id="numElements" v-model="numElements" min="10" max="100">
             </div>
           </div>
           <div class="form-group" style="padding:20px;">
-            <input type="checkbox" id="checkbox" v-model="include_modulus">
+            <input type="checkbox" id="checkbox" v-model="includeModulus">
             <label for="checkbox">Include a Modulus</label>
           </div>
       </form>
       
-      <button type="submit" class="btn btn-primary" v-on:click="getMessage(sequence_type, modulus, num_elements)">Get Sequence</button>
+      <button type="submit" class="btn btn-primary" v-on:click="getMessage(sequenceType, modulus, numElements)">Get Sequence</button>
 
       <div class="container" style="padding: 30px;">
-        <h3>Sequence: {{ sequence_type }}</h3>
-        <h3>Number of Elements: {{ num_elements }}</h3>
+        <h3>Sequence: {{ sequenceType }}</h3>
+        <h3>Number of Elements: {{ numElements }}</h3>
         <h3>Modulus: {{ modulus }}</h3>
       </div>
     </div>
@@ -63,25 +63,25 @@ import axios from 'axios';
 
 
 export default {
-  name: 'VueTest',
+  name: 'SequencePlayground',
   data() {
     return {
-            num_elements: 100,
+            numElements: 100,
             modulus: 100,
-            sequence_type: "A000027",
+            sequenceType: "A000027",
             options : [
                       {text : "Natural Numbers", value: "A000027"},
                       {text : "Prime Numbers", value: "A000040"},
                       {text : "Triangle Numbers", value: "A000217"}
             ],
             sequence: [],
-            include_modulus: false,
+            includeModulus: false,
     }
   },
 
 
   methods: {
-    getMessage(seq_id, modulus, num) {
+    getMessage(seqId, modulus, num) {
 
         /* const path_prefix = `http://128.138.150.182/api/get_sequence`; */
 
@@ -91,12 +91,11 @@ export default {
         modulus = 0;
       }
 
-      if(!this.include_modulus){
+      if(!this.includeModulus){
         modulus = 0;
       }
 
-      const path = `http://128.138.150.182/api/get_sequence/${seq_id}/${num}/${modulus}`;
-      /* const path = `http://localhost:5000/get_sequence/A0001`; */
+      const path = `http://128.138.150.182/api/get_sequence/${seqId}/${num}/${modulus}`;
 
       axios.get(path)
         .then((res) => {

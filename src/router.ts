@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Router from 'vue-router';
 import Home from '@/views/Home.vue';
 import ToolMain from '@/views/ToolMain.vue';
+import SequencePlayground from '@/views/SequencePlayground.vue';
 
 Vue.use(Router);
 
@@ -18,6 +19,11 @@ export default new Router({
                 path: '/canvas',
                 name: 'Canvas',
                 component: ToolMain,
-        }
+	},
+	{
+		path: '/sequenceplayground',
+		name: 'SequencePlayground',
+		component: SequencePlayground,
+	},
   ],
 });
