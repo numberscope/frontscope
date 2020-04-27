@@ -1,5 +1,5 @@
 <template>
-    <a v-on:click="$emit('set-active-viz', title)">
+    <a v-on:click="$emit('set-active-seq', title)">
         <li class="list-group-item">{{ title }}</li>
     </a>
 </template>
@@ -8,7 +8,7 @@
 <script>
 
 export default {
-    name: 'ToolSelector',
+    name: 'SeqSelector',
 
     props: {
         title: String,

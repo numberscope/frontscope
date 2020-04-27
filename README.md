@@ -1,5 +1,4 @@
-# newnumberscope
-
+# Numberscope Frontend
 
 ## Project setup
 ```

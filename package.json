@@ -1,6 +1,6 @@
 {
-  "name": "newnumberscope",
-  "version": "0.1.0",
+  "name": "VueNumberScope",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -12,41 +12,23 @@
     "core-js": "^3.6.4",
     "jquery": "^3.4.1",
     "router": "^1.3.5",
-    "vue-router": "^3.1.5"
+    "vue": "^2.6.11",
+    "vue-router": "^3.1.6"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^4.2.3",
-    "@vue/cli-plugin-eslint": "^4.2.3",
+    "@typescript-eslint/eslint-plugin": "^2.26.0",
     "@vue/cli-plugin-router": "^4.2.3",
-    "@vue/cli-service": "^4.2.3",
-    "babel-eslint": "^10.0.3",
+    "@typescript-eslint/parser": "^2.26.0",
+    "@vue/cli-plugin-babel": "~4.3.0",
+    "@vue/cli-plugin-eslint": "~4.3.0",
+    "@vue/cli-plugin-typescript": "~4.3.0",
+    "@vue/cli-service": "~4.3.0",
+    "@vue/eslint-config-typescript": "^5.0.2",
     "css-loader": "^3.4.2",
-    "eslint": "^6.8.0",
-    "eslint-plugin-vue": "^6.2.2",
-    "ts-loader": "^6.2.2",
-    "typescript": "^3.8.3",
-    "vue": "^2.6.11",
     "vue-loader": "^15.9.1",
-    "vue-template-compiler": "^2.6.11",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
-    "rules": {}
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions"
-  ]
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^6.2.2",
+    "typescript": "~3.8.3",
+    "vue-template-compiler": "^2.6.11"
+  }
 }
