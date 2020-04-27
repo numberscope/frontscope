@@ -24,9 +24,9 @@ export default {
 
             const activeTool = this.activeViz;
 
-            var drawing = new p5(function(sketch){
+            const drawing = new p5(function(sketch){
 
-                var visualizer = new activeTool.viz(sequence, sketch, {
+                const visualizer = new activeTool.viz(sequence, sketch, {
                     domain: [1,2,3,4,5],
                     range: [10,20,30,40,50],
                     stepSize: 20,

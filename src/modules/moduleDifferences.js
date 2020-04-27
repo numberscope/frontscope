@@ -3,7 +3,7 @@
 
 */
 
-class VIZ_Differences {
+class VIZDifferences {
 	constructor(seq, sketch, config) {
 
 		this.n = config.n; //n is number of terms of top sequence
@@ -19,19 +19,19 @@ class VIZ_Differences {
 
 		n = Math.min(n, sequence.length);
 		levels = Math.min(levels, n - 1);
-		let fontSize = 20;
+		const fontSize = 20;
 		this.sketch.textFont("Arial");
 		this.sketch.textSize(fontSize);
 		this.sketch.textStyle(this.sketch.BOLD);
-		let xDelta = 50;
-		let yDelta = 50;
+		const xDelta = 50;
+		const yDelta = 50;
 		let firstX = 30;
-		let firstY = 30;
+		const firstY = 30;
 		this.sketch.colorMode(this.sketch.HSB, 255);
 		let myColor = this.sketch.color(100, 255, 150);
 		let hue;
 
-		let workingSequence = [];
+		const workingSequence = [];
 
 		for (let i = 0; i < this.n; i++) {
 			workingSequence.push(sequence.getElement(i)); //workingSequence cannibalizes first n elements of sequence.
@@ -55,7 +55,9 @@ class VIZ_Differences {
 		}
 
 	}
-	setup() {}
+	setup() {
+            console.log("Set up");
+        }
 	draw() {
 		this.drawDifferences(this.n, this.levels, this.seq);
 		this.sketch.noLoop();
@@ -64,7 +66,7 @@ class VIZ_Differences {
 
 
 
-const SCHEMA_Differences = {
+const SCHEMADifferences = {
 	n: {
 		type: 'number',
 		title: 'N',
@@ -79,12 +81,12 @@ const SCHEMA_Differences = {
 	},
 };
 
-const MODULE_Differences = {
-	viz: VIZ_Differences,
+const MODULEDifferences = {
+	viz: VIZDifferences,
 	name: "Differences",
 	description: "",
-	configSchema: SCHEMA_Differences
+	configSchema: SCHEMADifferences
 };
 
 
-module.exports = MODULE_Differences;
+module.exports = MODULEDifferences;
