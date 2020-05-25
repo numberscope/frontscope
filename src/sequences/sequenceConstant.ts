@@ -16,7 +16,8 @@ class SequenceConstant extends SequenceClassDefault{
         '0',
         false
     )];
-    constantValue: number;
+    private params: { [key: string]: string|number } = {};
+    private requested = 0;
 
     constructor (ID: number, finite?: boolean) {
         super(ID, finite);
@@ -26,7 +27,7 @@ class SequenceConstant extends SequenceClassDefault{
         if(paramsFromUser){
             console.log(paramsFromUser);
             paramsFromUser.forEach(param => {
-                this[param.name] = param.value;
+                this.params[param.name] = param.value;
             });    
         }
         this.ready = true;
@@ -34,7 +35,7 @@ class SequenceConstant extends SequenceClassDefault{
 
     getElement(n: number) {
         this.requested = n;
-        return this.constantValue;
+        return Number(this.params.constantValue);
     }
 }
 

@@ -25,9 +25,9 @@
 
 <script>
 
-import ToolMenu from '@/components/ToolMenu.vue'
-import SequenceMenu from '@/components/SequenceMenu.vue'
-import CanvasArea from '@/components/CanvasArea.vue'
+import ToolMenu from '@/components/ToolMenu.vue';
+import SequenceMenu from '@/components/SequenceMenu.vue';
+import CanvasArea from '@/components/CanvasArea.vue';
 import MODULES from '@/modules/modules.js';
 import SEQUENCES from '@/sequences/sequences';
 
@@ -38,7 +38,7 @@ export default {
   components: {
     ToolMenu,
     SequenceMenu,
-    CanvasArea
+    CanvasArea,
   },
   methods: {
     setActiveViz: function(newViz){

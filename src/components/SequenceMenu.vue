@@ -6,10 +6,13 @@
             v-for="seq in sequences"
             v-bind:title="seq.name"
             v-bind:key="seq.id"
-            v-on:create-seq="$emit('create-seq', seq)"
+            v-on:set-seq-params="setParams(seq)"
             >
             </SeqSelector>
     </ul>
+    <SequenceParamsModal v-on:create-seq="$emit('create-seq', seq)" >
+        <p>Hey</p>
+    </SequenceParamsModal>
     <!--/*
     v-on:set-active-seq="$emit('set-active-seq', seq)"
     <div v-if="activeSeq">
@@ -23,6 +26,7 @@
 
 <script>
 import SeqSelector from '@/components/SeqSelector.vue'
+import SequenceParamsModal from '@/components/SequenceParamsModal.vue'
 //import VizualizationSettingsPane from '@/components/SequenceSettingsPane.vue'
 
 export default {
@@ -34,6 +38,13 @@ export default {
   },
   components: {
     SeqSelector,
+    SequenceParamsModal
+  },
+  methods: {
+    setParams: function(seq) {
+               const liveSequence = new seq.sequence(1, false);
+              this.$modal.show('seq-params-modal');
+    }
   },
   data: function(){
     return {
