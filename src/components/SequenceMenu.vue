@@ -6,7 +6,7 @@
             v-for="seq in sequences"
             v-bind:title="seq.name"
             v-bind:key="seq.id"
-            v-on:set-active-viz="$emit('set-active-seq', seq)"
+            v-on:set-active-seq="$emit('set-active-seq', seq)"
             >
             </SeqSelector>
     </ul>
@@ -33,11 +33,6 @@ export default {
   },
   components: {
     SeqSelector,
-  },
-  methods: {
-    setActive: function(active) {
-        console.log(active);
-        }
   },
   data: function(){
     return {

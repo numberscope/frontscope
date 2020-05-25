@@ -11,12 +11,12 @@ export class SequenceClassDefault implements SequenceInterface{
     cache: number[];
     newSize: number;
     finite: boolean;
-    name: string = 'Base';
-    description: string = '';
+    name = 'Base';
+    description = '';
     sequenceParams: SequenceParamsSchema[] = [new SequenceParamsSchema()];
     generatorSettings: GeneratorSettings = {};
     ready: boolean;
-    generator: (() => number) | ((n:number) => number) = () => 0;
+    generator: (() => number) | ((n: number) => number) = () => 0;
 
     /**
      *Creates an instance of SequenceGenerator.
@@ -55,7 +55,7 @@ export class SequenceClassDefault implements SequenceInterface{
     }
 
     fillCache() {
-        for (let i:number = this.cache.length; i < this.newSize; i++) {
+        for (let i: number = this.cache.length; i < this.newSize; i++) {
             this.cache[i] = this.generator(i);
         }
     }

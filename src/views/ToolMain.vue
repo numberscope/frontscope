@@ -5,7 +5,7 @@
                 <SequenceMenu
                   v-bind:sequences="sequences"
                   v-bind:activeSeq="activeSeq"
-                  v-on:set-active-viz="setActiveViz($event)"
+                  v-on:set-active-seq="setActiveSeq($event)"
                 />
                 <ToolMenu 
                   v-bind:visualizers="visualizers"
@@ -34,7 +34,7 @@ import SEQUENCES from '@/sequences/sequences';
 console.log(SEQUENCES)
 
 export default {
-  name: 'App',
+  name: 'ToolMain',
   components: {
     ToolMenu,
     SequenceMenu,
@@ -46,11 +46,15 @@ export default {
       console.log(this.activeViz);
     },
     setActiveSeq: function(newSeq){
-        console.log(newSeq);
+        this.activeSeq = newSeq;
+        console.log("The active sequence is now", newSeq.name);
     }
   },
   data: function(){
     const sequences = []
+    // We are grooming the raw SEQUENCES module into something
+    // we can use by looking for only sequences that have an 
+    // export module (ie, aren't utility files)
     for (const seqKey in SEQUENCES){
       const theModule = SEQUENCES[seqKey]
       if(theModule.exportModule){

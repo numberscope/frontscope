@@ -25,8 +25,6 @@ class VisualizerTurtle {
 			this.X = null;
 			this.Y = null;
 		}
-		console.log('inside the turtle', this.seq)
-
 	}
 
 	stepDraw() {
@@ -36,7 +34,7 @@ class VisualizerTurtle {
 		const angle = this.rotMap[currElement];
 		if (angle == undefined) {
 			console.log(currElement)
-                        return false;
+            return false;
 		}
 		this.orientation = (this.orientation + angle);
 		this.X += this.stepSize * Math.cos(this.orientation);

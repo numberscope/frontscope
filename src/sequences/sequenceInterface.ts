@@ -20,6 +20,7 @@ export class SequenceParamsSchema {
     }
 }
 
+
 export class SequenceError {
     constructor(public errorText: string) {
         this.errorText = errorText;
@@ -63,10 +64,10 @@ export interface SequenceInterface {
 }
 
 export class SequenceExportModule{
-    sequence: any;
+    sequence: Function;
     name: string;
 
-    constructor(sequence: any, name: string){
+    constructor(sequence: Function, name: string){
         this.sequence = sequence;
         this.name = name;
     }
