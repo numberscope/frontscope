@@ -6,12 +6,13 @@ export class SequenceParamsSchema {
     value: string;
 
     constructor(
-        name?: string, 
-        type?: string, 
-        displayName?: string, 
-        defaultValue?: string, 
-        required?: boolean
+        name: string, 
+        type: string, 
+        displayName: string, 
+        required: boolean,
+        defaultValue?: string 
         ) {
+            console.log('const', name);
         this.name = name || '';
         this.type = type || '';
         this.displayName = displayName || '';

@@ -13,14 +13,15 @@ class SequenceConstant extends SequenceClassDefault{
         'constantValue',
         'number',
         'Constant Value',
-        '0',
-        false
+        false,
+        '0'
     )];
     private params: { [key: string]: string|number } = {};
     private requested = 0;
 
     constructor (ID: number, finite?: boolean) {
         super(ID, finite);
+        console.log(this.sequenceParams);
     }
 
     initialize(paramsFromUser?: SequenceParamsSchema[]) {

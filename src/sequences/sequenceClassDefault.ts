@@ -13,7 +13,7 @@ export class SequenceClassDefault implements SequenceInterface{
     finite: boolean;
     name = 'Base';
     description = '';
-    sequenceParams: SequenceParamsSchema[] = [new SequenceParamsSchema()];
+    sequenceParams: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', 'displayName', false, '0')];
     generatorSettings: GeneratorSettings = {};
     ready: boolean;
     generator: (() => number) | ((n: number) => number) = () => 0;

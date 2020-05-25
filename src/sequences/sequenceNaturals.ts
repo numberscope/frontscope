@@ -13,8 +13,8 @@ class SequenceNaturals extends SequenceClassDefault{
         'includeZero',
         'boolean',
         'Include Zero',
-        'false',
-        false
+        false,
+        'false'
     )];
 
     /**

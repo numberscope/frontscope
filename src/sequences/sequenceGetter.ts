@@ -10,9 +10,9 @@ export class SequenceGetter implements SequenceInterface{
     ID: number;
     cache: number[];
     finite: boolean;
-    name: string = 'Getter';
-    description: string = '';
-    sequenceParams: SequenceParamsSchema[] = [new SequenceParamsSchema()];
+    name = 'Getter';
+    description = '';
+    sequenceParams: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', '', false, '')];
     generatorSettings: GeneratorSettings = {};
     ready: boolean;
 
@@ -37,7 +37,6 @@ export class SequenceGetter implements SequenceInterface{
      * @param paramsFromUser user settings for the sequence passed from the UI
      */
     initialize(paramsFromUser?: SequenceParamsSchema[]) {
-        const self = this;
         if(paramsFromUser){
             paramsFromUser.forEach(param => {
                 this.generatorSettings[param.name] = param.value;
@@ -47,7 +46,7 @@ export class SequenceGetter implements SequenceInterface{
             .then( resp => {
                 console.log(resp)
                 //self.cache = resp;
-                self.ready = true;
+                this.ready = true;
                 return;
             });
     }

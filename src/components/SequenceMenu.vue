@@ -1,4 +1,5 @@
 <template>
+
   <div>
     <h2>Sequences</h2>
     <ul class="list-group">
@@ -43,7 +44,9 @@ export default {
   methods: {
     setParams: function(seq) {
                const liveSequence = new seq.sequence(1, false);
-              this.$modal.show('seq-params-modal');
+               console.log(liveSequence);
+               console.log(liveSequence.sequenceParams);
+              this.$modal.show('seq-params-modal', { params : liveSequence.sequenceParams});
     }
   },
   data: function(){
