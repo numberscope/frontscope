@@ -6,11 +6,12 @@
             v-for="seq in sequences"
             v-bind:title="seq.name"
             v-bind:key="seq.id"
-            v-on:set-active-seq="$emit('set-active-seq', seq)"
+            v-on:create-seq="$emit('create-seq', seq)"
             >
             </SeqSelector>
     </ul>
     <!--/*
+    v-on:set-active-seq="$emit('set-active-seq', seq)"
     <div v-if="activeSeq">
       <SequenceSettingsPane
         v-bind:seqParams="activeSeq.params">

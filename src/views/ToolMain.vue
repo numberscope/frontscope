@@ -45,6 +45,9 @@ export default {
       this.activeViz = newViz
       console.log(this.activeViz);
     },
+    createSeq: function(seq){
+        console.log('creating a new sequence');
+    },
     setActiveSeq: function(newSeq){
         this.activeSeq = newSeq;
         console.log("The active sequence is now", newSeq.name);

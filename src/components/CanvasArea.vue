@@ -17,7 +17,6 @@ export default {
     },
     methods:{
         draw: function(){
-            console.log(SequenceParamsSchema);
             console.log('Drawing with Visualizer: ', this.activeViz.name);
             console.log('Drawing with Sequence', this.activeSeq.name);
 

@@ -17,6 +17,15 @@ export default {
 </script>
 
 <style scoped>
+a {
+    cursor: pointer;
+}
+
+li:hover {
+    background-color: #809fff;
+    color: #ffffff;
+}
+
 li {
     text-align: left;
     }
