@@ -29,7 +29,7 @@ export class SequenceError {
 }
 
 export interface GeneratorSettings {
-    [paramName: string]: string;
+    [paramName: string]: string | number | boolean;
 }
 
 /**

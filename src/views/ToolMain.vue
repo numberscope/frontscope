@@ -5,7 +5,7 @@
                 <SequenceMenu
                   v-bind:sequences="sequences"
                   v-bind:activeSeq="activeSeq"
-                  v-on:set-active-seq="setActiveSeq($event)"
+                  v-on:createSeq="setActiveSeq($event)"
                 />
                 <VizualizationMenu 
                   v-bind:visualizers="visualizers"
@@ -61,7 +61,6 @@ export default {
     for (const seqKey in SEQUENCES){
       const theModule = SEQUENCES[seqKey]
       if(theModule.exportModule){
-        console.log(theModule.exportModule);
         sequences.push(theModule.exportModule);
       }
     }
@@ -77,11 +76,4 @@ export default {
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
 </style>

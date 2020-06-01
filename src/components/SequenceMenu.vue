@@ -15,8 +15,7 @@
         v-if="showModal"
         v-bind:params="liveSequence.paramsSchema"
         v-on:closeModal="closeParamsModal"
-        v-on:create-seq="$emit('create-seq', seq)" >
-        <p>Hey</p>
+        v-on:createSeq="createSeq" >
     </SequenceParamsModal>
     <!--/*
     v-on:set-active-seq="$emit('set-active-seq', seq)"
@@ -58,6 +57,11 @@ export default {
               console.log(this.liveSequence);
               console.log(this.liveSequence.sequenceParams);
               this.openParamsModal();  
+    },
+    createSeq: function() {
+      console.log("create seq");
+      this.closeParamsModal();
+      this.$emit("createSeq", this.liveSequence);
     }
   },
   data: function(){

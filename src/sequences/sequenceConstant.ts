@@ -16,7 +16,7 @@ class SequenceConstant extends SequenceClassDefault{
         false,
         '0'
     )];
-    private params: { [key: string]: string|number } = {};
+    private params: { [key: string]: string|number|boolean} = {};
     private requested = 0;
 
     constructor (ID: number, finite?: boolean) {
