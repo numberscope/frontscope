@@ -9,9 +9,19 @@
             </button>
         </div>
         <div class="modal-body">
-            <ul>
-                <li v-for="param in params" v-bind:key="param.name">{{param.name}}</li>
-            </ul>
+            <form>
+                <div v-for="param in params" v-bind:key="param.name">
+                    <div v-if="param.type == 'number' || param.type == 'text'" class="form-group">
+                        <label :for="param.name">{{param.displayName}}</label>
+                        <input type="email" class="form-control" :id="param.name" aria-describedby="emailHelp" placeholder="Enter email">
+                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                    </div>
+                    <div v-if="param.type == 'boolean'" class="form-check">
+                        <input type="checkbox" class="form-check-input" :id="param.name" v-model="param.value">
+                        <label class="form-check-label" :for="param.name">{{param.displayName}}</label>
+                    </div>
+                </div>
+            </form>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-primary">Save changes</button>

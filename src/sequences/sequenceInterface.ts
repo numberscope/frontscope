@@ -3,21 +3,21 @@ export class SequenceParamsSchema {
     type: string;
     displayName: string;
     required: boolean;
-    value: string;
+    value: string | boolean | number;
 
     constructor(
         name: string, 
         type: string, 
         displayName: string, 
         required: boolean,
-        defaultValue?: string 
+        defaultValue?: string | boolean | number
         ) {
             console.log('const', name);
-        this.name = name || '';
-        this.type = type || '';
-        this.displayName = displayName || '';
-        this.required = required || false;
-        this.value = defaultValue || '';
+            this.name = name || '';
+            this.type = type || '';
+            this.displayName = displayName || '';
+            this.required = required || false;
+            this.value = defaultValue || '';
     }
 }
 

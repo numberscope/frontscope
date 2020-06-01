@@ -14,7 +14,7 @@ class SequenceNaturals extends SequenceClassDefault{
         'boolean',
         'Include Zero',
         false,
-        'false'
+        false 
     )];
 
     /**
