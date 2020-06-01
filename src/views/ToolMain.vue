@@ -7,7 +7,7 @@
                   v-bind:activeSeq="activeSeq"
                   v-on:set-active-seq="setActiveSeq($event)"
                 />
-                <ToolMenu 
+                <VizualizationMenu 
                   v-bind:visualizers="visualizers"
                   v-bind:activeViz="activeViz" 
                   v-on:set-active-viz="setActiveViz($event)"
@@ -25,7 +25,7 @@
 
 <script>
 
-import ToolMenu from '@/components/ToolMenu.vue';
+import VizualizationMenu from '@/components/VizualizationMenu.vue';
 import SequenceMenu from '@/components/SequenceMenu.vue';
 import CanvasArea from '@/components/CanvasArea.vue';
 import MODULES from '@/modules/modules.js';
@@ -36,7 +36,7 @@ console.log(SEQUENCES)
 export default {
   name: 'ToolMain',
   components: {
-    ToolMenu,
+    VizualizationMenu,
     SequenceMenu,
     CanvasArea,
   },
@@ -46,7 +46,7 @@ export default {
       console.log(this.activeViz);
     },
     createSeq: function(seq){
-        console.log('creating a new sequence');
+        console.log('creating a new sequence', seq);
     },
     setActiveSeq: function(newSeq){
         this.activeSeq = newSeq;

@@ -11,7 +11,11 @@
             >
             </SeqSelector>
     </ul>
-    <SequenceParamsModal v-on:create-seq="$emit('create-seq', seq)" >
+    <SequenceParamsModal 
+        v-if="showModal"
+        v-bind:params="liveSequence.paramsSchema"
+        v-on:closeModal="closeParamsModal"
+        v-on:create-seq="$emit('create-seq', seq)" >
         <p>Hey</p>
     </SequenceParamsModal>
     <!--/*
@@ -31,27 +35,36 @@ import SequenceParamsModal from '@/components/SequenceParamsModal.vue'
 //import VizualizationSettingsPane from '@/components/SequenceSettingsPane.vue'
 
 export default {
-  name: 'ToolMenu',
+  name: 'SequenceMenu',
   props: {
     sequences: Array,
     activeViz: Object,
-    activeSeq: Object
+    activeSeq: Object,
   },
   components: {
     SeqSelector,
     SequenceParamsModal
   },
   methods: {
+    openParamsModal: function() {
+        this.showModal = true;
+    },
+    closeParamsModal: function() {
+        this.showModal = false;
+    },
     setParams: function(seq) {
-               const liveSequence = new seq.sequence(1, false);
-               console.log(liveSequence);
-               console.log(liveSequence.sequenceParams);
-              this.$modal.show('seq-params-modal', { params : liveSequence.sequenceParams});
+              console.log(seq);
+              this.liveSequence = new seq.sequence(1, false);
+              console.log(this.liveSequence);
+              console.log(this.liveSequence.sequenceParams);
+              this.openParamsModal();  
     }
   },
   data: function(){
-    return {
-    } 
+      return {
+        showModal: false,
+        liveSequence: { paramsSchema: []}
+      }
   }
 }
 
