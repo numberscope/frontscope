@@ -1,22 +1,23 @@
-class VIZ_shiftCompare {
-	constructor(seq, sketch) {
-		//Sketch is your canvas
-		//config is the parameters you expect
-		//seq is the sequence you are drawing
-		this.sketch = sketch;
-		this.seq = seq;
-		this.MOD = 2;
-		// Set up the image once.
-	}
+import p5 from "p5";
+import { SequenceInterface } from '@/sequences/sequenceInterface';
+import { VizualizerDefault } from './vizualizerDefault';
+import { VizualizerInterface, VizualizerExportModule } from './vizualizerInterface';
 
+class VizShiftCompare extends VizualizerDefault implements VizualizerInterface {
+	MOD= 2;
+	img: p5.Image;
 
-	setup() {
-		console.log(this.sketch.height, this.sketch.width);
+	constructor(sketch: p5, seq: SequenceInterface) {
+		super(sketch, seq);
 		this.img = this.sketch.createImage(this.sketch.width, this.sketch.height);
 		this.img.loadPixels(); // Enables pixel-level editing.
 	}
 
-	clip(a, min, max) {
+	setup() {
+		console.log(this.sketch.height, this.sketch.width);
+	}
+
+	clip(a: number, min: number, max: number) {
 		if (a < min) {
 			return min;
 		} else if (a > max) {
@@ -30,16 +31,16 @@ class VIZ_shiftCompare {
 		// Ensure mouse coordinates are sane.
 		// Mouse coordinates look they're floats by default.
 
-		let d = this.sketch.pixelDensity();
-		let mx = this.clip(Math.round(this.sketch.mouseX), 0, this.sketch.width);
-		let my = this.clip(Math.round(this.sketch.mouseY), 0, this.sketch.height);
+		const d = this.sketch.pixelDensity();
+		const mx = this.clip(Math.round(this.sketch.mouseX), 0, this.sketch.width);
+		const my = this.clip(Math.round(this.sketch.mouseY), 0, this.sketch.height);
 		if (this.sketch.key == 'ArrowUp') {
 			this.MOD += 1;
-			this.sketch.key = null;
+			this.sketch.key = '';
 			console.log("UP PRESSED, NEW MOD: " + this.MOD);
 		} else if (this.sketch.key == 'ArrowDown') {
 			this.MOD -= 1;
-			this.sketch.key = null;
+			this.sketch.key = '';
 			console.log("DOWN PRESSED, NEW MOD: " + this.MOD);
 		} else if (this.sketch.key == 'ArrowRight') {
 			console.log(console.log("MX: " + mx + " MY: " + my));
@@ -49,7 +50,7 @@ class VIZ_shiftCompare {
 			for (let y = 0; y < this.sketch.height; y++) {
 				for (let i = 0; i < d; i++) {
 					for (let j = 0; j < d; j++) {
-						let index = 4 * ((y * d + j) * this.sketch.width * d + (x * d + i));
+						const index = 4 * ((y * d + j) * this.sketch.width * d + (x * d + i));
 						if (this.seq.getElement(x) % (this.MOD) == this.seq.getElement(y) % (this.MOD)) {
 							this.img.pixels[index] = 255;
 							this.img.pixels[index + 1] = 255;
@@ -73,11 +74,8 @@ class VIZ_shiftCompare {
 }
 
 
-const MODULE_ShiftCompare = {
-	viz: VIZ_shiftCompare,
-	name: "Shift Compare",
-	description: "",
-	configSchema: {}
-};
-
-module.exports = MODULE_ShiftCompare;
+export const exportModule = new VizualizerExportModule(
+	"Shift Compare",
+	VizShiftCompare,
+	""
+);

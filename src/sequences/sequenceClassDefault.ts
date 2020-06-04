@@ -1,4 +1,4 @@
-import { SequenceParamsSchema, SequenceError, GeneratorSettings, SequenceInterface } from './sequenceInterface'
+import { SequenceParamsSchema, GeneratorSettings, SequenceInterface } from './sequenceInterface'
 /**
  *
  * @class SequenceClassDefault
@@ -63,9 +63,6 @@ export class SequenceClassDefault implements SequenceInterface{
      * getElement is how sequences provide their callers with elements.
      */
     getElement(n: number) {
-        if(!this.ready) 
-            return new SequenceError('The sequence is not initialized. Please select all required settings and initialize the sequence.');
-
         if (this.cache[n] != undefined || this.finite) {
             return this.cache[n];
         } else {

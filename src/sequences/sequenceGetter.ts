@@ -1,4 +1,4 @@
-import { SequenceParamsSchema, SequenceError, GeneratorSettings, SequenceInterface } from './sequenceInterface'
+import { SequenceParamsSchema, GeneratorSettings, SequenceInterface } from './sequenceInterface'
 import axios from 'axios'
 /**
  *
@@ -54,9 +54,6 @@ export class SequenceGetter implements SequenceInterface{
      * getElement is how sequences provide their callers with elements.
      */
     getElement(n: number) {
-        if(!this.ready) 
-            return new SequenceError('The sequence is not initialized. Please select all required settings and initialize the sequence.');
-
         return this.cache[n];
     }
 }

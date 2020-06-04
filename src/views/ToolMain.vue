@@ -8,7 +8,7 @@
                   v-on:createSeq="setActiveSeq($event)"
                 />
                 <VizualizationMenu 
-                  v-bind:visualizers="visualizers"
+                  v-bind:vizualizers="vizualizers"
                   v-bind:activeViz="activeViz" 
                   v-on:set-active-viz="setActiveViz($event)"
                 />
@@ -28,10 +28,8 @@
 import VizualizationMenu from '@/components/VizualizationMenu.vue';
 import SequenceMenu from '@/components/SequenceMenu.vue';
 import CanvasArea from '@/components/CanvasArea.vue';
-import MODULES from '@/modules/modules.js';
+import VIZUALIZERS from '@/vizualizers/vizualizers';
 import SEQUENCES from '@/sequences/sequences';
-
-console.log(SEQUENCES)
 
 export default {
   name: 'ToolMain',
@@ -43,29 +41,34 @@ export default {
   methods: {
     setActiveViz: function(newViz){
       this.activeViz = newViz
-      console.log(this.activeViz);
-    },
-    createSeq: function(seq){
-        console.log('creating a new sequence', seq);
     },
     setActiveSeq: function(newSeq){
         this.activeSeq = newSeq;
-        console.log("The active sequence is now", newSeq.name);
     }
   },
   data: function(){
+    const vizualizers = []
     const sequences = []
-    // We are grooming the raw SEQUENCES module into something
-    // we can use by looking for only sequences that have an 
+    // We are grooming the raw VIZUALIZERS and SEQUENCES module into something
+    // we can use by looking for only modules that have an 
     // export module (ie, aren't utility files)
+    for (const vizKey in VIZUALIZERS){
+      console.log(vizKey);
+      const theModule = VIZUALIZERS[vizKey]
+      console.log(theModule)
+      if(theModule.exportModule){
+        vizualizers.push(theModule.exportModule);
+      }
+    }
     for (const seqKey in SEQUENCES){
       const theModule = SEQUENCES[seqKey]
       if(theModule.exportModule){
         sequences.push(theModule.exportModule);
       }
     }
+    console.log(vizualizers);
     const state = {
-      visualizers: MODULES,
+      vizualizers: vizualizers,
       sequences: sequences,
       activeViz: {},
       activeSeq: {}

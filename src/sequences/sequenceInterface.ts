@@ -61,7 +61,7 @@ export interface SequenceInterface {
      * @returns a number
      * @memberof SequenceGenerator
      */
-    getElement(n: number): number | SequenceError;
+    getElement(n: number): number;
 }
 
 export class SequenceExportModule{
