@@ -4,6 +4,7 @@ import { VizualizerDefault } from './vizualizerDefault';
 import { VizualizerInterface, VizualizerExportModule } from './vizualizerInterface';
 
 class VizShiftCompare extends VizualizerDefault implements VizualizerInterface {
+    Name = "Shift Compare";
 	MOD= 2;
 	img: p5.Image;
 

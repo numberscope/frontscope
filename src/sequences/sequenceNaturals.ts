@@ -49,6 +49,7 @@ class SequenceNaturals extends SequenceClassDefault{
             //but the generator doesn't necessarily need to take more than one argument.
             this.cache[i] = this.generator(i);
         }
+        console.log(this.cache);
     }
 }
 

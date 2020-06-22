@@ -29,18 +29,20 @@ export default {
             const activeSeq = this.activeSeq;
             activeSeq.initialize();
 
-            const activeTool = this.activeViz;
+            const activeViz = this.activeViz;
+            console.log(activeViz);
+
             const drawing = new p5(function(sketch){
-                    const visualizer = new activeTool.viz(activeSeq, sketch);
+                    activeViz.initialize(sketch, activeSeq);
 
                     sketch.setup = function(){
-                        sketch.createCanvas(200, 200);
+                        sketch.createCanvas(800, 800);
                         sketch.background("white");
-                        visualizer.setup();
+                        activeViz.setup();
                     }
 
                     sketch.draw = function(){
-                    visualizer.draw();
+                        activeViz.draw();
                     }
 
 }, 'p5-goes-here');

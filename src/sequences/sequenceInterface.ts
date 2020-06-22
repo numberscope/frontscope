@@ -12,7 +12,6 @@ export class SequenceParamsSchema {
         required: boolean,
         defaultValue?: string | boolean | number
         ) {
-            console.log('const', name);
             this.name = name || '';
             this.type = type || '';
             this.displayName = displayName || '';

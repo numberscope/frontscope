@@ -125,17 +125,17 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 	setup() {
 		this.X = this.sketch.width / 2;
 		this.Y = this.sketch.height / 2;
+        console.log(this.sketch);
 		this.sketch.background(String(this.settings.bgColor));
 		this.sketch.stroke(String(this.settings.strokeColor));
 		this.sketch.strokeWeight(Number(this.settings.strokeWidth));
-                this.sketch.noLoop();
+        this.sketch.noLoop();
 	}
 	draw() {
-                let stat = true;
-		while(stat)
-                {
-                        stat = this.stepDraw();
-                }
+        let stat = true;
+		while(stat) {
+            stat = this.stepDraw();
+        }
 	}
 }
 

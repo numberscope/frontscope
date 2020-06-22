@@ -63,6 +63,7 @@ export class SequenceClassDefault implements SequenceInterface{
      * getElement is how sequences provide their callers with elements.
      */
     getElement(n: number) {
+
         if (this.cache[n] != undefined || this.finite) {
             return this.cache[n];
         } else {

@@ -8,6 +8,7 @@ import { VizualizerDefault } from './vizualizerDefault';
 */
 
 class VizDifferences extends VizualizerDefault implements VizualizerInterface{
+    name = "Differences";
 	params: VizualizerParamsSchema[] = [];
 	settings: VizualizerSettings = {};
 
@@ -16,15 +17,15 @@ class VizDifferences extends VizualizerDefault implements VizualizerInterface{
 		const numberTermsTop = new VizualizerParamsSchema();
 		numberTermsTop.name = "n";
 		numberTermsTop.displayName = "Number of terms of top sequence";
-		numberTermsTop.type = "Number";
-		numberTermsTop.value = "1";
+		numberTermsTop.type = "number";
+		numberTermsTop.value = 20;
 		numberTermsTop.required = true;
 
 		const levelsParam = new VizualizerParamsSchema();
 		levelsParam.name = "levels";
 		levelsParam.displayName = "Number of layers in the pyramid/trapezoid";
-		levelsParam.value = 2;
-		levelsParam.type = "Number";
+		levelsParam.value = 5;
+		levelsParam.type = "number";
 		this.params.push(numberTermsTop, levelsParam);
 	}
 
@@ -48,12 +49,17 @@ class VizDifferences extends VizualizerDefault implements VizualizerInterface{
 
 		const workingSequence = [];
 
-		for (let i = 0; i < this.settings.n; i++) {
+        const start = this.settings.n - this.settings.levels;
+        const end = this.settings.n;
+        const count = ( (start + end)*(end - start + 1))/2;
+
+		for (let i = 0; i < count; i++) {
 			workingSequence.push(sequence.getElement(i)); //workingSequence cannibalizes first n elements of sequence.
 		}
 
 
 		for (let i = 0; i < this.settings.levels; i++) {
+            console.log(workingSequence);
 			hue = (i * 255 / 6) % 255;
 			myColor = this.sketch.color(hue, 150, 200);
 			this.sketch.fill(myColor);

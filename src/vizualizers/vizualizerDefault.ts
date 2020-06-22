@@ -12,6 +12,8 @@ export class VizualizerDefault implements VizualizerInterface{
     seq: SequenceInterface = new SequenceClassDefault(0, false);
 
 	initialize(sketch: p5, seq: SequenceInterface, config?: VizualizerParamsSchema[]) {
+        this.sketch = sketch;
+        this.seq = seq;
 		config = config !== undefined ? config : this.params;
 
 		config.forEach(param => {
