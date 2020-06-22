@@ -2,19 +2,26 @@
   <div>
     <h2>Visualizers</h2>
     <ul class="list-group">
-        <ToolSelector
+        <VizSelector
             v-for="viz in vizualizers"
             v-bind:title="viz.name"
             v-bind:key="viz.id"
-            v-on:set-active-viz="$emit('set-active-viz', viz)"
+            v-on:set-viz-params="setParams(viz)"
             >
-            </ToolSelector>
+            </VizSelector>
     </ul>
+    <SeqVizParamsModal
+        v-if="showModal"
+        v-bind:params="liveVizualizer.params"
+        v-on:closeModal="closeParamsModal"
+        v-on:submitParams="createViz" >
+    </SeqVizParamsModal>
   </div>
 </template>
 
 <script>
-import ToolSelector from '@/components/ToolSelector.vue'
+import VizSelector from '@/components/ToolSelector.vue'
+import SeqVizParamsModal from '@/components/SeqVizParamsModal.vue'
 
 export default {
   name: 'VizualizationMenu',
@@ -24,15 +31,29 @@ export default {
     activeSeq: Object
   },
   components: {
-    ToolSelector,
+    VizSelector,
+    SeqVizParamsModal
   },
   methods: {
-    setActive: function(active) {
-        console.log(active);
-        }
+    openParamsModal: function() {
+        this.showModal = true;
+    },
+    closeParamsModal: function() {
+        this.showModal = false;
+    },
+    setParams: function(viz) {
+              this.liveVizualizer = new viz.vizualizer();
+              this.openParamsModal();  
+    },
+    createViz: function() {
+      this.closeParamsModal();
+      this.$emit("createViz", this.liveVizualizer);
+    }
   },
   data: function(){
     return {
+        showModal: false,
+        liveVizualizer: { paramsSchema: []}
     } 
   }
 }

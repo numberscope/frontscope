@@ -11,8 +11,8 @@ class VizDifferences extends VizualizerDefault implements VizualizerInterface{
 	params: VizualizerParamsSchema[] = [];
 	settings: VizualizerSettings = {};
 
-	constructor(seq: SequenceInterface, sketch: p5) {
-		super(sketch, seq);
+	constructor() {
+		super();
 		const numberTermsTop = new VizualizerParamsSchema();
 		numberTermsTop.name = "n";
 		numberTermsTop.displayName = "Number of terms of top sequence";

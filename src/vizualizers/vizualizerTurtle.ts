@@ -6,7 +6,7 @@ import { SequenceInterface } from '@/sequences/sequenceInterface';
 const schemaTurtle = [
 	new VizualizerParamsSchema(
 		"domain",
-		'string',
+		'text',
 		'Sequence Domain',
 		true,
 		"0,1,2,3,4",
@@ -14,7 +14,7 @@ const schemaTurtle = [
 	),
 	new VizualizerParamsSchema(
 		"range",
-		'string',
+		'text',
 		'Angles',
 		true,
 		"30,45,60,90,120",
@@ -22,8 +22,8 @@ const schemaTurtle = [
 	),
 	new VizualizerParamsSchema(
 		"stepSize",
-		'Step Size',
 		'number',
+		'Step Size',
 		true,
 		20,
 	),
@@ -52,14 +52,14 @@ const schemaTurtle = [
 	),
 	new VizualizerParamsSchema(
 		'bgColor',
-		'string',
+		'text',
 		'Background Color',
 		false,
 		"#666666"
 	),
 	new VizualizerParamsSchema(
 		'strokeColor',
-		'string',
+		'text',
 		'Stroke Color',
 		false,
 		'#ff0000'
@@ -70,6 +70,7 @@ const schemaTurtle = [
 // Throwing the same error on previous numberscope website
 class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface {
 
+    name = "Turtle";
 	rotMap: {[key: number]: number} = {};
 	domain: number[] = [];
 	range: number[] = [];
@@ -78,12 +79,15 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 	X = 0;
 	Y = 0;
 
-	constructor(sketch: p5, seq: SequenceInterface) {
-		super(sketch, seq);
+	constructor() {
+        super();
 		this.params = schemaTurtle;
 	}
 
-	initialize(config?: VizualizerParamsSchema[]){
+	initialize(sketch: p5, seq: SequenceInterface, config?: VizualizerParamsSchema[]){
+        this.sketch = sketch;
+        this.seq = seq;
+
 		config = config !== undefined ? config : this.params;
 
 		config.forEach(param => {

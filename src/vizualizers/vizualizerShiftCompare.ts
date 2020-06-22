@@ -8,7 +8,7 @@ class VizShiftCompare extends VizualizerDefault implements VizualizerInterface {
 	img: p5.Image;
 
 	constructor(sketch: p5, seq: SequenceInterface) {
-		super(sketch, seq);
+		super();
 		this.img = this.sketch.createImage(this.sketch.width, this.sketch.height);
 		this.img.loadPixels(); // Enables pixel-level editing.
 	}

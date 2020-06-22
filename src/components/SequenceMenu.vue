@@ -11,26 +11,18 @@
             >
             </SeqSelector>
     </ul>
-    <SequenceParamsModal 
+    <SeqVizParamsModal 
         v-if="showModal"
         v-bind:params="liveSequence.paramsSchema"
         v-on:closeModal="closeParamsModal"
-        v-on:createSeq="createSeq" >
-    </SequenceParamsModal>
-    <!--/*
-    v-on:set-active-seq="$emit('set-active-seq', seq)"
-    <div v-if="activeSeq">
-      <SequenceSettingsPane
-        v-bind:seqParams="activeSeq.params">
-      </SequenceSettingsPane>
-    </div>
-    */-->
+        v-on:submitParams="createSeq" >
+    </SeqVizParamsModal>
   </div>
 </template>
 
 <script>
 import SeqSelector from '@/components/SeqSelector.vue'
-import SequenceParamsModal from '@/components/SequenceParamsModal.vue'
+import SeqVizParamsModal from '@/components/SeqVizParamsModal.vue'
 //import VizualizationSettingsPane from '@/components/SequenceSettingsPane.vue'
 
 export default {
@@ -42,7 +34,7 @@ export default {
   },
   components: {
     SeqSelector,
-    SequenceParamsModal
+    SeqVizParamsModal
   },
   methods: {
     openParamsModal: function() {
@@ -52,14 +44,10 @@ export default {
         this.showModal = false;
     },
     setParams: function(seq) {
-              console.log(seq);
               this.liveSequence = new seq.sequence(1, false);
-              console.log(this.liveSequence);
-              console.log(this.liveSequence.sequenceParams);
               this.openParamsModal();  
     },
     createSeq: function() {
-      console.log("create seq");
       this.closeParamsModal();
       this.$emit("createSeq", this.liveSequence);
     }

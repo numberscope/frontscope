@@ -10,7 +10,7 @@
                 <VizualizationMenu 
                   v-bind:vizualizers="vizualizers"
                   v-bind:activeViz="activeViz" 
-                  v-on:set-active-viz="setActiveViz($event)"
+                  v-on:createViz="setActiveViz($event)"
                 />
             </div>
             <div class="col-sm-10">
@@ -40,6 +40,8 @@ export default {
   },
   methods: {
     setActiveViz: function(newViz){
+    console.log("set active viz");
+    console.log(newViz);
       this.activeViz = newViz
     },
     setActiveSeq: function(newSeq){

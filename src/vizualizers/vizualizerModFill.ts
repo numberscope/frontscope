@@ -1,19 +1,18 @@
 import {SequenceInterface} from "@/sequences/sequenceInterface";
+import {VizualizerDefault} from "@/vizualizers/vizualizerDefault";
 import {VizualizerInterface, VizualizerParamsSchema, VizualizerSettings, VizualizerExportModule} from "@/vizualizers/vizualizerInterface";
 import p5 from 'p5';
 //An example module
 
-class VizModFill implements VizualizerInterface {
-	sketch: p5;
-	seq: SequenceInterface;
-	params: VizualizerParamsSchema[] = [];
+class VizModFill extends VizualizerDefault implements VizualizerInterface {
 	settings: VizualizerSettings = {};
 	rectWidth = 0;
 	rectHeight = 0;
 	i = 0;
 	ready = false;
 
-	constructor(sketch: p5, seq: SequenceInterface) {
+	constructor() {
+        super();
 		const modDimensionScheme = new VizualizerParamsSchema();
 				modDimensionScheme.name = "modDimension";
 				modDimensionScheme.displayName = "Mod dimension";
@@ -22,12 +21,12 @@ class VizModFill implements VizualizerInterface {
 				modDimensionScheme.required = true;
 
 		this.params.push(modDimensionScheme);
-		this.sketch = sketch;
-		this.seq = seq;
 		this.i = 0;
 	}
 
-	initialize(config?: VizualizerParamsSchema[]) {
+	initialize(sketch: p5, seq: SequenceInterface, config?: VizualizerParamsSchema[]) {
+		this.sketch = sketch;
+		this.seq = seq;
 		config = config !== undefined ? config : this.params;
 
 		config.forEach(param => {
@@ -51,8 +50,6 @@ class VizModFill implements VizualizerInterface {
 	}
 
 	setup() {
-		if (!this.ready) this.initialize(); // If the vizualizer hasn't been intialized, initialize using defaults
-
 		const modDimension = Number(this.settings.modDimension);
 		this.rectWidth = this.sketch.width / modDimension;
 		this.rectHeight = this.sketch.height / modDimension;

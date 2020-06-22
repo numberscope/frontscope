@@ -4,11 +4,11 @@ import p5 from 'p5';
 export class VizualizerExportModule {
     name: string;
     description: string;
-    viz: Function;
+    vizualizer: Function;
 
     constructor(name: string, viz: Function, description?: string,){
         this.name = name;
-        this.viz = viz;
+        this.vizualizer = viz;
         this.description = description || '';
     }
 }
@@ -66,7 +66,7 @@ export interface VizualizerInterface {
      * Intialize is simply applying the configuration params to the vizualizer to prepare it to draw. 
      * @param config User set configuration settings. Generally if none are provided, the Vizualizer should use its own default
      */
-    initialize(config?: VizualizerParamsSchema[]): void;
+    initialize(sketch: p5, seq: SequenceInterface, config?: VizualizerParamsSchema[]): void;
     /**
      * Sets up the p5 canvas.
      */

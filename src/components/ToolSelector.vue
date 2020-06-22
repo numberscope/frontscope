@@ -1,5 +1,5 @@
 <template>
-    <a v-on:click="$emit('set-active-viz', title)">
+    <a v-on:click="$emit('set-viz-params', title)">
         <li class="list-group-item">{{ title }}</li>
     </a>
 </template>
@@ -8,7 +8,7 @@
 <script>
 
 export default {
-    name: 'ToolSelector',
+    name: 'VizSelector',
 
     props: {
         title: String,
@@ -17,6 +17,15 @@ export default {
 </script>
 
 <style scoped>
+a {
+    cursor: pointer;
+}
+
+li:hover {
+    background-color: #809fff;
+    color: #ffffff;
+}
+
 li {
     text-align: left;
     }

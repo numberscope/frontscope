@@ -31,16 +31,7 @@ export default {
 
             const activeTool = this.activeViz;
             const drawing = new p5(function(sketch){
-                    const visualizer = new activeTool.viz(activeSeq, sketch, {
-                        domain: [1,2,3,4,5],
-                        range: [10,20,30,40,50],
-                        stepSize: 20,
-                        strokeWeight: 5,
-                        startingX: 0,
-                        startingY: 0,
-                        bgColor: "#666666",
-                        strokeColor: '#ff0000',
-                    });
+                    const visualizer = new activeTool.viz(activeSeq, sketch);
 
                     sketch.setup = function(){
                         sketch.createCanvas(200, 200);
