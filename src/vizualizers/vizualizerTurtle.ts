@@ -95,13 +95,14 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 		});
 
 		const domain = String(this.settings.domain).split(',');
-		const range = String(this.settings.domain).split(',');
+		const range = String(this.settings.range).split(',');
 		this.domain = domain.map( n => Number(n));
 		this.range = range.map ( n => Number(n));
 
 		for (let i = 0; i < this.domain.length; i++) {
 			this.rotMap[this.domain[i]] = (Math.PI / 180) * this.range[i];
 		}
+        console.log(this.rotMap);
 
 		this.ready = true;
 	}
@@ -119,12 +120,14 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 		this.X += Number(this.settings.stepSize) * Math.cos(this.orientation);
 		this.Y += Number(this.settings.stepSize) * Math.sin(this.orientation);
 		this.sketch.line(oldX, oldY, this.X, this.Y);
-                return true;
+        return true;
 	}
 
 	setup() {
-		this.X = this.sketch.width / 2;
-		this.Y = this.sketch.height / 2;
+		//this.X = this.sketch.width / 2;
+		this.X = 0;
+		//this.Y = this.sketch.height / 2;
+		this.Y = 0;
         console.log(this.sketch);
 		this.sketch.background(String(this.settings.bgColor));
 		this.sketch.stroke(String(this.settings.strokeColor));
