@@ -1,11 +1,12 @@
 High Priority
 
+- [ ] Standardize params/settings between vizualizers and sequences
 - [ ] Implement error checking/param conditions for seqs and vizs
-- [ ] Fix turtle
 - [ ] Import/Export settings for seq and viz via JSON
 - [ ] "Add New +" sequence button allows adding new sequences to choose from
 
 Done
+- [x] Fix turtle
 - [x] Set up the ability to switch out visualizers
 - [x] Enable the ability to switch out sequences
 - [x] Set up the sequencesParams functionality
