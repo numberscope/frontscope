@@ -24,18 +24,19 @@ class SequenceConstant extends SequenceClassDefault{
         console.log(this.sequenceParams);
     }
 
-    initialize(paramsFromUser?: SequenceParamsSchema[]) {
-        if(paramsFromUser){
-            console.log(paramsFromUser);
-            paramsFromUser.forEach(param => {
-                this.params[param.name] = param.value;
-            });    
-        }
+    initialize(config?: SequenceParamsSchema[]) {
+		config = config !== undefined ? config : this.sequenceParams;
+
+		config.forEach(param => {
+            this.params[param.name] = param.value;
+		});
+
         this.ready = true;
     }
 
     getElement(n: number) {
         this.requested = n;
+        console.log(this.params);
         return Number(this.params.constantValue);
     }
 }

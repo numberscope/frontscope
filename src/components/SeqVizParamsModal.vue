@@ -15,10 +15,12 @@
                     <div v-if="param.type == 'number' || param.type == 'text'" class="form-group">
                         <label v-bind:for="param.name">{{param.displayName}}</label>
                         <input class="form-control" v-bind:id="param.name" v-model="param.value" />
+                        <small v-bind:id="param.name + '-help-text'" class="form-text text-muted">{{param.description}}</small>
                     </div>
                     <div v-if="param.type == 'boolean'" class="form-check">
                         <input type="checkbox" class="form-check-input" :id="param.name" v-model="param.value">
                         <label class="form-check-label" :for="param.name">{{param.displayName}}</label>
+                        <small v-bind:id="param.name + '-help-text'" class="form-text text-muted">{{param.description}}</small>
                     </div>
                 </div>
             </form>

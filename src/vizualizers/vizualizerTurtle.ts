@@ -88,6 +88,9 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
         this.sketch = sketch;
         this.seq = seq;
 
+        console.log(this.sketch);
+        console.log(this.seq);
+
 		config = config !== undefined ? config : this.params;
 
 		config.forEach(param => {
@@ -102,43 +105,32 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 		for (let i = 0; i < this.domain.length; i++) {
 			this.rotMap[this.domain[i]] = (Math.PI / 180) * this.range[i];
 		}
-        console.log(this.rotMap);
 
 		this.ready = true;
 	}
 
-	stepDraw() {
-		const oldX = this.X;
-		const oldY = this.Y;
-		const currElement = this.seq.getElement(this.currentIndex++);
-		const angle = this.rotMap[currElement];
-		if (angle == undefined) {
-			console.log(currElement)
-            return false;
-		}
-		this.orientation = (this.orientation + angle);
-		this.X += Number(this.settings.stepSize) * Math.cos(this.orientation);
-		this.Y += Number(this.settings.stepSize) * Math.sin(this.orientation);
-		this.sketch.line(oldX, oldY, this.X, this.Y);
-        return true;
-	}
-
 	setup() {
-		//this.X = this.sketch.width / 2;
-		this.X = 0;
-		//this.Y = this.sketch.height / 2;
-		this.Y = 0;
-        console.log(this.sketch);
+		this.X = this.sketch.width / 2;
+		this.Y = this.sketch.height / 2;
 		this.sketch.background(String(this.settings.bgColor));
 		this.sketch.stroke(String(this.settings.strokeColor));
 		this.sketch.strokeWeight(Number(this.settings.strokeWidth));
-        this.sketch.noLoop();
+        this.sketch.frameRate(30);
 	}
 	draw() {
-        let stat = true;
-		while(stat) {
-            stat = this.stepDraw();
-        }
+		const currElement = this.seq.getElement(this.currentIndex++);
+		const angle = this.rotMap[currElement];
+
+		if (angle == undefined) this.sketch.noLoop();
+
+        const oldX = this.X;
+        const oldY = this.Y;
+
+        this.orientation = (this.orientation + angle);
+        this.X += Number(this.settings.stepSize) * Math.cos(this.orientation);
+        this.Y += Number(this.settings.stepSize) * Math.sin(this.orientation);
+
+        this.sketch.line(oldX,oldY,this.X,this.Y);
 	}
 }
 
