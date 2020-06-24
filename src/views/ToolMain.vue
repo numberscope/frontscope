@@ -14,6 +14,12 @@
                 />
             </div>
             <div class="col-sm-10">
+                <BundleManager
+                  v-bind:activeViz="activeViz"
+                  v-bind:activeSeq="activeSeq"
+                  v-bind:bundle="seqVizPairs"
+                  v-on:createBundle="bundleSeqVizPair()"
+                />
                 <CanvasArea 
                   v-bind:activeViz="activeViz" 
                   v-bind:activeSeq="activeSeq"
@@ -28,6 +34,7 @@
 import VizualizationMenu from '@/components/VizualizationMenu.vue';
 import SequenceMenu from '@/components/SequenceMenu.vue';
 import CanvasArea from '@/components/CanvasArea.vue';
+import BundleManager from '@/components/BundleManager.vue';
 import VIZUALIZERS from '@/vizualizers/vizualizers';
 import SEQUENCES from '@/sequences/sequences';
 
@@ -37,6 +44,7 @@ export default {
     VizualizationMenu,
     SequenceMenu,
     CanvasArea,
+    BundleManager
   },
   methods: {
     setActiveViz: function(newViz){
@@ -46,6 +54,16 @@ export default {
     },
     setActiveSeq: function(newSeq){
         this.activeSeq = newSeq;
+    },
+    bundleSeqVizPair: function(){
+        const bundle = {
+            seq: this.activeSeq,
+            viz: this.activeViz
+        }
+        this.seqVizPairs.push(bundle);
+        this.activeSeq = {};
+        this.activeViz = {};
+        console.log(this.seqVizPairs);
     }
   },
   data: function(){
@@ -55,9 +73,7 @@ export default {
     // we can use by looking for only modules that have an 
     // export module (ie, aren't utility files)
     for (const vizKey in VIZUALIZERS){
-      console.log(vizKey);
       const theModule = VIZUALIZERS[vizKey]
-      console.log(theModule)
       if(theModule.exportModule){
         vizualizers.push(theModule.exportModule);
       }
@@ -68,10 +84,10 @@ export default {
         sequences.push(theModule.exportModule);
       }
     }
-    console.log(vizualizers);
     const state = {
       vizualizers: vizualizers,
       sequences: sequences,
+      seqVizPairs: [],
       activeViz: {},
       activeSeq: {}
     }

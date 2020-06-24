@@ -1,6 +1,6 @@
 <template>
 
-  <div>
+  <div class="mb-3">
     <h2>Sequences</h2>
     <ul class="list-group">
         <SeqSelector
@@ -13,7 +13,7 @@
     </ul>
     <SeqVizParamsModal 
         v-if="showModal"
-        v-bind:params="liveSequence.paramsSchema"
+        v-bind:params="liveSequence.params"
         v-on:closeModal="closeParamsModal"
         v-on:submitParams="createSeq" >
     </SeqVizParamsModal>

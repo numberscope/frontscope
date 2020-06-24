@@ -1,4 +1,4 @@
-import { SequenceClassDefault } from './sequenceClassDefault';
+import { SequenceInterface } from './sequenceInterface';
 import { SequenceParamsSchema, SequenceExportModule} from './sequenceInterface';
 /**
  *
@@ -6,16 +6,23 @@ import { SequenceParamsSchema, SequenceExportModule} from './sequenceInterface';
  * extends the sequenceClassDefault, by setting params and some custom implementation
  * for the generator and the fillCache function.
  */
-class SequenceNaturals extends SequenceClassDefault{
+class SequenceNaturals implements SequenceInterface{
+    ID: number;
     name = "Natural Numbers";
     description = "A sequence of the natural numbers";
-    paramsSchema: SequenceParamsSchema[] = [new SequenceParamsSchema(
+    params: SequenceParamsSchema[] = [new SequenceParamsSchema(
         'includeZero',
         'boolean',
         'Include Zero',
         false,
         false 
     )];
+    finite: boolean|undefined = false;
+    private ready = false;
+    private settings: { [key: string]: string|number|boolean} = {};
+    private generator: ((n: number) => number);
+    private cache: number[];
+    private newSize = 1;
 
     /**
      *Creates an instance of SequenceGenerator.
@@ -25,32 +32,48 @@ class SequenceNaturals extends SequenceClassDefault{
      * @memberof SequenceGenerator
      */
     constructor (ID: number, finite?: boolean) {
-        super(ID, finite);
-    }
-
-    initialize(paramsFromUser?: SequenceParamsSchema[]) {
-        if(paramsFromUser){
-            paramsFromUser.forEach(param => {
-                this.generatorSettings[param.name] = param.value;
-            });    
-        }
+        this.ID = ID;
+        this.finite = finite;
+        this.cache = [];
         this.generator = function(n: number) {
-            if (this.generatorSettings['includeZero']) return n+1 ;
+            if (this.settings['includeZero']) return n+1 ;
             else return n ;
         }
+    }
+
+    initialize(config?: SequenceParamsSchema[]) {
+		config = config !== undefined ? config : this.params;
+
+		config.forEach(param => {
+            this.settings[param.name] = param.value;
+		});
         this.ready = true;
         this.newSize = 100;
         this.fillCache();
     }
 
+    resizeCache(n: number) {
+        this.newSize = this.cache.length * 2;
+        if (n + 1 > this.newSize) {
+            this.newSize = n + 1;
+        }
+    }
+
     fillCache() {
-        for (let i = this.cache.length; i < this.newSize; i++) {
-            //the generator is given the cache since it would make computation more efficient sometimes
-            //but the generator doesn't necessarily need to take more than one argument.
+        for (let i: number = this.cache.length; i < this.newSize; i++) {
             this.cache[i] = this.generator(i);
         }
-        console.log(this.cache);
     }
+    getElement(n: number){
+        if (this.cache[n] != undefined || this.finite) {
+            return this.cache[n];
+        } else {
+            this.resizeCache(n);
+            this.fillCache();
+            return this.cache[n];
+        }
+    }
+
 }
 
 export const exportModule = new SequenceExportModule(

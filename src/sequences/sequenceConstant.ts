@@ -1,4 +1,4 @@
-import { SequenceClassDefault } from './sequenceClassDefault';
+import { SequenceInterface } from './sequenceInterface';
 import { SequenceParamsSchema, SequenceExportModule} from './sequenceInterface';
 /**
  *
@@ -6,29 +6,33 @@ import { SequenceParamsSchema, SequenceExportModule} from './sequenceInterface';
  * extends the sequenceClassDefault, by setting params and some custom implementation
  * for the generator and the fillCache function.
  */
-class SequenceConstant extends SequenceClassDefault{
+class SequenceConstant implements SequenceInterface{
+    ID: number;
     name = "Constant Sequence";
     description = "A sequence that is constant";
-    paramsSchema: SequenceParamsSchema[] = [new SequenceParamsSchema(
+    params: SequenceParamsSchema[] = [new SequenceParamsSchema(
         'constantValue',
         'number',
         'Constant Value',
         false,
         '0'
     )];
-    private params: { [key: string]: string|number|boolean} = {};
+    private settings: { [key: string]: string|number|boolean} = {};
     private requested = 0;
+    private ready = false;
+    private finite = false;
 
-    constructor (ID: number, finite?: boolean) {
-        super(ID, finite);
-        console.log(this.sequenceParams);
+    constructor(ID: number, finite?: boolean) {
+        this.ID = ID;
+        this.finite = finite || true;
+        this.ready = false;
     }
 
     initialize(config?: SequenceParamsSchema[]) {
-		config = config !== undefined ? config : this.sequenceParams;
+		config = config !== undefined ? config : this.params;
 
 		config.forEach(param => {
-            this.params[param.name] = param.value;
+            this.settings[param.name] = param.value;
 		});
 
         this.ready = true;
@@ -36,8 +40,7 @@ class SequenceConstant extends SequenceClassDefault{
 
     getElement(n: number) {
         this.requested = n;
-        console.log(this.params);
-        return Number(this.params.constantValue);
+        return Number(this.settings.constantValue);
     }
 }
 

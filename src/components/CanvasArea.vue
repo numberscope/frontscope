@@ -1,12 +1,5 @@
 <template>
     <div id="canvas-container">
-        <div v-if="activeSeq.name === undefined" class="alert alert-warning">Select a sequence</div>
-        <div v-if="activeViz.name === undefined" class="alert alert-warning">Select a vizualizer</div>
-        <div v-if="activeViz.name !== undefined || activeSeq.name !== undefined" class="alert alert-primary">
-            <div v-if="activeSeq.name !== undefined">Active sequence: {{activeSeq.name}}</div>
-            <div v-if="activeViz.name !== undefined">Active vizualizer: {{activeViz.name}}</div>
-        </div>
-        <button v-if="readyToDraw" type="button" class="btn btn-warning" v-on:click="draw">Draw</button>
         <div id="p5-goes-here"></div>
     </div>
 </template>
@@ -51,11 +44,6 @@ export default {
             drawing.draw();
         }
     },
-    computed: {
-        readyToDraw: function() {
-            return this.activeSeq.name !== undefined && this.activeViz.name !== undefined;
-        }
-    }
 }
 </script>
 

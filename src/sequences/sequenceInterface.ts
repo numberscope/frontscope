@@ -41,7 +41,7 @@ export interface SequenceInterface {
     ID: number;
     name: string;
     description: string;
-    sequenceParams: SequenceParamsSchema[];
+    params: SequenceParamsSchema[];
 
     /**
      * Initialize is called after params are set. It allows us to wait until all the settings

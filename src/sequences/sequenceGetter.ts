@@ -12,9 +12,9 @@ export class SequenceGetter implements SequenceInterface{
     finite: boolean;
     name = 'Getter';
     description = '';
-    sequenceParams: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', '', false, '')];
-    generatorSettings: GeneratorSettings = {};
-    ready: boolean;
+    params: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', '', false, '')];
+    private settings: GeneratorSettings = {};
+    private ready: boolean;
 
     /**
      * constructor
@@ -36,12 +36,13 @@ export class SequenceGetter implements SequenceInterface{
      * Once this is completed, the sequence has enough information to begin generating sequence members.
      * @param paramsFromUser user settings for the sequence passed from the UI
      */
-    initialize(paramsFromUser?: SequenceParamsSchema[]) {
-        if(paramsFromUser){
-            paramsFromUser.forEach(param => {
-                this.generatorSettings[param.name] = param.value;
-            });
-        }
+    initialize(config?: SequenceParamsSchema[]) {
+		config = config !== undefined ? config : this.params;
+
+		config.forEach(param => {
+            this.settings[param.name] = param.value;
+		});
+
         axios.get('http://localhost:5000/seqnaturals')
             .then( resp => {
                 console.log(resp)

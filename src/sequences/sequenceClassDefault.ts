@@ -1,4 +1,4 @@
-import { SequenceParamsSchema, GeneratorSettings, SequenceInterface } from './sequenceInterface'
+import { SequenceParamsSchema, SequenceInterface } from './sequenceInterface'
 /**
  *
  * @class SequenceClassDefault
@@ -6,29 +6,19 @@ import { SequenceParamsSchema, GeneratorSettings, SequenceInterface } from './se
  * Can be used as a base class for your own sequences.
  * 
  */
-export class SequenceClassDefault implements SequenceInterface{
+export class SequenceClassDefault implements SequenceInterface {
     ID: number;
     cache: number[];
-    newSize: number;
     finite: boolean;
     name = 'Base';
-    description = '';
-    sequenceParams: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', 'displayName', false, '0')];
-    generatorSettings: GeneratorSettings = {};
+    description = 'A Base sequence class';
+    params: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', 'displayName', false, '0')];
+    private settings: { [key: string]: string|number|boolean} = {};
     ready: boolean;
-    generator: (() => number) | ((n: number) => number) = () => 0;
 
-    /**
-     *Creates an instance of SequenceGenerator.
-     * @param {*} generator a function that takes a natural number and returns a number, it can optionally take the cache as a second argument
-     * @param {*} ID the ID of the sequence
-     * @param {boolean} finite specifies if the sequence is finite or not. Defaults to true is not given.
-     * @memberof SequenceGenerator
-     */
     constructor(ID: number, finite?: boolean) {
         this.ID = ID;
         this.cache = [];
-        this.newSize = 1;
         this.finite = finite || true;
         this.ready = false;
     }
@@ -39,37 +29,20 @@ export class SequenceClassDefault implements SequenceInterface{
      * Once this is completed, the sequence has enough information to begin generating sequence members.
      * @param paramsFromUser user settings for the sequence passed from the UI
      */
-    initialize(paramsFromUser: SequenceParamsSchema[]) {
-        paramsFromUser.forEach(param => {
-            this.generatorSettings[param.name] = param.value;
-        });
-        this.generator = function() {return 0};
+    initialize(config: SequenceParamsSchema[]) {
+		config = config !== undefined ? config : this.params;
+
+		config.forEach(param => {
+            this.settings[param.name] = param.value;
+		});
+
         this.ready = true;
     }
             
-    resizeCache(n: number) {
-        this.newSize = this.cache.length * 2;
-        if (n + 1 > this.newSize) {
-            this.newSize = n + 1;
-        }
-    }
-
-    fillCache() {
-        for (let i: number = this.cache.length; i < this.newSize; i++) {
-            this.cache[i] = this.generator(i);
-        }
-    }
     /** 
      * getElement is how sequences provide their callers with elements.
      */
     getElement(n: number) {
-
-        if (this.cache[n] != undefined || this.finite) {
-            return this.cache[n];
-        } else {
-            this.resizeCache(n);
-            this.fillCache();
-            return this.cache[n];
-        }
+        return n * 0;
     }
 }
