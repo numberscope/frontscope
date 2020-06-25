@@ -1,4 +1,5 @@
 import { SequenceParamsSchema, SequenceInterface } from './sequenceInterface'
+import { ValidationStatus } from '@/shared/validationStatus';
 /**
  *
  * @class SequenceClassDefault
@@ -13,14 +14,17 @@ export class SequenceClassDefault implements SequenceInterface {
     name = 'Base';
     description = 'A Base sequence class';
     params: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', 'displayName', false, '0')];
-    private settings: { [key: string]: string|number|boolean} = {};
     ready: boolean;
+
+    private settings: { [key: string]: string|number|boolean} = {};
+    private valid: boolean;
 
     constructor(ID: number, finite?: boolean) {
         this.ID = ID;
         this.cache = [];
         this.finite = finite || true;
         this.ready = false;
+        this.valid = false;
     }
 
     /**
@@ -29,20 +33,33 @@ export class SequenceClassDefault implements SequenceInterface {
      * Once this is completed, the sequence has enough information to begin generating sequence members.
      * @param paramsFromUser user settings for the sequence passed from the UI
      */
-    initialize(config: SequenceParamsSchema[]) {
-		config = config !== undefined ? config : this.params;
-
-		config.forEach(param => {
-            this.settings[param.name] = param.value;
-		});
-
-        this.ready = true;
+    initialize(){
+        if(this.valid) {
+            this.ready = true;
+            return
+        } else {
+            throw "Sequence is not valid. Run validate() and address any errors."
+        }
     }
             
     /** 
      * getElement is how sequences provide their callers with elements.
+     * @param n the sequence number to get
      */
     getElement(n: number) {
         return n * 0;
+    }
+
+    validate() {
+		this.params.forEach(param => {
+            this.settings[param.name] = param.value;
+		});
+
+        if(this.settings['name'] !== undefined) {
+            this.valid = true;
+            return new ValidationStatus(true);
+        }
+        
+        return new ValidationStatus(true, ["name param is undefined."]);
     }
 }

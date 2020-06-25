@@ -1,4 +1,5 @@
-import { SequenceParamsSchema, GeneratorSettings, SequenceInterface } from './sequenceInterface'
+import { SequenceParamsSchema, SequenceInterface } from './sequenceInterface'
+import { ValidationStatus } from '@/shared/validationStatus';
 import axios from 'axios'
 /**
  *
@@ -13,8 +14,9 @@ export class SequenceGetter implements SequenceInterface{
     name = 'Getter';
     description = '';
     params: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', '', false, '')];
-    private settings: GeneratorSettings = {};
+    private settings: {[key: string]: number | string | boolean } = {};
     private ready: boolean;
+    private isValid = false;
 
     /**
      * constructor
@@ -36,20 +38,31 @@ export class SequenceGetter implements SequenceInterface{
      * Once this is completed, the sequence has enough information to begin generating sequence members.
      * @param paramsFromUser user settings for the sequence passed from the UI
      */
-    initialize(config?: SequenceParamsSchema[]) {
-		config = config !== undefined ? config : this.params;
+    initialize(){
+        if(this.isValid){
+            axios.get('http://localhost:5000/seqnaturals')
+                .then( resp => {
+                    console.log(resp)
+                    //self.cache = resp;
+                    this.ready = true;
+                    return;
+                });
+        } else {
+            throw "Sequence is not valid. Run validate and resolve any errors."
+        }
 
-		config.forEach(param => {
+    }
+
+    validate() {
+		this.params.forEach(param => {
             this.settings[param.name] = param.value;
 		});
 
-        axios.get('http://localhost:5000/seqnaturals')
-            .then( resp => {
-                console.log(resp)
-                //self.cache = resp;
-                this.ready = true;
-                return;
-            });
+        if(this.settings['name'] !== undefined) {
+            return new ValidationStatus(true);
+        } else {
+            return new ValidationStatus(false, ["name paramter is missing"]);
+        }
     }
     /** 
      * getElement is how sequences provide their callers with elements.

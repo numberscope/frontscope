@@ -14,6 +14,7 @@
     <SeqVizParamsModal 
         v-if="showModal"
         v-bind:params="liveSequence.params"
+        v-bind:errors="errors"
         v-on:closeModal="closeParamsModal"
         v-on:submitParams="createSeq" >
     </SeqVizParamsModal>
@@ -23,7 +24,6 @@
 <script>
 import SeqSelector from '@/components/SeqSelector.vue'
 import SeqVizParamsModal from '@/components/SeqVizParamsModal.vue'
-//import VizualizationSettingsPane from '@/components/SequenceSettingsPane.vue'
 
 export default {
   name: 'SequenceMenu',
@@ -48,14 +48,21 @@ export default {
               this.openParamsModal();  
     },
     createSeq: function() {
-      this.closeParamsModal();
-      this.$emit("createSeq", this.liveSequence);
+        const validationResult = this.liveSequence.validate();
+        if(validationResult.isValid){
+          this.errors = [];
+          this.closeParamsModal();
+          this.$emit("createSeq", this.liveSequence);
+        } else {
+          this.errors = validationResult.errors;
+        }
     }
   },
   data: function(){
       return {
         showModal: false,
-        liveSequence: { paramsSchema: []}
+        liveSequence: { paramsSchema: []},
+        errors: []
       }
   }
 }

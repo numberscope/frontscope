@@ -1,5 +1,5 @@
-import { SequenceInterface } from './sequenceInterface';
-import { SequenceParamsSchema, SequenceExportModule} from './sequenceInterface';
+import { SequenceParamsSchema, SequenceExportModule, SequenceInterface } from './sequenceInterface';
+import {ValidationStatus} from '@/shared/validationStatus';
 /**
  *
  * @class SequenceClassNaturals
@@ -15,7 +15,7 @@ class SequenceNaturals implements SequenceInterface{
         'boolean',
         'Include Zero',
         false,
-        false 
+        false
     )];
     finite: boolean|undefined = false;
     private ready = false;
@@ -23,6 +23,7 @@ class SequenceNaturals implements SequenceInterface{
     private generator: ((n: number) => number);
     private cache: number[];
     private newSize = 1;
+    private isValid = false;
 
     /**
      *Creates an instance of SequenceGenerator.
@@ -41,15 +42,29 @@ class SequenceNaturals implements SequenceInterface{
         }
     }
 
-    initialize(config?: SequenceParamsSchema[]) {
-		config = config !== undefined ? config : this.params;
+    initialize() {
+        if(this.isValid){
+            this.newSize = 100;
+            this.fillCache();
+            this.ready = true;
+            return;
+        }
 
-		config.forEach(param => {
+        throw "Sequence is not valid. Run validate and address any errors."
+    }
+
+    validate(){
+		this.params.forEach(param => {
             this.settings[param.name] = param.value;
 		});
-        this.ready = true;
-        this.newSize = 100;
-        this.fillCache();
+
+        if(this.settings['includeZero'] !== undefined) {
+            this.isValid = true;
+            return new ValidationStatus(true);
+        } else {
+            return new ValidationStatus(false, ["includeZero  param is missing"]);
+        }
+        
     }
 
     resizeCache(n: number) {

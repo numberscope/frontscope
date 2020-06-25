@@ -17,7 +17,7 @@
                 <BundleManager
                   v-bind:activeViz="activeViz"
                   v-bind:activeSeq="activeSeq"
-                  v-bind:bundle="seqVizPairs"
+                  v-bind:bundles="seqVizPairs"
                   v-on:createBundle="bundleSeqVizPair()"
                 />
                 <CanvasArea 
@@ -48,8 +48,6 @@ export default {
   },
   methods: {
     setActiveViz: function(newViz){
-    console.log("set active viz");
-    console.log(newViz);
       this.activeViz = newViz
     },
     setActiveSeq: function(newSeq){

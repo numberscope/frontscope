@@ -11,6 +11,13 @@
         </div>
         <div class="modal-body">
             <form>
+                <div v-if="errors.length > 0" class="text-danger">
+                <h4>Validation Errors</h4>
+                <p>Please fix the following errors and try submitting again.</p>
+                    <ul>
+                        <li v-for="error in errors" v-bind:key="error">{{error}}</li>
+                    </ul>
+                </div>
                 <div v-for="param in params" v-bind:key="param.name">
                     <div v-if="param.type == 'number' || param.type == 'text'" class="form-group">
                         <label v-bind:for="param.name">{{param.displayName}}</label>
@@ -40,7 +47,8 @@ export default {
     methods: {
     },
     props: {
-        params: Array
+        params: Array,
+        errors: Array
     }
 }
 </script>
@@ -54,5 +62,10 @@ export default {
         position: absolute;
         background: rgba(0,0,0,0.5);
         z-index: -1;
+    }
+
+    .modal-content {
+        max-height: 90vh;
+        overflow: scroll;
     }
 </style>

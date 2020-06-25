@@ -14,19 +14,25 @@
     </div>
     <button v-if="readyToBundle" class="btn btn-primary" v-on:click="$emit('createBundle')">Create Bundle</button>
     <div class="row">
-    <div class="col-sm-3">
     <!-- This is not working -->
-    <ul>
-        <li v-for="bundle in bundles" v-bind:title="bundle.seq.name" v-bind:key="bundle.seq.ID">bundle.seq.name</li>
-    </ul>
-    </div>
+    <BundleCard
+        v-for="bundle in bundles"
+        v-bind:key="bundle.seq.name"
+        v-bind:seq="bundle.seq"
+        v-bind:viz="bundle.viz"
+    />
     </div>
         <!--<button v-if="readyToDraw" type="button" class="btn btn-warning" v-on:click="draw">Draw</button>-->
     </div>
 </template>
 
 <script>
+import BundleCard from '@/components/bundleCard';
+
 export default {
+    components: {
+        BundleCard
+    },
     props: {
         activeSeq: Object,
         activeViz: Object,

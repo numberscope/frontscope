@@ -1,4 +1,5 @@
 import { SequenceInterface } from '@/sequences/sequenceInterface';
+import { ValidationStatus } from '@/shared/validationStatus';
 import p5 from 'p5';
 
 export class VizualizerExportModule {
@@ -39,7 +40,7 @@ export class VizualizerParamsSchema {
 }
 
 export interface VizualizerSettings {
-	[paramName: string]: string | number | boolean;
+	[key: string]: string | number | boolean;
 }
 
 export interface VizualizerInterface {
@@ -67,6 +68,10 @@ export interface VizualizerInterface {
      * @param config User set configuration settings. Generally if none are provided, the Vizualizer should use its own default
      */
     initialize(sketch: p5, seq: SequenceInterface, config?: VizualizerParamsSchema[]): void;
+    /**
+     * Validates the cinfiguration
+     */
+    validate(): ValidationStatus;
     /**
      * Sets up the p5 canvas.
      */

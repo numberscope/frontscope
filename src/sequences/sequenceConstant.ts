@@ -1,5 +1,5 @@
-import { SequenceInterface } from './sequenceInterface';
-import { SequenceParamsSchema, SequenceExportModule} from './sequenceInterface';
+import { ValidationStatus } from '@/shared/validationStatus';
+import { SequenceInterface, SequenceParamsSchema, SequenceExportModule } from './sequenceInterface';
 /**
  *
  * @class SequenceConstant
@@ -21,6 +21,7 @@ class SequenceConstant implements SequenceInterface{
     private requested = 0;
     private ready = false;
     private finite = false;
+    private isValid = false;
 
     constructor(ID: number, finite?: boolean) {
         this.ID = ID;
@@ -28,14 +29,25 @@ class SequenceConstant implements SequenceInterface{
         this.ready = false;
     }
 
-    initialize(config?: SequenceParamsSchema[]) {
-		config = config !== undefined ? config : this.params;
+    initialize(){
+        if(this.isValid){
+            this.ready = true;
+            return;
+        } else {
+            throw "Sequence is not valid. Run validate() and address any errors."
+        }
+    }
 
-		config.forEach(param => {
+    validate(): ValidationStatus{
+		this.params.forEach(param => {
             this.settings[param.name] = param.value;
 		});
 
-        this.ready = true;
+        if(this.settings['constantValue'] !== undefined) {
+            return new ValidationStatus(true);
+        } else {
+            return new ValidationStatus(false, ["No constant value was provided."]);
+        }
     }
 
     getElement(n: number) {

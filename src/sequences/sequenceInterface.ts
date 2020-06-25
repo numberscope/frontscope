@@ -1,3 +1,5 @@
+import {ValidationStatus} from '@/shared/validationStatus';
+
 export class SequenceParamsSchema {
     name: string;
     type: string;
@@ -21,15 +23,10 @@ export class SequenceParamsSchema {
 }
 
 
-export class SequenceError {
-    constructor(public errorText: string) {
-        this.errorText = errorText;
-    }
-}
-
 export interface GeneratorSettings {
     [paramName: string]: string | number | boolean;
 }
+
 
 /**
  * Interface for Sequence classes.
@@ -50,7 +47,7 @@ export interface SequenceInterface {
      * generator settings from sequenceParams.
      * @param {SequenceParamsSchema} params the parameters schema settings selected by the user
      */
-    initialize(params: SequenceParamsSchema[]): void;
+    initialize(): void;
 
     /**
      * Get element is what the drawing tools will be calling, it retrieves
@@ -61,6 +58,8 @@ export interface SequenceInterface {
      * @memberof SequenceGenerator
      */
     getElement(n: number): number;
+
+    validate(): ValidationStatus;
 }
 
 export class SequenceExportModule{

@@ -13,6 +13,7 @@
     <SeqVizParamsModal
         v-if="showModal"
         v-bind:params="liveVizualizer.params"
+        v-bind:errors="errors"
         v-on:closeModal="closeParamsModal"
         v-on:submitParams="createViz" >
     </SeqVizParamsModal>
@@ -46,14 +47,22 @@ export default {
               this.openParamsModal();  
     },
     createViz: function() {
-      this.closeParamsModal();
-      this.$emit("createViz", this.liveVizualizer);
+      const validationResult = this.liveVizualizer.validate();
+      if(validationResult.isValid) {
+          this.errors = [];
+          this.closeParamsModal();
+          this.$emit("createViz", this.liveVizualizer);
+      } else {
+        this.errors = validationResult.errors;
+      }
+
     }
   },
   data: function(){
     return {
         showModal: false,
-        liveVizualizer: { paramsSchema: []}
+        liveVizualizer: { paramsSchema: []},
+        errors: []
     } 
   }
 }

@@ -1,6 +1,7 @@
 import p5 from 'p5';
 import { VizualizerDefault } from './vizualizerDefault';
 import { VizualizerInterface, VizualizerParamsSchema, VizualizerExportModule } from './vizualizerInterface';
+import { ValidationStatus } from '@/shared/validationStatus';
 import { SequenceInterface } from '@/sequences/sequenceInterface';
 
 const schemaTurtle = [
@@ -84,23 +85,14 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 		this.params = schemaTurtle;
 	}
 
-	initialize(sketch: p5, seq: SequenceInterface, config?: VizualizerParamsSchema[]){
+	initialize(sketch: p5, seq: SequenceInterface){
         this.sketch = sketch;
         this.seq = seq;
 
         console.log(this.sketch);
         console.log(this.seq);
 
-		config = config !== undefined ? config : this.params;
 
-		config.forEach(param => {
-			this.settings[param.name] = param.value;
-		});
-
-		const domain = String(this.settings.domain).split(',');
-		const range = String(this.settings.range).split(',');
-		this.domain = domain.map( n => Number(n));
-		this.range = range.map ( n => Number(n));
 
 		for (let i = 0; i < this.domain.length; i++) {
 			this.rotMap[this.domain[i]] = (Math.PI / 180) * this.range[i];
@@ -108,6 +100,27 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 
 		this.ready = true;
 	}
+
+    validate() {
+		this.params.forEach(param => {
+			this.settings[param.name] = param.value;
+		});
+
+		const domain = String(this.settings.domain).split(',');
+		const range = String(this.settings.range).split(',');
+		this.domain = domain.map( n => Number(n));
+		this.range = range.map ( n => Number(n));
+        
+        const status = new ValidationStatus(true);
+        if(this.domain.length != this.range.length){
+            status.isValid = false
+            status.errors.push("Domain and range must have the same number of entries");
+        }
+
+        return status;
+
+
+    }
 
 	setup() {
 		this.X = this.sketch.width / 2;
