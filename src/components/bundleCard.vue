@@ -31,6 +31,9 @@ export default {
 
             sketch.draw = function(){
                 viz.draw();
+                if(sketch.frameCount >= 50){
+                    sketch.noLoop();
+                }
             }
 
         }, this.uid);
