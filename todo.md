@@ -1,6 +1,5 @@
 High Priority
 
-- [ ] Generate thumbnails
 - [ ] Consider removing settings from the interface
 - [ ] Consider providing a defaultViz function for assigning params to settings
 - [ ] Enable blow-up of the canvas
@@ -9,6 +8,7 @@ High Priority
 - [ ] "Add New +" sequence button allows adding new sequences to choose from
 
 Done
+- [x] Generate thumbnails
 - [x] Implement error checking/param conditions for seqs and vizs
 - [x] Implement seq/viz bundles and storing configurations
 - [x] Standardize params/settings between vizualizers and sequences
