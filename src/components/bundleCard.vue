@@ -36,6 +36,7 @@ export default {
         }, this.uid);
         thumb.setup();
         thumb.draw();
+        setTimeout(function(){thumb.noLoop()}, 1000)
     },
     methods : { },
     props: {
