@@ -12,6 +12,10 @@ export class VizualizerDefault implements VizualizerInterface{
     seq: SequenceInterface = new SequenceClassDefault(0, false);
     private isValid = false;
 
+    /***
+      Sets the sketch and the sequence to draw with
+      This is also where you would generate any settings or draw functions if needed
+      */
 	initialize(sketch: p5, seq: SequenceInterface) {
         if(this.isValid){
             this.sketch = sketch;
@@ -23,6 +27,11 @@ export class VizualizerDefault implements VizualizerInterface{
         }
     }
 
+    /**
+      This checks that the params provided are within the bounds you need.
+      Simply assign params to settings (using the provided function) and validate them
+      Returns a ValidationStatus object (see VizualizerInterface.ts for details)
+      */
     validate() {
 		this.params.forEach(param => {
 			this.settings[param.name] = param.value;

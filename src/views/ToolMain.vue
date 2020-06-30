@@ -38,6 +38,7 @@ import BundleManager from '@/components/BundleManager.vue';
 import VIZUALIZERS from '@/vizualizers/vizualizers';
 import SEQUENCES from '@/sequences/sequences';
 
+
 export default {
   name: 'ToolMain',
   components: {

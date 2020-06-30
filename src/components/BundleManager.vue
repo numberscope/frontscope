@@ -14,10 +14,9 @@
     </div>
     <button v-if="readyToBundle" class="btn btn-primary" v-on:click="$emit('createBundle')">Create Bundle</button>
     <div class="row">
-    <!-- This is not working -->
     <BundleCard
         v-for="bundle in bundles"
-        v-bind:key="bundle.seq.name"
+        v-bind:key="bundle.uid"
         v-bind:seq="bundle.seq"
         v-bind:viz="bundle.viz"
     />

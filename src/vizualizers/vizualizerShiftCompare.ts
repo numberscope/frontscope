@@ -1,5 +1,4 @@
 import p5 from "p5";
-import { SequenceInterface } from '@/sequences/sequenceInterface';
 import { VizualizerDefault } from './vizualizerDefault';
 import { VizualizerInterface, VizualizerExportModule } from './vizualizerInterface';
 
@@ -8,7 +7,7 @@ class VizShiftCompare extends VizualizerDefault implements VizualizerInterface {
 	MOD= 2;
 	img: p5.Image;
 
-	constructor(sketch: p5, seq: SequenceInterface) {
+	constructor() {
 		super();
 		this.img = this.sketch.createImage(this.sketch.width, this.sketch.height);
 		this.img.loadPixels(); // Enables pixel-level editing.

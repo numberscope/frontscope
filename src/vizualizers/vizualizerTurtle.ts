@@ -72,13 +72,13 @@ const schemaTurtle = [
 class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface {
 
     name = "Turtle";
-	rotMap: {[key: number]: number} = {};
-	domain: number[] = [];
-	range: number[] = [];
-	currentIndex = 0;
-	orientation = 0;
-	X = 0;
-	Y = 0;
+	private rotMap: {[key: number]: number} = {};
+	private domain: number[] = [];
+	private range: number[] = [];
+	private currentIndex = 0;
+	private orientation = 0;
+	private X = 0;
+	private Y = 0;
 
 	constructor() {
         super();
@@ -89,11 +89,7 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
         this.sketch = sketch;
         this.seq = seq;
 
-        console.log(this.sketch);
-        console.log(this.seq);
-
-
-
+        console.log('initializing turtle');
 		for (let i = 0; i < this.domain.length; i++) {
 			this.rotMap[this.domain[i]] = (Math.PI / 180) * this.range[i];
 		}
@@ -118,8 +114,6 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
         }
 
         return status;
-
-
     }
 
 	setup() {
@@ -130,6 +124,7 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 		this.sketch.strokeWeight(Number(this.settings.strokeWidth));
         this.sketch.frameRate(30);
 	}
+
 	draw() {
 		const currElement = this.seq.getElement(this.currentIndex++);
 		const angle = this.rotMap[currElement];
