@@ -1,11 +1,11 @@
 High Priority
 
-- [ ] Enable blow-up of the canvas
-- [ ] Fix mod fill and shift compare vizualizers
 - [ ] Import/Export settings for seq and viz via JSON
 - [ ] "Add New +" sequence button allows adding new sequences to choose from
 
 Done
+- [x] Enable blow-up of the canvas
+- [x] Fix mod fill and shift compare vizualizers
 - [x] Consider providing a defaultViz function for assigning params to settings
 - [x] Consider removing settings from the interface
 - [x] Generate thumbnails
