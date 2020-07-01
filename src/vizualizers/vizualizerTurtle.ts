@@ -98,9 +98,7 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 	}
 
     validate() {
-		this.params.forEach(param => {
-			this.settings[param.name] = param.value;
-		});
+		this.assignParams();
 
 		const domain = String(this.settings.domain).split(',');
 		const range = String(this.settings.range).split(',');
@@ -112,7 +110,7 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
             status.isValid = false
             status.errors.push("Domain and range must have the same number of entries");
         }
-
+		this.isValid = true;
         return status;
     }
 
