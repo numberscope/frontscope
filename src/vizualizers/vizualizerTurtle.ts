@@ -87,7 +87,12 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 
 	initialize(sketch: p5, seq: SequenceInterface){
         this.sketch = sketch;
-        this.seq = seq;
+		this.seq = seq;
+		
+		this.currentIndex = 0;
+		this.orientation = 0;
+		this.X = 0;
+		this.Y = 0;
 
         console.log('initializing turtle');
 		for (let i = 0; i < this.domain.length; i++) {
