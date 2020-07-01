@@ -51,11 +51,6 @@ export interface VizualizerInterface {
      */
     params: VizualizerParamsSchema[];
     /**
-     * The applied params. Mostly exists to simplify calling params, since we can 
-     * assign the param name to the settings key.
-     */
-	settings: VizualizerSettings;
-    /**
      * A sequence instance that fulfills the sequence interface.
      */
     seq: SequenceInterface;
