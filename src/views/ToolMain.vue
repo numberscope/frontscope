@@ -5,6 +5,7 @@
                 <CanvasArea 
                   v-bind:activeViz="activeViz" 
                   v-bind:activeSeq="activeSeq"
+                  v-on:closeCanvas="closeCanvas()"
                 />
             </div>
         </div>
@@ -65,14 +66,21 @@ export default {
             viz: this.activeViz
         }
         this.seqVizPairs.push(bundle);
-        this.activeSeq = {};
-        this.activeViz = {};
+        this.clearActive();
     },
     drawBundle: function(seqVizBundle){
       console.log(seqVizBundle)
       this.activeSeq = seqVizBundle.seq;
       this.activeViz = seqVizBundle.viz;
       this.drawingActive = true;
+    },
+    closeCanvas: function() {
+      this.clearActive();
+      this.drawingActive = false;
+    },
+    clearActive: function() {
+      this.activeViz = {};
+      this.activeSeq = {};
     }
   },
   data: function(){

@@ -1,6 +1,15 @@
 <template>
-    <div id="canvas-container">
-        <div id="p5-goes-here"></div>
+    <div id="canvas-container" class="row">
+        <div class="col-sm-2">
+            <div class="list-group">
+                <a href="#" v-on:click="$emit('closeCanvas')" aria-label="Back" class="list-group-item list-group-item-action">
+                    &#8249; Back
+                </a>
+            </div>
+        </div>
+        <div class="col-sm-10">
+            <div id="p5-goes-here"></div>
+        </div>
     </div>
 </template>
 
@@ -46,5 +55,9 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.back-btn {
+    cursor: pointer;
+}
+
 </style>
