@@ -2,9 +2,11 @@ import {SequenceInterface} from "@/sequences/sequenceInterface";
 import {VizualizerDefault} from "@/vizualizers/vizualizerDefault";
 import {VizualizerInterface, VizualizerParamsSchema, VizualizerSettings, VizualizerExportModule} from "@/vizualizers/vizualizerInterface";
 import p5 from 'p5';
+import { ValidationStatus } from '@/shared/validationStatus';
 //An example module
 
 class VizModFill extends VizualizerDefault implements VizualizerInterface {
+	name = "Mod Fill";
 	settings: VizualizerSettings = {};
 	rectWidth = 0;
 	rectHeight = 0;
@@ -24,16 +26,20 @@ class VizModFill extends VizualizerDefault implements VizualizerInterface {
 		this.i = 0;
 	}
 
-	initialize(sketch: p5, seq: SequenceInterface, config?: VizualizerParamsSchema[]) {
+	initialize(sketch: p5, seq: SequenceInterface){
 		this.sketch = sketch;
 		this.seq = seq;
-		config = config !== undefined ? config : this.params;
 
-		config.forEach(param => {
-			this.settings[param.name] = param.value;
-		});
 
 		this.ready = true;
+	}
+
+	validate(){
+		this.assignParams();
+		if(this.settings.modDimension > 0) return new ValidationStatus(true);
+		else if(this.settings.modDimension <= 0) return new ValidationStatus(false, ["Mod dimension must be positive"]);
+		else return new ValidationStatus(false, ["Please set a mod dimension"]);
+
 	}
 
 	drawNew(num: number, seq: SequenceInterface) {

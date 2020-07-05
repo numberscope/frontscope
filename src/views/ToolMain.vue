@@ -1,6 +1,15 @@
 <template>
     <div class="container-fluid">
-        <div class="row">
+        <div class="row" v-if="drawingActive" >
+          <div class="col-sm-12">
+                <CanvasArea 
+                  v-bind:activeViz="activeViz" 
+                  v-bind:activeSeq="activeSeq"
+                  v-on:closeCanvas="closeCanvas()"
+                />
+            </div>
+        </div>
+        <div class="row" v-if="!drawingActive">
             <div class="col-sm-2">
                 <SequenceMenu
                   v-bind:sequences="sequences"
@@ -19,10 +28,7 @@
                   v-bind:activeSeq="activeSeq"
                   v-bind:bundles="seqVizPairs"
                   v-on:createBundle="bundleSeqVizPair()"
-                />
-                <CanvasArea 
-                  v-bind:activeViz="activeViz" 
-                  v-bind:activeSeq="activeSeq"
+                  v-on:drawBundle="drawBundle($event)"
                 />
             </div>
         </div>
@@ -60,9 +66,21 @@ export default {
             viz: this.activeViz
         }
         this.seqVizPairs.push(bundle);
-        this.activeSeq = {};
-        this.activeViz = {};
-        console.log(this.seqVizPairs);
+        this.clearActive();
+    },
+    drawBundle: function(seqVizBundle){
+      console.log(seqVizBundle)
+      this.activeSeq = seqVizBundle.seq;
+      this.activeViz = seqVizBundle.viz;
+      this.drawingActive = true;
+    },
+    closeCanvas: function() {
+      this.clearActive();
+      this.drawingActive = false;
+    },
+    clearActive: function() {
+      this.activeViz = {};
+      this.activeSeq = {};
     }
   },
   data: function(){
@@ -88,7 +106,8 @@ export default {
       sequences: sequences,
       seqVizPairs: [],
       activeViz: {},
-      activeSeq: {}
+      activeSeq: {},
+      drawingActive: false
     }
     return state
   }

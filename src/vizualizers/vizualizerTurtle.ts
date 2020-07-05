@@ -87,7 +87,12 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 
 	initialize(sketch: p5, seq: SequenceInterface){
         this.sketch = sketch;
-        this.seq = seq;
+		this.seq = seq;
+		
+		this.currentIndex = 0;
+		this.orientation = 0;
+		this.X = 0;
+		this.Y = 0;
 
         console.log('initializing turtle');
 		for (let i = 0; i < this.domain.length; i++) {
@@ -98,9 +103,7 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 	}
 
     validate() {
-		this.params.forEach(param => {
-			this.settings[param.name] = param.value;
-		});
+		this.assignParams();
 
 		const domain = String(this.settings.domain).split(',');
 		const range = String(this.settings.range).split(',');
@@ -112,7 +115,7 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
             status.isValid = false
             status.errors.push("Domain and range must have the same number of entries");
         }
-
+		this.isValid = true;
         return status;
     }
 

@@ -44,17 +44,13 @@ export interface VizualizerSettings {
 }
 
 export interface VizualizerInterface {
+    isValid: boolean;
     /**
      * The parameters for the vizualizer to initialize.
      * In addition to providing the information in the schema, 
      * these will be used as default params in the event the user does not specify any.
      */
     params: VizualizerParamsSchema[];
-    /**
-     * The applied params. Mostly exists to simplify calling params, since we can 
-     * assign the param name to the settings key.
-     */
-	settings: VizualizerSettings;
     /**
      * A sequence instance that fulfills the sequence interface.
      */
@@ -67,7 +63,7 @@ export interface VizualizerInterface {
      * Intialize is simply applying the configuration params to the vizualizer to prepare it to draw. 
      * @param config User set configuration settings. Generally if none are provided, the Vizualizer should use its own default
      */
-    initialize(sketch: p5, seq: SequenceInterface, config?: VizualizerParamsSchema[]): void;
+    initialize(sketch: p5, seq: SequenceInterface): void;
     /**
      * Validates the cinfiguration
      */

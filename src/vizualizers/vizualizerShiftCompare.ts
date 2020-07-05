@@ -1,16 +1,38 @@
 import p5 from "p5";
 import { VizualizerDefault } from './vizualizerDefault';
-import { VizualizerInterface, VizualizerExportModule } from './vizualizerInterface';
+import { VizualizerInterface, VizualizerExportModule, VizualizerParamsSchema } from './vizualizerInterface';
+import { ValidationStatus } from '@/shared/validationStatus';
+import { SequenceInterface } from '@/sequences/sequenceInterface';
 
 class VizShiftCompare extends VizualizerDefault implements VizualizerInterface {
-    Name = "Shift Compare";
-	MOD= 2;
-	img: p5.Image;
+    name = "Shift Compare";
+	private img: p5.Image;
+	params = [new VizualizerParamsSchema(
+		"mod",
+		"number",
+		"Mod factor",
+		true,
+		2,
+		"The shift that will be applied"
+	)];
 
-	constructor() {
+	constructor(){
 		super();
+
 		this.img = this.sketch.createImage(this.sketch.width, this.sketch.height);
 		this.img.loadPixels(); // Enables pixel-level editing.
+	}
+
+	initialize(sketch: p5, seq: SequenceInterface){
+		this.sketch = sketch;
+		this.seq = seq;
+
+	}
+
+	validate() {
+		this.assignParams();
+		this.isValid = true;
+		return new ValidationStatus(true);
 	}
 
 	setup() {
@@ -30,18 +52,19 @@ class VizShiftCompare extends VizualizerDefault implements VizualizerInterface {
 	draw() { //This will be called everytime to draw
 		// Ensure mouse coordinates are sane.
 		// Mouse coordinates look they're floats by default.
+		let mod = Number(this.settings.mod);
 
 		const d = this.sketch.pixelDensity();
 		const mx = this.clip(Math.round(this.sketch.mouseX), 0, this.sketch.width);
 		const my = this.clip(Math.round(this.sketch.mouseY), 0, this.sketch.height);
 		if (this.sketch.key == 'ArrowUp') {
-			this.MOD += 1;
+			mod += 1;
 			this.sketch.key = '';
-			console.log("UP PRESSED, NEW MOD: " + this.MOD);
+			console.log("UP PRESSED, NEW MOD: " + this.settings.mod);
 		} else if (this.sketch.key == 'ArrowDown') {
-			this.MOD -= 1;
+			mod -= 1;
 			this.sketch.key = '';
-			console.log("DOWN PRESSED, NEW MOD: " + this.MOD);
+			console.log("DOWN PRESSED, NEW MOD: " + mod);
 		} else if (this.sketch.key == 'ArrowRight') {
 			console.log(console.log("MX: " + mx + " MY: " + my));
 		}
@@ -51,7 +74,7 @@ class VizShiftCompare extends VizualizerDefault implements VizualizerInterface {
 				for (let i = 0; i < d; i++) {
 					for (let j = 0; j < d; j++) {
 						const index = 4 * ((y * d + j) * this.sketch.width * d + (x * d + i));
-						if (this.seq.getElement(x) % (this.MOD) == this.seq.getElement(y) % (this.MOD)) {
+						if (this.seq.getElement(x) % (mod) == this.seq.getElement(y) % (mod)) {
 							this.img.pixels[index] = 255;
 							this.img.pixels[index + 1] = 255;
 							this.img.pixels[index + 2] = 255;

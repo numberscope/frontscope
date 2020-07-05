@@ -10,7 +10,7 @@ export class VizualizerDefault implements VizualizerInterface{
     ready = false;
     sketch: p5 = new p5(sketch => {return sketch});
     seq: SequenceInterface = new SequenceClassDefault(0, false);
-    private isValid = false;
+    public isValid = false;
 
     /***
       Sets the sketch and the sequence to draw with
@@ -31,13 +31,20 @@ export class VizualizerDefault implements VizualizerInterface{
       This checks that the params provided are within the bounds you need.
       Simply assign params to settings (using the provided function) and validate them
       Returns a ValidationStatus object (see VizualizerInterface.ts for details)
+    
+      The default validation is always false, since it is automatically used by its children
+      so you are required to define a new validate function for every vizualizer.
       */
     validate() {
+        this.assignParams();
+        this.isValid = false;
+        return new ValidationStatus(false, ["This is the default validation function. Please define one for this vizualizer"]);
+    }
+
+    assignParams(){
 		this.params.forEach(param => {
 			this.settings[param.name] = param.value;
 		});
-        this.isValid = true;
-        return new ValidationStatus(true);
     }
 
     setup(){

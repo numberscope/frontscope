@@ -44,6 +44,7 @@ class SequenceConstant implements SequenceInterface{
 		});
 
         if(this.settings['constantValue'] !== undefined) {
+            this.isValid = true;
             return new ValidationStatus(true);
         } else {
             return new ValidationStatus(false, ["No constant value was provided."]);

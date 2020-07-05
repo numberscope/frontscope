@@ -15,16 +15,16 @@ export class SequenceClassDefault implements SequenceInterface {
     description = 'A Base sequence class';
     params: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', 'displayName', false, '0')];
     ready: boolean;
+    isValid: boolean;
 
     private settings: { [key: string]: string|number|boolean} = {};
-    private valid: boolean;
 
     constructor(ID: number, finite?: boolean) {
         this.ID = ID;
         this.cache = [];
         this.finite = finite || true;
         this.ready = false;
-        this.valid = false;
+        this.isValid = false;
     }
 
     /**
@@ -34,7 +34,7 @@ export class SequenceClassDefault implements SequenceInterface {
      * @param paramsFromUser user settings for the sequence passed from the UI
      */
     initialize(){
-        if(this.valid) {
+        if(this.isValid) {
             this.ready = true;
             return
         } else {
@@ -56,7 +56,7 @@ export class SequenceClassDefault implements SequenceInterface {
 		});
 
         if(this.settings['name'] !== undefined) {
-            this.valid = true;
+            this.isValid = true;
             return new ValidationStatus(true);
         }
         

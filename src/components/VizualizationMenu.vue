@@ -37,21 +37,21 @@ export default {
   },
   methods: {
     openParamsModal: function() {
-        this.showModal = true;
+      this.showModal = true;
     },
     closeParamsModal: function() {
-        this.showModal = false;
+      this.showModal = false;
     },
     setParams: function(viz) {
-              this.liveVizualizer = new viz.vizualizer();
-              this.openParamsModal();  
+      this.liveVizualizer = new viz.vizualizer();
+      this.openParamsModal();  
     },
     createViz: function() {
       const validationResult = this.liveVizualizer.validate();
       if(validationResult.isValid) {
-          this.errors = [];
-          this.closeParamsModal();
-          this.$emit("createViz", this.liveVizualizer);
+        this.errors = [];
+        this.closeParamsModal();
+        this.$emit("createViz", this.liveVizualizer);
       } else {
         this.errors = validationResult.errors;
       }
