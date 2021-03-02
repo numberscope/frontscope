@@ -4,6 +4,7 @@ High Priority
 - [ ] "Add New +" sequence button allows adding new sequences to choose from
 - [ ] Get existing visualizers running in the app
 - [ ] Add interactivity (change params in a live viz)
+- [ ] Implement webhook or some way to notify the server of changes to the repo
 
 Done
 - [x] Enable blow-up of the canvas
