@@ -2,6 +2,8 @@ High Priority
 
 - [ ] Import/Export settings for seq and viz via JSON
 - [ ] "Add New +" sequence button allows adding new sequences to choose from
+- [ ] Get existing visualizers running in the app
+- [ ] Add interactivity (change params in a live viz)
 
 Done
 - [x] Enable blow-up of the canvas
