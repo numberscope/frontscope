@@ -1,13 +1,13 @@
 import p5 from "p5";
-import { VizualizerDefault } from './vizualizerDefault';
-import { VizualizerInterface, VizualizerExportModule, VizualizerParamsSchema } from './vizualizerInterface';
+import { visualizerDefault } from './visualizerDefault';
+import { visualizerInterface, visualizerExportModule, visualizerParamsSchema } from './visualizerInterface';
 import { ValidationStatus } from '@/shared/validationStatus';
 import { SequenceInterface } from '@/sequences/sequenceInterface';
 
-class VizShiftCompare extends VizualizerDefault implements VizualizerInterface {
+class VizShiftCompare extends visualizerDefault implements visualizerInterface {
     name = "Shift Compare";
 	private img: p5.Image;
-	params = [new VizualizerParamsSchema(
+	params = [new visualizerParamsSchema(
 		"mod",
 		"number",
 		"Mod factor",
@@ -97,7 +97,7 @@ class VizShiftCompare extends VizualizerDefault implements VizualizerInterface {
 }
 
 
-export const exportModule = new VizualizerExportModule(
+export const exportModule = new visualizerExportModule(
 	"Shift Compare",
 	VizShiftCompare,
 	""

@@ -1,6 +1,6 @@
 <template>
     <div>
-    <h2>Select a sequence and vizualizer to create a bundle.</h2>
+    <h2>Select a sequence and visualizer to create a bundle.</h2>
     <p>You can set up several bundles and then inspect them more closely to compare.</p>
     <div class="row">
         <div class="col-sm-6">
@@ -8,8 +8,8 @@
             <div v-else class="alert alert-primary">Active sequence: {{activeSeq.name}}</div>
         </div>
         <div class="col-sm-6">
-            <div v-if="activeViz.isValid === undefined" class="alert alert-warning">Select a vizualizer</div>
-            <div v-else class="alert alert-primary">Active vizualizer: {{activeViz.name}}</div>
+            <div v-if="activeViz.isValid === undefined" class="alert alert-warning">Select a visualizer</div>
+            <div v-else class="alert alert-primary">Active visualizer: {{activeViz.name}}</div>
         </div>
     </div>
     <button v-if="readyToBundle" class="btn btn-primary" v-on:click="$emit('createBundle')">Create Bundle</button>

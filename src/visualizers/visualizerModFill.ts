@@ -1,13 +1,13 @@
 import {SequenceInterface} from "@/sequences/sequenceInterface";
-import {VizualizerDefault} from "@/vizualizers/vizualizerDefault";
-import {VizualizerInterface, VizualizerParamsSchema, VizualizerSettings, VizualizerExportModule} from "@/vizualizers/vizualizerInterface";
+import {visualizerDefault} from "@/visualizers/visualizerDefault";
+import {visualizerInterface, visualizerParamsSchema, visualizerSettings, visualizerExportModule} from "@/visualizers/visualizerInterface";
 import p5 from 'p5';
 import { ValidationStatus } from '@/shared/validationStatus';
 //An example module
 
-class VizModFill extends VizualizerDefault implements VizualizerInterface {
+class VizModFill extends visualizerDefault implements visualizerInterface {
 	name = "Mod Fill";
-	settings: VizualizerSettings = {};
+	settings: visualizerSettings = {};
 	rectWidth = 0;
 	rectHeight = 0;
 	i = 0;
@@ -15,7 +15,7 @@ class VizModFill extends VizualizerDefault implements VizualizerInterface {
 
 	constructor() {
         super();
-		const modDimensionScheme = new VizualizerParamsSchema();
+		const modDimensionScheme = new visualizerParamsSchema();
 				modDimensionScheme.name = "modDimension";
 				modDimensionScheme.displayName = "Mod dimension";
 				modDimensionScheme.type = "number";
@@ -72,7 +72,7 @@ class VizModFill extends VizualizerDefault implements VizualizerInterface {
 
 }
 
-export const exportModule = new VizualizerExportModule(
+export const exportModule = new visualizerExportModule(
 	"Mod Fill",
 	VizModFill,
 	""

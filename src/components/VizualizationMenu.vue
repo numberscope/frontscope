@@ -3,7 +3,7 @@
     <h2>Visualizers</h2>
     <ul class="list-group">
         <VizSelector
-            v-for="viz in vizualizers"
+            v-for="viz in visualizers"
             v-bind:title="viz.name"
             v-bind:key="viz.id"
             v-on:set-viz-params="setParams(viz)"
@@ -12,7 +12,7 @@
     </ul>
     <SeqVizParamsModal
         v-if="showModal"
-        v-bind:params="liveVizualizer.params"
+        v-bind:params="livevisualizer.params"
         v-bind:errors="errors"
         v-on:closeModal="closeParamsModal"
         v-on:submitParams="createViz" >
@@ -27,7 +27,7 @@ import SeqVizParamsModal from '@/components/SeqVizParamsModal.vue'
 export default {
   name: 'VizualizationMenu',
   props: {
-    vizualizers: Array,
+    visualizers: Array,
     activeViz: Object,
     activeSeq: Object
   },
@@ -43,15 +43,15 @@ export default {
       this.showModal = false;
     },
     setParams: function(viz) {
-      this.liveVizualizer = new viz.vizualizer();
+      this.livevisualizer = new viz.visualizer();
       this.openParamsModal();  
     },
     createViz: function() {
-      const validationResult = this.liveVizualizer.validate();
+      const validationResult = this.livevisualizer.validate();
       if(validationResult.isValid) {
         this.errors = [];
         this.closeParamsModal();
-        this.$emit("createViz", this.liveVizualizer);
+        this.$emit("createViz", this.livevisualizer);
       } else {
         this.errors = validationResult.errors;
       }
@@ -61,7 +61,7 @@ export default {
   data: function(){
     return {
         showModal: false,
-        liveVizualizer: { paramsSchema: []},
+        livevisualizer: { paramsSchema: []},
         errors: []
     } 
   }

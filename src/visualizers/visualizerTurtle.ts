@@ -1,11 +1,11 @@
 import p5 from 'p5';
-import { VizualizerDefault } from './vizualizerDefault';
-import { VizualizerInterface, VizualizerParamsSchema, VizualizerExportModule } from './vizualizerInterface';
+import { visualizerDefault } from './visualizerDefault';
+import { visualizerInterface, visualizerParamsSchema, visualizerExportModule } from './visualizerInterface';
 import { ValidationStatus } from '@/shared/validationStatus';
 import { SequenceInterface } from '@/sequences/sequenceInterface';
 
 const schemaTurtle = [
-	new VizualizerParamsSchema(
+	new visualizerParamsSchema(
 		"domain",
 		'text',
 		'Sequence Domain',
@@ -13,7 +13,7 @@ const schemaTurtle = [
 		"0,1,2,3,4",
 		'Comma seperated numbers',
 	),
-	new VizualizerParamsSchema(
+	new visualizerParamsSchema(
 		"range",
 		'text',
 		'Angles',
@@ -21,21 +21,21 @@ const schemaTurtle = [
 		"30,45,60,90,120",
 		'Comma seperated numbers',
 	),
-	new VizualizerParamsSchema(
+	new visualizerParamsSchema(
 		"stepSize",
 		'number',
 		'Step Size',
 		true,
 		20,
 	),
-	new VizualizerParamsSchema(
+	new visualizerParamsSchema(
 		"strokeWeight",
 		'number',
 		'Stroke Width',
 		true,
 		5
 	),
-	new VizualizerParamsSchema(
+	new visualizerParamsSchema(
 		"startingX",
 		'number',
 		'X start',
@@ -43,7 +43,7 @@ const schemaTurtle = [
 		0,
 		"Where to start drawing"
 	),
-	new VizualizerParamsSchema(
+	new visualizerParamsSchema(
 		"startingY",
 		'number',
 		'Y start',
@@ -51,14 +51,14 @@ const schemaTurtle = [
 		0,
 		"Where to start drawing"
 	),
-	new VizualizerParamsSchema(
+	new visualizerParamsSchema(
 		'bgColor',
 		'text',
 		'Background Color',
 		false,
 		"#666666"
 	),
-	new VizualizerParamsSchema(
+	new visualizerParamsSchema(
 		'strokeColor',
 		'text',
 		'Stroke Color',
@@ -69,7 +69,7 @@ const schemaTurtle = [
 
 // Turtle needs work
 // Throwing the same error on previous numberscope website
-class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface {
+class VisualizerTurtle extends visualizerDefault implements visualizerInterface {
 
     name = "Turtle";
 	private rotMap: {[key: number]: number} = {};
@@ -147,7 +147,7 @@ class VisualizerTurtle extends VizualizerDefault implements VizualizerInterface 
 
 
 
-export const exportModule = new VizualizerExportModule(
+export const exportModule = new visualizerExportModule(
 	"Turtle",
 	VisualizerTurtle,
 	""

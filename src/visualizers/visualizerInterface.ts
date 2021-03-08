@@ -2,19 +2,19 @@ import { SequenceInterface } from '@/sequences/sequenceInterface';
 import { ValidationStatus } from '@/shared/validationStatus';
 import p5 from 'p5';
 
-export class VizualizerExportModule {
+export class visualizerExportModule {
     name: string;
     description: string;
-    vizualizer: Function;
+    visualizer: Function;
 
     constructor(name: string, viz: Function, description?: string,){
         this.name = name;
-        this.vizualizer = viz;
+        this.visualizer = viz;
         this.description = description || '';
     }
 }
 
-export class VizualizerParamsSchema {
+export class visualizerParamsSchema {
     name: string;
     type: string;
     displayName: string;
@@ -39,18 +39,18 @@ export class VizualizerParamsSchema {
     }
 }
 
-export interface VizualizerSettings {
+export interface visualizerSettings {
 	[key: string]: string | number | boolean;
 }
 
-export interface VizualizerInterface {
+export interface visualizerInterface {
     isValid: boolean;
     /**
-     * The parameters for the vizualizer to initialize.
+     * The parameters for the visualizer to initialize.
      * In addition to providing the information in the schema, 
      * these will be used as default params in the event the user does not specify any.
      */
-    params: VizualizerParamsSchema[];
+    params: visualizerParamsSchema[];
     /**
      * A sequence instance that fulfills the sequence interface.
      */
@@ -60,8 +60,8 @@ export interface VizualizerInterface {
      */
     sketch: p5;
     /**
-     * Intialize is simply applying the configuration params to the vizualizer to prepare it to draw. 
-     * @param config User set configuration settings. Generally if none are provided, the Vizualizer should use its own default
+     * Intialize is simply applying the configuration params to the visualizer to prepare it to draw. 
+     * @param config User set configuration settings. Generally if none are provided, the visualizer should use its own default
      */
     initialize(sketch: p5, seq: SequenceInterface): void;
     /**
@@ -73,7 +73,7 @@ export interface VizualizerInterface {
      */
     setup(): void;
     /**
-     * Draws the sequence through the vizualizer into the p5 canvas.
+     * Draws the sequence through the visualizer into the p5 canvas.
      */
     draw(): void;
 }

@@ -17,7 +17,7 @@
                   v-on:createSeq="setActiveSeq($event)"
                 />
                 <VizualizationMenu 
-                  v-bind:vizualizers="vizualizers"
+                  v-bind:visualizers="visualizers"
                   v-bind:activeViz="activeViz" 
                   v-on:createViz="setActiveViz($event)"
                 />
@@ -41,7 +41,7 @@ import VizualizationMenu from '@/components/VizualizationMenu.vue';
 import SequenceMenu from '@/components/SequenceMenu.vue';
 import CanvasArea from '@/components/CanvasArea.vue';
 import BundleManager from '@/components/BundleManager.vue';
-import VIZUALIZERS from '@/vizualizers/vizualizers';
+import visualizerS from '@/visualizers/visualizers';
 import SEQUENCES from '@/sequences/sequences';
 
 
@@ -84,15 +84,15 @@ export default {
     }
   },
   data: function(){
-    const vizualizers = []
+    const visualizers = []
     const sequences = []
-    // We are grooming the raw VIZUALIZERS and SEQUENCES module into something
+    // We are grooming the raw visualizerS and SEQUENCES module into something
     // we can use by looking for only modules that have an 
     // export module (ie, aren't utility files)
-    for (const vizKey in VIZUALIZERS){
-      const theModule = VIZUALIZERS[vizKey]
+    for (const vizKey in visualizerS){
+      const theModule = visualizerS[vizKey]
       if(theModule.exportModule){
-        vizualizers.push(theModule.exportModule);
+        visualizers.push(theModule.exportModule);
       }
     }
     for (const seqKey in SEQUENCES){
@@ -102,7 +102,7 @@ export default {
       }
     }
     const state = {
-      vizualizers: vizualizers,
+      visualizers: visualizers,
       sequences: sequences,
       seqVizPairs: [],
       activeViz: {},

@@ -1,12 +1,12 @@
-import { VizualizerInterface, VizualizerParamsSchema, VizualizerSettings } from './vizualizerInterface';
+import { visualizerInterface, visualizerParamsSchema, visualizerSettings } from './visualizerInterface';
 import { ValidationStatus } from '@/shared/validationStatus';
 import p5 from 'p5';
 import { SequenceInterface } from '@/sequences/sequenceInterface';
 import { SequenceClassDefault } from '@/sequences/sequenceClassDefault';
 
-export class VizualizerDefault implements VizualizerInterface{
-    params: VizualizerParamsSchema[] = [];
-    settings: VizualizerSettings = {};
+export class visualizerDefault implements visualizerInterface{
+    params: visualizerParamsSchema[] = [];
+    settings: visualizerSettings = {};
     ready = false;
     sketch: p5 = new p5(sketch => {return sketch});
     seq: SequenceInterface = new SequenceClassDefault(0, false);
@@ -23,22 +23,22 @@ export class VizualizerDefault implements VizualizerInterface{
 
             this.ready = true;
         } else {
-            throw "The vizualizer is not valid. Run validate and address any errors."
+            throw "The visualizer is not valid. Run validate and address any errors."
         }
     }
 
     /**
       This checks that the params provided are within the bounds you need.
       Simply assign params to settings (using the provided function) and validate them
-      Returns a ValidationStatus object (see VizualizerInterface.ts for details)
+      Returns a ValidationStatus object (see visualizerInterface.ts for details)
     
       The default validation is always false, since it is automatically used by its children
-      so you are required to define a new validate function for every vizualizer.
+      so you are required to define a new validate function for every visualizer.
       */
     validate() {
         this.assignParams();
         this.isValid = false;
-        return new ValidationStatus(false, ["This is the default validation function. Please define one for this vizualizer"]);
+        return new ValidationStatus(false, ["This is the default validation function. Please define one for this visualizer"]);
     }
 
     assignParams(){
