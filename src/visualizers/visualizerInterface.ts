@@ -2,7 +2,7 @@ import { SequenceInterface } from '@/sequences/sequenceInterface';
 import { ValidationStatus } from '@/shared/validationStatus';
 import p5 from 'p5';
 
-export class visualizerExportModule {
+export class VisualizerExportModule {
     name: string;
     description: string;
     visualizer: Function;

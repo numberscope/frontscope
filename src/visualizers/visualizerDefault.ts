@@ -1,12 +1,12 @@
-import { visualizerInterface, visualizerParamsSchema, visualizerSettings } from './visualizerInterface';
+import { visualizerInterface, VisualizerParamsSchema, VisualizerSettings } from './visualizerInterface';
 import { ValidationStatus } from '@/shared/validationStatus';
 import p5 from 'p5';
 import { SequenceInterface } from '@/sequences/sequenceInterface';
 import { SequenceClassDefault } from '@/sequences/sequenceClassDefault';
 
-export class visualizerDefault implements visualizerInterface{
-    params: visualizerParamsSchema[] = [];
-    settings: visualizerSettings = {};
+export class VisualizerDefault implements visualizerInterface{
+    params: VisualizerParamsSchema[] = [];
+    settings: VisualizerSettings = {};
     ready = false;
     sketch: p5 = new p5(sketch => {return sketch});
     seq: SequenceInterface = new SequenceClassDefault(0, false);
