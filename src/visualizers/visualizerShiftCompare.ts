@@ -1,15 +1,16 @@
 import p5 from "p5";
-import { visualizerDefault } from './visualizerDefault';
-import { visualizerInterface, visualizerExportModule, visualizerParamsSchema } from './visualizerInterface';
-import { ValidationStatus } from '@/shared/validationStatus';
-import { SequenceInterface } from '@/sequences/sequenceInterface';
+import { VisualizerDefault } from './VisualizerDefault';
+import { VisualizerInterface, VisualizerParamsSchema, VisualizerExportModule } from './VisualizerInterface';
+import { ParamType } from '@/shared/ParamType';
+import { ValidationStatus } from '@/shared/ValidationStatus';
+import { SequenceInterface } from '@/sequences/SequenceInterface';
 
-class VizShiftCompare extends visualizerDefault implements visualizerInterface {
+class VizShiftCompare extends VisualizerDefault implements VisualizerInterface {
     name = "Shift Compare";
 	private img: p5.Image;
-	params = [new visualizerParamsSchema(
+	params = [new VisualizerParamsSchema(
 		"mod",
-		"number",
+		ParamType.number,
 		"Mod factor",
 		true,
 		2,
@@ -74,7 +75,10 @@ class VizShiftCompare extends visualizerDefault implements visualizerInterface {
 				for (let i = 0; i < d; i++) {
 					for (let j = 0; j < d; j++) {
 						const index = 4 * ((y * d + j) * this.sketch.width * d + (x * d + i));
-						if (this.seq.getElement(x) % (mod) == this.seq.getElement(y) % (mod)) {
+						const xEl = this.seq.getElement(x);
+						const yEl = this.seq.getElement(y);
+						if(xEl === undefined || yEl === undefined) return;
+						if (xEl % mod == yEl % mod) {
 							this.img.pixels[index] = 255;
 							this.img.pixels[index + 1] = 255;
 							this.img.pixels[index + 2] = 255;
@@ -97,7 +101,7 @@ class VizShiftCompare extends visualizerDefault implements visualizerInterface {
 }
 
 
-export const exportModule = new visualizerExportModule(
+export const exportModule = new VisualizerExportModule(
 	"Shift Compare",
 	VizShiftCompare,
 	""

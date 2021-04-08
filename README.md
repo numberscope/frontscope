@@ -23,7 +23,12 @@ npm run lint
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
+### Canvas
+
+The canvas is currently 800x800 pixels.
+
 ## Building a Visualizer
+
 
 Big picture, every visualizer needs to implement the `visualizerInterface.ts` which provides the basic expectations of a visualizer. See below for the easy way to do this. These include the following:
 
@@ -42,9 +47,13 @@ The simplest and fastest way to set up your visualizer is to extend the `visuali
 
 The provided example visualizers are good starting points for how to extend the default class.
 
-### Example: `visualizerDifferences.ts`
+### Example: `VisualizerDifferences.ts`
 
-If you open this file and follow along, you'll notice that it sets the name and params immediately. `settings` is the internal representation of those params in the class, and that is usually how you can access the params you created.
+If you open this file, located in `src/visualizers/VisualizerDifferences.ts`, and follow along, you'll notice that it sets the name and params immediately. `settings` is the internal representation of those params in the class, and that is usually how you can access the params you created.
+
+#### Where to put your visualizers
+
+Place your new visualizer in `src/visualizers`, named in PascalCase (capital first letter of every word, no spaces).
 
 #### Creating params and assigning their values
 
@@ -65,18 +74,23 @@ In short, if you use `visualizerParamSchema` arrays to create params for your vi
 > The reason `settings` is not in the interface is that you aren't required to use them. The interface simply guarantees that the frontend UI engine gets what it expects, and since the only object that interacts with `settings` is the visualizer itself internally, you aren't forced to use `settings`. However, it's a good idea, and that's the pattern recommended by the default class.
 
 #### Validating
- This visualizer then does the only check it needs to: make sure that the `number` is more than to the `levels`. If this is not the case, it will return a `ValidationStatus` with an error message that is displayed to the user on the settings popup. Otherwise, it sets the visualizer's `isValid` setting to `true` and then returns a passing `ValidationStatus`.
+ This visualizer only has one validation check. It makes sure that the `number` is more than to the `levels`. If this is not the case, it will return a `ValidationStatus` with an error message that is displayed to the user on the settings popup. Otherwise, it sets the visualizer's `isValid` setting to `true` and then returns a passing `ValidationStatus`. This, and all specific validations, are unique to each visualizer, and you will probably want to create your own checks.
 
-`drawDifferences` is a helper function that is not required, but simplifies the `draw` function later on. This particular visualizer uses it to bo the bulk of the drawing work.
+#### Drawing your sequence
+`drawDifferences` is a helper function that is not required, but simplifies the `draw` function later on. This particular visualizer uses it to do the bulk of the drawing work.
 
 `setup` is mostly empty and just logs out a notice to the console, as this visualizer doesn't have any setup work to do.
 
 `draw` calls `drawDifferences` with some arguments and then stops the sketch from drawing, as normally `draw` is called in a loop.
 
+To access each sequence element, use `this.seq`. This is a `SequenceInterface` object, which is guaranteed to have a method `getElement(n)` that returns the `n`-th element in the sequence.
+
 ## Exporting a visualizer
 
-The engine expects visualizers to be packaged in `visualizerExportModules` which take as their arguments the name of the visualizer which is displayed in the UI. You can also reference the name of the visualizer to maintain consistently, though the `visualizerDifferences` sets it explicitely.
+The engine expects visualizers to be packaged in `visualizerExportModules` which take as their arguments the name of the visualizer which is displayed in the UI. You can also reference the name of the visualizer to maintain consistency, though the `visualizerDifferences` sets it explicitly.
 
 The other arguments in the export module are the visualizer itself (`VizDifferences` in the example case, which is the name of the class we created), and a description, which is empty in the example (the empty string `""`).
 
 If you place the file containing your visualizer class definition with the export module in the folder name `Visualizers`, the engine will automatically package it up and include it in the list of available visualizers.
+
+There is no compiling needed. Simply place your file in the appropriate folder and run the app. JavaScript is compiled at runtime.

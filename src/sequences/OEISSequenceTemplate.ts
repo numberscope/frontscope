@@ -1,5 +1,5 @@
-import { SequenceParamsSchema, SequenceInterface } from './sequenceInterface'
-import { ValidationStatus } from '@/shared/validationStatus';
+import { SequenceParamsSchema, SequenceInterface } from './SequenceInterface'
+import { ValidationStatus } from '@/shared/ValidationStatus';
 import axios from 'axios'
 /**
  *
@@ -7,13 +7,18 @@ import axios from 'axios'
  * a wrapper for getting sequences from the FlaskBackend
  * 
  */
-export class SequenceGetter implements SequenceInterface{
+export default class OEISSequenceTemplate implements SequenceInterface{
     ID: number;
     cache: number[];
     finite: boolean;
     name = 'Getter';
     description = '';
-    params: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', '', false, '')];
+    oeisSeq = true;
+    params: SequenceParamsSchema[] = [
+        new SequenceParamsSchema('oeisId', 'text', 'OEIS ID', false, false),
+        new SequenceParamsSchema('name', 'text', 'Name', false, false),
+        new SequenceParamsSchema('numElements', 'number', 'Number of Elements (leave blank to fetch up to first 1000)', false, false)
+    ];
     private settings: {[key: string]: number | string | boolean } = {};
     private ready: boolean;
     private isValid = false;
@@ -32,18 +37,13 @@ export class SequenceGetter implements SequenceInterface{
         this.ready = false;
     }
 
-    /**
-     * Sets the sequence parameters based on the user input, constrained by the 
-     * paramSchema settings that were passed to the UI and returned.
-     * Once this is completed, the sequence has enough information to begin generating sequence members.
-     * @param paramsFromUser user settings for the sequence passed from the UI
-     */
-    initialize(){
+    populate() {
+        console.log("populating");
         if(this.isValid){
-            axios.get('http://localhost:5000/seqnaturals')
+            const elementsToFetch = this.settings.num_elements ? this.settings.num_elements : 1000;
+            axios.get(`http://localhost:5000/api/get_oeis_sequence/${this.settings.oeisId}/${elementsToFetch}`)
                 .then( resp => {
-                    console.log(resp)
-                    //self.cache = resp;
+                    this.cache = resp.data.values;
                     this.ready = true;
                     return;
                 });
@@ -52,22 +52,33 @@ export class SequenceGetter implements SequenceInterface{
         }
 
     }
+    initialize(){
+        if(this.isValid){
+            this.ready = true;
+            return;
+        } else {
+            throw "Sequence is not valid. Run validate() and address any errors."
+        }
+    }
 
     validate() {
 		this.params.forEach(param => {
             this.settings[param.name] = param.value;
 		});
 
-        if(this.settings['name'] !== undefined) {
+        if(this.settings['oeisId'] !== undefined) {
+            this.isValid = true;
             return new ValidationStatus(true);
         } else {
-            return new ValidationStatus(false, ["name paramter is missing"]);
+            return new ValidationStatus(false, ["oeisID paramter is missing"]);
         }
     }
     /** 
      * getElement is how sequences provide their callers with elements.
      */
     getElement(n: number) {
+        console.log('element requested')
+        console.log(this.cache[n]);
         return this.cache[n];
     }
 }

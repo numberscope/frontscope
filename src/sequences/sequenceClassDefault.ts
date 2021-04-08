@@ -1,5 +1,5 @@
-import { SequenceParamsSchema, SequenceInterface } from './sequenceInterface'
-import { ValidationStatus } from '@/shared/validationStatus';
+import { SequenceParamsSchema, SequenceInterface } from './SequenceInterface'
+import { ValidationStatus } from '@/shared/ValidationStatus';
 /**
  *
  * @class SequenceClassDefault

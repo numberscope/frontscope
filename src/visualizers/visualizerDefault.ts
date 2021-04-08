@@ -1,10 +1,11 @@
-import { visualizerInterface, VisualizerParamsSchema, VisualizerSettings } from './visualizerInterface';
-import { ValidationStatus } from '@/shared/validationStatus';
+import { VisualizerInterface, VisualizerParamsSchema, VisualizerSettings } from './VisualizerInterface';
+import { ValidationStatus } from '@/shared/ValidationStatus';
+import { ParamType } from '@/shared/ParamType';
 import p5 from 'p5';
-import { SequenceInterface } from '@/sequences/sequenceInterface';
-import { SequenceClassDefault } from '@/sequences/sequenceClassDefault';
+import { SequenceInterface } from '@/sequences/SequenceInterface';
+import { SequenceClassDefault } from '@/sequences/SequenceClassDefault';
 
-export class VisualizerDefault implements visualizerInterface{
+export class VisualizerDefault implements VisualizerInterface{
     params: VisualizerParamsSchema[] = [];
     settings: VisualizerSettings = {};
     ready = false;
@@ -43,7 +44,11 @@ export class VisualizerDefault implements visualizerInterface{
 
     assignParams(){
 		this.params.forEach(param => {
-			this.settings[param.name] = param.value;
+            let paramValue = param.value;
+            if(param.type == ParamType.number) paramValue = Number(paramValue);
+            else if(param.type == ParamType.text) paramValue = String(paramValue);
+            else if(param.type == ParamType.boolean) paramValue = Boolean(paramValue);
+			this.settings[param.name] = paramValue;
 		});
     }
 

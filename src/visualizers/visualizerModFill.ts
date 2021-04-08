@@ -1,13 +1,14 @@
-import {SequenceInterface} from "@/sequences/sequenceInterface";
-import {visualizerDefault} from "@/visualizers/visualizerDefault";
-import {visualizerInterface, visualizerParamsSchema, visualizerSettings, visualizerExportModule} from "@/visualizers/visualizerInterface";
+import { SequenceInterface } from "@/sequences/SequenceInterface";
+import { VisualizerDefault } from "@/visualizers/VisualizerDefault";
+import { VisualizerInterface, VisualizerParamsSchema, VisualizerSettings, VisualizerExportModule } from "@/visualizers/VisualizerInterface";
+import { ParamType } from '@/shared/ParamType';
 import p5 from 'p5';
-import { ValidationStatus } from '@/shared/validationStatus';
+import { ValidationStatus } from '@/shared/ValidationStatus';
 //An example module
 
-class VizModFill extends visualizerDefault implements visualizerInterface {
+class VizModFill extends VisualizerDefault implements VisualizerInterface {
 	name = "Mod Fill";
-	settings: visualizerSettings = {};
+	settings: VisualizerSettings = {};
 	rectWidth = 0;
 	rectHeight = 0;
 	i = 0;
@@ -15,10 +16,10 @@ class VizModFill extends visualizerDefault implements visualizerInterface {
 
 	constructor() {
         super();
-		const modDimensionScheme = new visualizerParamsSchema();
+		const modDimensionScheme = new VisualizerParamsSchema();
 				modDimensionScheme.name = "modDimension";
 				modDimensionScheme.displayName = "Mod dimension";
-				modDimensionScheme.type = "number";
+				modDimensionScheme.type = ParamType.number;
 				modDimensionScheme.description = "";
 				modDimensionScheme.required = true;
 
@@ -48,7 +49,9 @@ class VizModFill extends visualizerDefault implements visualizerInterface {
 		let i: number;
 		let j;
 		for (let mod = 1; mod <= this.settings.modDimension; mod++) {
-			i = seq.getElement(num) % mod;
+			const el = seq.getElement(num);
+			if(el === undefined) break;
+			i = el % mod;
 			j = mod - 1;
 			this.sketch.rect(j * this.rectWidth, this.sketch.height - (i + 1) * this.rectHeight, this.rectWidth, this.rectHeight);
 		}
@@ -60,6 +63,7 @@ class VizModFill extends visualizerDefault implements visualizerInterface {
 		this.rectWidth = this.sketch.width / modDimension;
 		this.rectHeight = this.sketch.height / modDimension;
 		this.sketch.noStroke();
+		this.i = 0;
 	}
 
 	draw() {
@@ -72,7 +76,7 @@ class VizModFill extends visualizerDefault implements visualizerInterface {
 
 }
 
-export const exportModule = new visualizerExportModule(
+export const exportModule = new VisualizerExportModule(
 	"Mod Fill",
 	VizModFill,
 	""

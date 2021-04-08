@@ -19,7 +19,7 @@
                     </ul>
                 </div>
                 <div v-for="param in params" v-bind:key="param.name">
-                    <div v-if="param.type == 'number' || param.type == 'text'" class="form-group">
+                    <div v-if="param.type == ParamType.number || param.type == ParamType.text" class="form-group">
                         <label v-bind:for="param.name">{{param.displayName}}</label>
                         <input class="form-control" v-bind:id="param.name" v-model="param.value" />
                         <small v-bind:id="param.name + '-help-text'" class="form-text text-muted">{{param.description}}</small>
@@ -33,7 +33,8 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button v-on:click="$emit('submitParams')" type="button" class="btn btn-primary">Save changes</button>
+            <button v-if="!loadingOeis" v-on:click="$emit('submitParams')" type="button" class="btn btn-primary">Save changes</button>
+            <button v-if="loadingOeis" v-on:click="$emit('submitOeisParams')" type="button" class="btn btn-primary">Load OEIS data</button>
             <button v-on:click="$emit('closeModal')" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
         </div>
@@ -42,13 +43,19 @@
 </template>
 
 <script>
+import { ParamType } from '@/shared/ParamType';
+
 export default {
     name: 'SeqVizParamsModal',
     methods: {
     },
     props: {
         params: Array,
-        errors: Array
+        errors: Array,
+        loadingOeis: Boolean
+    },
+    computed: {
+        ParamType: () => ParamType
     }
 }
 </script>

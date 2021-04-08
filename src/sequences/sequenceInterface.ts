@@ -1,4 +1,4 @@
-import {ValidationStatus} from '@/shared/validationStatus';
+import {ValidationStatus} from '@/shared/ValidationStatus';
 
 export class SequenceParamsSchema {
     name: string;
@@ -65,9 +65,11 @@ export interface SequenceInterface {
 export class SequenceExportModule{
     sequence: Function;
     name: string;
+    isOeis = false;
 
-    constructor(sequence: Function, name: string){
+    constructor(sequence: Function, name: string, isOeis = false){
         this.sequence = sequence;
         this.name = name;
+        this.isOeis = isOeis;
     }
 }

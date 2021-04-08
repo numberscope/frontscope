@@ -1,5 +1,6 @@
-import { SequenceInterface } from '@/sequences/sequenceInterface';
-import { ValidationStatus } from '@/shared/validationStatus';
+import { SequenceInterface } from '@/sequences/SequenceInterface';
+import { ValidationStatus } from '@/shared/ValidationStatus';
+import { ParamType } from '@/shared/ParamType';
 import p5 from 'p5';
 
 export class VisualizerExportModule {
@@ -14,9 +15,10 @@ export class VisualizerExportModule {
     }
 }
 
-export class visualizerParamsSchema {
+
+export class VisualizerParamsSchema {
     name: string;
-    type: string;
+    type: ParamType;
     displayName: string;
     required: boolean;
     value: string | boolean | number;
@@ -24,14 +26,14 @@ export class visualizerParamsSchema {
 
     constructor(
         name?: string, 
-        type?: string, 
+        type?: ParamType, 
         displayName?: string, 
         required?: boolean,
 		defaultValue?: string | boolean | number,
 		description?: string
         ) {
             this.name = name || '';
-            this.type = type || '';
+            this.type = type || ParamType.text;
             this.displayName = displayName || '';
             this.required = required || false;
 			this.value = defaultValue || '';
@@ -39,18 +41,19 @@ export class visualizerParamsSchema {
     }
 }
 
-export interface visualizerSettings {
+
+export interface VisualizerSettings {
 	[key: string]: string | number | boolean;
 }
 
-export interface visualizerInterface {
+export interface VisualizerInterface {
     isValid: boolean;
     /**
      * The parameters for the visualizer to initialize.
      * In addition to providing the information in the schema, 
      * these will be used as default params in the event the user does not specify any.
      */
-    params: visualizerParamsSchema[];
+    params: VisualizerParamsSchema[];
     /**
      * A sequence instance that fulfills the sequence interface.
      */

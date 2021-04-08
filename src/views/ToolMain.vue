@@ -15,6 +15,7 @@
                   v-bind:sequences="sequences"
                   v-bind:activeSeq="activeSeq"
                   v-on:createSeq="setActiveSeq($event)"
+                  v-on:addOeisSeq="addOeisSeq($event)"
                 />
                 <VizualizationMenu 
                   v-bind:visualizers="visualizers"
@@ -43,6 +44,7 @@ import CanvasArea from '@/components/CanvasArea.vue';
 import BundleManager from '@/components/BundleManager.vue';
 import visualizerS from '@/visualizers/visualizers';
 import SEQUENCES from '@/sequences/sequences';
+import { SequenceExportModule } from '@/sequences/SequenceInterface';
 
 
 export default {
@@ -59,6 +61,14 @@ export default {
     },
     setActiveSeq: function(newSeq){
         this.activeSeq = newSeq;
+    },
+    addOeisSeq: function(newOeisSeq){
+      const seqBundle = new SequenceExportModule(
+        newOeisSeq,
+        newOeisSeq.name,
+        true
+      )
+      this.sequences.push(seqBundle);
     },
     bundleSeqVizPair: function(){
         const bundle = {

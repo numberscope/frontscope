@@ -1,7 +1,14 @@
 <template>
-    <a v-on:click="$emit('set-seq-params', title)">
-        <li class="list-group-item">{{ title }}</li>
-    </a>
+    <div v-if="!isOeis">
+        <a v-on:click="$emit('set-seq-params')">
+            <li class="list-group-item">{{ title }}</li>
+        </a>
+    </div>
+    <div v-else>
+        <a v-on:click="$emit('stage-oeis-seq')">
+            <li class="list-group-item">OEIS: {{ title }}</li>
+        </a>
+    </div>
 </template>
 
 
@@ -11,6 +18,7 @@ export default {
     name: 'SeqSelector',
     props: {
         title: String,
+        isOeis: Boolean
     }
 }
 </script>

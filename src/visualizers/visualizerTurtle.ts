@@ -1,66 +1,67 @@
 import p5 from 'p5';
-import { visualizerDefault } from './visualizerDefault';
-import { visualizerInterface, visualizerParamsSchema, visualizerExportModule } from './visualizerInterface';
-import { ValidationStatus } from '@/shared/validationStatus';
-import { SequenceInterface } from '@/sequences/sequenceInterface';
+import { VisualizerDefault } from './VisualizerDefault';
+import { VisualizerInterface, VisualizerParamsSchema, VisualizerExportModule } from './VisualizerInterface';
+import { ParamType } from '@/shared/ParamType';
+import { ValidationStatus } from '@/shared/ValidationStatus';
+import { SequenceInterface } from '@/sequences/SequenceInterface';
 
 const schemaTurtle = [
-	new visualizerParamsSchema(
+	new VisualizerParamsSchema(
 		"domain",
-		'text',
+		ParamType.text,
 		'Sequence Domain',
 		true,
 		"0,1,2,3,4",
 		'Comma seperated numbers',
 	),
-	new visualizerParamsSchema(
+	new VisualizerParamsSchema(
 		"range",
-		'text',
+		ParamType.text,
 		'Angles',
 		true,
 		"30,45,60,90,120",
 		'Comma seperated numbers',
 	),
-	new visualizerParamsSchema(
+	new VisualizerParamsSchema(
 		"stepSize",
-		'number',
+		ParamType.number,
 		'Step Size',
 		true,
 		20,
 	),
-	new visualizerParamsSchema(
+	new VisualizerParamsSchema(
 		"strokeWeight",
-		'number',
+		ParamType.number,
 		'Stroke Width',
 		true,
 		5
 	),
-	new visualizerParamsSchema(
+	new VisualizerParamsSchema(
 		"startingX",
-		'number',
+		ParamType.number,
 		'X start',
 		false,
 		0,
 		"Where to start drawing"
 	),
-	new visualizerParamsSchema(
+	new VisualizerParamsSchema(
 		"startingY",
-		'number',
+		ParamType.number,
 		'Y start',
 		false,
 		0,
 		"Where to start drawing"
 	),
-	new visualizerParamsSchema(
+	new VisualizerParamsSchema(
 		'bgColor',
-		'text',
+		ParamType.text,
 		'Background Color',
 		false,
 		"#666666"
 	),
-	new visualizerParamsSchema(
+	new VisualizerParamsSchema(
 		'strokeColor',
-		'text',
+		ParamType.text,
 		'Stroke Color',
 		false,
 		'#ff0000'
@@ -69,7 +70,7 @@ const schemaTurtle = [
 
 // Turtle needs work
 // Throwing the same error on previous numberscope website
-class VisualizerTurtle extends visualizerDefault implements visualizerInterface {
+class VisualizerTurtle extends VisualizerDefault implements VisualizerInterface {
 
     name = "Turtle";
 	private rotMap: {[key: number]: number} = {};
@@ -147,7 +148,7 @@ class VisualizerTurtle extends visualizerDefault implements visualizerInterface 
 
 
 
-export const exportModule = new visualizerExportModule(
+export const exportModule = new VisualizerExportModule(
 	"Turtle",
 	VisualizerTurtle,
 	""
