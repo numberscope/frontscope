@@ -2,9 +2,7 @@
     <div id="canvas-container" class="row">
         <div class="col-sm-2">
             <div class="list-group">
-                <a href="#" v-on:click="$emit('closeCanvas')" aria-label="Back" class="list-group-item list-group-item-action">
-                    &#8249; Back
-                </a>
+                <StopDrawingButton v-on:stopDrawing="closeCanvas()" />
             </div>
         </div>
         <div class="col-sm-10">
@@ -16,11 +14,22 @@
 
 <script>
 import p5 from '@/assets/p5.min.js'
+import StopDrawingButton from '@/components/StopDrawingButton.vue';
 
 export default {
+    name: 'CanvasArea',
+    components: {
+        StopDrawingButton
+    },
     props: {
         activeSeq: Object,
         activeViz: Object
+    },
+    methods: {
+        closeCanvas: function() {
+            this.drawing.noLoop();
+            this.$emit('closeCanvas');
+        }
     },
     mounted: function(){
         console.log('Drawing with Visualizer: ', this.activeViz.name);
@@ -31,9 +40,8 @@ export default {
         activeSeq.initialize();
 
         const activeViz = this.activeViz;
-        console.log(activeViz);
 
-        const drawing = new p5(function(sketch){
+        this.drawing = new p5(function(sketch){
                 activeViz.initialize(sketch, activeSeq);
 
                 sketch.setup = function(){
@@ -48,16 +56,16 @@ export default {
 
 }, 'p5-goes-here');
 
-        drawing.setup();
-        drawing.draw();
+        this.drawing.setup();
+        this.drawing.draw();
 
     },
+    data: function() {
+        const drawing = {};
+        return drawing;
+    }
 }
 </script>
 
 <style scoped>
-.back-btn {
-    cursor: pointer;
-}
-
 </style>

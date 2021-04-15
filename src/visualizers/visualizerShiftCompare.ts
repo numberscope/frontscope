@@ -20,8 +20,6 @@ class VizShiftCompare extends VisualizerDefault implements VisualizerInterface {
 	constructor(){
 		super();
 
-		this.img = this.sketch.createImage(this.sketch.width, this.sketch.height);
-		this.img.loadPixels(); // Enables pixel-level editing.
 	}
 
 	initialize(sketch: p5, seq: SequenceInterface){
@@ -37,6 +35,8 @@ class VizShiftCompare extends VisualizerDefault implements VisualizerInterface {
 	}
 
 	setup() {
+		this.img = this.sketch.createImage(this.sketch.width, this.sketch.height);
+		this.img.loadPixels(); // Enables pixel-level editing.
 		console.log(this.sketch.height, this.sketch.width);
 	}
 
@@ -50,20 +50,23 @@ class VizShiftCompare extends VisualizerDefault implements VisualizerInterface {
 	}
 
 
-	draw() { //This will be called everytime to draw
+    //This will be called everytime to draw
+	draw() { 
 		// Ensure mouse coordinates are sane.
 		// Mouse coordinates look they're floats by default.
-		let mod = Number(this.settings.mod);
+        console.log('drawing');
+        console.log(this.img.pixels.length);
+		const mod = Number(this.settings.mod);
 
 		const d = this.sketch.pixelDensity();
 		const mx = this.clip(Math.round(this.sketch.mouseX), 0, this.sketch.width);
 		const my = this.clip(Math.round(this.sketch.mouseY), 0, this.sketch.height);
 		if (this.sketch.key == 'ArrowUp') {
-			mod += 1;
+			this.settings.mod += 1;
 			this.sketch.key = '';
-			console.log("UP PRESSED, NEW MOD: " + this.settings.mod);
+			console.log("UP PRESSED, NEW MOD: " + mod);
 		} else if (this.sketch.key == 'ArrowDown') {
-			mod -= 1;
+			this.settings.mod -= 1;
 			this.sketch.key = '';
 			console.log("DOWN PRESSED, NEW MOD: " + mod);
 		} else if (this.sketch.key == 'ArrowRight') {

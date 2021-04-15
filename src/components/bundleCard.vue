@@ -32,6 +32,7 @@ export default {
 
             sketch.draw = function(){
                 viz.draw();
+                console.log(sketch.frameCount);
                 if(sketch.frameCount >= 50){
                     sketch.noLoop();
                 }
@@ -40,7 +41,7 @@ export default {
         }, this.uid);
         thumb.setup();
         thumb.draw();
-        setTimeout(function(){thumb.noLoop()}, 1000)
+        //setTimeout(function(){thumb.noLoop()}, 1000)
     },
     methods : { },
     props: {
