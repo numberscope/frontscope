@@ -5,9 +5,11 @@ import { ParamType } from '@/shared/ParamType';
 import { ValidationStatus } from '@/shared/ValidationStatus';
 import { SequenceInterface } from '@/sequences/SequenceInterface';
 
+// CAUTION: This is unstable with some sequences
+// Using it may crash your browser
 class VizShiftCompare extends VisualizerDefault implements VisualizerInterface {
     name = "Shift Compare";
-	private img: p5.Image;
+	private img: p5.Image = new p5.Image();
 	params = [new VisualizerParamsSchema(
 		"mod",
 		ParamType.number,
@@ -19,7 +21,7 @@ class VizShiftCompare extends VisualizerDefault implements VisualizerInterface {
 
 	constructor(){
 		super();
-
+        this.settings.mod = 0; // settings this here to imply type Number
 	}
 
 	initialize(sketch: p5, seq: SequenceInterface){
@@ -56,30 +58,34 @@ class VizShiftCompare extends VisualizerDefault implements VisualizerInterface {
 		// Mouse coordinates look they're floats by default.
         console.log('drawing');
         console.log(this.img.pixels.length);
-		const mod = Number(this.settings.mod);
+		let mod = Number(this.settings.mod);
 
 		const d = this.sketch.pixelDensity();
 		const mx = this.clip(Math.round(this.sketch.mouseX), 0, this.sketch.width);
 		const my = this.clip(Math.round(this.sketch.mouseY), 0, this.sketch.height);
 		if (this.sketch.key == 'ArrowUp') {
-			this.settings.mod += 1;
+            mod += 1;
 			this.sketch.key = '';
 			console.log("UP PRESSED, NEW MOD: " + mod);
 		} else if (this.sketch.key == 'ArrowDown') {
-			this.settings.mod -= 1;
+            mod -= 1;
 			this.sketch.key = '';
 			console.log("DOWN PRESSED, NEW MOD: " + mod);
 		} else if (this.sketch.key == 'ArrowRight') {
 			console.log(console.log("MX: " + mx + " MY: " + my));
 		}
+        // since settings.mod can be any of string | number | bool, 
+        // first set mod which is always a number, then assign it here to avoid typing errors
+        this.settings.mod = mod;
 		// Write to image, then to screen for speed.
 		for (let x = 0; x < this.sketch.width; x++) {
-			for (let y = 0; y < this.sketch.height; y++) {
+            const xEl = this.seq.getElement(x);
+            for (let y = 0; y < this.sketch.height; y++) {
+            const yEl = this.seq.getElement(y);
 				for (let i = 0; i < d; i++) {
 					for (let j = 0; j < d; j++) {
 						const index = 4 * ((y * d + j) * this.sketch.width * d + (x * d + i));
-						const xEl = this.seq.getElement(x);
-						const yEl = this.seq.getElement(y);
+                        console.log('x,y: ' + xEl + ', ' + yEl);
 						if(xEl === undefined || yEl === undefined) return;
 						if (xEl % mod == yEl % mod) {
 							this.img.pixels[index] = 255;

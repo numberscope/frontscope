@@ -78,7 +78,7 @@ export default class OEISSequenceTemplate implements SequenceInterface{
      */
     getElement(n: number) {
         console.log('element requested')
-        console.log(this.cache[n]);
+        console.log('return el' + this.cache[n]);
         return this.cache[n];
     }
 }
