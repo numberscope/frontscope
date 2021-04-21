@@ -86,7 +86,10 @@ class VizShiftCompare extends VisualizerDefault implements VisualizerInterface {
 					for (let j = 0; j < d; j++) {
 						const index = 4 * ((y * d + j) * this.sketch.width * d + (x * d + i));
                         console.log('x,y: ' + xEl + ', ' + yEl);
-						if(xEl === undefined || yEl === undefined) return;
+						if(xEl === undefined || yEl === undefined) {
+                            this.sketch.noLoop();
+                            return;
+                        }
 						if (xEl % mod == yEl % mod) {
 							this.img.pixels[index] = 255;
 							this.img.pixels[index + 1] = 255;

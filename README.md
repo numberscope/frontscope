@@ -5,6 +5,14 @@
 npm install
 ```
 
+In order to use the app in conjunction with the API server, you will need to tell it where the server is running. Create a file called `.env.local` and add the line
+
+```
+VUE_APP_API_URL=localhost:5000
+```
+
+The localhost address should match whatever address is assigned to your local instance of the API server.
+
 ### Compiles and hot-reloads for development
 ```
 npm run serve

@@ -40,8 +40,8 @@ export default class OEISSequenceTemplate implements SequenceInterface{
     populate() {
         console.log("populating");
         if(this.isValid){
-            const elementsToFetch = this.settings.num_elements ? this.settings.num_elements : 1000;
-            axios.get(`http://localhost:5000/api/get_oeis_sequence/${this.settings.oeisId}/${elementsToFetch}`)
+            const elementsToFetch = this.settings.num_elements ? this.settings.num_elements : 10000;
+            axios.get(`http://${process.env.VUE_APP_API_URL}/api/get_oeis_sequence/${this.settings.oeisId}/${elementsToFetch}`)
                 .then( resp => {
                     this.cache = resp.data.values;
                     this.ready = true;
