@@ -37,12 +37,13 @@ class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 		return new ValidationStatus(true);
 	}
 
-	drawDifferences(n: number, levels: number, sequence: SequenceInterface) {
+	drawDifferences(n: bigint, lvls: number, sequence: SequenceInterface) {
 
 		//changed background color to grey since you can't see what's going on
 		this.sketch.background('black');
 
-		levels = Math.min(levels, n - 1);
+		const levels = lvls < n - 1n ? lvls : n - 1n;
+
 		const fontSize = 20;
 		this.sketch.textFont("Arial");
 		this.sketch.textSize(fontSize);
@@ -57,7 +58,7 @@ class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 
 		const workingSequence = [];
 
-		const start = Number(this.settings.n) - Number(this.settings.levels);
+		const start = Number(this.settings.n) - Number(levels);
 		const end = Number(this.settings.n);
 		const count = ((start + end) * (end - start + 1)) / 2;
 
@@ -88,7 +89,7 @@ class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 		console.log("Set up");
 	}
 	draw() {
-		this.drawDifferences(Number(this.settings.n), Number(this.settings.levels), this.seq);
+		this.drawDifferences(BigInt(this.settings.n), Number(this.settings.levels), this.seq);
 		this.sketch.noLoop();
 	}
 }
