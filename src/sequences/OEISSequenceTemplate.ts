@@ -17,7 +17,8 @@ export default class OEISSequenceTemplate implements SequenceInterface{
     params: SequenceParamsSchema[] = [
         new SequenceParamsSchema('oeisId', 'text', 'OEIS ID', false, false),
         new SequenceParamsSchema('name', 'text', 'Name', false, false),
-        new SequenceParamsSchema('numElements', 'number', 'Number of Elements (leave blank to fetch up to first 1000)', false, false)
+        new SequenceParamsSchema('numElements', 'number', 'Number of Elements (leave blank to fetch up to first 1000)', false, false),
+        new SequenceParamsSchema('modulo', 'number', 'Modulo to apply to the sequence', false, false)
     ];
     private settings: {[key: string]: number | string | boolean } = {};
     private ready: boolean;
@@ -40,10 +41,12 @@ export default class OEISSequenceTemplate implements SequenceInterface{
     populate() {
         console.log("populating");
         if(this.isValid){
-            const elementsToFetch = this.settings.num_elements ? this.settings.num_elements : 10000;
+            console.log(this.settings.numElements);
+            const elementsToFetch = this.settings.numElements ? this.settings.numElements : 1000;
             axios.get(`http://${process.env.VUE_APP_API_URL}/api/get_oeis_sequence/${this.settings.oeisId}/${elementsToFetch}`)
                 .then( resp => {
-                    this.cache = resp.data.values;
+                    this.cache = resp.data.values.map((x: string) => BigInt(x) % BigInt(this.settings.modulo));
+                    console.log(this.cache);
                     this.ready = true;
                     return;
                 });
