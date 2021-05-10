@@ -1,8 +1,8 @@
 High Priority
 
-- [ ] Implement adding sequences and handling backend sequences and OEIS
+- [x] Implement adding sequences and handling backend sequences and OEIS
 - [ ] Import/Export settings for seq and viz via JSON
-- [ ] "Add New +" sequence button allows adding new sequences to choose from
+- [x] "Add New +" sequence button allows adding new sequences to choose from
 - [ ] Get existing visualizers running in the app
 - [ ] Add interactivity (change params in a live viz)
 - [ ] Implement webhook or some way to notify the server of changes to the repo
