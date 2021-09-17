@@ -46,7 +46,6 @@ import visualizerS from '@/visualizers/visualizers';
 import SEQUENCES from '@/sequences/sequences';
 import { SequenceExportModule } from '@/sequences/SequenceInterface';
 
-
 export default {
   name: 'ToolMain',
   components: {
@@ -123,6 +122,3 @@ export default {
   }
 }
 </script>
-
-<style>
-</style>

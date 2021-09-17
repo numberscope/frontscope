@@ -22,18 +22,15 @@ export class SequenceParamsSchema {
     }
 }
 
-
 export interface GeneratorSettings {
     [paramName: string]: string | number | boolean;
 }
-
 
 /**
  * Interface for Sequence classes.
  * Every sequence class must implement these properties and functions to be compatible
  * with Numberscope.
  */
-
 export interface SequenceInterface {
     ID: number;
     name: string;

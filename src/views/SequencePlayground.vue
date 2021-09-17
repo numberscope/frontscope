@@ -56,11 +56,9 @@
 
 </template>
 
-
 <script>
 
 import axios from 'axios';
-
 
 export default {
   name: 'SequencePlayground',
@@ -78,7 +76,6 @@ export default {
             includeModulus: false,
     }
   },
-
 
   methods: {
     getMessage(seqId, modulus, num) {
@@ -113,8 +110,6 @@ export default {
   },
 };
 </script>
-
-
 
 <style>
 /* Text inside image TODO change this 

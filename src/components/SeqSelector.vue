@@ -11,9 +11,7 @@
     </div>
 </template>
 
-
 <script>
-
 export default {
     name: 'SeqSelector',
     props: {

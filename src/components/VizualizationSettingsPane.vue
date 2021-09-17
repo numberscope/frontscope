@@ -14,7 +14,3 @@ export default {
     props: ['vizParams']
 }
 </script>
-
-<style>
-
-</style>

@@ -1,5 +1,4 @@
 <template>
-
   <div class="mb-3">
     <h2>Sequences</h2>
     <ul class="list-group">
@@ -100,7 +99,6 @@ export default {
       }
   }
 }
-
 </script>
 
 <style scoped>

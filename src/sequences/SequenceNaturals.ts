@@ -1,5 +1,6 @@
 import { SequenceParamsSchema, SequenceExportModule, SequenceInterface } from './SequenceInterface';
 import {ValidationStatus} from '@/shared/ValidationStatus';
+
 /**
  *
  * @class SequenceClassNaturals

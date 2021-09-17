@@ -11,7 +11,6 @@
     </div>
 </template>
 
-
 <script>
 import p5 from '@/assets/p5.min.js'
 import StopDrawingButton from '@/components/StopDrawingButton.vue';

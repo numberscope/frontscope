@@ -4,7 +4,6 @@
     </a>
 </template>
 
-
 <script>
 export default {
     name: 'SeqGetter',

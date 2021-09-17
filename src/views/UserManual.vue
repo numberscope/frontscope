@@ -56,7 +56,6 @@
     </div>
 </template>
 
-
 <script>
 export default {
     name: 'UserManual',
@@ -113,7 +112,6 @@ export default {
     }
 }
 </script>
-
 
 <style>
 /* Text inside image TODO change this
