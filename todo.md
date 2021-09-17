@@ -1,4 +1,4 @@
-High Priority
+# High Priority
 
 - [x] Implement adding sequences and handling backend sequences and OEIS
 - [ ] Import/Export settings for seq and viz via JSON
@@ -10,7 +10,8 @@ High Priority
 - [ ] How to control having long loops
 - [ ] Implement a generic getter/setter for visualizer settings to prevent attempting to compare properties that don't exist
 
-Done
+# Done
+
 - [x] add an indication of what amount of compiling needs to be done to incorporate it (none?)
 - [x] maybe point out this.seq is how to get the sequence, and it has things like getElement()
 - [x] it would be nice to have some discussion of directory structure -- where do I put my new file?  where do I find the visualizerDifferences.ts to follow along?
