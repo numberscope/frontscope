@@ -1,6 +1,7 @@
 # Numberscope Frontend
 
 ## Project setup
+
 ```
 npm install
 ```
@@ -14,21 +15,25 @@ VUE_APP_API_URL=localhost:5000
 The localhost address should match whatever address is assigned to your local instance of the API server.
 
 ### Compiles and hot-reloads for development
+
 ```
 npm run serve
 ```
 
 ### Compiles and minifies for production
+
 ```
 npm run build
 ```
 
 ### Lints and fixes files
+
 ```
 npm run lint
 ```
 
 ### Customize configuration
+
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ### Canvas
@@ -36,7 +41,6 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 The canvas is currently 800x800 pixels.
 
 ## Building a Visualizer
-
 
 Big picture, every visualizer needs to implement the `visualizerInterface.ts` which provides the basic expectations of a visualizer. See below for the easy way to do this. These include the following:
 
@@ -82,9 +86,11 @@ In short, if you use `visualizerParamSchema` arrays to create params for your vi
 > The reason `settings` is not in the interface is that you aren't required to use them. The interface simply guarantees that the frontend UI engine gets what it expects, and since the only object that interacts with `settings` is the visualizer itself internally, you aren't forced to use `settings`. However, it's a good idea, and that's the pattern recommended by the default class.
 
 #### Validating
+
  This visualizer only has one validation check. It makes sure that the `number` is more than to the `levels`. If this is not the case, it will return a `ValidationStatus` with an error message that is displayed to the user on the settings popup. Otherwise, it sets the visualizer's `isValid` setting to `true` and then returns a passing `ValidationStatus`. This, and all specific validations, are unique to each visualizer, and you will probably want to create your own checks.
 
 #### Drawing your sequence
+
 `drawDifferences` is a helper function that is not required, but simplifies the `draw` function later on. This particular visualizer uses it to do the bulk of the drawing work.
 
 `setup` is mostly empty and just logs out a notice to the console, as this visualizer doesn't have any setup work to do.
