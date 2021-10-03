@@ -1,5 +1,5 @@
 const vizFiles = require.context('.', false, /\.ts$/)
-const vizMODULES: { [key: string]: Function } = {};
+const vizMODULES: { [key: string]: __WebpackModuleApi.RequireContext } = {};
 const vizKeyArray: string[] = [];
 vizFiles.keys().forEach((key) => {
      if (key === './index.js' || key === './modules.js') return

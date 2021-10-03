@@ -10,7 +10,7 @@ export class VisualizerDefault implements VisualizerInterface{
     settings: VisualizerSettings = {};
     ready = false;
     sketch: p5 = new p5(sketch => {return sketch});
-    seq: SequenceInterface = new SequenceClassDefault(0, false);
+    seq: SequenceInterface = new SequenceClassDefault(0);
     public isValid = false;
 
     /***
