@@ -58,16 +58,11 @@ class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 
 		const workingSequence = [];
 
-		const start = Number(this.settings.n) - Number(levels);
-		const end = Number(this.settings.n);
-		const count = ((start + end) * (end - start + 1)) / 2;
-
-		for (let i = 0; i < count; i++) {
+		for (let i = 0; i < n; i++) {
 			workingSequence.push(sequence.getElement(i)); //workingSequence cannibalizes first n elements of sequence.
 		}
 
-
-		for (let i = 0; i < this.settings.levels; i++) {
+		for (let i = 0; i < levels; i++) {
 			console.log(workingSequence);
 			hue = (i * 255 / 6) % 255;
 			myColor = this.sketch.color(hue, 150, 200);
@@ -79,7 +74,7 @@ class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 				}
 			}
 
-			workingSequence.length = workingSequence.length - 1; //Removes last element.
+			workingSequence.pop();
 			firstX = firstX + (1 / 2) * xDelta; //Moves line forward half for pyramid shape.
 
 		}
