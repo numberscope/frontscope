@@ -45,7 +45,11 @@ export default class OEISSequenceTemplate implements SequenceInterface{
             const elementsToFetch = this.settings.numElements ? this.settings.numElements : 1000;
             axios.get(`http://${process.env.VUE_APP_API_URL}/api/get_oeis_sequence/${this.settings.oeisId}/${elementsToFetch}`)
                 .then( resp => {
-                    this.cache = resp.data.values.map((x: string) => BigInt(x) % BigInt(this.settings.modulo));
+                    if (this.settings.modulo) {
+                        this.cache = resp.data.values.map((x: string) => BigInt(x) % BigInt(this.settings.modulo));
+                    } else {
+                        this.cache = resp.data.values.map((x: string) => BigInt(x));
+                    }
                     console.log(this.cache);
                     this.ready = true;
                     return;
