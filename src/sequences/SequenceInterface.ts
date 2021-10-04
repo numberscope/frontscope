@@ -55,12 +55,18 @@ export interface SequenceInterface {
     validate(): ValidationStatus;
 }
 
+interface SequenceConstructor {
+    new (ID: number): SequenceInterface;
+}
+
 export class SequenceExportModule{
-    sequence: Function;
+    sequence: SequenceConstructor
     name: string;
     isOeis = false;
 
-    constructor(sequence: Function, name: string, isOeis = false){
+    constructor(sequence: SequenceConstructor,
+                name: string,
+                isOeis = false) {
         this.sequence = sequence;
         this.name = name;
         this.isOeis = isOeis;

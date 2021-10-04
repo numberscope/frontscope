@@ -25,10 +25,11 @@ export class SequenceClassDefault implements SequenceInterface {
     }
 
     /**
-     * In the case of squences, initialize() is basically a rubber-stamp
-     * of successful validation.
+     * initialize() provides an opportunity to do pre-computation
+     * before any elements are requested; for a generic sequence there
+     * is not necessarily any way to do this.
      */
-    initialize() {
+    initialize(): void {
         if (this.isValid) {
             this.ready = true;
             return
@@ -41,8 +42,8 @@ export class SequenceClassDefault implements SequenceInterface {
      * getElement is how sequences provide their callers with elements.
      * @param n the sequence number to get
      */
-    getElement(n: number) {
-        return 0;
+    getElement(n: number): number {
+        return n;
     }
 
     /**
@@ -51,7 +52,7 @@ export class SequenceClassDefault implements SequenceInterface {
      * Once this is completed, if it returns a true ValidationStatus,
      * the sequence has enough information to begin generating sequence members.
      */
-    validate() {
+    validate(): ValidationStatus {
         this.params.forEach(param => {
             this.settings[param.name] = param.value;
         });

@@ -26,8 +26,8 @@ class SequenceConstant extends SequenceClassDefault {
 
     validate(): ValidationStatus{
         this.settings['name'] = 'Constant';
-	const svs = super.validate();
-	if (!svs.isValid) {
+        const svs = super.validate();
+        if (!svs.isValid) {
             return svs;
         }
 
