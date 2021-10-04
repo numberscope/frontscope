@@ -30,6 +30,7 @@ export class SequenceClassDefault implements SequenceInterface {
      * is not necessarily any way to do this.
      */
     initialize(): void {
+        if (this.ready) return;
         if (this.isValid) {
             this.ready = true;
             return

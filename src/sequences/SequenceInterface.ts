@@ -55,19 +55,27 @@ export interface SequenceInterface {
     validate(): ValidationStatus;
 }
 
-interface SequenceConstructor {
+export interface SequenceConstructor {
     new (ID: number): SequenceInterface;
 }
 
+/**
+ *
+ * @class SequenceExportModule
+ * A lightweight container for an entry in the list of sequences in the
+ * menu on the main tool. Can hold either a sequence constructor or a
+ * specific sequence according to whether isOeis is false or true, respectively.
+ *
+ */
 export class SequenceExportModule{
-    sequence: SequenceConstructor
+    constructorOrSequence: SequenceConstructor|SequenceInterface;
     name: string;
     isOeis = false;
 
-    constructor(sequence: SequenceConstructor,
+    constructor(sequence: SequenceConstructor|SequenceInterface,
                 name: string,
                 isOeis = false) {
-        this.sequence = sequence;
+        this.constructorOrSequence = sequence;
         this.name = name;
         this.isOeis = isOeis;
     }

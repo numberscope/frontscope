@@ -12,8 +12,8 @@ export class SequenceCached extends SequenceClassDefault {
     name = 'Cached Base';
     description = 'A base class for cached sequences';
     entries = 0;
-    private cache: number[];
-    private newSize = 1;
+    protected cache: number[];
+    protected newSize = 1;
 
     /**
      *Creates an instance of SequenceCached.
@@ -29,6 +29,7 @@ export class SequenceCached extends SequenceClassDefault {
     }
 
     initialize(): void {
+        if (this.ready) return;
         if (this.isValid) {
             if (this.entries > 0) {
                 this.newSize = this.entries;
@@ -46,6 +47,9 @@ export class SequenceCached extends SequenceClassDefault {
 
     resizeCache(n: number): void {
         this.newSize = this.cache.length * 2;
+        if (this.newSize < 100) {
+            this.newSize = 100;
+        }
         if (n + 1 > this.newSize) {
             this.newSize = n + 1;
         }
@@ -66,7 +70,9 @@ export class SequenceCached extends SequenceClassDefault {
         }
 	if (n >= this.cache.length) {
             this.resizeCache(n);
-            this.fillCache();
+            if (this.newSize > this.cache.length) {
+                this.fillCache();
+            }
 	}
         return this.cache[n];
     }
