@@ -30,9 +30,9 @@ class SequenceNaturals extends SequenceCached {
 
     validate(){
         this.settings['name'] = 'Constant';
-        const svs = super.validate();
-        if (!svs.isValid) {
-            return svs;
+        const superStatus = super.validate();
+        if (!superStatus.isValid) {
+            return superStatus;
         }
 
         if (this.settings['includeZero'] !== undefined) {
@@ -43,9 +43,10 @@ class SequenceNaturals extends SequenceCached {
                 this.name = "Nonnegative Integers";
             }
             return new ValidationStatus(true);
-        } else {
-            return new ValidationStatus(false, ["includeZero  param is missing"]);
         }
+
+        this.isValid = false;
+        return new ValidationStatus(false, ["includeZero  param is missing"]);
     }
 
     calculate(n: number) {

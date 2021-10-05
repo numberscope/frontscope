@@ -24,11 +24,11 @@ class SequenceConstant extends SequenceClassDefault {
         super(ID);
     }
 
-    validate(): ValidationStatus{
+    validate(): ValidationStatus {
         this.settings['name'] = 'Constant';
-        const svs = super.validate();
-        if (!svs.isValid) {
-            return svs;
+        const superStatus = super.validate();
+        if (!superStatus.isValid) {
+            return superStatus;
         }
 
         if (this.settings['constantValue'] !== undefined) {
@@ -36,9 +36,10 @@ class SequenceConstant extends SequenceClassDefault {
             this.value = Number(this.settings['constantValue']);
             this.name = 'Constant = ' + this.settings['constantValue'];
             return new ValidationStatus(true);
-        } else {
-            return new ValidationStatus(false, ["No constant value was provided."]);
         }
+
+        this.isValid = false;
+        return new ValidationStatus(false, ["No constant value was provided."]);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

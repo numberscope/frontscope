@@ -41,9 +41,9 @@ export default class OEISSequenceTemplate extends SequenceCached {
     }
 
     validate(): ValidationStatus {
-        const svs = super.validate();
-        if (!svs.isValid) {
-            return svs;
+        const superStatus = super.validate();
+        if (!superStatus.isValid) {
+            return superStatus;
         }
 
         if (this.settings['oeisId'] !== undefined) {
@@ -53,9 +53,10 @@ export default class OEISSequenceTemplate extends SequenceCached {
             }
             this.name = (this.settings['name'] as string);
             return new ValidationStatus(true);
-        } else {
-            return new ValidationStatus(false, ["oeisID paramter is missing"]);
         }
+
+        this.isValid = false;
+        return new ValidationStatus(false, ["oeisID paramter is missing"]);
     }
 
 }
