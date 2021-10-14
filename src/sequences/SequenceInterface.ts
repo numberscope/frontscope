@@ -22,10 +22,6 @@ export class SequenceParamsSchema {
     }
 }
 
-export interface GeneratorSettings {
-    [paramName: string]: string | number | boolean;
-}
-
 /**
  * Interface for Sequence classes.
  * Every sequence class must implement these properties and functions to be compatible
@@ -59,13 +55,27 @@ export interface SequenceInterface {
     validate(): ValidationStatus;
 }
 
+export interface SequenceConstructor {
+    new (ID: number): SequenceInterface;
+}
+
+/**
+ *
+ * @class SequenceExportModule
+ * A lightweight container for an entry in the list of sequences in the
+ * menu on the main tool. Can hold either a sequence constructor or a
+ * specific sequence according to whether isOeis is false or true, respectively.
+ *
+ */
 export class SequenceExportModule{
-    sequence: Function;
+    constructorOrSequence: SequenceConstructor|SequenceInterface;
     name: string;
     isOeis = false;
 
-    constructor(sequence: Function, name: string, isOeis = false){
-        this.sequence = sequence;
+    constructor(sequence: SequenceConstructor|SequenceInterface,
+                name: string,
+                isOeis = false) {
+        this.constructorOrSequence = sequence;
         this.name = name;
         this.isOeis = isOeis;
     }

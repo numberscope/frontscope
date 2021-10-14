@@ -1,5 +1,6 @@
 import { SequenceParamsSchema, SequenceInterface } from './SequenceInterface'
 import { ValidationStatus } from '@/shared/ValidationStatus';
+
 /**
  *
  * @class SequenceClassDefault
@@ -9,32 +10,28 @@ import { ValidationStatus } from '@/shared/ValidationStatus';
  */
 export class SequenceClassDefault implements SequenceInterface {
     ID: number;
-    cache: number[];
-    finite: boolean;
     name = 'Base';
     description = 'A Base sequence class';
     params: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', 'displayName', false, '0')];
     ready: boolean;
     isValid: boolean;
 
-    private settings: { [key: string]: string|number|boolean} = {};
+    protected settings: { [key: string]: string|number|boolean} = {};
 
-    constructor(ID: number, finite?: boolean) {
+    constructor(ID: number) {
         this.ID = ID;
-        this.cache = [];
-        this.finite = finite || true;
         this.ready = false;
         this.isValid = false;
     }
 
     /**
-     * Sets the sequence parameters based on the user input, constrained by the 
-     * paramSchema settings that were passed to the UI and returned.
-     * Once this is completed, the sequence has enough information to begin generating sequence members.
-     * @param paramsFromUser user settings for the sequence passed from the UI
+     * initialize() provides an opportunity to do pre-computation
+     * before any elements are requested; for a generic sequence there
+     * is not necessarily any way to do this.
      */
-    initialize(){
-        if(this.isValid) {
+    initialize(): void {
+        if (this.ready) return;
+        if (this.isValid) {
             this.ready = true;
             return
         } else {
@@ -46,14 +43,20 @@ export class SequenceClassDefault implements SequenceInterface {
      * getElement is how sequences provide their callers with elements.
      * @param n the sequence number to get
      */
-    getElement(n: number) {
-        return n * 0;
+    getElement(n: number): number {
+        return n;
     }
 
-    validate() {
-		this.params.forEach(param => {
+    /**
+     * Moves the parameter values to the sequence settings,
+     * and checks that the resulting settings are acceptable.
+     * Once this is completed, if it returns a true ValidationStatus,
+     * the sequence has enough information to begin generating sequence members.
+     */
+    validate(): ValidationStatus {
+        this.params.forEach(param => {
             this.settings[param.name] = param.value;
-		});
+        });
 
         if(this.settings['name'] !== undefined) {
             this.isValid = true;

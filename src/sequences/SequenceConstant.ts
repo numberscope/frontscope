@@ -1,59 +1,50 @@
 import { ValidationStatus } from '@/shared/ValidationStatus';
-import { SequenceInterface, SequenceParamsSchema, SequenceExportModule } from './SequenceInterface';
+import { SequenceParamsSchema, SequenceExportModule } from './SequenceInterface';
+import { SequenceClassDefault } from './SequenceClassDefault';
+
 /**
  *
  * @class SequenceConstant
- * extends the sequenceClassDefault, by setting params and some custom implementation
- * for the generator and the fillCache function.
+ * Extends the sequenceClassDefault, by changing the parameter schema
+ * and reimplementing the getElement function.
  */
-class SequenceConstant implements SequenceInterface{
-    ID: number;
+class SequenceConstant extends SequenceClassDefault {
     name = "Constant Sequence";
     description = "A sequence that is constant";
-    params: SequenceParamsSchema[] = [new SequenceParamsSchema(
+    params = [new SequenceParamsSchema(
         'constantValue',
         'number',
         'Constant Value',
         false,
         '0'
     )];
-    private settings: { [key: string]: string|number|boolean} = {};
-    private requested = 0;
-    private ready = false;
-    private finite = false;
-    private isValid = false;
+    value = -1;
 
-    constructor(ID: number, finite?: boolean) {
-        this.ID = ID;
-        this.finite = finite || true;
-        this.ready = false;
+    constructor(ID: number) {
+        super(ID);
     }
 
-    initialize(){
-        if(this.isValid){
-            this.ready = true;
-            return;
-        } else {
-            throw "Sequence is not valid. Run validate() and address any errors."
+    validate(): ValidationStatus {
+        this.settings['name'] = 'Constant';
+        const superStatus = super.validate();
+        if (!superStatus.isValid) {
+            return superStatus;
         }
-    }
 
-    validate(): ValidationStatus{
-		this.params.forEach(param => {
-            this.settings[param.name] = param.value;
-		});
-
-        if(this.settings['constantValue'] !== undefined) {
+        if (this.settings['constantValue'] !== undefined) {
             this.isValid = true;
+            this.value = Number(this.settings['constantValue']);
+            this.name = 'Constant = ' + this.settings['constantValue'];
             return new ValidationStatus(true);
-        } else {
-            return new ValidationStatus(false, ["No constant value was provided."]);
         }
+
+        this.isValid = false;
+        return new ValidationStatus(false, ["No constant value was provided."]);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     getElement(n: number) {
-        this.requested = n;
-        return Number(this.settings.constantValue);
+        return this.value;
     }
 }
 

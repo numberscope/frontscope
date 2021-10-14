@@ -14,12 +14,14 @@
 </template>
 
 <script>
+import Vue from 'vue'
 import p5 from '@/assets/p5.min.js'
 
-export default {
+export default Vue.extend({
     name: 'BundleCard',
     mounted: function(){
         const seq = this.seq;
+        seq.initialize();
         const viz = this.viz;
         const thumb = new p5(function(sketch){
             viz.initialize(sketch, seq);
@@ -48,7 +50,7 @@ export default {
         seq: Object,
         viz: Object
         }
-    }
+    })
 </script>
 
 <style scoped>

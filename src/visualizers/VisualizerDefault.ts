@@ -5,19 +5,19 @@ import p5 from 'p5';
 import { SequenceInterface } from '@/sequences/SequenceInterface';
 import { SequenceClassDefault } from '@/sequences/SequenceClassDefault';
 
-export class VisualizerDefault implements VisualizerInterface{
+export class VisualizerDefault implements VisualizerInterface {
     params: VisualizerParamsSchema[] = [];
     settings: VisualizerSettings = {};
     ready = false;
     sketch: p5 = new p5(sketch => {return sketch});
-    seq: SequenceInterface = new SequenceClassDefault(0, false);
+    seq: SequenceInterface = new SequenceClassDefault(0);
     public isValid = false;
 
     /***
       Sets the sketch and the sequence to draw with
       This is also where you would generate any settings or draw functions if needed
       */
-	initialize(sketch: p5, seq: SequenceInterface) {
+	initialize(sketch: p5, seq: SequenceInterface): void {
         if(this.isValid){
             this.sketch = sketch;
             this.seq = seq;
@@ -36,27 +36,27 @@ export class VisualizerDefault implements VisualizerInterface{
       The default validation is always false, since it is automatically used by its children
       so you are required to define a new validate function for every visualizer.
       */
-    validate() {
+    validate(): ValidationStatus {
         this.assignParams();
         this.isValid = false;
         return new ValidationStatus(false, ["This is the default validation function. Please define one for this visualizer"]);
     }
 
-    assignParams(){
-		this.params.forEach(param => {
+    assignParams(): void {
+        this.params.forEach(param => {
             let paramValue = param.value;
             if(param.type == ParamType.number) paramValue = Number(paramValue);
             else if(param.type == ParamType.text) paramValue = String(paramValue);
             else if(param.type == ParamType.boolean) paramValue = Boolean(paramValue);
 			this.settings[param.name] = paramValue;
-		});
+        });
     }
 
-    setup(){
+    setup(): void {
         return;
     }
 
-    draw() {
+    draw(): void {
         return;
     }
 }
