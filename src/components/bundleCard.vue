@@ -13,9 +13,9 @@
 </div>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from 'vue'
-import p5 from '@/assets/p5.min.js'
+import p5 from 'p5'
 
 export default Vue.extend({
     name: 'BundleCard',
@@ -40,7 +40,7 @@ export default Vue.extend({
                 }
             }
 
-        }, this.uid);
+        }, (document.getElementById(this.uid) as HTMLElement));
         thumb.setup();
         thumb.draw();
         //setTimeout(function(){thumb.noLoop()}, 1000)

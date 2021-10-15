@@ -56,11 +56,12 @@
 
 </template>
 
-<script>
+<script lang="ts">
 
+import Vue from 'vue'
 import axios from 'axios';
 
-export default {
+export default Vue.extend({
   name: 'SequencePlayground',
   data() {
     return {
@@ -72,13 +73,14 @@ export default {
                       {text : "Prime Numbers", value: "A000040"},
                       {text : "Triangle Numbers", value: "A000217"}
             ],
+            msg: "",
             sequence: [],
             includeModulus: false,
     }
   },
 
   methods: {
-    getMessage(seqId, modulus, num) {
+    getMessage(seqId: string, modulus: number, num: number) {
 
         /* const path_prefix = `http://128.138.150.182/api/get_sequence`; */
 
@@ -108,7 +110,7 @@ export default {
         });
     },
   },
-};
+});
 </script>
 
 <style>
