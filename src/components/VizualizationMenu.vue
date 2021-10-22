@@ -20,11 +20,14 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from 'vue'
+import { VisualizerInterface,
+         VisualizerExportModule } from '@/visualizers/VisualizerInterface'
 import VizSelector from '@/components/ToolSelector.vue'
 import SeqVizParamsModal from '@/components/SeqVizParamsModal.vue'
 
-export default {
+export default Vue.extend({
   name: 'VizualizationMenu',
   props: {
     visualizers: Array,
@@ -42,7 +45,7 @@ export default {
     closeParamsModal: function() {
       this.showModal = false;
     },
-    setParams: function(viz) {
+    setParams: function(viz: VisualizerExportModule) {
       this.livevisualizer = new viz.visualizer();
       this.openParamsModal();  
     },
@@ -61,11 +64,11 @@ export default {
   data: function(){
     return {
         showModal: false,
-        livevisualizer: { paramsSchema: []},
-        errors: []
+        livevisualizer: ({} as VisualizerInterface), // To get the type correct
+        errors: ([] as string[])                     // ditto
     } 
   }
-}
+})
 </script>
 
 <style scoped>

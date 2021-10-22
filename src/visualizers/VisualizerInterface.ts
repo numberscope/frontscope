@@ -3,12 +3,16 @@ import { ValidationStatus } from '@/shared/ValidationStatus';
 import { ParamType } from '@/shared/ParamType';
 import p5 from 'p5';
 
+interface VisualizerConstructor {
+  new (): VisualizerInterface;
+}
+
 export class VisualizerExportModule {
     name: string;
     description: string;
-    visualizer: Function;
+    visualizer: VisualizerConstructor;
 
-    constructor(name: string, viz: Function, description?: string,){
+    constructor(name: string, viz: VisualizerConstructor, description?: string,){
         this.name = name;
         this.visualizer = viz;
         this.description = description || '';
@@ -47,6 +51,7 @@ export interface VisualizerSettings {
 }
 
 export interface VisualizerInterface {
+
     isValid: boolean;
     /**
      * The parameters for the visualizer to initialize.

@@ -42,10 +42,11 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from 'vue'
 import { ParamType } from '@/shared/ParamType';
 
-export default {
+export default Vue.extend({
     name: 'SeqVizParamsModal',
     methods: {
     },
@@ -57,7 +58,7 @@ export default {
     computed: {
         ParamType: () => ParamType
     }
-}
+})
 </script>
 
 <style scoped>

@@ -11,11 +11,12 @@
     </div>
 </template>
 
-<script>
-import p5 from '@/assets/p5.min.js'
+<script lang="ts">
+import Vue from 'vue'
+import p5 from 'p5'
 import StopDrawingButton from '@/components/StopDrawingButton.vue';
 
-export default {
+export default Vue.extend({
     name: 'CanvasArea',
     components: {
         StopDrawingButton
@@ -25,12 +26,12 @@ export default {
         activeViz: Object
     },
     methods: {
-        closeCanvas: function() {
+        closeCanvas: function(): void {
             this.drawing.noLoop();
             this.$emit('closeCanvas');
         }
     },
-    mounted: function(){
+    mounted: function(): void {
         console.log('Drawing with Visualizer: ', this.activeViz.name);
         console.log('Drawing with Sequence', this.activeSeq.name);
 
@@ -53,17 +54,16 @@ export default {
                     activeViz.draw();
                 }
 
-}, 'p5-goes-here');
+            }, (document.getElementById('p5-goes-here') as HTMLElement));
 
         this.drawing.setup();
         this.drawing.draw();
 
     },
     data: function() {
-        const drawing = {};
-        return drawing;
+        return {drawing: ({} as p5)};  // To get correct type
     }
-}
+})
 </script>
 
 <style scoped>

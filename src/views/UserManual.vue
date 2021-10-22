@@ -56,18 +56,21 @@
     </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+
+import Vue from 'vue'
+
+export default Vue.extend({
     name: 'UserManual',
     data() {
       return {
         tool: 'Tool',
-        params: [],
+        params: ([] as {text: string}[]), // get the type correct
         desc: 'Select a tool on the left to learn about it.'
       }
     },
     methods: {
-      swapManual: function(manual) {
+      swapManual: function(manual: string) {
         switch(manual) {
           case 'differences':
             this.tool = "Differences";
@@ -110,7 +113,7 @@ export default {
         }
       }
     }
-}
+})
 </script>
 
 <style>

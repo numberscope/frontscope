@@ -36,17 +36,20 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
 
+import Vue from 'vue'
 import VizualizationMenu from '@/components/VizualizationMenu.vue';
 import SequenceMenu from '@/components/SequenceMenu.vue';
 import CanvasArea from '@/components/CanvasArea.vue';
 import BundleManager from '@/components/BundleManager.vue';
 import visualizerS from '@/visualizers/visualizers';
 import SEQUENCES from '@/sequences/sequences';
-import { SequenceExportModule } from '@/sequences/SequenceInterface';
+import { SequenceInterface,
+         SequenceExportModule } from '@/sequences/SequenceInterface';
+import { VisualizerInterface  } from '@/visualizers/VisualizerInterface';
 
-export default {
+export default Vue.extend({
   name: 'ToolMain',
   components: {
     VizualizationMenu,
@@ -55,13 +58,13 @@ export default {
     BundleManager
   },
   methods: {
-    setActiveViz: function(newViz){
+    setActiveViz: function(newViz: VisualizerInterface) {
       this.activeViz = newViz
     },
-    setActiveSeq: function(newSeq){
+    setActiveSeq: function(newSeq: SequenceInterface) {
         this.activeSeq = newSeq;
     },
-    addOeisSeq: function(newOeisSeq){
+    addOeisSeq: function(newOeisSeq: SequenceInterface) {
       const seqBundle = new SequenceExportModule(
         newOeisSeq,
         newOeisSeq.name,
@@ -69,7 +72,7 @@ export default {
       )
       this.sequences.push(seqBundle);
     },
-    bundleSeqVizPair: function(){
+    bundleSeqVizPair: function() {
         const bundle = {
             seq: this.activeSeq,
             viz: this.activeViz
@@ -77,7 +80,8 @@ export default {
         this.seqVizPairs.push(bundle);
         this.clearActive();
     },
-    drawBundle: function(seqVizBundle){
+    drawBundle: function(seqVizBundle: {seq:SequenceInterface;
+                                        viz:VisualizerInterface}) {
       console.log(seqVizBundle)
       this.activeSeq = seqVizBundle.seq;
       this.activeViz = seqVizBundle.viz;
@@ -88,37 +92,29 @@ export default {
       this.drawingActive = false;
     },
     clearActive: function() {
-      this.activeViz = {};
-      this.activeSeq = {};
+      this.activeViz = null;
+      this.activeSeq = null;
     }
   },
   data: function(){
     const visualizers = []
     const sequences = []
-    // We are grooming the raw visualizerS and SEQUENCES module into something
-    // we can use by looking for only modules that have an 
-    // export module (ie, aren't utility files)
     for (const vizKey in visualizerS){
-      const theModule = visualizerS[vizKey]
-      if(theModule.exportModule){
-        visualizers.push(theModule.exportModule);
-      }
+        visualizers.push(visualizerS[vizKey]);
     }
     for (const seqKey in SEQUENCES){
-      const theModule = SEQUENCES[seqKey]
-      if(theModule.exportModule){
-        sequences.push(theModule.exportModule);
-      }
+        sequences.push(SEQUENCES[seqKey]);
     }
     const state = {
       visualizers: visualizers,
       sequences: sequences,
-      seqVizPairs: [],
-      activeViz: {},
-      activeSeq: {},
+      seqVizPairs: ([] as {seq:SequenceInterface|null;   // Get the type correct
+                           viz:VisualizerInterface|null}[]),
+      activeViz: (null as VisualizerInterface|null),     // ditto
+      activeSeq: (null as SequenceInterface|null),       // ditto
       drawingActive: false
     }
     return state
   }
-}
+})
 </script>
