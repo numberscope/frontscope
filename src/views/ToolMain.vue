@@ -71,6 +71,7 @@ export default Vue.extend({
         true
       )
       this.sequences.push(seqBundle);
+      this.setActiveSeq(newOeisSeq);
     },
     bundleSeqVizPair: function() {
         const bundle = {
