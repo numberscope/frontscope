@@ -8,6 +8,8 @@ jest.mock( './VisualizerDefault' );
 
 beforeEach( () => {
   // clear all instances and calls to constructor and all methods
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   VisualizerDefault.mockClear();
 } );
 
@@ -46,7 +48,7 @@ test( 'if class constructor hasn\'t been called', () => {
 } );
 
 test( 'if class constructor has been called once', () => {
-  const visualzier = new VisualizerDefault(); // eslint-disable-line @typescript-eslint/no-unused-vars
+  new VisualizerDefault();
   expect( VisualizerDefault ).toHaveBeenCalledTimes( 1 );
 } );
 
