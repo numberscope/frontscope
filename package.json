@@ -39,6 +39,7 @@
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^7.18.0",
     "jest": "^27.2.5",
+    "ts-node": "^10.4.0",
     "typescript": "~3.8.3",
     "vue-loader": "^15.9.1",
     "vue-template-compiler": "^2.6.11"
