@@ -1,5 +1,6 @@
 import { ValidationStatus } from '@/shared/ValidationStatus';
-import { SequenceParamsSchema, SequenceExportModule } from './SequenceInterface';
+import { SequenceParamsSchema, SequenceExportModule,
+         SequenceExportKind } from './SequenceInterface';
 import { SequenceCached } from './SequenceCached';
 import * as math from 'mathjs';
 
@@ -74,5 +75,6 @@ class SequenceFormula extends SequenceCached {
 
 export const exportModule = new SequenceExportModule(
     SequenceFormula,
-    "Sequence by Formula"
+    "Sequence by Formula",
+    SequenceExportKind.FAMILY
 );

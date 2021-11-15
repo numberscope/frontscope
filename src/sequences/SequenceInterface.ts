@@ -61,22 +61,42 @@ export interface SequenceConstructor {
 
 /**
  *
+ * @enum SequenceExportKind
+ * A collection of constant values to select among different kinds of
+ * buttons that can appear in the SequenceMenu. Each SequenceExportModule
+ * corresponds to such a button and must have one of these kinds.
+ *
+ */
+export enum SequenceExportKind {
+    GETTER,  // Produces new INSTANCES for the SequenceMenu; always
+             // listed at the bottom of the SequenceMenu
+    FAMILY,  // A single entry in the SequenceMenu that needs parameters
+             // whenever used
+    INSTANCE // A single sequence in the SequenceMenu, added by a FACTORY
+}
+/**
+ *
  * @class SequenceExportModule
  * A lightweight container for an entry in the list of sequences in the
- * menu on the main tool. Can hold either a sequence constructor or a
- * specific sequence according to whether isOeis is false or true, respectively.
+ * menu on the main tool. If the kind is GETTER or FAMILY it holds a
+ * sequence constructor and if it is an INSTANCE then it holds one
+ * specific sequence.
+ *
+ * The difference between a GETTER and a FAMILY is that the former creates
+ * a new INSTANCE selector in the menu, whereas the former starts out in the
+ * menu and you fill out the parameters each time you use it.
  *
  */
 export class SequenceExportModule{
     constructorOrSequence: SequenceConstructor|SequenceInterface;
     name: string;
-    isOeis = false;
+    kind: SequenceExportKind;
 
     constructor(sequence: SequenceConstructor|SequenceInterface,
                 name: string,
-                isOeis = false) {
+                kind: SequenceExportKind) {
         this.constructorOrSequence = sequence;
         this.name = name;
-        this.isOeis = isOeis;
+        this.kind = kind;
     }
 }

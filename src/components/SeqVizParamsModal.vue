@@ -33,8 +33,8 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button v-if="!loadingOeis" v-on:click="$emit('submitParams')" type="button" class="btn btn-primary">Save changes</button>
-            <button v-if="loadingOeis" v-on:click="$emit('submitOeisParams')" type="button" class="btn btn-primary">Load OEIS data</button>
+            <button v-if="!loadingInstance" v-on:click="$emit('submitParams')" type="button" class="btn btn-primary">Save changes</button>
+            <button v-if="loadingInstance" v-on:click="$emit('submitInstance')" type="button" class="btn btn-primary">Add this sequence</button>
             <button v-on:click="$emit('closeModal')" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
         </div>
@@ -53,7 +53,7 @@ export default Vue.extend({
     props: {
         params: Array,
         errors: Array,
-        loadingOeis: Boolean
+        loadingInstance: Boolean
     },
     computed: {
         ParamType: () => ParamType
