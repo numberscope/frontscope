@@ -1,5 +1,6 @@
 import { ValidationStatus } from '@/shared/ValidationStatus';
-import { SequenceParamsSchema } from './SequenceInterface';
+import { SequenceParamsSchema, SequenceExportModule,
+         SequenceExportKind } from './SequenceInterface';
 import { SequenceCached } from './SequenceCached';
 
 import axios from 'axios'
@@ -60,3 +61,9 @@ export default class OEISSequenceTemplate extends SequenceCached {
     }
 
 }
+
+export const exportModule = new SequenceExportModule(
+    OEISSequenceTemplate,
+    "Add OEIS Sequence",
+    SequenceExportKind.GETTER
+);

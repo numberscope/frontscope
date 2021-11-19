@@ -1,5 +1,6 @@
 import { ValidationStatus } from '@/shared/ValidationStatus';
-import { SequenceParamsSchema, SequenceExportModule } from './SequenceInterface';
+import { SequenceParamsSchema, SequenceExportModule,
+         SequenceExportKind } from './SequenceInterface';
 import { SequenceCached } from './SequenceCached';
 
 /**
@@ -57,5 +58,6 @@ class SequenceNaturals extends SequenceCached {
 
 export const exportModule = new SequenceExportModule(
     SequenceNaturals,
-    "Natural Numbers"
+    "Natural Numbers",
+    SequenceExportKind.FAMILY
 );

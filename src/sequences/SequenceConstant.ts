@@ -1,5 +1,6 @@
 import { ValidationStatus } from '@/shared/ValidationStatus';
-import { SequenceParamsSchema, SequenceExportModule } from './SequenceInterface';
+import { SequenceParamsSchema, SequenceExportModule,
+         SequenceExportKind } from './SequenceInterface';
 import { SequenceClassDefault } from './SequenceClassDefault';
 
 /**
@@ -50,5 +51,6 @@ class SequenceConstant extends SequenceClassDefault {
 
 export const exportModule = new SequenceExportModule(
     SequenceConstant,
-    "Constant Sequence"
+    "Constant Sequence",
+    SequenceExportKind.FAMILY
 );

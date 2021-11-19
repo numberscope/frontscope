@@ -1,6 +1,6 @@
 <template>
     <a v-on:click="$emit('load-seq')">
-        <li class="list-group-item">Get Sequence</li>
+        <li class="list-group-item">{{ title }}</li>
     </a>
 </template>
 
@@ -8,7 +8,8 @@
 export default {
     name: 'SeqGetter',
     props: {
-        oeisId: String
+        title: String,
+        instanceId: String
     }
 }
 </script>

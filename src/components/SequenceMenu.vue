@@ -3,25 +3,28 @@
     <h2>Sequences</h2>
     <ul class="list-group">
         <SeqSelector
-            v-for="seq in sequences"
+            v-for="seq in isGetter(sequences, false)"
             v-bind:title="seq.name"
-            v-bind:isOeis="seq.isOeis"
+            v-bind:isInstance="seq.kind == instanceKind"
             v-bind:key="seq.id"
             v-on:set-seq-params="setParams(seq)"
-            v-on:stage-oeis-seq="createSeq(true, seq)"
+            v-on:stage-instance="createSeq(true, seq)"
             >
             </SeqSelector>
         <hr>
-        <SeqGetter v-on:load-seq="loadSeq"></SeqGetter>
+        <SeqGetter v-for="seq in isGetter(sequences, true)"
+            v-bind:title="seq.name"
+            v-bind:key="seq.id"
+            v-on:load-seq="loadSeq(seq)"></SeqGetter>
     </ul>
-    <SeqVizParamsModal 
+    <SeqVizParamsModal
         v-if="showModal"
         v-bind:params="liveSequence.params"
         v-bind:errors="errors"
-        v-bind:loading-oeis="loadingOeis"
+        v-bind:loading-instance="loadingInstance"
         v-on:closeModal="closeParamsModal"
         v-on:submitParams="createSeq"
-        v-on:submitOeisParams="createOeisSeq">
+        v-on:submitInstance="createInstance">
     </SeqVizParamsModal>
   </div>
 </template>
@@ -31,8 +34,8 @@ import Vue from 'vue'
 import SeqSelector from '@/components/SeqSelector.vue'
 import SeqGetter from '@/components/SeqGetter.vue'
 import SeqVizParamsModal from '@/components/SeqVizParamsModal.vue'
-import OEISSequenceTemplate from '@/sequences/OEISSequenceTemplate.ts'
-import { SequenceInterface, SequenceConstructor, SequenceExportModule } from '@/sequences/SequenceInterface.ts'
+import { SequenceInterface, SequenceConstructor,
+         SequenceExportModule, SequenceExportKind } from '@/sequences/SequenceInterface.ts'
 import { SequenceClassDefault } from '@/sequences/SequenceClassDefault.ts'
 
 export default Vue.extend({
@@ -55,7 +58,7 @@ export default Vue.extend({
         this.showModal = false;
     },
     setParams: function(seq: SequenceExportModule) {
-      if (seq.isOeis) {
+      if (seq.kind == SequenceExportKind.INSTANCE) {
         this.$emit("createSeq", this.liveSequence);
       } else {
         const constructor = (seq.constructorOrSequence as SequenceConstructor);
@@ -63,15 +66,20 @@ export default Vue.extend({
         this.openParamsModal();
       }
     },
-    loadSeq: function() {
-      this.liveSequence = new OEISSequenceTemplate(this.sequences.length);
-      this.loadingOeis = true;
+    isGetter: function(items: SequenceExportModule[], which: boolean) {
+      return items.filter(item =>
+        (item.kind === SequenceExportKind.GETTER) === which)
+    },
+    loadSeq: function(seq: SequenceExportModule) {
+      const constructor = (seq.constructorOrSequence as SequenceConstructor);
+      this.liveSequence = new constructor(this.sequences.length);
+      this.loadingInstance = true;
       this.openParamsModal();
     },
-    createSeq: function(oeis: boolean, activeSeq: SequenceExportModule) {
+    createSeq: function(isInstance: boolean, activeSeq: SequenceExportModule) {
       console.log(activeSeq)
-      if (oeis) {
-          // OEIS sequences are not constructed
+      if (isInstance) {
+          // instances are already constructed
           this.liveSequence =
               (activeSeq.constructorOrSequence as SequenceInterface);
       }
@@ -85,14 +93,14 @@ export default Vue.extend({
         this.errors = validationResult.errors;
       }
     },
-    createOeisSeq: function() {
+    createInstance: function() {
       const validationResult = this.liveSequence.validate();
       if(validationResult.isValid){
         this.errors = [];
         this.closeParamsModal();
         this.liveSequence.initialize();
-        this.loadingOeis = false;
-        this.$emit("addOeisSeq", this.liveSequence);
+        this.loadingInstance = false;
+        this.$emit("addInstance", this.liveSequence);
       } else {
         this.errors = validationResult.errors;
       }
@@ -101,8 +109,9 @@ export default Vue.extend({
   data: function(){
       return {
         showModal: false,
+        instanceKind: SequenceExportKind.INSTANCE,
         liveSequence: ((new SequenceClassDefault(0)) as SequenceInterface),
-        loadingOeis: false,
+        loadingInstance: false,
         errors: ([] as string[])
       }
   }
