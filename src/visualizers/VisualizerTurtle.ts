@@ -12,7 +12,7 @@ const schemaTurtle = [
 		'Sequence Domain',
 		true,
 		"0,1,2,3,4",
-		'Comma seperated numbers',
+		'Comma-separated numbers',
 	),
 	new VisualizerParamsSchema(
 		"range",
@@ -20,7 +20,7 @@ const schemaTurtle = [
 		'Angles',
 		true,
 		"30,45,60,90,120",
-		'Comma seperated numbers',
+		'Comma-separated numbers',
 	),
 	new VisualizerParamsSchema(
 		"stepSize",
@@ -130,19 +130,19 @@ class VisualizerTurtle extends VisualizerDefault implements VisualizerInterface 
 	}
 
 	draw() {
-		const currElement = this.seq.getElement(this.currentIndex++);
-		const angle = this.rotMap[currElement];
+		const elt = Number(this.seq.getElement(this.currentIndex++));
+		const angle = this.rotMap[elt];
 
 		if (angle == undefined) this.sketch.noLoop();
 
-        const oldX = this.X;
-        const oldY = this.Y;
+		const oldX = this.X;
+		const oldY = this.Y;
 
-        this.orientation = (this.orientation + angle);
-        this.X += Number(this.settings.stepSize) * Math.cos(this.orientation);
-        this.Y += Number(this.settings.stepSize) * Math.sin(this.orientation);
+		this.orientation = (this.orientation + angle);
+		this.X += Number(this.settings.stepSize) * Math.cos(this.orientation);
+		this.Y += Number(this.settings.stepSize) * Math.sin(this.orientation);
 
-        this.sketch.line(oldX,oldY,this.X,this.Y);
+		this.sketch.line(oldX,oldY,this.X,this.Y);
 	}
 }
 

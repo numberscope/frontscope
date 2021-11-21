@@ -68,7 +68,7 @@ class SequenceFormula extends SequenceCached {
     }
 
     calculate(n: number) {
-        return this.formula.evaluate({n: n});
+        return BigInt(this.formula.evaluate({n: n}));
     }
 
 }

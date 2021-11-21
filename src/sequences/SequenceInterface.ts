@@ -43,14 +43,16 @@ export interface SequenceInterface {
     initialize(): void;
 
     /**
-     * Get element is what the drawing tools will be calling, it retrieves
-     * the nth element of the sequence by either getting it from the cache
-     * or if isn't present, by building the cache and then getting it
+     * getElement is what the drawing tools will be calling. It retrieves
+     * the nth element of the sequence; if there is no such element (i.e., the
+     * sequence has no nth term), it returns "undefined." The latter value is
+     * chosen because narrowing the type away from undefined is probably just
+     * a bit easier in TypeScript.
      * @param {*} n the index of the element in the sequence we want
      * @returns a number
      * @memberof SequenceGenerator
      */
-    getElement(n: number): number;
+    getElement(n: number): bigint | undefined;
 
     validate(): ValidationStatus;
 }

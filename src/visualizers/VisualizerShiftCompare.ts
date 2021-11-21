@@ -16,7 +16,7 @@ class VizShiftCompare extends VisualizerDefault implements VisualizerInterface {
 		"Mod factor",
 		true,
 		2,
-		"The shift that will be applied"
+		"The modulus used for comparing terms"
 	)];
 
 	constructor(){
@@ -53,63 +53,61 @@ class VizShiftCompare extends VisualizerDefault implements VisualizerInterface {
 
 
     //This will be called everytime to draw
-	draw() { 
-		// Ensure mouse coordinates are sane.
-		// Mouse coordinates look they're floats by default.
+    draw() {
+        // Ensure mouse coordinates are sane.
+        // Mouse coordinates look they're floats by default.
         console.log('drawing');
         console.log(this.img.pixels.length);
-		let mod = Number(this.settings.mod);
+        let mod = BigInt(this.settings.mod);
 
-		const d = this.sketch.pixelDensity();
-		const mx = this.clip(Math.round(this.sketch.mouseX), 0, this.sketch.width);
-		const my = this.clip(Math.round(this.sketch.mouseY), 0, this.sketch.height);
-		if (this.sketch.key == 'ArrowUp') {
-            mod += 1;
-			this.sketch.key = '';
-			console.log("UP PRESSED, NEW MOD: " + mod);
-		} else if (this.sketch.key == 'ArrowDown') {
-            mod -= 1;
-			this.sketch.key = '';
-			console.log("DOWN PRESSED, NEW MOD: " + mod);
-		} else if (this.sketch.key == 'ArrowRight') {
-			console.log(console.log("MX: " + mx + " MY: " + my));
-		}
+        const d = this.sketch.pixelDensity();
+        const mx = this.clip(Math.round(this.sketch.mouseX), 0, this.sketch.width);
+        const my = this.clip(Math.round(this.sketch.mouseY), 0, this.sketch.height);
+        if (this.sketch.key == 'ArrowUp') {
+            mod += 1n;
+            this.sketch.key = '';
+            console.log("UP PRESSED, NEW MOD: " + mod);
+        } else if (this.sketch.key == 'ArrowDown') {
+            mod -= 1n;
+            this.sketch.key = '';
+            console.log("DOWN PRESSED, NEW MOD: " + mod);
+        } else if (this.sketch.key == 'ArrowRight') {
+            console.log(console.log("MX: " + mx + " MY: " + my));
+        }
         // since settings.mod can be any of string | number | bool, 
         // first set mod which is always a number, then assign it here to avoid typing errors
         this.settings.mod = mod;
-		// Write to image, then to screen for speed.
-		for (let x = 0; x < this.sketch.width; x++) {
+        // Write to image, then to screen for speed.
+        for (let x = 0; x < this.sketch.width; x++) {
             const xEl = this.seq.getElement(x);
+            if (xEl === undefined) break;
             for (let y = 0; y < this.sketch.height; y++) {
-            const yEl = this.seq.getElement(y);
-				for (let i = 0; i < d; i++) {
-					for (let j = 0; j < d; j++) {
-						const index = 4 * ((y * d + j) * this.sketch.width * d + (x * d + i));
+                const yEl = this.seq.getElement(y);
+                if (yEl === undefined) break;
+                for (let i = 0; i < d; i++) {
+                    for (let j = 0; j < d; j++) {
+                        const index = 4 * ((y * d + j) * this.sketch.width * d + (x * d + i));
                         console.log('x,y: ' + xEl + ', ' + yEl);
-						if(xEl === undefined || yEl === undefined) {
-                            this.sketch.noLoop();
-                            return;
+                        if (xEl % mod == yEl % mod) {
+                            this.img.pixels[index] = 255;
+                            this.img.pixels[index + 1] = 255;
+                            this.img.pixels[index + 2] = 255;
+                            this.img.pixels[index + 3] = 255;
+                        } else {
+                            this.img.pixels[index] = 0;
+                            this.img.pixels[index + 1] = 0;
+                            this.img.pixels[index + 2] = 0;
+                            this.img.pixels[index + 3] = 255;
                         }
-						if (xEl % mod == yEl % mod) {
-							this.img.pixels[index] = 255;
-							this.img.pixels[index + 1] = 255;
-							this.img.pixels[index + 2] = 255;
-							this.img.pixels[index + 3] = 255;
-						} else {
-							this.img.pixels[index] = 0;
-							this.img.pixels[index + 1] = 0;
-							this.img.pixels[index + 2] = 0;
-							this.img.pixels[index + 3] = 255;
-						}
-					}
-				}
-			}
-		}
+                    }
+                }
+            }
+        }
 
-		this.img.updatePixels(); // Copies our edited pixels to the image.
+        this.img.updatePixels(); // Copies our edited pixels to the image.
 
-		this.sketch.image(this.img, 0, 0); // Display image to screen.this.sketch.line(50,50,100,100);
-	}
+        this.sketch.image(this.img, 0, 0); // Display image to screen.this.sketch.line(50,50,100,100);
+    }
 }
 
 

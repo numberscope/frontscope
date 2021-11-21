@@ -12,7 +12,7 @@ export class SequenceCached extends SequenceClassDefault {
     name = 'Cached Base';
     description = 'A base class for cached sequences';
     entries = 0;
-    protected cache: number[];
+    protected cache: bigint[];
     protected newSize = 1;
 
     /**
@@ -60,15 +60,17 @@ export class SequenceCached extends SequenceClassDefault {
 
     fillCache(): void {
         for (let i: number = this.cache.length; i < this.newSize; i++) {
-            this.cache[i] = this.calculate(i);
+            const val = this.calculate(i);
+            /* Would be type error to store in cache if undefined */
+            if (typeof val !== 'undefined') this.cache[i] = val;
         }
     }
 
-    getElement(n: number): number {
+    getElement(n: number): bigint | undefined {
         if (this.entries > 0 && n >= this.entries) {
-            return Number.NaN;
+            return;
         }
-	if (n >= this.cache.length) {
+        if (n >= this.cache.length) {
             this.resizeCache(n);
             if (this.newSize > this.cache.length) {
                 this.fillCache();
@@ -81,7 +83,8 @@ export class SequenceCached extends SequenceClassDefault {
      * calculate produces the proper value of the sequence for a given index
      * @param {number} n the index of the entry to calculate
      */
-    calculate(n: number): number {
-        return n;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    calculate(n: number): bigint | undefined {
+        return;
     }
 }

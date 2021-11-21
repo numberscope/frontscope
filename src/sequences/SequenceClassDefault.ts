@@ -41,10 +41,12 @@ export class SequenceClassDefault implements SequenceInterface {
             
     /** 
      * getElement is how sequences provide their callers with elements.
+     * Note the default sequence has no elements, and so always returns undefined
      * @param n the sequence number to get
      */
-    getElement(n: number): number {
-        return n;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    getElement(n: number): bigint | undefined {
+        return;
     }
 
     /**

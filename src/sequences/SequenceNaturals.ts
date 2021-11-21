@@ -19,7 +19,7 @@ class SequenceNaturals extends SequenceCached {
         false,
         false
     )];
-    private offset = 1;
+    private offset = 1n;
 
     /**
      *Creates an instance of SequenceNaturals
@@ -40,7 +40,7 @@ class SequenceNaturals extends SequenceCached {
             this.isValid = true;
             this.name = "Positive Integers";
             if (this.settings['includeZero']) {
-                this.offset = 0;
+                this.offset = 0n;
                 this.name = "Nonnegative Integers";
             }
             return new ValidationStatus(true);
@@ -51,7 +51,7 @@ class SequenceNaturals extends SequenceCached {
     }
 
     calculate(n: number) {
-        return n + this.offset;
+        return BigInt(n) + this.offset;
     }
 
 }

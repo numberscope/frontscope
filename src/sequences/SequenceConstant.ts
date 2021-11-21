@@ -19,7 +19,7 @@ class SequenceConstant extends SequenceClassDefault {
         false,
         '0'
     )];
-    value = -1;
+    value = -1n;
 
     constructor(ID: number) {
         super(ID);
@@ -34,7 +34,7 @@ class SequenceConstant extends SequenceClassDefault {
 
         if (this.settings['constantValue'] !== undefined) {
             this.isValid = true;
-            this.value = Number(this.settings['constantValue']);
+            this.value = BigInt(this.settings['constantValue']);
             this.name = 'Constant = ' + this.settings['constantValue'];
             return new ValidationStatus(true);
         }

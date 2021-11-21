@@ -47,7 +47,7 @@ export class VisualizerParamsSchema {
 
 
 export interface VisualizerSettings {
-	[key: string]: string | number | boolean;
+	[key: string]: string | number | bigint | boolean;
 }
 
 export interface VisualizerInterface {

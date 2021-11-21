@@ -2,6 +2,7 @@ import { SequenceInterface } from "@/sequences/SequenceInterface";
 import { VisualizerInterface, VisualizerParamsSchema, VisualizerSettings, VisualizerExportModule } from "@/visualizers/VisualizerInterface";
 import { ParamType } from '@/shared/ParamType';
 import { VisualizerDefault } from './VisualizerDefault';
+import { minus } from './math';
 import { ValidationStatus } from '@/shared/ValidationStatus';
 
 class VizDifferences extends VisualizerDefault implements VisualizerInterface {
@@ -67,11 +68,14 @@ class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 			hue = (i * 255 / 6) % 255;
 			myColor = this.sketch.color(hue, 150, 200);
 			this.sketch.fill(myColor);
+			/* Draw and update workingSequence: */
 			for (let j = 0; j < workingSequence.length; j++) {
-				this.sketch.text(workingSequence[j], firstX + j * xDelta, firstY + i * yDelta); //Draws and updates workingSequence simultaneously.
-				if (j < workingSequence.length - 1) {
-					workingSequence[j] = workingSequence[j + 1] - workingSequence[j];
-				}
+				const tx = workingSequence[j]?.toString() ?? '-';
+				this.sketch.text(tx, firstX + j * xDelta,
+						firstY + i * yDelta);
+				if (j == workingSequence.length - 1) continue;
+				workingSequence[j] = minus(workingSequence[j+1],
+							workingSequence[j]);
 			}
 
 			workingSequence.pop();
