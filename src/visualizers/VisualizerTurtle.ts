@@ -90,7 +90,7 @@ class VisualizerTurtle extends VisualizerDefault implements VisualizerInterface 
         this.sketch = sketch;
 		this.seq = seq;
 		
-		this.currentIndex = 0;
+		this.currentIndex = seq.first;
 		this.orientation = 0;
 		this.X = 0;
 		this.Y = 0;
@@ -130,7 +130,7 @@ class VisualizerTurtle extends VisualizerDefault implements VisualizerInterface 
 	}
 
 	draw() {
-		const currElement = this.seq.getElement(this.currentIndex++);
+        const currElement = Number(this.seq.getElement(this.currentIndex++));
 		const angle = this.rotMap[currElement];
 
 		if (angle == undefined) this.sketch.noLoop();
@@ -143,6 +143,7 @@ class VisualizerTurtle extends VisualizerDefault implements VisualizerInterface 
         this.Y += Number(this.settings.stepSize) * Math.sin(this.orientation);
 
         this.sketch.line(oldX,oldY,this.X,this.Y);
+        if (this.currentIndex > this.seq.last) this.sketch.noLoop();
 	}
 }
 

@@ -8,7 +8,9 @@ import * as math from 'mathjs';
  *
  * @class SequenceFormula
  * extends SequenceCached to use mathjs to compute an arbitrary formula in terms
- * of n.
+ * of n. Currently all such formulas start at index 0 and have no limit, but
+ * those are both arbitrary choices; we might at some point want to allow
+ * either to be tailored.
  */
 class SequenceFormula extends SequenceCached {
     name = "Formula: empty";
@@ -17,7 +19,7 @@ class SequenceFormula extends SequenceCached {
         'formula',
         'text',
         'Formula',
-        false,
+        true,
         'n'
     )];
 
@@ -68,7 +70,7 @@ class SequenceFormula extends SequenceCached {
     }
 
     calculate(n: number) {
-        return this.formula.evaluate({n: n});
+        return BigInt(this.formula.evaluate({n: n}));
     }
 
 }

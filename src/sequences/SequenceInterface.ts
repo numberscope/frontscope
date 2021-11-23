@@ -32,6 +32,21 @@ export interface SequenceInterface {
     name: string;
     description: string;
     params: SequenceParamsSchema[];
+    /**
+     * first gives the lower limit for valid indices into the Sequence.
+     * In other words, an integer number n is a valid index only if
+     * first <= n. The typical value is 0, but any finite (positive or
+     * negative) integer value is allowed.
+     */
+    readonly first: number;
+    /**
+     * last is the counterpart to first, giving the upper limit for valid
+     * indices into the Sequence. An integer number n is a valid index
+     * if and only if first <= n <= last. Hence, if last is less than first,
+     * the sequence is empty; if last is (the Javascript number) Infinity,
+     * all indices not less than first are valid.
+     */
+    readonly last: number;
 
     /**
      * Initialize is called after params are set. It allows us to wait until all the settings
@@ -43,14 +58,15 @@ export interface SequenceInterface {
     initialize(): void;
 
     /**
-     * Get element is what the drawing tools will be calling, it retrieves
-     * the nth element of the sequence by either getting it from the cache
-     * or if isn't present, by building the cache and then getting it
+     * getElement is what clients of SequenceInterface call to get
+     * the actual entries in the sequence. It retrieves the nth element
+     * of the sequence, so long as n is an integer between
+     * the SequenceInterface.first and .last indices, inclusive.
      * @param {*} n the index of the element in the sequence we want
      * @returns a number
      * @memberof SequenceGenerator
      */
-    getElement(n: number): number;
+    getElement(n: number): bigint;
 
     validate(): ValidationStatus;
 }

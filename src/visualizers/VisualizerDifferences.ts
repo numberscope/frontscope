@@ -1,13 +1,17 @@
 import { SequenceInterface } from "@/sequences/SequenceInterface";
 import { VisualizerInterface, VisualizerParamsSchema, VisualizerSettings, VisualizerExportModule } from "@/visualizers/VisualizerInterface";
+import p5 from 'p5';
 import { ParamType } from '@/shared/ParamType';
 import { VisualizerDefault } from './VisualizerDefault';
 import { ValidationStatus } from '@/shared/ValidationStatus';
+
+const min = Math.min;
 
 class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 	name = "Differences";
 	params: VisualizerParamsSchema[] = [];
 	settings: VisualizerSettings = {};
+	first = 0;
 
 	constructor() {
 		super();
@@ -37,12 +41,19 @@ class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 		return new ValidationStatus(true);
 	}
 
-	drawDifferences(n: bigint, lvls: number, sequence: SequenceInterface) {
+	initialize(sketch: p5, seq: SequenceInterface): void {
+		super.initialize(sketch, seq);
+		if (seq.last - seq.first < this.settings.levels)
+		{
+			throw Error(`Sequence ${seq.name} has too few entries`
+					+ `for ${this.settings.levels} levels.`);
+		}
+	}
+
+	drawDifferences(n: number, lvls: number, sequence: SequenceInterface) {
 
 		//changed background color to grey since you can't see what's going on
 		this.sketch.background('black');
-
-		const levels = lvls < n - 1n ? lvls : n - 1n;
 
 		const fontSize = 20;
 		this.sketch.textFont("Arial");
@@ -57,8 +68,10 @@ class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 		let hue;
 
 		const workingSequence = [];
+		const end = min(sequence.first + n - 1, sequence.last);
+		const levels = min(lvls, end - this.first);
 
-		for (let i = 0; i < n; i++) {
+		for (let i = sequence.first; i <= end; i++) {
 			workingSequence.push(sequence.getElement(i)); //workingSequence cannibalizes first n elements of sequence.
 		}
 
@@ -67,8 +80,11 @@ class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 			hue = (i * 255 / 6) % 255;
 			myColor = this.sketch.color(hue, 150, 200);
 			this.sketch.fill(myColor);
+			/* Draws and update workingSequence: */
 			for (let j = 0; j < workingSequence.length; j++) {
-				this.sketch.text(workingSequence[j], firstX + j * xDelta, firstY + i * yDelta); //Draws and updates workingSequence simultaneously.
+				this.sketch.text(workingSequence[j].toString(),
+							firstX + j * xDelta,
+							firstY + i * yDelta);
 				if (j < workingSequence.length - 1) {
 					workingSequence[j] = workingSequence[j + 1] - workingSequence[j];
 				}
@@ -84,7 +100,8 @@ class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 		console.log("Set up");
 	}
 	draw() {
-		this.drawDifferences(BigInt(this.settings.n), Number(this.settings.levels), this.seq);
+		this.drawDifferences(Number(this.settings.n),
+			Number(this.settings.levels), this.seq);
 		this.sketch.noLoop();
 	}
 }
