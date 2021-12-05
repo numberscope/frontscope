@@ -17,7 +17,7 @@ class SequenceRandom extends SequenceCached {
 		'number',
 		'Minimum value attainable',
 		true,
-		0 
+		0
 	),
 	new SequenceParamsSchema(
 		'max',
@@ -31,8 +31,8 @@ class SequenceRandom extends SequenceCached {
 	private maximum = 0;
 
 	/**
-     	*Creates an instance of SequenceRandom
-     	* @param {*} ID the ID of the sequence
+	*Creates an instance of SequenceRandom
+	* @param {*} ID the ID of the sequence
 	*/
 	constructor (ID: number) {
 		super(ID);
@@ -44,7 +44,7 @@ class SequenceRandom extends SequenceCached {
 		if (!superStatus.isValid) {
 			return superStatus;
 		}
-		
+
 		this.isValid = false;
 		if (this.settings['min'] == undefined || this.settings['max'] == undefined ) {
 			return new ValidationStatus(false, ["The min or max parameter is missing."]);
