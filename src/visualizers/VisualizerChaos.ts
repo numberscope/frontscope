@@ -54,7 +54,7 @@ const schemaChaos = [
 		ParamType.number,
 		"Circle size",
 		true,
-		3,
+		1,
 		"Size of the dots."
 	),
 	new VisualizerParamsSchema(
@@ -72,6 +72,14 @@ const schemaChaos = [
 		true,
 		0.5,
 		"How far each step takes you toward the corner (value between 0 and 1 inclusive)."
+	),
+	new VisualizerParamsSchema(
+		"showLabels",
+		ParamType.boolean,
+		"Show corner labels?",
+		true,
+		false,
+		"Whether to label corners of polygon."
 	)
 	];
 	// other ideas:  previous parts of the sequence fade over time, or shrink over time
@@ -101,12 +109,12 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 	private circSize = 0;
 	private alpha = 1;
 	private frac = 0;
+	private showLabels = false;
 
 	// settings for the visualizer
 	private pixelsPerFrame = 10;
 
 	// variables for the polygon size/layout/walkers
-	private labelOutset = 1.1;
 	private ctrX = 0;
 	private ctrY = 0;
 	private radius = 0;
@@ -114,6 +122,11 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 	private cornersLabels: position[] = [];
 	private walkerPositions: position[] = [];
 	private highlightWalker = 0;
+
+	// text control (these values are overwritten in setup)
+	private labelOutset = 1.1;
+	private textSize = 15;
+	private textStroke = 1; 
 
 	// list of colour palettes
 	private palettes: palette[] = [];
@@ -142,6 +155,7 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		this.style = Number(this.settings.style);
 		this.circSize = Number(this.settings.circSize);
 		this.frac = Number(this.settings.frac);
+		this.showLabels = Boolean(this.settings.showLabels);
 	
 		if (this.corners < 2) return new ValidationStatus(false, ["The modulus must be at least 2."]);
 		if ( !Number.isInteger( this.corners ) ) return new ValidationStatus(false, ["The modulus must be an integer."]);
@@ -186,7 +200,7 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		const pts: position[] = [];
 		let angle = 0;
 		let newpt: position = { x: 0, y: 0 };
-		for( let i = 0; i < this.settings.corners; i++ ){
+		for( let i = 0; i < this.corners; i++ ){
 			angle = this.sketch.radians( 45+360*i/this.corners );
 			newpt = { 
 				x: ctrX + radius*this.sketch.cos(angle),
@@ -200,9 +214,11 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 	setup() {
 
 		this.img = this.sketch.createImage(this.sketch.width, this.sketch.height);
-//		//this.img.loadPixels(); // Enables pixel-level editing.
-//		console.log(this.sketch.height, this.sketch.width);
-//		
+	
+		// the first palette is a random palette with enough colours for the number of corners or walkers
+		let randomPalette: p5.Color[] = [];
+
+		//for ( let c = 0 ; c < 
 		this.palettes.push({ 
 			colorList: [
 				this.sketch.color(72, 61, 139),
@@ -244,19 +260,23 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		this.ctrY = this.sketch.height / 2;
 		this.radius = this.sketch.width / 3;
 
+		// text control
+		this.labelOutset = 1.1;
+		this.textSize = this.sketch.width * 0.1;
+		this.textStroke = this.sketch.width * 0.01;
+
 		// set counters
 		this.pixelCount = 0;
 		this.myIndex = 0;
 
 		// set up arrays of walkers
 		this.walkerPositions.splice(0, this.walkerPositions.length) // clean the array out (fixes bug with redraws)
-		for( let w = 0; w < this.settings.walkers; w++ ){
+		for( let w = 0; w < this.walkers; w++ ){
 			this.walkerPositions.push({ x: this.ctrX, y: this.ctrY }); // all walkers start at origin
 		}
 
 		// Set up the windows and return the coordinates of the corners
 		this.cornersList = this.chaosWindow(this.ctrX,this.ctrY,this.radius); // locations of the corners
-		this.cornersLabels = this.chaosWindow(this.ctrX,this.ctrY,(this.radius)*(this.labelOutset)); // locations of the labels
 
 		// Set frame rate and pixel rate
 		this.sketch.frameRate(10);
@@ -265,6 +285,18 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		// canvas clear/background
 		this.sketch.clear();
 		this.sketch.background(this.backgroundColor);
+
+		// Draw corner labels if desired
+		if ( this.showLabels ) {
+			this.sketch.strokeWeight(1);
+			this.sketch.textSize(15);
+			this.sketch.textAlign(this.sketch.CENTER,this.sketch.CENTER);
+			this.cornersLabels = this.chaosWindow(this.ctrX,this.ctrY,(this.radius)*(this.labelOutset)); // locations of the labels
+			for ( let c = 0 ; c < this.corners ; c++ ) {
+				const label = this.cornersLabels[c];
+				this.sketch.text(String(c),label.x,label.y);
+			}
+		}
 
 		// no stroke (in particular, no outline on circles)
 		this.sketch.strokeWeight(0);
@@ -277,7 +309,6 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		for( let px = 0; px < this.pixelsPerFrame; px++ ){
 
 			// myIndex tells which term we are drawing
-			console.log( "index", this.myIndex );
 			this.myIndex += 1;
 
 			// get the term
@@ -294,7 +325,6 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 			this.walkerPositions[this.myWalker].x = (1-this.frac)*this.walkerPositions[this.myWalker].x + this.frac*this.myCornerPosition.x;
 			this.walkerPositions[this.myWalker].y = (1-this.frac)*this.walkerPositions[this.myWalker].y + this.frac*this.myCornerPosition.y;
 		
-			console.log( "color", this.colorList );
 			// choose colour to mark position
 			if( this.style == 0 ){ // colour by walker
 				this.myColor = this.colorList[this.myWalker];
@@ -320,7 +350,6 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 
 			// draw some circles
 			this.sketch.fill(this.myColor);
-			console.log( "**", this.walkerPositions[this.myWalker], this.circSize); 
 			this.sketch.circle( this.walkerPositions[this.myWalker].x, this.walkerPositions[this.myWalker].y, this.circSize );
 
 		}
