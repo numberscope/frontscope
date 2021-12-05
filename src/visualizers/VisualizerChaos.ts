@@ -83,6 +83,14 @@ const schemaChaos = [
 		"How far each step takes you toward the corner (value between 0 and 1 inclusive)."
 	),
 	new VisualizerParamsSchema(
+		"pixelsPerFrame",
+		ParamType.number,
+		"Dots per frame",
+		true,
+		400,
+		"How many dots to draw per frame (more = faster)."
+	),
+	new VisualizerParamsSchema(
 		"showLabels",
 		ParamType.boolean,
 		"Show corner labels?",
@@ -127,11 +135,9 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 	private circSize = 0;
 	private alpha = 1;
 	private frac = 0;
+	private pixelsPerFrame = 0;
 	private showLabels = false;
 	private darkMode = false;
-
-	// settings for the visualizer
-	private pixelsPerFrame = 10;
 
 	// variables for the polygon size/layout/walkers
 	private ctrX = 0;
@@ -178,12 +184,13 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		this.circSize = Number(this.settings.circSize);
 		this.alpha = Number(this.settings.alpha);
 		this.frac = Number(this.settings.frac);
+		this.pixelsPerFrame = Number(this.settings.pixelsPerFrame);
 		this.showLabels = Boolean(this.settings.showLabels);
 		this.darkMode = Boolean(this.settings.darkMode);
 	
 		if (this.corners < 2) return new ValidationStatus(false, ["The number of corners must be at least 2."]);
 		if ( !Number.isInteger( this.corners ) ) return new ValidationStatus(false, ["The number of corners must be an integer."]);
-		if (this.num < 1) return new ValidationStatus(false, ["The number of terms must be at least 1."]);
+		if (this.num < 0) return new ValidationStatus(false, ["The number of terms must be at least 0."]);
 		if ( !Number.isInteger( this.num ) ) return new ValidationStatus(false, ["The number of terms must be an integer."]);
 		if (this.walkers < 1) return new ValidationStatus(false, ["The number of walkers must be at least 1."]);
 		if ( !Number.isInteger( this.walkers ) ) return new ValidationStatus(false, ["The number of walkers must be an integer."]);
@@ -196,6 +203,8 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		if (this.alpha > 1) return new ValidationStatus(false, ["The alpha must be between 0 and 1 inclusive."]);
 		if (this.frac < 0) return new ValidationStatus(false, ["The fraction must be between 0 and 1 inclusive."]);
 		if (this.frac > 1) return new ValidationStatus(false, ["The fraction must be between 0 and 1 inclusive."]);
+		if (this.pixelsPerFrame < 0 ) return new ValidationStatus(false, ["The dots per frame must be positive."]);
+		if ( !Number.isInteger( this.pixelsPerFrame ) ) return new ValidationStatus(false, ["The dots per frame must be an integer."]);
 
 		this.isValid = true;
 		return new ValidationStatus(true);
@@ -299,7 +308,6 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		this.myCorner = 0;
 		this.myWalker = 0;
 		this.pixelCount = 0;
-		this.pixelsPerFrame = 10;
 		this.myColor = this.sketch.color('#003f5c');
 
 		// set center coords and size
@@ -325,9 +333,8 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		// Set up the windows and return the coordinates of the corners
 		this.cornersList = this.chaosWindow(this.ctrX,this.ctrY,this.radius); // locations of the corners
 
-		// Set frame rate and pixel rate
+		// Set frame rate
 		this.sketch.frameRate(10);
-		this.pixelsPerFrame = 100;
 
 		// canvas clear/background
 		this.sketch.clear();
@@ -353,55 +360,58 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 
 	draw() {
 
-		// we do pixelsPerFrame pixels each time through the draw cycle
+		// we do pixelsPerFrame pixels each time through the draw cycle; this speeds things up essentially
 		for( let px = 0; px < this.pixelsPerFrame; px++ ){
 
-			// myIndex tells which term we are drawing
-			this.myIndex += 1;
+			if( this.num === 0 || this.pixelCount < this.num ){
 
-			// get the term
-			this.myTerm = this.seq.getElement(this.myIndex);
+				// myIndex tells which term we are drawing
+				this.myIndex += 1;
 
-			// check its modulus to see which corner to walk toward
-			this.myCorner = this.numModulus(this.myTerm, this.corners);
-			this.myCornerPosition = this.cornersList[this.myCorner];
+				// get the term
+				this.myTerm = this.seq.getElement(this.myIndex);
 
-			// check the index modulus to see which walker is walking
-			this.myWalker = this.numModulus(this.myIndex,this.walkers);
+				// check its modulus to see which corner to walk toward
+				this.myCorner = this.numModulus(this.myTerm, this.corners);
+				this.myCornerPosition = this.cornersList[this.myCorner];
 
-			// update the walker position
-			this.walkerPositions[this.myWalker].x = (1-this.frac)*this.walkerPositions[this.myWalker].x + this.frac*this.myCornerPosition.x;
-			this.walkerPositions[this.myWalker].y = (1-this.frac)*this.walkerPositions[this.myWalker].y + this.frac*this.myCornerPosition.y;
-		
-			// choose colour to mark position
-			if( this.style == 0 ){ // colour by walker
-				this.myColor = this.colorList[this.myWalker];
-			}
-			if( this.style == 1 ){ // colour by destination
-				this.myColor = this.colorList[this.myCorner];
-			}
-			if( this.style == 2 ){ // colour by index
-				if ( this.num ) {
-					this.myColor = this.sketch.lerpColor(this.colorList[0], this.colorList[1], this.myIndex/this.num );
-				} else {
-					this.myColor = this.sketch.lerpColor(this.colorList[0], this.colorList[1], this.numModulus(this.myIndex,10000)/10000 );
+				// check the index modulus to see which walker is walking
+				this.myWalker = this.numModulus(this.myIndex,this.walkers);
+
+				// update the walker position
+				this.walkerPositions[this.myWalker].x = (1-this.frac)*this.walkerPositions[this.myWalker].x + this.frac*this.myCornerPosition.x;
+				this.walkerPositions[this.myWalker].y = (1-this.frac)*this.walkerPositions[this.myWalker].y + this.frac*this.myCornerPosition.y;
+			
+				// choose colour to mark position
+				if( this.style == 0 ){ // colour by walker
+					this.myColor = this.colorList[this.myWalker];
 				}
-			}
-			if( this.style == 3 ){ // colour one walker
-				if( this.myWalker == this.highlightWalker ){
-					this.myColor = this.colorList[0];
-				} else {
-					this.myColor = this.colorList[1];
+				if( this.style == 1 ){ // colour by destination
+					this.myColor = this.colorList[this.myCorner];
 				}
+				if( this.style == 2 ){ // colour by index
+					if ( this.num ) {
+						this.myColor = this.sketch.lerpColor(this.colorList[0], this.colorList[1], this.myIndex/this.num );
+					} else {
+						this.myColor = this.sketch.lerpColor(this.colorList[0], this.colorList[1], this.numModulus(this.myIndex,10000)/10000 );
+					}
+				}
+				if( this.style == 3 ){ // colour one walker
+					if( this.myWalker == this.highlightWalker ){
+						this.myColor = this.colorList[0];
+					} else {
+						this.myColor = this.colorList[1];
+					}
+				}
+				this.myColor.setAlpha(255*this.alpha); // the 255 is needed when in RGB mode; can change in other modes; see p5.js docs on setAlpha
+
+				// draw a circle
+				this.sketch.fill(this.myColor);
+				this.sketch.circle( this.walkerPositions[this.myWalker].x, this.walkerPositions[this.myWalker].y, this.circSize );
+
+				this.pixelCount += 1;
 			}
-			this.myColor.setAlpha(255*this.alpha); // the 255 is needed when in RGB mode; can change in other modes; see p5.js docs on setAlpha
-
-			// draw a circle
-			this.sketch.fill(this.myColor);
-			this.sketch.circle( this.walkerPositions[this.myWalker].x, this.walkerPositions[this.myWalker].y, this.circSize );
-
 		}
-		this.pixelCount += this.pixelsPerFrame;
 
 		// stop drawing if we exceed decreed terms
 		if ( this.num != 0 && this.pixelCount > this.num ){
