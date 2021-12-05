@@ -7,6 +7,11 @@ import { SequenceClassDefault } from './SequenceClassDefault';
  * entries in the sequence. Intended as a base class for sequence
  * implementations that want to cache their entries. Derived classes
  * just need to override the calculate() method.
+ *
+ * Note: to prevent bugs with sequences with non-deterministic formulae
+ * (e.g. in SequenceRandom.ts), this class should guarantee that
+ * calculate() will never be called on the same input more than once.
+ *
  */
 export class SequenceCached extends SequenceClassDefault {
     name = 'Cached Base';
