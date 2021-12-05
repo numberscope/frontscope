@@ -9,6 +9,7 @@ import { SequenceInterface } from '@/sequences/SequenceInterface';
 interface palette {
 	colorList: p5.Color[];
 	backgroundColor: p5.Color;
+	textColor: p5.Color;
 }
 // positions for the chaos walkers
 interface position {
@@ -44,10 +45,18 @@ const schemaChaos = [
 	new VisualizerParamsSchema(
 		"style",
 		ParamType.number,
-		"Color system",
+		"Color scheme",
 		true,
 		1,
 		"0 = colour by walker; 1 = colour by destination; 2 = colour by index; 3 = colour one walker."
+	),
+	new VisualizerParamsSchema(
+		"highlightWalker",
+		ParamType.number,
+		"Highlighted walker",
+		false,
+		0,
+		"The walker to highlight in colour scheme 3."
 	),
 	new VisualizerParamsSchema(
 		"circSize",
@@ -80,6 +89,14 @@ const schemaChaos = [
 		true,
 		false,
 		"Whether to label corners of polygon."
+	),
+	new VisualizerParamsSchema(
+		"darkMode",
+		ParamType.boolean,
+		"Use dark mode?",
+		true,
+		false,
+		"Whether to make a dark background."
 	)
 	];
 	// other ideas:  previous parts of the sequence fade over time, or shrink over time
@@ -98,7 +115,8 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 	private myCorner = 0;
 	private myCornerPosition: position = { x:0, y:0 };
 	private myWalker = 0;
-	private myColor: any; // p5 colours can't be initialized outside draw() or setup()
+	// p5 colours can't be initialized outside draw() or setup()
+	private myColor: any; // eslint-disable-line @typescript-eslint/no-explicit-any 
 	private pixelCount = 0;
 
 	// private properly typed versions of the parameters
@@ -110,6 +128,7 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 	private alpha = 1;
 	private frac = 0;
 	private showLabels = false;
+	private darkMode = false;
 
 	// settings for the visualizer
 	private pixelsPerFrame = 10;
@@ -130,9 +149,10 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 
 	// list of colour palettes
 	private palettes: palette[] = [];
-	private currentPalette: palette = { colorList: [], backgroundColor: this.sketch.color(255) };
-	private colorList: any[] = [];
-	private backgroundColor: any;
+	private currentPalette: palette = { colorList: [], backgroundColor: this.sketch.color(255), textColor: this.sketch.color(20) };
+	private colorList: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any 
+	private backgroundColor: any; // eslint-disable-line @typescript-eslint/no-explicit-any 
+	private textColor: any; // eslint-disable-line @typescript-eslint/no-explicit-any 
 	private basicAlpha = 0.5;
 
 	constructor() {
@@ -147,24 +167,30 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 
 	validate() {
 		this.assignParams();
-			
+		this.isValid = false;
+
 		// properly typed private versions of parameters
 		this.corners = Number(this.settings.corners);
 		this.num = Number(this.settings.num);
 		this.walkers = Number(this.settings.walkers);
 		this.style = Number(this.settings.style);
+		this.highlightWalker = Number(this.settings.highlightWalker);
 		this.circSize = Number(this.settings.circSize);
+		this.alpha = Number(this.settings.alpha);
 		this.frac = Number(this.settings.frac);
 		this.showLabels = Boolean(this.settings.showLabels);
+		this.darkMode = Boolean(this.settings.darkMode);
 	
-		if (this.corners < 2) return new ValidationStatus(false, ["The modulus must be at least 2."]);
-		if ( !Number.isInteger( this.corners ) ) return new ValidationStatus(false, ["The modulus must be an integer."]);
+		if (this.corners < 2) return new ValidationStatus(false, ["The number of corners must be at least 2."]);
+		if ( !Number.isInteger( this.corners ) ) return new ValidationStatus(false, ["The number of corners must be an integer."]);
 		if (this.num < 1) return new ValidationStatus(false, ["The number of terms must be at least 1."]);
 		if ( !Number.isInteger( this.num ) ) return new ValidationStatus(false, ["The number of terms must be an integer."]);
 		if (this.walkers < 1) return new ValidationStatus(false, ["The number of walkers must be at least 1."]);
 		if ( !Number.isInteger( this.walkers ) ) return new ValidationStatus(false, ["The number of walkers must be an integer."]);
 		if (this.style < 0 || this.style > 3) return new ValidationStatus(false, ["The style must be an integer between 0 and 3 inclusive."]);
 		if ( !Number.isInteger( this.style ) ) return new ValidationStatus(false, ["The style must be an integer between 0 and 3 inclusive."]);
+		if (this.highlightWalker < 0 || this.highlightWalker >= this.walkers) return new ValidationStatus(false, ["The highlighted walker must be between 0 and the number of walkers minus 1."]);
+		if ( !Number.isInteger( this.highlightWalker ) ) return new ValidationStatus(false, ["The highlighted walker must be an integer."]);
 		if (this.circSize < 0) return new ValidationStatus(false, ["The circle size must be positive."]);
 		if (this.alpha < 0) return new ValidationStatus(false, ["The alpha must be between 0 and 1 inclusive."]);
 		if (this.alpha > 1) return new ValidationStatus(false, ["The alpha must be between 0 and 1 inclusive."]);
@@ -180,15 +206,7 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		if (b <= 0) { 
 			throw new Error("modulus error");
 		}
-		return a - b*Math.floor(a / b);
-	}
-
-	bigModulus(a: bigint, b: bigint) {
-		// This should be replaced with the modulus function in our own library, once that exists
-		if (b <= 0n) { 
-			throw new Error("modulus error");
-		}
-		if (a < 0n ){
+		if (a < 0 ){
 			return a % b + b;
 		} else {
 			return a % b;
@@ -215,44 +233,73 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 
 		this.img = this.sketch.createImage(this.sketch.width, this.sketch.height);
 	
-		// the first palette is a random palette with enough colours for the number of corners or walkers
-		let randomPalette: p5.Color[] = [];
+		// the first palette random with enough colours for the number of corners or walkers
+		let paletteSize = 0;
+		if( this.style === 0 ){ paletteSize = this.walkers; } 
+		if( this.style === 1 ){ paletteSize = this.corners; } 
+		if( this.style === 2 || this.style === 3 ){ paletteSize = 10 }
+		const randomPalette: p5.Color[] = [];
+		for ( let c = 0 ; c < paletteSize; c++ ){
+			const R = Math.floor(Math.random()*256);
+			const G = Math.floor(Math.random()*256);
+			const B = Math.floor(Math.random()*256);
+			const myCol = this.sketch.color(R,G,B);
+			randomPalette.push( myCol );
+		}
+		this.palettes.push({
+			colorList: randomPalette,
+			backgroundColor: (this.darkMode ? this.sketch.color(20) : this.sketch.color(255) ),
+			textColor: (this.darkMode ? this.sketch.color(255) : this.sketch.color(20) )
+		});
 
-		//for ( let c = 0 ; c < 
+		// the second and third palette are curated
 		this.palettes.push({ 
 			colorList: [
-				this.sketch.color(72, 61, 139),
-				this.sketch.color(218, 165, 32),
+				this.sketch.color('#48458b'),
+				this.sketch.color('#daa520'),
 				this.sketch.color('#003f5c'),
 				this.sketch.color('#ff6361'),
 				this.sketch.color('#ffa600'),
 				this.sketch.color('#bc5090'),
 				this.sketch.color('#58508d')
 			], 
-			backgroundColor: this.sketch.color(255) 
+			backgroundColor: this.sketch.color(255),
+			textColor: this.sketch.color(20) 
 		});
 		this.palettes.push({ 
 			colorList: [
-				this.sketch.color(72, 61, 139),
-				this.sketch.color(218, 165, 32),
+				this.sketch.color('#48458b'),
+				this.sketch.color('#daa520'),
 				this.sketch.color('#003f5c'),
 				this.sketch.color('#ff6361'),
 				this.sketch.color('#ffa600'),
 				this.sketch.color('#bc5090'),
 				this.sketch.color('#58508d')
 			], 
-			backgroundColor: this.sketch.color(20) 
+			backgroundColor: this.sketch.color(20),
+			textColor: this.sketch.color(255) 
 		});
-		this.currentPalette = this.palettes[0];
+
+		// decide which palette to set by default
+		// we need a colourpicker in the params eventually
+		// right now this is a little arbitrary
+		let paletteIndex = 1;
+		if( this.darkMode ){ paletteIndex = 2; }
+		if( this.style === 0 && this.walkers > 7 ){ paletteIndex = 0; } 
+		if( this.style === 1 && this.corners > 7 ){ paletteIndex = 0; } 
+
+		// set the palette up
+		this.currentPalette = this.palettes[paletteIndex];
 		this.colorList = this.currentPalette.colorList;
 		this.backgroundColor = this.currentPalette.backgroundColor;
+		this.textColor = this.currentPalette.textColor;
 
 		// set initial values
 		this.myIndex = 0;
 		this.myCorner = 0;
 		this.myWalker = 0;
 		this.pixelCount = 0;
-		this.pixelsPerFrame = 100;
+		this.pixelsPerFrame = 10;
 		this.myColor = this.sketch.color('#003f5c');
 
 		// set center coords and size
@@ -288,7 +335,9 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 
 		// Draw corner labels if desired
 		if ( this.showLabels ) {
-			this.sketch.strokeWeight(1);
+			this.sketch.stroke(this.textColor);
+			this.sketch.fill(this.textColor);
+			this.sketch.strokeWeight(0);
 			this.sketch.textSize(15);
 			this.sketch.textAlign(this.sketch.CENTER,this.sketch.CENTER);
 			this.cornersLabels = this.chaosWindow(this.ctrX,this.ctrY,(this.radius)*(this.labelOutset)); // locations of the labels
@@ -303,7 +352,6 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 	}
 
 	draw() {
-
 
 		// we do pixelsPerFrame pixels each time through the draw cycle
 		for( let px = 0; px < this.pixelsPerFrame; px++ ){
@@ -343,12 +391,12 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 				if( this.myWalker == this.highlightWalker ){
 					this.myColor = this.colorList[0];
 				} else {
-					this.myColor = this.sketch.color(255);
+					this.myColor = this.colorList[1];
 				}
 			}
 			this.myColor.setAlpha(255*this.alpha); // the 255 is needed when in RGB mode; can change in other modes; see p5.js docs on setAlpha
 
-			// draw some circles
+			// draw a circle
 			this.sketch.fill(this.myColor);
 			this.sketch.circle( this.walkerPositions[this.myWalker].x, this.walkerPositions[this.myWalker].y, this.circSize );
 
