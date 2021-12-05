@@ -17,7 +17,7 @@ class SequenceRandom extends SequenceCached {
 		'number',
 		'Minimum value attainable',
 		true,
-		0
+		'0'
 	),
 	new SequenceParamsSchema(
 		'max',
