@@ -130,24 +130,32 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 	initialize(sketch: p5, seq: SequenceInterface){
 		this.sketch = sketch;
 		this.seq = seq;
-
 	}
 
 	validate() {
 		this.assignParams();
-		if (this.settings.corners < 2) return new ValidationStatus(false, ["The modulus must be at least 2."]);
-		if ( !Number.isInteger( Number(this.settings.corners) ) ) return new ValidationStatus(false, ["The modulus must be an integer."]);
-		if (this.settings.num < 1) return new ValidationStatus(false, ["The number of terms must be at least 1."]);
-		if ( !Number.isInteger( Number(this.settings.num) ) ) return new ValidationStatus(false, ["The number of terms must be an integer."]);
-		if (this.settings.walkers < 1) return new ValidationStatus(false, ["The number of walkers must be at least 1."]);
-		if ( !Number.isInteger( Number(this.settings.walkers) ) ) return new ValidationStatus(false, ["The number of walkers must be an integer."]);
-		if (this.settings.style < 0 || this.settings.style > 3) return new ValidationStatus(false, ["The style must be an integer between 0 and 3 inclusive."]);
-		if ( !Number.isInteger( Number(this.settings.style) ) ) return new ValidationStatus(false, ["The style must be an integer between 0 and 3 inclusive."]);
-		if (this.settings.circSize < 0) return new ValidationStatus(false, ["The circle size must be positive."]);
-		if (this.settings.alpha < 0) return new ValidationStatus(false, ["The alpha must be between 0 and 1 inclusive."]);
-		if (this.settings.alpha > 1) return new ValidationStatus(false, ["The alpha must be between 0 and 1 inclusive."]);
-		if (this.settings.frac < 0) return new ValidationStatus(false, ["The fraction must be between 0 and 1 inclusive."]);
-		if (this.settings.frac > 1) return new ValidationStatus(false, ["The fraction must be between 0 and 1 inclusive."]);
+			
+		// properly typed private versions of parameters
+		this.corners = Number(this.settings.corners);
+		this.num = Number(this.settings.num);
+		this.walkers = Number(this.settings.walkers);
+		this.style = Number(this.settings.style);
+		this.circSize = Number(this.settings.circSize);
+		this.frac = Number(this.settings.frac);
+	
+		if (this.corners < 2) return new ValidationStatus(false, ["The modulus must be at least 2."]);
+		if ( !Number.isInteger( this.corners ) ) return new ValidationStatus(false, ["The modulus must be an integer."]);
+		if (this.num < 1) return new ValidationStatus(false, ["The number of terms must be at least 1."]);
+		if ( !Number.isInteger( this.num ) ) return new ValidationStatus(false, ["The number of terms must be an integer."]);
+		if (this.walkers < 1) return new ValidationStatus(false, ["The number of walkers must be at least 1."]);
+		if ( !Number.isInteger( this.walkers ) ) return new ValidationStatus(false, ["The number of walkers must be an integer."]);
+		if (this.style < 0 || this.style > 3) return new ValidationStatus(false, ["The style must be an integer between 0 and 3 inclusive."]);
+		if ( !Number.isInteger( this.style ) ) return new ValidationStatus(false, ["The style must be an integer between 0 and 3 inclusive."]);
+		if (this.circSize < 0) return new ValidationStatus(false, ["The circle size must be positive."]);
+		if (this.alpha < 0) return new ValidationStatus(false, ["The alpha must be between 0 and 1 inclusive."]);
+		if (this.alpha > 1) return new ValidationStatus(false, ["The alpha must be between 0 and 1 inclusive."]);
+		if (this.frac < 0) return new ValidationStatus(false, ["The fraction must be between 0 and 1 inclusive."]);
+		if (this.frac > 1) return new ValidationStatus(false, ["The fraction must be between 0 and 1 inclusive."]);
 
 		this.isValid = true;
 		return new ValidationStatus(true);
@@ -230,14 +238,6 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		this.pixelCount = 0;
 		this.pixelsPerFrame = 100;
 		this.myColor = this.sketch.color('#003f5c');
-
-		// properly typed private versions of parameters
-		this.corners = Number(this.settings.corners);
-		this.num = Number(this.settings.num);
-		this.walkers = Number(this.settings.walkers);
-		this.style = Number(this.settings.style);
-		this.circSize = Number(this.settings.circSize);
-		this.frac = Number(this.settings.frac);
 
 		// set center coords and size
 		this.ctrX = this.sketch.width / 2;
