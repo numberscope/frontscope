@@ -155,8 +155,8 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		this.isValid = false;
 
 		// properly typed private versions of parameters
-		this.corners = Number(this.settings.corners);
 		this.num = Number(this.settings.num);
+		this.corners = Number(this.settings.corners);
 		this.walkers = Number(this.settings.walkers);
 		this.style = Number(this.settings.style);
 		this.highlightWalker = Number(this.settings.highlightWalker);
@@ -167,10 +167,10 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		this.showLabels = Boolean(this.settings.showLabels);
 		this.darkMode = Boolean(this.settings.darkMode);
 	
-		if (this.corners < 2) return new ValidationStatus(false, ["The number of corners must be at least 2."]);
-		if ( !Number.isInteger( this.corners ) ) return new ValidationStatus(false, ["The number of corners must be an integer."]);
 		if (this.num < 0) return new ValidationStatus(false, ["The number of terms must be at least 0."]);
 		if ( !Number.isInteger( this.num ) ) return new ValidationStatus(false, ["The number of terms must be an integer."]);
+		if (this.corners < 2) return new ValidationStatus(false, ["The number of corners must be at least 2."]);
+		if ( !Number.isInteger( this.corners ) ) return new ValidationStatus(false, ["The number of corners must be an integer."]);
 		if (this.walkers < 1) return new ValidationStatus(false, ["The number of walkers must be at least 1."]);
 		if ( !Number.isInteger( this.walkers ) ) return new ValidationStatus(false, ["The number of walkers must be an integer."]);
 		if (this.style < 0 || this.style > 3) return new ValidationStatus(false, ["The style must be an integer between 0 and 3 inclusive."]);
@@ -196,7 +196,7 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		}
 		const A = BigInt(a);
 		const B = BigInt(b); 
-		// the return value will always be a valid number, because b was a number.
+		// the return value will always be a valid number, because b was a number
 		if (A < 0n ){
 			return Number( A % B + B );
 		} else {
@@ -287,12 +287,13 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		// set center coords and size
 		const ctrX = this.sketch.width / 2;
 		const ctrY = this.sketch.height / 2;
-		const radius = this.sketch.width / 3;
+		const radius = this.sketch.width * 0.4;
 
-		// text control
+		// text appearance control
 		const labelOutset = 1.1;
-		const textSize = this.sketch.width * 0.1;
-		const textStroke = this.sketch.width * 0.01;
+		const shrink = Math.log(this.corners);
+		const textSize = this.sketch.width * 0.04 / shrink; // shrinks the numbers appropriately up to about 100 corners or so
+		const textStroke = this.sketch.width * 0; // no stroke right now, but could be added
 
 		// set counters
 		this.pixelCount = 0;
