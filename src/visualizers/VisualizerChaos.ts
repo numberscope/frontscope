@@ -338,14 +338,14 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 
 		// we do pixelsPerFrame pixels each time through the draw cycle; this speeds things up essentially
 		for( let px = 0; px < this.pixelsPerFrame; px++ ){
+			
+			// myIndex tells which term we are drawing
+			this.myIndex += 1;
 
-			if( this.num === 0 || this.pixelCount < this.num ){
+			// get the term
+			const myTerm = this.seq.getElement(this.myIndex);
 
-				// myIndex tells which term we are drawing
-				this.myIndex += 1;
-
-				// get the term
-				const myTerm = this.seq.getElement(this.myIndex);
+			if( !(myTerm === undefined) && (this.num === 0 || this.pixelCount < this.num) ){
 
 				// check its modulus to see which corner to walk toward
 				const myCorner = this.numModulus(myTerm, this.corners);
