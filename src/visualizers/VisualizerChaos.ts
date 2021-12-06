@@ -139,7 +139,6 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 	// list of colour palettes
 	private palettes: palette[] = [];
 	private currentPalette: palette = { colorList: [], backgroundColor: this.sketch.color(255), textColor: this.sketch.color(20) };
-	private basicAlpha = 0.5;
 
 	constructor() {
 		super();
@@ -190,15 +189,18 @@ class VisualizerChaos extends VisualizerDefault implements VisualizerInterface {
 		return new ValidationStatus(true);
 	}
 
-	numModulus(a: number, b: number) {
+	numModulus(a: ( number | bigint ), b: number) {
 		// This should be replaced with the modulus function in our own library, once that exists
 		if (b <= 0) { 
 			throw new Error("modulus error");
 		}
-		if (a < 0 ){
-			return a % b + b;
+		const A = BigInt(a);
+		const B = BigInt(b); 
+		// the return value will always be a valid number, because b was a number.
+		if (A < 0n ){
+			return Number( A % B + B );
 		} else {
-			return a % b;
+			return Number( A % B );
 		}
 	}
 
