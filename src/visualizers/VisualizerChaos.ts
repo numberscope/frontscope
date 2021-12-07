@@ -155,10 +155,7 @@ class VisualizerChaos extends VisualizerDefault {
 	private randomPalette = new Palette(this.sketch);
 	private currentPalette = new Palette(this.sketch);
 
-	constructor() {
-		super();
-		this.params = schemaChaos;
-	}
+	params = schemaChaos;
 
 	validate() {
 		this.assignParams();
@@ -176,24 +173,29 @@ class VisualizerChaos extends VisualizerDefault {
 		this.pixelsPerFrame = Number(this.settings.pixelsPerFrame);
 		this.showLabels = Boolean(this.settings.showLabels);
 		this.darkMode = Boolean(this.settings.darkMode);
-	
-		if (this.num < 0) return new ValidationStatus(false, ["The number of terms must be at least 0."]);
-		if ( !Number.isInteger( this.num ) ) return new ValidationStatus(false, ["The number of terms must be an integer."]);
-		if (this.corners < 2) return new ValidationStatus(false, ["The number of corners must be at least 2."]);
-		if ( !Number.isInteger( this.corners ) ) return new ValidationStatus(false, ["The number of corners must be an integer."]);
-		if (this.walkers < 1) return new ValidationStatus(false, ["The number of walkers must be at least 1."]);
-		if ( !Number.isInteger( this.walkers ) ) return new ValidationStatus(false, ["The number of walkers must be an integer."]);
-		if (this.style < 0 || this.style > 3) return new ValidationStatus(false, ["The style must be an integer between 0 and 3 inclusive."]);
-		if ( !Number.isInteger( this.style ) ) return new ValidationStatus(false, ["The style must be an integer between 0 and 3 inclusive."]);
-		if (this.highlightWalker < 0 || this.highlightWalker >= this.walkers) return new ValidationStatus(false, ["The highlighted walker must be between 0 and the number of walkers minus 1."]);
-		if ( !Number.isInteger( this.highlightWalker ) ) return new ValidationStatus(false, ["The highlighted walker must be an integer."]);
-		if (this.circSize < 0) return new ValidationStatus(false, ["The circle size must be positive."]);
-		if (this.alpha < 0) return new ValidationStatus(false, ["The alpha must be between 0 and 1 inclusive."]);
-		if (this.alpha > 1) return new ValidationStatus(false, ["The alpha must be between 0 and 1 inclusive."]);
-		if (this.frac < 0) return new ValidationStatus(false, ["The fraction must be between 0 and 1 inclusive."]);
-		if (this.frac > 1) return new ValidationStatus(false, ["The fraction must be between 0 and 1 inclusive."]);
-		if (this.pixelsPerFrame < 0 ) return new ValidationStatus(false, ["The dots per frame must be positive."]);
-		if ( !Number.isInteger( this.pixelsPerFrame ) ) return new ValidationStatus(false, ["The dots per frame must be an integer."]);
+
+		// validation checks
+		const validationMessages: string[] = [];
+		if (this.num < 0) validationMessages.push("The number of terms must be at least 0.");
+		if ( !Number.isInteger( this.num ) ) validationMessages.push("The number of terms must be an integer.");
+		if (this.corners < 2) validationMessages.push("The number of corners must be at least 2.");
+		if ( !Number.isInteger( this.corners ) ) validationMessages.push("The number of corners must be an integer.");
+		if (this.walkers < 1) validationMessages.push("The number of walkers must be at least 1.");
+		if ( !Number.isInteger( this.walkers ) ) validationMessages.push("The number of walkers must be an integer.");
+		if (this.style < 0 || this.style > 3) validationMessages.push("The style must be an integer between 0 and 3 inclusive.");
+		if ( !Number.isInteger( this.style ) ) validationMessages.push("The style must be an integer between 0 and 3 inclusive.");
+		if (this.highlightWalker < 0 || this.highlightWalker >= this.walkers) validationMessages.push("The highlighted walker must be between 0 and the number of walkers minus 1.");
+		if ( !Number.isInteger( this.highlightWalker ) ) validationMessages.push("The highlighted walker must be an integer.");
+		if (this.circSize < 0) validationMessages.push("The circle size must be positive.");
+		if (this.alpha < 0) validationMessages.push("The alpha must be between 0 and 1 inclusive.");
+		if (this.alpha > 1) validationMessages.push("The alpha must be between 0 and 1 inclusive.");
+		if (this.frac < 0) validationMessages.push("The fraction must be between 0 and 1 inclusive.");
+		if (this.frac > 1) validationMessages.push("The fraction must be between 0 and 1 inclusive.");
+		if (this.pixelsPerFrame < 0 ) validationMessages.push("The dots per frame must be positive.");
+		if ( !Number.isInteger( this.pixelsPerFrame ) ) validationMessages.push("The dots per frame must be an integer.");
+		if ( validationMessages.length > 0 ) {
+			return new ValidationStatus(false, validationMessages );
+		}
 
 		this.isValid = true;
 		return new ValidationStatus(true);
@@ -214,16 +216,16 @@ class VisualizerChaos extends VisualizerDefault {
 		}
 	}
 
-	chaosWindow(ctrX: number, ctrY: number, radius: number) {
-		// creates corners of a polygon with centre (ctrX,ctrY) and radius radius
+	chaosWindow( center: p5.Vector, radius: number) {
+		// creates corners of a polygon with given centre and radius
 		const pts: p5.Vector[] = [];
 		let angle = 0;
 		let newpt = this.sketch.createVector(0,0);
 		for( let i = 0; i < this.corners; i++ ){
 			angle = this.sketch.radians( 45+360*i/this.corners );
 			newpt = this.sketch.createVector( 
-				ctrX + radius*this.sketch.cos(angle),
-				ctrY + radius*this.sketch.sin(angle)
+				center.x + radius*this.sketch.cos(angle),
+				center.y + radius*this.sketch.sin(angle)
 			);
 			pts.push(newpt);
 		}
@@ -270,8 +272,7 @@ class VisualizerChaos extends VisualizerDefault {
 		){ this.currentPalette = this.randomPalette; } 
 		
 		// set center coords and size
-		const ctrX = this.sketch.width / 2;
-		const ctrY = this.sketch.height / 2;
+		const center = this.sketch.createVector( this.sketch.width * 0.5, this.sketch.height * 0.5 );
 		const radius = this.sketch.width * 0.4;
 
 		// text appearance control
@@ -287,11 +288,11 @@ class VisualizerChaos extends VisualizerDefault {
 		// set up arrays of walkers
 		this.walkerPositions.splice(0, this.walkerPositions.length) // clean the array out (fixes bug with redraws)
 		for( let w = 0; w < this.walkers; w++ ){
-			this.walkerPositions.push(this.sketch.createVector(ctrX,ctrY)); // all walkers start at origin
+			this.walkerPositions.push(center); // all walkers start at origin
 		}
 
 		// Set up the windows and return the coordinates of the corners
-		this.cornersList = this.chaosWindow(ctrX, ctrY, radius); // locations of the corners
+		this.cornersList = this.chaosWindow( center, radius); // locations of the corners
 
 		// Set frame rate
 		this.sketch.frameRate(10);
@@ -307,7 +308,7 @@ class VisualizerChaos extends VisualizerDefault {
 			this.sketch.strokeWeight(textStroke);
 			this.sketch.textSize(textSize);
 			this.sketch.textAlign(this.sketch.CENTER,this.sketch.CENTER);
-			const cornersLabels = this.chaosWindow(ctrX, ctrY,(radius)*(labelOutset)); // locations of the labels
+			const cornersLabels = this.chaosWindow(center,(radius)*(labelOutset)); // locations of the labels
 			for ( let c = 0 ; c < this.corners ; c++ ) {
 				const label = cornersLabels[c];
 				this.sketch.text(String(c),label.x,label.y);
