@@ -52,7 +52,7 @@ class SequenceFormula extends SequenceCached {
                         err.message]);
         }
         const othersymbs = parsetree.filter( (node, path, parent) =>
-            node.type === 'SymbolNode' && parent.type !== 'FunctionNode'
+            node.type === 'SymbolNode' && parent?.type !== 'FunctionNode'
 		&& node.name !== 'n'
         );
 	if (othersymbs.length > 0 ) {
