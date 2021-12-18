@@ -11,18 +11,20 @@ import { SequenceClassDefault } from './SequenceClassDefault';
  */
 class SequenceConstant extends SequenceClassDefault {
     name = "Constant Sequence";
-    description = "A sequence that is constant";
+    description = "A sequence with the same value for all nonnegative indices";
     params = [new SequenceParamsSchema(
         'constantValue',
         'number',
         'Constant Value',
-        false,
+        true,
         '0'
     )];
-    value = -1;
+    first = 0;
+    last = Infinity;
+    value = -1n;
 
-    constructor(ID: number) {
-        super(ID);
+    constructor(sequenceID: number) {
+        super(sequenceID);
     }
 
     validate(): ValidationStatus {
@@ -34,7 +36,7 @@ class SequenceConstant extends SequenceClassDefault {
 
         if (this.settings['constantValue'] !== undefined) {
             this.isValid = true;
-            this.value = Number(this.settings['constantValue']);
+            this.value = BigInt(this.settings['constantValue']);
             this.name = 'Constant = ' + this.settings['constantValue'];
             return new ValidationStatus(true);
         }
@@ -43,8 +45,10 @@ class SequenceConstant extends SequenceClassDefault {
         return new ValidationStatus(false, ["No constant value was provided."]);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     getElement(n: number) {
+        if (n < 0) {
+            throw RangeError('SequenceConstant requires nonnegative index.');
+        }
         return this.value;
     }
 }

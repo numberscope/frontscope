@@ -7,7 +7,7 @@ import { SequenceCached } from './SequenceCached';
  *
  * @class SequenceClassRandom
  * Creates a sequence of random integers in a specified range.
- *
+ * Starts at index 0 and has no limit.
  */
 class SequenceRandom extends SequenceCached {
 	name = "Random Integers in Range";
@@ -32,10 +32,10 @@ class SequenceRandom extends SequenceCached {
 
 	/**
 	*Creates an instance of SequenceRandom
-	* @param {*} ID the ID of the sequence
+	* @param {*} sequenceID the sequence identifier of the sequence
 	*/
-	constructor (ID: number) {
-		super(ID);
+	constructor (sequenceID: number) {
+		super(sequenceID);
 	}
 
 	validate(){
@@ -64,7 +64,7 @@ class SequenceRandom extends SequenceCached {
 
 	calculate(n: number) {   // eslint-disable-line @typescript-eslint/no-unused-vars
 		// create a random integer between min and max inclusive
-		return Math.floor((Math.random() * (this.maximum - this.minimum + 1)) + this.minimum);
+		return BigInt(Math.floor((Math.random() * (this.maximum - this.minimum + 1)) + this.minimum));
 	}
 
 }
