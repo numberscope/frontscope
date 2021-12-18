@@ -23,10 +23,10 @@ class SequenceNaturals extends SequenceCached {
 
     /**
      *Creates an instance of SequenceNaturals
-     * @param {*} ID the ID of the sequence
+     * @param {*} sequenceID the sequence identifier of the sequence
      */
-    constructor (ID: number) {
-        super(ID);
+    constructor (sequenceID: number) {
+        super(sequenceID);
     }
 
     validate(){

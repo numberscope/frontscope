@@ -22,21 +22,21 @@ export class SequenceCached extends SequenceClassDefault {
     protected cache: bigint[] = [];
     protected lastCached: number;
     protected cachingTo: number;
-    protected blocksize: number;
+    protected cacheBlock: number;
 
     /**
      *Creates an instance of SequenceCached.
-     * @param {*} ID the ID of the sequence
+     * @param {*} sequenceID the sequence identifier of the sequence
      * @param {number} first specifies the smallest valid index of the series; defaults to 0
      * @param {number} last specifies the largest valid index of the series; defaults to Infinity.
-     * @param {number} blocksize specifies how many values to put in cache at each additonal fill; defaults to 128.
+     * @param {number} cacheBlock specifies how many values to put in cache at each additonal fill; defaults to 128.
      */
-    constructor (ID: number,
-                 first?: number, last?: number, blocksize?:number) {
-        super(ID);
+    constructor (sequenceID: number,
+                 first?: number, last?: number, cacheBlock?:number) {
+        super(sequenceID);
         this.first = first ?? 0;
         this.last = last ?? Infinity;
-        this.blocksize = blocksize ?? 128;
+        this.cacheBlock = cacheBlock ?? 128;
         this.lastCached = this.first - 1;
         this.cachingTo = this.lastCached;
     }
@@ -45,15 +45,20 @@ export class SequenceCached extends SequenceClassDefault {
         if (this.ready) return;
         super.initialize();
         this.ready = false;
-        this.cachingTo = min(this.lastCached + this.blocksize, this.last);
+        this.cachingTo = min(this.lastCached + this.cacheBlock, this.last);
         this.fillCache();
         this.ready = true;
     }
 
     resizeCache(n: number): void {
-        this.cachingTo = max(this.lastCached + this.blocksize,
+        /* We want to grab at least a whole cacheBlock, but we also want
+           to grab more if we've already gotten a lot, and of course we
+           need to grab enough to have the current requested index...
+         */
+        this.cachingTo = max(this.lastCached + this.cacheBlock,
                              2*this.lastCached, n+1)
-        if (this.cachingTo > this.last) this.cachingTo = this.last;
+        /* ... except if that would put us past the last index: */
+        this.cachingTo = min(this.last, this.cachingTo);
     }
 
     fillCache(): void {

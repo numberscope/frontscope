@@ -129,11 +129,11 @@ class VisualizerTurtle extends VisualizerDefault implements VisualizerInterface 
         this.sketch.frameRate(30);
 	}
 
-	draw() {
+    draw() {
         const currElement = Number(this.seq.getElement(this.currentIndex++));
-		const angle = this.rotMap[currElement];
+        const angle = this.rotMap[currElement];
 
-		if (angle == undefined) this.sketch.noLoop();
+        if (angle == undefined) this.sketch.noLoop();
 
         const oldX = this.X;
         const oldY = this.Y;
@@ -144,7 +144,7 @@ class VisualizerTurtle extends VisualizerDefault implements VisualizerInterface 
 
         this.sketch.line(oldX,oldY,this.X,this.Y);
         if (this.currentIndex > this.seq.last) this.sketch.noLoop();
-	}
+    }
 }
 
 

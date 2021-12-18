@@ -23,8 +23,8 @@ class SequenceConstant extends SequenceClassDefault {
     last = Infinity;
     value = -1n;
 
-    constructor(ID: number) {
-        super(ID);
+    constructor(sequenceID: number) {
+        super(sequenceID);
     }
 
     validate(): ValidationStatus {

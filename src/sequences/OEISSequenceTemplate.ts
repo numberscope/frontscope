@@ -23,12 +23,12 @@ export default class OEISSequenceTemplate extends SequenceCached {
         new SequenceParamsSchema('modulo', 'number', 'Modulo to apply to the sequence', false, false)
     ];
 
-    constructor(ID: number) {
-	super(ID); // Don't know the index range yet, will fill in later
+    constructor(sequenceID: number) {
+        super(sequenceID); // Don't know the index range yet, will fill in later
     }
 
     fillCache(): void {
-        axios.get(`http://${process.env.VUE_APP_API_URL}/api/get_oeis_sequence/${this.settings.oeisId}/${this.blocksize}`)
+        axios.get(`http://${process.env.VUE_APP_API_URL}/api/get_oeis_sequence/${this.settings.oeisId}/${this.cacheBlock}`)
              .then( resp => {
                  if (this.settings.modulo) {
                      this.cache = resp.data.values.map((x: string) => BigInt(x) % BigInt(this.settings.modulo));
@@ -51,20 +51,20 @@ export default class OEISSequenceTemplate extends SequenceCached {
             return superStatus;
         }
 
-        if (this.settings['oeisId'] !== undefined) {
-            this.isValid = true;
-            if (this.settings['numElements']) {
-                this.last = Number(this.settings['numElements']) - 1;
-            } else {
-                this.last = 999;
-            }
-            this.blocksize = this.last + 1; // get everything on the initial fill
-            this.name = (this.settings['name'] as string);
-            return new ValidationStatus(true);
+        this.isValid = false;
+        if (this.settings['oeisId'] === undefined) {
+            return new ValidationStatus(false, ["oeisID parameter is missing"]);
         }
 
-        this.isValid = false;
-        return new ValidationStatus(false, ["oeisID parameter is missing"]);
+        this.isValid = true;
+        if (this.settings['numElements']) {
+            this.last = Number(this.settings['numElements']) - 1;
+        } else {
+            this.last = 999;
+        }
+        this.cacheBlock = this.last + 1; // get everything on the initial fill
+        this.name = (this.settings['name'] as string);
+        return new ValidationStatus(true);
     }
 
 }

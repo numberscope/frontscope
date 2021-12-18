@@ -28,7 +28,7 @@ export class SequenceParamsSchema {
  * with Numberscope.
  */
 export interface SequenceInterface {
-    ID: number;
+    sequenceID: number;
     name: string;
     description: string;
     params: SequenceParamsSchema[];
@@ -72,7 +72,7 @@ export interface SequenceInterface {
 }
 
 export interface SequenceConstructor {
-    new (ID: number): SequenceInterface;
+    new (sequenceID: number): SequenceInterface;
 }
 
 /**

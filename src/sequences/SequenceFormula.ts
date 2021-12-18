@@ -27,10 +27,10 @@ class SequenceFormula extends SequenceCached {
 
     /**
      *Creates an instance of SequenceFormula
-     * @param {*} ID the ID of the sequence
+     * @param {*} sequenceID the sequence identifer of the sequence
      */
-    constructor (ID: number) {
-        super(ID);
+    constructor (sequenceID: number) {
+        super(sequenceID);
         this.formula = math.compile('n'); // tide us over until validate()
     }
 

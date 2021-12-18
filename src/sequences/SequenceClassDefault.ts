@@ -9,7 +9,7 @@ import { ValidationStatus } from '@/shared/ValidationStatus';
  * 
  */
 export class SequenceClassDefault implements SequenceInterface {
-    ID: number;
+    sequenceID: number;
     name = 'Base';
     description = 'A Base sequence class';
     params: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', 'displayName', false, '0')];
@@ -20,8 +20,8 @@ export class SequenceClassDefault implements SequenceInterface {
 
     protected settings: { [key: string]: string|number|boolean} = {};
 
-    constructor(ID: number) {
-        this.ID = ID;
+    constructor(sequenceID: number) {
+        this.sequenceID = sequenceID;
         this.ready = false;
         this.isValid = false;
     }

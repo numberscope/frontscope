@@ -45,7 +45,7 @@ class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 		super.initialize(sketch, seq);
 		if (seq.last - seq.first < this.settings.levels)
 		{
-			throw Error(`Sequence ${seq.name} has too few entries`
+			throw Error(`Sequence ${seq.name} has too few entries `
 					+ `for ${this.settings.levels} levels.`);
 		}
 	}
@@ -80,7 +80,7 @@ class VizDifferences extends VisualizerDefault implements VisualizerInterface {
 			hue = (i * 255 / 6) % 255;
 			myColor = this.sketch.color(hue, 150, 200);
 			this.sketch.fill(myColor);
-			/* Draws and update workingSequence: */
+			/* Draw the row, updating workingSequence: */
 			for (let j = 0; j < workingSequence.length; j++) {
 				this.sketch.text(workingSequence[j].toString(),
 							firstX + j * xDelta,
