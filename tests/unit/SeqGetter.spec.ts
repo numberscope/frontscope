@@ -20,3 +20,14 @@ test('displays dummy title', () => {
   })
   expect(wrapper.text()).toContain('Dummy Title')
 })
+
+/*
+* This test ensures that load-seq is emitted by the SeqGetter component when
+* clicked.
+*/
+test('emits load-seq when clicked', async () => { 
+  const wrapper = mount(SeqGetter)
+  const a = wrapper.find('a')
+  await a.trigger('click')
+  expect(wrapper.emitted()).toMatchObject({ 'load-seq': [ [] ] })
+})
