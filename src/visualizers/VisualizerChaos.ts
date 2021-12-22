@@ -27,7 +27,7 @@ const schemaChaos = [
 		"Starting index",
 		true,
 		0,
-		"The index of the first term (a value of 0 will draw from the first valid term)."
+		"The index of the first term (if less than first valid term, will start at first valid term)."
 	),
 	new VisualizerParamsSchema(
 		"num",
@@ -278,7 +278,8 @@ class VisualizerChaos extends VisualizerDefault {
 		const textSize = this.sketch.width * 0.04 / shrink; // shrinks the numbers appropriately up to about 100 corners or so
 		const textStroke = this.sketch.width * 0; // no stroke right now, but could be added
 
-		// set counters
+		// set the starting point
+		this.offset = Math.max( this.offset, this.seq.first );
 		this.myIndex = this.offset;
 
 		// set up arrays of walkers
