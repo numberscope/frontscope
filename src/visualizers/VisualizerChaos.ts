@@ -282,7 +282,7 @@ class VisualizerChaos extends VisualizerDefault {
 		this.myIndex = this.offset;
 
 		// set up arrays of walkers
-		this.walkerPositions = Array(this.walkers).fill(center);
+		this.walkerPositions = Array.from({length: this.walkers}, () => center.copy());
 
 		// Set up the windows and return the coordinates of the corners
 		this.cornersList = this.chaosWindow( center, radius); // locations of the corners
@@ -331,8 +331,7 @@ class VisualizerChaos extends VisualizerDefault {
 			const myWalker = this.numModulus(this.myIndex, this.walkers);
 
 			// update the walker position
-			this.walkerPositions[myWalker].x = (1-this.frac)*this.walkerPositions[myWalker].x + this.frac*myCornerPosition.x;
-			this.walkerPositions[myWalker].y = (1-this.frac)*this.walkerPositions[myWalker].y + this.frac*myCornerPosition.y;
+			this.walkerPositions[myWalker].lerp(myCornerPosition, this.frac);
 		
 			// choose colour to mark position
 			let myColor = this.sketch.color(0);
