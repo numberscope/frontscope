@@ -232,10 +232,21 @@ class VisualizerChaos extends VisualizerDefault {
 		// decide which palette to set by default
 		// we need a colourpicker in the params eventually
 		// right now this is a little arbitrary
+		const defaultColorList = [
+			'#588dad', // blue greenish
+			'#daa520', // orange 
+			'#008a2c', // green
+			'#ff6361', // fuschia
+			'#ffa600', // bright orange
+			'#bc5090', // lerp toward purple
+			'#655ca3' // purple
+		];
+		const darkColor = '#262626';
+		const lightColor = '#f5f5f5';
 		if( this.darkMode ){ 
-			this.currentPalette = new Palette(this.sketch,['#48458b','#daa520','#003f5c','#ff6361','#ffa600','#bc5090','#58508d'],'#262626','#f5f5f5');
+			this.currentPalette = new Palette(this.sketch,defaultColorList,darkColor,lightColor);
 		} else {
-			this.currentPalette = new Palette(this.sketch,['#48458b','#daa520','#003f5c','#ff6361','#ffa600','#bc5090','#58508d'],'#f5f5f5','#262626');
+			this.currentPalette = new Palette(this.sketch,defaultColorList,lightColor,darkColor);
 		}
 		if( 
 			(this.colorStyle === ColorStyle.Walker && this.walkers > 7) 
@@ -254,7 +265,7 @@ class VisualizerChaos extends VisualizerDefault {
 				console.log( '#'+hexString);
 				colorList.push( '#'+hexString ); 
 			}
-			this.currentPalette = new Palette(this.sketch, colorList, this.darkMode ? '#262626' : '#f5f5f5', this.darkMode ? '#f5f5f5' : '#262626' );
+			this.currentPalette = new Palette(this.sketch, colorList, this.darkMode ? darkColor : lightColor, this.darkMode ? lightColor : darkColor );
 		} 
 		
 		// set center coords and size
@@ -271,10 +282,7 @@ class VisualizerChaos extends VisualizerDefault {
 		this.myIndex = this.offset;
 
 		// set up arrays of walkers
-		this.walkerPositions.splice(0, this.walkerPositions.length) // clean the array out (fixes bug with redraws)
-		for( let w = 0; w < this.walkers; w++ ){
-			this.walkerPositions.push(center); // all walkers start at origin
-		}
+		this.walkerPositions = Array(this.walkers).fill(center);
 
 		// Set up the windows and return the coordinates of the corners
 		this.cornersList = this.chaosWindow( center, radius); // locations of the corners
@@ -309,55 +317,52 @@ class VisualizerChaos extends VisualizerDefault {
 		super.draw();
 
 		// we do pixelsPerFrame pixels each time through the draw cycle; this speeds things up essentially
-		for( let px = 0; px < this.pixelsPerFrame; px++ ){
-			
+		const pixelsLimit = this.myIndex + Math.min( ( this.num ? this.num - this.myIndex + 1 : this.pixelsPerFrame), this.pixelsPerFrame );
+		for( ; this.myIndex < pixelsLimit; this.myIndex++ ){
 
 			// get the term
 			const myTerm = this.seq.getElement(this.myIndex);
 
-			if( !(myTerm === undefined) && (this.num === 0 || this.myIndex <= this.num) ){
+			// check its modulus to see which corner to walk toward
+			const myCorner = this.numModulus(myTerm, this.corners);
+			const myCornerPosition = this.cornersList[myCorner];
 
-				// check its modulus to see which corner to walk toward
-				const myCorner = this.numModulus(myTerm, this.corners);
-				const myCornerPosition = this.cornersList[myCorner];
+			// check the index modulus to see which walker is walking
+			const myWalker = this.numModulus(this.myIndex, this.walkers);
 
-				// check the index modulus to see which walker is walking
-				const myWalker = this.numModulus(this.myIndex, this.walkers);
-
-				// update the walker position
-				this.walkerPositions[myWalker].x = (1-this.frac)*this.walkerPositions[myWalker].x + this.frac*myCornerPosition.x;
-				this.walkerPositions[myWalker].y = (1-this.frac)*this.walkerPositions[myWalker].y + this.frac*myCornerPosition.y;
-			
-				// choose colour to mark position
-				let myColor = this.sketch.color(0);
-				if( this.colorStyle == ColorStyle.Walker ){
+			// update the walker position
+			this.walkerPositions[myWalker].x = (1-this.frac)*this.walkerPositions[myWalker].x + this.frac*myCornerPosition.x;
+			this.walkerPositions[myWalker].y = (1-this.frac)*this.walkerPositions[myWalker].y + this.frac*myCornerPosition.y;
+		
+			// choose colour to mark position
+			let myColor = this.sketch.color(0);
+			switch( this.colorStyle ){
+				case ColorStyle.Walker:
 					myColor = this.currentPalette.colorList[myWalker];
-				}
-				if( this.colorStyle == ColorStyle.Corner ){
+					break;
+				case ColorStyle.Corner:
 					myColor = this.currentPalette.colorList[myCorner];
-				}
-				if( this.colorStyle == ColorStyle.Index ){
+					break;
+				case ColorStyle.Index:
 					if ( this.num ) {
 						myColor = this.sketch.lerpColor(this.currentPalette.colorList[0], this.currentPalette.colorList[1], this.myIndex/this.num );
 					} else {
 						myColor = this.sketch.lerpColor(this.currentPalette.colorList[0], this.currentPalette.colorList[1], this.numModulus(this.myIndex,10000)/10000 );
 					}
-				}
-				if( this.colorStyle == ColorStyle.Highlight ){
+					break;
+				case ColorStyle.Highlight:
 					if( myWalker == this.highlightWalker ){
 						myColor = this.currentPalette.colorList[0];
 					} else {
 						myColor = this.currentPalette.colorList[1];
 					}
-				}
-				myColor.setAlpha(255*this.alpha); // the 255 is needed when in RGB mode; can change in other modes; see p5.js docs on setAlpha
-
-				// draw a circle
-				this.sketch.fill(myColor);
-				this.sketch.circle( this.walkerPositions[myWalker].x, this.walkerPositions[myWalker].y, this.circSize );
-
+					break;
 			}
-			this.myIndex += 1;
+			myColor.setAlpha(255*this.alpha); // the 255 is needed when in RGB mode; can change in other modes; see p5.js docs on setAlpha
+
+			// draw a circle
+			this.sketch.fill(myColor);
+			this.sketch.circle( this.walkerPositions[myWalker].x, this.walkerPositions[myWalker].y, this.circSize );
 		}
 
 		// stop drawing if we exceed decreed terms
@@ -372,5 +377,5 @@ class VisualizerChaos extends VisualizerDefault {
 export const exportModule = new VisualizerExportModule(
 	"Chaos",
 	VisualizerChaos,
-	""
+	"Chaos game played on a sequence."
 );
