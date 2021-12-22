@@ -10,32 +10,32 @@ class Palette {
 	backgroundColor: p5.Color;
 	textColor: p5.Color;
 
-	constructor( sketch: p5, hexList?: string[], hexBack?: string, hexText?: string ) {
-		let myHexList: string[] = [];
-		let myHexBack = '#000000';
-		let myHexText = '#000000';
-		if ( hexList !== undefined ) { myHexList = hexList; }
-		if ( hexBack !== undefined ) { myHexBack = hexBack; }
-		if ( hexText !== undefined ) { myHexText = hexText; }
-		for( let h = 0 ; h < myHexList.length; h++ ){
-			this.colorList.push( sketch.color(myHexList[h]) );
-		}
-		this.backgroundColor = sketch.color(myHexBack);
-		this.textColor = sketch.color(myHexText);
+	constructor( sketch: p5, hexList: string[]= [], hexBack = '#000000', hexText = '#FFFFFF' ) {
+		this.colorList = hexList.map( colorSpec => sketch.color(colorSpec) );
+		this.backgroundColor = sketch.color(hexBack);
+		this.textColor = sketch.color(hexText);
 	}
 }
 
-enum ColorStyle { Walker, Corner, Index, Highlight }
+enum ColorStyle { Walker = 0, Corner, Index, Highlight }
 
 // params schema
 const schemaChaos = [
 	new VisualizerParamsSchema(
+		"offset",
+		ParamType.number,
+		"Starting index",
+		true,
+		0,
+		"The index of the first term (a value of 0 will draw from the first valid term)."
+	),
+	new VisualizerParamsSchema(
 		"num",
 		ParamType.number,
-		"Number of terms",
+		"Ending index",
 		true,
 		10000,
-		"The number of terms to stop drawing at (a value of 0 will draw forever/until it runs out)."
+		"The index of the last term (a value of 0 will draw forever/until it runs out)."
 	),
 	new VisualizerParamsSchema(
 		"corners",
@@ -127,13 +127,11 @@ class VisualizerChaos extends VisualizerDefault {
     
 	name = "Chaos";
 
-	private img: p5.Image = new p5.Image();
-
 	// private properly typed versions of the user parameters
+	private offset = 0;
 	private num = 0;
 	private corners = 0;
 	private walkers = 0;
-	private style = 0;
 	private colorStyle = ColorStyle.Walker;
 	private highlightWalker = 0;
 	private circSize = 0;
@@ -162,10 +160,11 @@ class VisualizerChaos extends VisualizerDefault {
 		this.isValid = false;
 
 		// properly typed private versions of parameters
+		this.offset = Number(this.settings.offset);
 		this.num = Number(this.settings.num);
 		this.corners = Number(this.settings.corners);
 		this.walkers = Number(this.settings.walkers);
-		this.style = Number(this.settings.style);
+		const style = Number(this.settings.style);
 		this.highlightWalker = Number(this.settings.highlightWalker);
 		this.circSize = Number(this.settings.circSize);
 		this.alpha = Number(this.settings.alpha);
@@ -176,14 +175,16 @@ class VisualizerChaos extends VisualizerDefault {
 
 		// validation checks
 		const validationMessages: string[] = [];
-		if (this.num < 0) validationMessages.push("The number of terms must be at least 0.");
-		if ( !Number.isInteger( this.num ) ) validationMessages.push("The number of terms must be an integer.");
+		if (this.offset < 0) validationMessages.push("The starting index must be non-negative.");
+		if ( !Number.isInteger( this.offset ) ) validationMessages.push("The starting index must be an integer.");
+		if (this.num < 0) validationMessages.push("The last index must be non-negative.");
+		if ( !Number.isInteger( this.num ) ) validationMessages.push("The last index must be an integer.");
 		if (this.corners < 2) validationMessages.push("The number of corners must be at least 2.");
 		if ( !Number.isInteger( this.corners ) ) validationMessages.push("The number of corners must be an integer.");
 		if (this.walkers < 1) validationMessages.push("The number of walkers must be at least 1.");
 		if ( !Number.isInteger( this.walkers ) ) validationMessages.push("The number of walkers must be an integer.");
-		if (this.style < 0 || this.style > 3) validationMessages.push("The style must be an integer between 0 and 3 inclusive.");
-		if ( !Number.isInteger( this.style ) ) validationMessages.push("The style must be an integer between 0 and 3 inclusive.");
+		if (style < 0 || style > 3) validationMessages.push("The style must be an integer between 0 and 3 inclusive.");
+		if ( !Number.isInteger( style ) ) validationMessages.push("The style must be an integer between 0 and 3 inclusive.");
 		if (this.highlightWalker < 0 || this.highlightWalker >= this.walkers) validationMessages.push("The highlighted walker must be between 0 and the number of walkers minus 1.");
 		if ( !Number.isInteger( this.highlightWalker ) ) validationMessages.push("The highlighted walker must be an integer.");
 		if (this.circSize < 0) validationMessages.push("The circle size must be positive.");
@@ -196,6 +197,8 @@ class VisualizerChaos extends VisualizerDefault {
 		if ( validationMessages.length > 0 ) {
 			return new ValidationStatus(false, validationMessages );
 		}
+
+		this.colorStyle = (<ColorStyle> style);
 
 		this.isValid = true;
 		return new ValidationStatus(true);
@@ -236,14 +239,10 @@ class VisualizerChaos extends VisualizerDefault {
 
 		super.setup();
 
-		this.img = this.sketch.createImage(this.sketch.width, this.sketch.height);
-	
 		// the first palette random with enough colours for the number of corners or walkers
 		let paletteSize = 10;
-		if( this.style === 0 ){ this.colorStyle = ColorStyle.Walker; paletteSize = this.walkers; } 
-		if( this.style === 1 ){ this.colorStyle = ColorStyle.Corner; paletteSize = this.corners; } 
-		if( this.style === 2 ){ this.colorStyle = ColorStyle.Index; } 
-		if( this.style === 3 ){ this.colorStyle = ColorStyle.Highlight; } 
+		if( this.colorStyle === ColorStyle.Walker ){ paletteSize = this.walkers; } 
+		if( this.colorStyle === ColorStyle.Corner ){ paletteSize = this.corners; } 
 		const colorList: string[] = [];
 		for ( let c = 0 ; c < paletteSize; c++ ){
 			let hexString = '';
@@ -282,8 +281,7 @@ class VisualizerChaos extends VisualizerDefault {
 		const textStroke = this.sketch.width * 0; // no stroke right now, but could be added
 
 		// set counters
-		this.pixelCount = 0;
-		this.myIndex = 0;
+		this.myIndex = this.offset;
 
 		// set up arrays of walkers
 		this.walkerPositions.splice(0, this.walkerPositions.length) // clean the array out (fixes bug with redraws)
@@ -326,13 +324,11 @@ class VisualizerChaos extends VisualizerDefault {
 		// we do pixelsPerFrame pixels each time through the draw cycle; this speeds things up essentially
 		for( let px = 0; px < this.pixelsPerFrame; px++ ){
 			
-			// myIndex tells which term we are drawing
-			this.myIndex += 1;
 
 			// get the term
 			const myTerm = this.seq.getElement(this.myIndex);
 
-			if( !(myTerm === undefined) && (this.num === 0 || this.pixelCount < this.num) ){
+			if( !(myTerm === undefined) && (this.num === 0 || this.myIndex <= this.num) ){
 
 				// check its modulus to see which corner to walk toward
 				const myCorner = this.numModulus(myTerm, this.corners);
@@ -373,12 +369,12 @@ class VisualizerChaos extends VisualizerDefault {
 				this.sketch.fill(myColor);
 				this.sketch.circle( this.walkerPositions[myWalker].x, this.walkerPositions[myWalker].y, this.circSize );
 
-				this.pixelCount += 1;
 			}
+			this.myIndex += 1;
 		}
 
 		// stop drawing if we exceed decreed terms
-		if ( this.num != 0 && this.pixelCount > this.num ){
+		if ( this.num != 0 && this.myIndex > this.num ){
 			this.sketch.noLoop();
 		}
 
