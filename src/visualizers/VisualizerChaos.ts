@@ -280,6 +280,7 @@ class VisualizerChaos extends VisualizerDefault {
 
 		// set the starting point
 		this.offset = Math.max( this.offset, this.seq.first );
+		this.num = Math.min( this.num, this.seq.last );
 		this.myIndex = this.offset;
 
 		// set up arrays of walkers
