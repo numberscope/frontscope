@@ -126,6 +126,7 @@ const schemaChaos = [
 class VisualizerChaos extends VisualizerDefault {
     
 	name = "Chaos";
+	params = schemaChaos;
 
 	// private properly typed versions of the user parameters
 	private offset = 0;
@@ -147,13 +148,8 @@ class VisualizerChaos extends VisualizerDefault {
 	private cornersList: p5.Vector[] = [];
 	private walkerPositions: p5.Vector[] = [];
 
-	// list of colour palettes
-	private darkPalette = new Palette(this.sketch);
-	private lightPalette = new Palette(this.sketch);
-	private randomPalette = new Palette(this.sketch);
+	// colour palette
 	private currentPalette = new Palette(this.sketch);
-
-	params = schemaChaos;
 
 	validate() {
 		this.assignParams();
@@ -175,28 +171,25 @@ class VisualizerChaos extends VisualizerDefault {
 
 		// validation checks
 		const validationMessages: string[] = [];
-		if (this.offset < 0) validationMessages.push("The starting index must be non-negative.");
-		if ( !Number.isInteger( this.offset ) ) validationMessages.push("The starting index must be an integer.");
-		if (this.num < 0) validationMessages.push("The last index must be non-negative.");
-		if ( !Number.isInteger( this.num ) ) validationMessages.push("The last index must be an integer.");
-		if (this.corners < 2) validationMessages.push("The number of corners must be at least 2.");
-		if ( !Number.isInteger( this.corners ) ) validationMessages.push("The number of corners must be an integer.");
-		if (this.walkers < 1) validationMessages.push("The number of walkers must be at least 1.");
-		if ( !Number.isInteger( this.walkers ) ) validationMessages.push("The number of walkers must be an integer.");
-		if (style < 0 || style > 3) validationMessages.push("The style must be an integer between 0 and 3 inclusive.");
-		if ( !Number.isInteger( style ) ) validationMessages.push("The style must be an integer between 0 and 3 inclusive.");
-		if (this.highlightWalker < 0 || this.highlightWalker >= this.walkers) validationMessages.push("The highlighted walker must be between 0 and the number of walkers minus 1.");
-		if ( !Number.isInteger( this.highlightWalker ) ) validationMessages.push("The highlighted walker must be an integer.");
+		if (!Number.isInteger( this.offset ) || this.offset < 0) 
+			validationMessages.push("The starting index must be a non-negative integer.");
+		if (!Number.isInteger( this.num ) || this.num < 0) 
+			validationMessages.push("The last index must be a non-negative integer.");
+		if (!Number.isInteger( this.corners ) || this.corners < 2) 
+			validationMessages.push("The number of corners must be an integer > 1.");
+		if (!Number.isInteger( this.walkers ) || this.walkers < 1) 
+			validationMessages.push("The number of walkers must be an integer > 0.");
+		if (!Number.isInteger( style ) || style < 0 || style > 3) 
+			validationMessages.push("The style must be an integer between 0 and 3 inclusive.");
+		if (!Number.isInteger( this.highlightWalker ) || this.highlightWalker < 0 || this.highlightWalker >= this.walkers) 
+			validationMessages.push("The highlighted walker must be an integer between 0 and the number of walkers minus 1.");
 		if (this.circSize < 0) validationMessages.push("The circle size must be positive.");
-		if (this.alpha < 0) validationMessages.push("The alpha must be between 0 and 1 inclusive.");
-		if (this.alpha > 1) validationMessages.push("The alpha must be between 0 and 1 inclusive.");
-		if (this.frac < 0) validationMessages.push("The fraction must be between 0 and 1 inclusive.");
-		if (this.frac > 1) validationMessages.push("The fraction must be between 0 and 1 inclusive.");
-		if (this.pixelsPerFrame < 0 ) validationMessages.push("The dots per frame must be positive.");
-		if ( !Number.isInteger( this.pixelsPerFrame ) ) validationMessages.push("The dots per frame must be an integer.");
-		if ( validationMessages.length > 0 ) {
+		if (this.alpha < 0 || this.alpha > 1) validationMessages.push("The alpha must be between 0 and 1 inclusive.");
+		if (this.frac < 0 || this.frac > 1) validationMessages.push("The fraction must be between 0 and 1 inclusive.");
+		if (!Number.isInteger( this.pixelsPerFrame ) || this.pixelsPerFrame < 0 ) 
+			validationMessages.push("The dots per frame must be a positive integer.");
+		if (validationMessages.length > 0) 
 			return new ValidationStatus(false, validationMessages );
-		}
 
 		this.colorStyle = (<ColorStyle> style);
 
@@ -222,15 +215,12 @@ class VisualizerChaos extends VisualizerDefault {
 	chaosWindow( center: p5.Vector, radius: number) {
 		// creates corners of a polygon with given centre and radius
 		const pts: p5.Vector[] = [];
-		let angle = 0;
-		let newpt = this.sketch.createVector(0,0);
 		for( let i = 0; i < this.corners; i++ ){
-			angle = this.sketch.radians( 45+360*i/this.corners );
-			newpt = this.sketch.createVector( 
+			const angle = this.sketch.radians( 45+360*i/this.corners );
+			pts.push( this.sketch.createVector( 
 				center.x + radius*this.sketch.cos(angle),
 				center.y + radius*this.sketch.sin(angle)
-			);
-			pts.push(newpt);
+			));
 		}
 		return pts;
 	}
@@ -239,36 +229,33 @@ class VisualizerChaos extends VisualizerDefault {
 
 		super.setup();
 
-		// the first palette random with enough colours for the number of corners or walkers
-		let paletteSize = 10;
-		if( this.colorStyle === ColorStyle.Walker ){ paletteSize = this.walkers; } 
-		if( this.colorStyle === ColorStyle.Corner ){ paletteSize = this.corners; } 
-		const colorList: string[] = [];
-		for ( let c = 0 ; c < paletteSize; c++ ){
-			let hexString = '';
-			for ( let h = 0 ; h < 6 ; h++ ){
-				hexString += (Math.floor(Math.random()*16)).toString();
-			}
-			colorList.push( hexString ); 
-		}
-		this.randomPalette = new Palette(this.sketch, colorList, this.darkMode ? '#262626' : '#f5f5f5', this.darkMode ? '#f5f5f5' : '#262626' );
-
-		// the second and third palette are curated
-		this.darkPalette = new Palette(this.sketch,['#48458b','#daa520','#003f5c','#ff6361','#ffa600','#bc5090','#58508d'],'#262626','#f5f5f5');
-		this.lightPalette = new Palette(this.sketch,['#48458b','#daa520','#003f5c','#ff6361','#ffa600','#bc5090','#58508d'],'#f5f5f5','#262626');
-		
 		// decide which palette to set by default
 		// we need a colourpicker in the params eventually
 		// right now this is a little arbitrary
 		if( this.darkMode ){ 
-			this.currentPalette = this.darkPalette;
+			this.currentPalette = new Palette(this.sketch,['#48458b','#daa520','#003f5c','#ff6361','#ffa600','#bc5090','#58508d'],'#262626','#f5f5f5');
 		} else {
-			this.currentPalette = this.lightPalette;
+			this.currentPalette = new Palette(this.sketch,['#48458b','#daa520','#003f5c','#ff6361','#ffa600','#bc5090','#58508d'],'#f5f5f5','#262626');
 		}
 		if( 
 			(this.colorStyle === ColorStyle.Walker && this.walkers > 7) 
 			|| ( this.colorStyle === ColorStyle.Corner && this.corners > 7 ) 
-		){ this.currentPalette = this.randomPalette; } 
+		){ 
+			let paletteSize = 0;
+			if( this.colorStyle === ColorStyle.Walker ){ paletteSize = this.walkers; } 
+			if( this.colorStyle === ColorStyle.Corner ){ paletteSize = this.corners; } 
+			const colorList: string[] = [];
+			for ( let c = 0 ; c < paletteSize; c++ ){
+				let hexString = '';
+				for ( let h = 0 ; h < 6 ; h++ ){
+					hexString += (Math.floor(Math.random()*16)).toString(16);
+					console.log(hexString);
+				}
+				console.log( '#'+hexString);
+				colorList.push( '#'+hexString ); 
+			}
+			this.currentPalette = new Palette(this.sketch, colorList, this.darkMode ? '#262626' : '#f5f5f5', this.darkMode ? '#f5f5f5' : '#262626' );
+		} 
 		
 		// set center coords and size
 		const center = this.sketch.createVector( this.sketch.width * 0.5, this.sketch.height * 0.5 );
