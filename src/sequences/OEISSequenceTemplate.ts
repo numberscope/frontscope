@@ -16,6 +16,9 @@ export default class OEISSequenceTemplate extends SequenceCached {
     name = 'OEIS Sequence Template';
     description = 'Factory for obtaining sequences from the OEIS';
     oeisSeq = true;
+    modulo = 0n;
+    cacheBlock = 1000;
+
     params: SequenceParamsSchema[] = [
         new SequenceParamsSchema('oeisId', 'text', 'OEIS ID', true, false),
         new SequenceParamsSchema('name', 'text', 'Name', false, false),
@@ -27,22 +30,28 @@ export default class OEISSequenceTemplate extends SequenceCached {
         super(sequenceID); // Don't know the index range yet, will fill in later
     }
 
-    fillCache(): void {
-        axios.get(`http://${process.env.VUE_APP_API_URL}/api/get_oeis_sequence/${this.settings.oeisId}/${this.cacheBlock}`)
-             .then( resp => {
-                 if (this.settings.modulo) {
-                     this.cache = resp.data.values.map((x: string) => BigInt(x) % BigInt(this.settings.modulo));
-                 } else {
-                     this.cache = resp.data.values.map((x: string) => BigInt(x));
-                 }
-                 while (this.last >= this.first
-                        && this.cache[this.last] === undefined) {
-                     --this.last;
-                 }
-                 this.lastCached = this.last;
-                 this.cachingTo = this.last;
-                 return;
-             });
+    async fillCache(): Promise<void> {
+        const resp = await axios.get(
+            `http://${process.env.VUE_APP_API_URL}/api/`
+            + `get_oeis_values/${this.settings.oeisId}/${this.cacheBlock}`);
+        this.first = Infinity;
+        this.last = -Infinity;
+        for (const k in resp.data.values) {
+            const index = Number(k);
+            if (index < this.first) this.first = index;
+            if (index > this.last)  this.last  = index;
+            this.cache[index] = BigInt(resp.data.values[k]);
+            if (this.modulo) this.cache[index] %= this.modulo;
+        }
+        if (this.first === Infinity) {
+            /* An empty sequence; perhaps a mistaken OEIS ID. Is there
+               any other action we should take in this case?
+            */
+            this.first = 0;
+            this.last = -1;
+        }
+        this.lastCached = this.last;
+        this.cachingTo = this.last;
     }
 
     validate(): ValidationStatus {
@@ -51,22 +60,29 @@ export default class OEISSequenceTemplate extends SequenceCached {
             return superStatus;
         }
 
-        this.isValid = false;
-        if (this.settings['oeisId'] === undefined) {
-            return new ValidationStatus(false, ["oeisID parameter is missing"]);
+        const messages: string[] = [];
+        if (!this.settings['oeisId']) {
+            messages.push('oeisID parameter is missing');
         }
-
-        this.isValid = true;
         if (this.settings['numElements']) {
-            this.last = Number(this.settings['numElements']) - 1;
-        } else {
-            this.last = 999;
+            this.cacheBlock = Number(this.settings['numElements']);
+            if (!Number.isInteger(this.cacheBlock)) {
+                messages.push(`Number "${this.settings['numElements']}" `
+                              + ' of elements is not an integer.');
+            }
         }
-        this.cacheBlock = this.last + 1; // get everything on the initial fill
+        if (this.settings['modulo']) {
+            try {
+                this.modulo = BigInt(this.settings['modulo']);
+            } catch (syntaxError) { // is there any way to only catch those?
+                messages.push('modulo must be an integer: '
+                              + syntaxError.message);
+            }
+        }
         this.name = (this.settings['name'] as string);
-        return new ValidationStatus(true);
+        this.isValid = (messages.length === 0);
+        return new ValidationStatus(this.isValid, messages);
     }
-
 }
 
 export const exportModule = new SequenceExportModule(
