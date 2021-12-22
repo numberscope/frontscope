@@ -22,28 +22,20 @@ enum ColorStyle { Walker = 0, Corner, Index, Highlight }
 // params schema
 const schemaChaos = [
 	new VisualizerParamsSchema(
-		"offset",
-		ParamType.number,
-		"Starting index",
-		true,
-		0,
-		"The index of the first term (if less than first valid term, will start at first valid term)."
-	),
-	new VisualizerParamsSchema(
-		"num",
-		ParamType.number,
-		"Ending index",
-		true,
-		10000,
-		"The index of the last term (a value of 0 will draw forever/until it runs out)."
-	),
-	new VisualizerParamsSchema(
 		"corners",
 		ParamType.number,
 		"Number of corners",
 		true,
 		4,
 		"The number of corners on the polygon, also the modulus we apply to the terms of the sequence."
+	),
+	new VisualizerParamsSchema(
+		"frac",
+		ParamType.number,
+		"Fraction to walk",
+		true,
+		0.5,
+		"How far each step takes you toward the corner (value between 0 and 1 inclusive)."
 	),
 	new VisualizerParamsSchema(
 		"walkers",
@@ -63,12 +55,52 @@ const schemaChaos = [
 		"0 = colour by walker; 1 = colour by destination; 2 = colour by index; 3 = colour one walker."
 	),
 	new VisualizerParamsSchema(
+		"gradientLength",
+		ParamType.number,
+		"Colour cycling length",
+		false,
+		10000,
+		"If using colour scheme 2:  Number of terms before cycling colour if running forever.",
+	),
+	new VisualizerParamsSchema(
 		"highlightWalker",
 		ParamType.number,
 		"Highlighted walker",
 		false,
 		0,
-		"The walker to highlight in colour scheme 3."
+		"If using colour scheme 3:  The walker to highlight."
+	),
+	new VisualizerParamsSchema(
+		"firstBool",
+		ParamType.boolean,
+		"Use sequence-defined starting index.",
+		true,
+		true,
+		"Leave checked to start at first valid term of sequence."
+	),
+	new VisualizerParamsSchema(
+		"first",
+		ParamType.number,
+		"Override starting index",
+		true,
+		0,
+		"If not using sequence's first term, use this first term (if less than first valid term, will start at first valid term)."
+	),
+	new VisualizerParamsSchema(
+		"lastBool",
+		ParamType.boolean,
+		"Use sequence-defined ending index.",
+		true,
+		true,
+		"Leave checked to end at last valid term of sequence."
+	),
+	new VisualizerParamsSchema(
+		"last",
+		ParamType.number,
+		"Override ending index",
+		true,
+		0,
+		"If not using sequence's last term, use this last term (if greater than last valid term, will end at last valid term)."
 	),
 	new VisualizerParamsSchema(
 		"circSize",
@@ -85,14 +117,6 @@ const schemaChaos = [
 		true,
 		1,
 		"Alpha factor (transparency, 0=transparent, 1=solid) of the dots."
-	),
-	new VisualizerParamsSchema(
-		"frac",
-		ParamType.number,
-		"Fraction to walk",
-		true,
-		0.5,
-		"How far each step takes you toward the corner (value between 0 and 1 inclusive)."
 	),
 	new VisualizerParamsSchema(
 		"pixelsPerFrame",
@@ -129,20 +153,24 @@ class VisualizerChaos extends VisualizerDefault {
 	params = schemaChaos;
 
 	// private properly typed versions of the user parameters
-	private offset = 0;
-	private num = 0;
 	private corners = 0;
+	private frac = 0;
 	private walkers = 0;
 	private colorStyle = ColorStyle.Walker;
+	private gradientLength = 0;
 	private highlightWalker = 0;
+	private first = 0;
+	private firstBool = true;
+	private last = 0;
+	private lastBool = true;
 	private circSize = 0;
 	private alpha = 1;
-	private frac = 0;
 	private pixelsPerFrame = 0;
 	private showLabels = false;
 	private darkMode = false;
 	
 	// current state variables (used in setup and draw)
+	private seqLength = 0;
 	private myIndex = 0;
 	private pixelCount = 0;
 	private cornersList: p5.Vector[] = [];
@@ -156,36 +184,41 @@ class VisualizerChaos extends VisualizerDefault {
 		this.isValid = false;
 
 		// properly typed private versions of parameters
-		this.offset = Number(this.settings.offset);
-		this.num = Number(this.settings.num);
 		this.corners = Number(this.settings.corners);
+		this.frac = Number(this.settings.frac);
 		this.walkers = Number(this.settings.walkers);
 		const style = Number(this.settings.style);
+		this.gradientLength = Number(this.settings.gradientLength);
 		this.highlightWalker = Number(this.settings.highlightWalker);
+		this.firstBool = Boolean(this.settings.firstBool); 
+		this.first = Number(this.settings.first);
+		this.lastBool = Boolean(this.settings.lastBool); 
+		this.last = Number(this.settings.last);
 		this.circSize = Number(this.settings.circSize);
 		this.alpha = Number(this.settings.alpha);
-		this.frac = Number(this.settings.frac);
 		this.pixelsPerFrame = Number(this.settings.pixelsPerFrame);
 		this.showLabels = Boolean(this.settings.showLabels);
 		this.darkMode = Boolean(this.settings.darkMode);
 
 		// validation checks
 		const validationMessages: string[] = [];
-		if (!Number.isInteger( this.offset ) || this.offset < 0) 
-			validationMessages.push("The starting index must be a non-negative integer.");
-		if (!Number.isInteger( this.num ) || this.num < 0) 
-			validationMessages.push("The last index must be a non-negative integer.");
 		if (!Number.isInteger( this.corners ) || this.corners < 2) 
 			validationMessages.push("The number of corners must be an integer > 1.");
+		if (this.frac < 0 || this.frac > 1) validationMessages.push("The fraction must be between 0 and 1 inclusive.");
 		if (!Number.isInteger( this.walkers ) || this.walkers < 1) 
 			validationMessages.push("The number of walkers must be an integer > 0.");
 		if (!Number.isInteger( style ) || style < 0 || style > 3) 
 			validationMessages.push("The style must be an integer between 0 and 3 inclusive.");
+		if (!Number.isInteger( this.gradientLength ) || this.gradientLength <= 0 ) 
+			validationMessages.push("The colour cycle length must be a positive integer.");
 		if (!Number.isInteger( this.highlightWalker ) || this.highlightWalker < 0 || this.highlightWalker >= this.walkers) 
 			validationMessages.push("The highlighted walker must be an integer between 0 and the number of walkers minus 1.");
+		if (!Number.isInteger( this.first ) ) 
+			validationMessages.push("The starting index must be an integer (or blank).");
+		if (!Number.isInteger( this.last ) ) 
+			validationMessages.push("The ending index must be an integer (or blank).");
 		if (this.circSize < 0) validationMessages.push("The circle size must be positive.");
 		if (this.alpha < 0 || this.alpha > 1) validationMessages.push("The alpha must be between 0 and 1 inclusive.");
-		if (this.frac < 0 || this.frac > 1) validationMessages.push("The fraction must be between 0 and 1 inclusive.");
 		if (!Number.isInteger( this.pixelsPerFrame ) || this.pixelsPerFrame < 0 ) 
 			validationMessages.push("The dots per frame must be a positive integer.");
 		if (validationMessages.length > 0) 
@@ -260,9 +293,7 @@ class VisualizerChaos extends VisualizerDefault {
 				let hexString = '';
 				for ( let h = 0 ; h < 6 ; h++ ){
 					hexString += (Math.floor(Math.random()*16)).toString(16);
-					console.log(hexString);
 				}
-				console.log( '#'+hexString);
 				colorList.push( '#'+hexString ); 
 			}
 			this.currentPalette = new Palette(this.sketch, colorList, this.darkMode ? darkColor : lightColor, this.darkMode ? lightColor : darkColor );
@@ -278,10 +309,13 @@ class VisualizerChaos extends VisualizerDefault {
 		const textSize = this.sketch.width * 0.04 / shrink; // shrinks the numbers appropriately up to about 100 corners or so
 		const textStroke = this.sketch.width * 0; // no stroke right now, but could be added
 
-		// set the starting point
-		this.offset = Math.max( this.offset, this.seq.first );
-		this.num = Math.min( this.num, this.seq.last );
-		this.myIndex = this.offset;
+		// set the starting and ending points
+		this.first = Math.max( this.first, this.seq.first );
+		this.last = Math.min( this.last, this.seq.last );
+		if ( this.firstBool ) this.first = this.seq.first;
+		if ( this.lastBool ) this.last = this.seq.last;
+		this.seqLength = this.last - this.first;
+		this.myIndex = this.first;
 
 		// set up arrays of walkers
 		this.walkerPositions = Array.from({length: this.walkers}, () => center.copy());
@@ -319,7 +353,7 @@ class VisualizerChaos extends VisualizerDefault {
 		super.draw();
 
 		// we do pixelsPerFrame pixels each time through the draw cycle; this speeds things up essentially
-		const pixelsLimit = this.myIndex + Math.min( ( this.num ? this.num - this.myIndex + 1 : this.pixelsPerFrame), this.pixelsPerFrame );
+		const pixelsLimit = this.myIndex + Math.min( this.last - this.myIndex + 1, this.pixelsPerFrame );
 		for( ; this.myIndex < pixelsLimit; this.myIndex++ ){
 
 			// get the term
@@ -345,10 +379,10 @@ class VisualizerChaos extends VisualizerDefault {
 					myColor = this.currentPalette.colorList[myCorner];
 					break;
 				case ColorStyle.Index:
-					if ( this.num ) {
-						myColor = this.sketch.lerpColor(this.currentPalette.colorList[0], this.currentPalette.colorList[1], this.myIndex/this.num );
+					if ( this.seqLength < +Infinity ) {
+						myColor = this.sketch.lerpColor(this.currentPalette.colorList[0], this.currentPalette.colorList[1], this.myIndex/this.seqLength );
 					} else {
-						myColor = this.sketch.lerpColor(this.currentPalette.colorList[0], this.currentPalette.colorList[1], this.numModulus(this.myIndex,10000)/10000 );
+						myColor = this.sketch.lerpColor(this.currentPalette.colorList[0], this.currentPalette.colorList[1], this.numModulus(this.myIndex,this.gradientLength)/this.gradientLength );
 					}
 					break;
 				case ColorStyle.Highlight:
@@ -367,7 +401,7 @@ class VisualizerChaos extends VisualizerDefault {
 		}
 
 		// stop drawing if we exceed decreed terms
-		if ( this.num != 0 && this.myIndex > this.num ){
+		if ( this.myIndex > this.last ){
 			this.sketch.noLoop();
 		}
 
