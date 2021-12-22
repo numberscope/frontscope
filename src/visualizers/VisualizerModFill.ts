@@ -46,14 +46,16 @@ class VizModFill extends VisualizerDefault implements VisualizerInterface {
 	drawNew(num: number, seq: SequenceInterface) {
 		const black = this.sketch.color(0);
 		this.sketch.fill(black);
-		let i: number;
-		let j;
-		for (let mod = 1; mod <= this.settings.modDimension; mod++) {
-			const el = seq.getElement(num);
-			if(el === undefined) break;
-			i = el % mod;
-			j = mod - 1;
-			this.sketch.rect(j * this.rectWidth, this.sketch.height - (i + 1) * this.rectHeight, this.rectWidth, this.rectHeight);
+		for (let mod = 1n;
+			mod <= BigInt(this.settings.modDimension);
+			mod++)
+		{
+			const s = seq.getElement(num);
+			const x = Number(mod-1n) * this.rectWidth;
+			const y = this.sketch.height
+				- Number(s % mod + 1n) * this.rectHeight;
+			this.sketch.rect(x, y,
+				this.rectWidth, this.rectHeight);
 		}
 
 	}
@@ -63,13 +65,13 @@ class VizModFill extends VisualizerDefault implements VisualizerInterface {
 		this.rectWidth = this.sketch.width / modDimension;
 		this.rectHeight = this.sketch.height / modDimension;
 		this.sketch.noStroke();
-		this.i = 0;
+		this.i = this.seq.first;
 	}
 
 	draw() {
 		this.drawNew(this.i, this.seq);
 		this.i++;
-		if (this.i == 1000) {
+		if (this.i == 1000 || this.i > this.seq.last) {
 			this.sketch.noLoop();
 		}
 	}

@@ -58,17 +58,17 @@ class VizShiftCompare extends VisualizerDefault implements VisualizerInterface {
 		// Mouse coordinates look they're floats by default.
         console.log('drawing');
         console.log(this.img.pixels.length);
-		let mod = Number(this.settings.mod);
+		let mod = BigInt(this.settings.mod);
 
 		const d = this.sketch.pixelDensity();
 		const mx = this.clip(Math.round(this.sketch.mouseX), 0, this.sketch.width);
 		const my = this.clip(Math.round(this.sketch.mouseY), 0, this.sketch.height);
 		if (this.sketch.key == 'ArrowUp') {
-            mod += 1;
+            mod += 1n;
 			this.sketch.key = '';
 			console.log("UP PRESSED, NEW MOD: " + mod);
 		} else if (this.sketch.key == 'ArrowDown') {
-            mod -= 1;
+            mod -= 1n;
 			this.sketch.key = '';
 			console.log("DOWN PRESSED, NEW MOD: " + mod);
 		} else if (this.sketch.key == 'ArrowRight') {
@@ -76,20 +76,19 @@ class VizShiftCompare extends VisualizerDefault implements VisualizerInterface {
 		}
         // since settings.mod can be any of string | number | bool, 
         // first set mod which is always a number, then assign it here to avoid typing errors
-        this.settings.mod = mod;
-		// Write to image, then to screen for speed.
-		for (let x = 0; x < this.sketch.width; x++) {
+        this.settings.mod = Number(mod);
+        const xLim = Math.min(this.sketch.width - 1, this.seq.last);
+        const yLim = Math.min(this.sketch.height - 1, this.seq.last);
+
+        // Write to image, then to screen for speed.
+        for (let x = this.seq.first; x <= xLim; x++) {
             const xEl = this.seq.getElement(x);
-            for (let y = 0; y < this.sketch.height; y++) {
+            for (let y = this.seq.first; y <= yLim; y++) {
             const yEl = this.seq.getElement(y);
 				for (let i = 0; i < d; i++) {
 					for (let j = 0; j < d; j++) {
 						const index = 4 * ((y * d + j) * this.sketch.width * d + (x * d + i));
                         console.log('x,y: ' + xEl + ', ' + yEl);
-						if(xEl === undefined || yEl === undefined) {
-                            this.sketch.noLoop();
-                            return;
-                        }
 						if (xEl % mod == yEl % mod) {
 							this.img.pixels[index] = 255;
 							this.img.pixels[index + 1] = 255;

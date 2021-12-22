@@ -19,18 +19,18 @@ class SequenceNaturals extends SequenceCached {
         false,
         false
     )];
-    private offset = 1;
+    private begin = 1;
 
     /**
      *Creates an instance of SequenceNaturals
-     * @param {*} ID the ID of the sequence
+     * @param {*} sequenceID the sequence identifier of the sequence
      */
-    constructor (ID: number) {
-        super(ID);
+    constructor (sequenceID: number) {
+        super(sequenceID);
     }
 
     validate(){
-        this.settings['name'] = 'Constant';
+        this.settings['name'] = 'Initializing Naturals...';
         const superStatus = super.validate();
         if (!superStatus.isValid) {
             return superStatus;
@@ -40,7 +40,7 @@ class SequenceNaturals extends SequenceCached {
             this.isValid = true;
             this.name = "Positive Integers";
             if (this.settings['includeZero']) {
-                this.offset = 0;
+                this.begin = 0;
                 this.name = "Nonnegative Integers";
             }
             return new ValidationStatus(true);
@@ -51,7 +51,7 @@ class SequenceNaturals extends SequenceCached {
     }
 
     calculate(n: number) {
-        return n + this.offset;
+        return BigInt(n + this.begin);
     }
 
 }

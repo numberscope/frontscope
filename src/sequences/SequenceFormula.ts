@@ -8,7 +8,9 @@ import * as math from 'mathjs';
  *
  * @class SequenceFormula
  * extends SequenceCached to use mathjs to compute an arbitrary formula in terms
- * of n.
+ * of n. Currently all such formulas start at index 0 and have no limit, but
+ * those are both arbitrary choices; we might at some point want to allow
+ * either to be tailored.
  */
 class SequenceFormula extends SequenceCached {
     name = "Formula: empty";
@@ -17,7 +19,7 @@ class SequenceFormula extends SequenceCached {
         'formula',
         'text',
         'Formula',
-        false,
+        true,
         'n'
     )];
 
@@ -25,10 +27,10 @@ class SequenceFormula extends SequenceCached {
 
     /**
      *Creates an instance of SequenceFormula
-     * @param {*} ID the ID of the sequence
+     * @param {*} sequenceID the sequence identifer of the sequence
      */
-    constructor (ID: number) {
-        super(ID);
+    constructor (sequenceID: number) {
+        super(sequenceID);
         this.formula = math.compile('n'); // tide us over until validate()
     }
 
@@ -52,7 +54,7 @@ class SequenceFormula extends SequenceCached {
                         err.message]);
         }
         const othersymbs = parsetree.filter( (node, path, parent) =>
-            node.type === 'SymbolNode' && parent.type !== 'FunctionNode'
+            node.type === 'SymbolNode' && parent?.type !== 'FunctionNode'
 		&& node.name !== 'n'
         );
 	if (othersymbs.length > 0 ) {
@@ -68,7 +70,7 @@ class SequenceFormula extends SequenceCached {
     }
 
     calculate(n: number) {
-        return this.formula.evaluate({n: n});
+        return BigInt(this.formula.evaluate({n: n}));
     }
 
 }
