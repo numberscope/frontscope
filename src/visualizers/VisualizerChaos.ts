@@ -250,10 +250,7 @@ class VisualizerChaos extends VisualizerDefault {
 		const pts: p5.Vector[] = [];
 		for( let i = 0; i < this.corners; i++ ){
 			const angle = this.sketch.radians( 45+360*i/this.corners );
-			pts.push( this.sketch.createVector( 
-				center.x + radius*this.sketch.cos(angle),
-				center.y + radius*this.sketch.sin(angle)
-			));
+			pts.push( p5.Vector.fromAngle(angle, radius).add(center) );
 		}
 		return pts;
 	}
