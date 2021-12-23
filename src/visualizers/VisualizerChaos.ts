@@ -154,7 +154,6 @@ class VisualizerChaos extends VisualizerDefault {
 	// current state variables (used in setup and draw)
 	private seqLength = 0;
 	private myIndex = 0;
-	private pixelCount = 0;
 	private cornersList: p5.Vector[] = [];
 	private walkerPositions: p5.Vector[] = [];
 
