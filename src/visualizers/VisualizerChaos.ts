@@ -10,7 +10,7 @@ class Palette {
 	backgroundColor: p5.Color;
 	textColor: p5.Color;
 
-	constructor( sketch: p5, hexList: string[]= [], hexBack = '#000000', hexText = '#FFFFFF' ) {
+	constructor( sketch: p5, hexList: string[] = [], hexBack = '#000000', hexText = '#FFFFFF' ) {
 		this.colorList = hexList.map( colorSpec => sketch.color(colorSpec) );
 		this.backgroundColor = sketch.color(hexBack);
 		this.textColor = sketch.color(hexText);
@@ -263,14 +263,14 @@ class VisualizerChaos extends VisualizerDefault {
 			'#ff6361', // fuschia
 			'#ffa600', // bright orange
 			'#bc5090', // lerp toward purple
-			'#655ca3' // purple
+			'#655ca3'  // purple
 		];
 		const darkColor = '#262626';
 		const lightColor = '#f5f5f5';
 		if( this.darkMode ){
-			this.currentPalette = new Palette(this.sketch,defaultColorList,darkColor,lightColor);
+			this.currentPalette = new Palette(this.sketch, defaultColorList, darkColor, lightColor);
 		} else {
-			this.currentPalette = new Palette(this.sketch,defaultColorList,lightColor,darkColor);
+			this.currentPalette = new Palette(this.sketch, defaultColorList, lightColor, darkColor);
 		}
 		if(
 			(this.colorStyle === ColorStyle.Walker && this.walkers > 7) 
@@ -329,11 +329,11 @@ class VisualizerChaos extends VisualizerDefault {
 			this.sketch.fill(this.currentPalette.textColor);
 			this.sketch.strokeWeight(textStroke);
 			this.sketch.textSize(textSize);
-			this.sketch.textAlign(this.sketch.CENTER,this.sketch.CENTER);
-			const cornersLabels = this.chaosWindow(center,(radius)*(labelOutset)); // locations of the labels
+			this.sketch.textAlign(this.sketch.CENTER, this.sketch.CENTER);
+			const cornersLabels = this.chaosWindow(center, (radius)*(labelOutset)); // locations of the labels
 			for ( let c = 0 ; c < this.corners ; c++ ) {
 				const label = cornersLabels[c];
-				this.sketch.text(String(c),label.x,label.y);
+				this.sketch.text(String(c), label.x, label.y);
 			}
 		}
 
@@ -375,7 +375,7 @@ class VisualizerChaos extends VisualizerDefault {
 					if ( this.seqLength < +Infinity ) {
 						myColor = this.sketch.lerpColor(this.currentPalette.colorList[0], this.currentPalette.colorList[1], this.myIndex/this.seqLength );
 					} else {
-						myColor = this.sketch.lerpColor(this.currentPalette.colorList[0], this.currentPalette.colorList[1], this.numModulus(this.myIndex,this.gradientLength)/this.gradientLength );
+						myColor = this.sketch.lerpColor(this.currentPalette.colorList[0], this.currentPalette.colorList[1], this.numModulus(this.myIndex, this.gradientLength)/this.gradientLength );
 					}
 					break;
 				case ColorStyle.Highlight:
