@@ -100,7 +100,7 @@ const schemaChaos = [
 		"Circle alpha",
 		true,
 		1,
-		"Alpha factor (transparency, 0=transparent, 1=solid) of the dots."
+		"Alpha factor (from 0.0=transparent to 1.0=solid) of the dots."
 	),
 	new VisualizerParamsSchema(
 		"pixelsPerFrame",
