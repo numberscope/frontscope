@@ -71,36 +71,20 @@ const schemaChaos = [
 		"If using colour scheme 3:  The walker to highlight."
 	),
 	new VisualizerParamsSchema(
-		"firstBool",
-		ParamType.boolean,
-		"Use sequence-defined starting index.",
-		true,
-		true,
-		"Leave checked to start at first valid term of sequence."
-	),
-	new VisualizerParamsSchema(
 		"first",
-		ParamType.number,
-		"Override starting index",
+		ParamType.text,
+		"Starting index",
 		true,
-		0,
-		"If not using sequence's first term, use this first term (if less than first valid term, will start at first valid term)."
-	),
-	new VisualizerParamsSchema(
-		"lastBool",
-		ParamType.boolean,
-		"Use sequence-defined ending index.",
-		true,
-		true,
-		"Leave checked to end at last valid term of sequence."
+		"",
+		"Use this first term (if less than first valid term, will start at first valid term).  If left blank, uses first valid term."
 	),
 	new VisualizerParamsSchema(
 		"last",
-		ParamType.number,
-		"Override ending index",
+		ParamType.text,
+		"Ending index",
 		true,
-		0,
-		"If not using sequence's last term, use this last term (if greater than last valid term, will end at last valid term)."
+		"",
+		"Use this last term (if greater than last valid term, will end at last valid term).  If left blank, uses last valid term."
 	),
 	new VisualizerParamsSchema(
 		"circSize",
@@ -160,9 +144,7 @@ class VisualizerChaos extends VisualizerDefault {
 	private gradientLength = 0;
 	private highlightWalker = 0;
 	private first = 0;
-	private firstBool = true;
 	private last = 0;
-	private lastBool = true;
 	private circSize = 0;
 	private alpha = 1;
 	private pixelsPerFrame = 0;
@@ -190,10 +172,8 @@ class VisualizerChaos extends VisualizerDefault {
 		const style = Number(this.settings.style);
 		this.gradientLength = Number(this.settings.gradientLength);
 		this.highlightWalker = Number(this.settings.highlightWalker);
-		this.firstBool = Boolean(this.settings.firstBool); 
-		this.first = Number(this.settings.first);
-		this.lastBool = Boolean(this.settings.lastBool); 
-		this.last = Number(this.settings.last);
+		const first = Number(this.settings.first);
+		const last = Number(this.settings.last);
 		this.circSize = Number(this.settings.circSize);
 		this.alpha = Number(this.settings.alpha);
 		this.pixelsPerFrame = Number(this.settings.pixelsPerFrame);
@@ -213,9 +193,9 @@ class VisualizerChaos extends VisualizerDefault {
 			validationMessages.push("The colour cycle length must be a positive integer.");
 		if (!Number.isInteger( this.highlightWalker ) || this.highlightWalker < 0 || this.highlightWalker >= this.walkers) 
 			validationMessages.push("The highlighted walker must be an integer between 0 and the number of walkers minus 1.");
-		if (!Number.isInteger( this.first ) ) 
+		if (!Number.isInteger( first ) && this.settings.first !== "" ) 
 			validationMessages.push("The starting index must be an integer (or blank).");
-		if (!Number.isInteger( this.last ) ) 
+		if (!Number.isInteger( last ) && this.settings.last !== "" ) 
 			validationMessages.push("The ending index must be an integer (or blank).");
 		if (this.circSize < 0) validationMessages.push("The circle size must be positive.");
 		if (this.alpha < 0 || this.alpha > 1) validationMessages.push("The alpha must be between 0 and 1 inclusive.");
@@ -307,10 +287,18 @@ class VisualizerChaos extends VisualizerDefault {
 		const textStroke = this.sketch.width * 0; // no stroke right now, but could be added
 
 		// set the starting and ending points
+		if ( this.settings.first === "" ){
+			this.first = this.seq.first;
+		} else {
+			this.first = Number(this.settings.first);
+		}
 		this.first = Math.max( this.first, this.seq.first );
+		if ( this.settings.last === "" ){
+			this.last = this.seq.last;
+		} else {
+			this.last = Number(this.settings.last);
+		}
 		this.last = Math.min( this.last, this.seq.last );
-		if ( this.firstBool ) this.first = this.seq.first;
-		if ( this.lastBool ) this.last = this.seq.last;
 		this.seqLength = this.last - this.first;
 		this.myIndex = this.first;
 
