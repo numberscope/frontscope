@@ -172,8 +172,8 @@ class VisualizerChaos extends VisualizerDefault {
 		const style = Number(this.settings.style);
 		this.gradientLength = Number(this.settings.gradientLength);
 		this.highlightWalker = Number(this.settings.highlightWalker);
-		const first = Number(this.settings.first);
-		const last = Number(this.settings.last);
+		this.first = Number(this.settings.first);
+		this.last = Number(this.settings.last);
 		this.circSize = Number(this.settings.circSize);
 		this.alpha = Number(this.settings.alpha);
 		this.pixelsPerFrame = Number(this.settings.pixelsPerFrame);
@@ -182,27 +182,42 @@ class VisualizerChaos extends VisualizerDefault {
 
 		// validation checks
 		const validationMessages: string[] = [];
-		if (!Number.isInteger( this.corners ) || this.corners < 2) 
+		if (!Number.isInteger( this.corners ) || this.corners < 2) {
 			validationMessages.push("The number of corners must be an integer > 1.");
-		if (this.frac < 0 || this.frac > 1) validationMessages.push("The fraction must be between 0 and 1 inclusive.");
-		if (!Number.isInteger( this.walkers ) || this.walkers < 1) 
+		}
+		if (this.frac < 0 || this.frac > 1) {
+			validationMessages.push("The fraction must be between 0 and 1 inclusive.");
+		}
+		if (!Number.isInteger( this.walkers ) || this.walkers < 1) {
 			validationMessages.push("The number of walkers must be an integer > 0.");
-		if (!Number.isInteger( style ) || style < 0 || style > 3) 
+		}
+		if (!Number.isInteger( style ) || style < 0 || style > 3) {
 			validationMessages.push("The style must be an integer between 0 and 3 inclusive.");
-		if (!Number.isInteger( this.gradientLength ) || this.gradientLength <= 0 ) 
+		}
+		if (!Number.isInteger( this.gradientLength ) || this.gradientLength <= 0 )  {
 			validationMessages.push("The colour cycle length must be a positive integer.");
-		if (!Number.isInteger( this.highlightWalker ) || this.highlightWalker < 0 || this.highlightWalker >= this.walkers) 
+		}
+		if (!Number.isInteger( this.highlightWalker ) || this.highlightWalker < 0 || this.highlightWalker >= this.walkers) {
 			validationMessages.push("The highlighted walker must be an integer between 0 and the number of walkers minus 1.");
-		if (!Number.isInteger( first ) && this.settings.first !== "" ) 
+		}
+		if (!Number.isInteger( this.first )) {
 			validationMessages.push("The starting index must be an integer (or blank).");
-		if (!Number.isInteger( last ) && this.settings.last !== "" ) 
+		}
+		if (!Number.isInteger( this.last )) {
 			validationMessages.push("The ending index must be an integer (or blank).");
-		if (this.circSize < 0) validationMessages.push("The circle size must be positive.");
-		if (this.alpha < 0 || this.alpha > 1) validationMessages.push("The alpha must be between 0 and 1 inclusive.");
-		if (!Number.isInteger( this.pixelsPerFrame ) || this.pixelsPerFrame < 0 ) 
+		}
+		if (this.circSize < 0) {
+			validationMessages.push("The circle size must be positive.");
+		}
+		if (this.alpha < 0 || this.alpha > 1) {
+			validationMessages.push("The alpha must be between 0 and 1 inclusive.");
+		}
+		if (!Number.isInteger( this.pixelsPerFrame ) || this.pixelsPerFrame < 0 ) {
 			validationMessages.push("The dots per frame must be a positive integer.");
-		if (validationMessages.length > 0) 
+		}
+		if (validationMessages.length > 0) {
 			return new ValidationStatus(false, validationMessages );
+		}
 
 		this.colorStyle = (<ColorStyle> style);
 
@@ -212,13 +227,13 @@ class VisualizerChaos extends VisualizerDefault {
 
 	numModulus(a: ( number | bigint ), b: number) {
 		// This should be replaced with the modulus function in our own library, once that exists
-		if (b <= 0) { 
+		if (b <= 0) {
 			throw new Error("negative modulus error");
 		}
 		const A = BigInt(a);
-		const B = BigInt(b); 
+		const B = BigInt(b);
 		// the return value will always be a valid number, because b was a number
-		if (A < 0n ){
+		if (A < 0n ) {
 			return Number( A % B + B );
 		} else {
 			return Number( A % B );
@@ -244,7 +259,7 @@ class VisualizerChaos extends VisualizerDefault {
 		// right now this is a little arbitrary
 		const defaultColorList = [
 			'#588dad', // blue greenish
-			'#daa520', // orange 
+			'#daa520', // orange
 			'#008a2c', // green
 			'#ff6361', // fuschia
 			'#ffa600', // bright orange
@@ -253,28 +268,28 @@ class VisualizerChaos extends VisualizerDefault {
 		];
 		const darkColor = '#262626';
 		const lightColor = '#f5f5f5';
-		if( this.darkMode ){ 
+		if( this.darkMode ){
 			this.currentPalette = new Palette(this.sketch,defaultColorList,darkColor,lightColor);
 		} else {
 			this.currentPalette = new Palette(this.sketch,defaultColorList,lightColor,darkColor);
 		}
-		if( 
+		if(
 			(this.colorStyle === ColorStyle.Walker && this.walkers > 7) 
-			|| ( this.colorStyle === ColorStyle.Corner && this.corners > 7 ) 
-		){ 
+			|| ( this.colorStyle === ColorStyle.Corner && this.corners > 7 )
+		){
 			let paletteSize = 0;
-			if( this.colorStyle === ColorStyle.Walker ){ paletteSize = this.walkers; } 
-			if( this.colorStyle === ColorStyle.Corner ){ paletteSize = this.corners; } 
+			if( this.colorStyle === ColorStyle.Walker ) paletteSize = this.walkers;
+			if( this.colorStyle === ColorStyle.Corner ) paletteSize = this.corners;
 			const colorList: string[] = [];
 			for ( let c = 0 ; c < paletteSize; c++ ){
 				let hexString = '';
 				for ( let h = 0 ; h < 6 ; h++ ){
 					hexString += (Math.floor(Math.random()*16)).toString(16);
 				}
-				colorList.push( '#'+hexString ); 
+				colorList.push( '#'+hexString );
 			}
 			this.currentPalette = new Palette(this.sketch, colorList, this.darkMode ? darkColor : lightColor, this.darkMode ? lightColor : darkColor );
-		} 
+		}
 		
 		// set center coords and size
 		const center = this.sketch.createVector( this.sketch.width * 0.5, this.sketch.height * 0.5 );
@@ -286,19 +301,13 @@ class VisualizerChaos extends VisualizerDefault {
 		const textSize = this.sketch.width * 0.04 / shrink; // shrinks the numbers appropriately up to about 100 corners or so
 		const textStroke = this.sketch.width * 0; // no stroke right now, but could be added
 
-		// set the starting and ending points
-		if ( this.settings.first === "" ){
+		// Adjust the starting and ending points if need be
+		if ( this.settings.first === "" || this.first < this.seq.first ) {
 			this.first = this.seq.first;
-		} else {
-			this.first = Number(this.settings.first);
 		}
-		this.first = Math.max( this.first, this.seq.first );
-		if ( this.settings.last === "" ){
+		if ( this.settings.last === "" || this.last > this.seq.last ) {
 			this.last = this.seq.last;
-		} else {
-			this.last = Number(this.settings.last);
 		}
-		this.last = Math.min( this.last, this.seq.last );
 		this.seqLength = this.last - this.first;
 		this.myIndex = this.first;
 
