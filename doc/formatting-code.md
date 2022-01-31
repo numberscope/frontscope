@@ -24,13 +24,13 @@ capabilities of ESLint.
 * `format-check` runs both `format-check-ts` and `format-check-vue`.
 * `format-write` runs both `format-write-ts` and `format-write-vue`.
 
-To run these scripts at the command line, you simply to enter:
+To run these scripts at the command line, you enter:
 
 ```sh
 npm run <script-name>
 ```
 
-For example, if you want to run `format-write`, you would enter:
+For example, if you want to run `format-write`, you enter:
 
 ```sh
 npm run format-write
