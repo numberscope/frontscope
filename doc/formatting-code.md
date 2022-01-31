@@ -1,6 +1,6 @@
 # Formatting Code
 
-As of this writing, there are NPM scripts in package.json that automatically
+As of this writing, there are NPM scripts in `package.json` that automatically
 format your code for you using Prettier and ESLint. These scripts use
 prettier-eslint, which is a package that "formats your code via `prettier`, and
 then passes the result of that to `eslint --fix`." This way we get the benefits
