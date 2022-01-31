@@ -7,17 +7,6 @@ then passes the result of that to `eslint --fix`." This way we get the benefits
 of Prettier's superior formatting capabilities and the configuration
 capabilities of ESLint.
 
-The following are the NPM scripts:
-
-```json
-    "format-check-ts": "prettier-eslint \"src/**/*.ts\"",
-    "format-write-ts": "prettier-eslint \"src/**/*.ts\" --write",
-    "format-check-vue": "prettier-eslint \"src/**/*.vue\"",
-    "format-write-vue": "prettier-eslint \"src/**/*.vue\" --write",
-    "format-check": "npm run format-check-ts && npm run format-check-vue",
-    "format-write": "npm run format-write-ts && npm run format-write-vue"
-```
-
 * `format-check-ts` runs `prettier-eslint` on all the TypeScript files it can
   find in the `src` directory. This outputs the changes `prettier-eslint` would
   make to standard output, i.e. when you enter the command at the command line,
