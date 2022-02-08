@@ -36,9 +36,20 @@ For example, if you want to run `format-write`, you enter:
 npm run format-write
 ```
 
+Note also that `npm run lint` runs `eslint` in a non-fixing mode, to check if
+there are any violations of non-fixable rules and generate messages about them
+if so.
+
 ## Text Editor / IDE Integration
 
 How exactly you integrate these scripts into your text editor or IDE will depend
 on the text editor or IDE you use. A cursory Google search for "how to run a
-command on save in Vim" yields a few useful-looking results. I would imagine
-there are ways to do this for most text editors and IDE's.
+command on save in Vim" yields a few useful-looking results. There are
+presumably ways to do this for most text editors and IDE's.
+
+### Emacs
+
+Sample configuration code for the (Gnu) Emacs editor which sets up
+`prettier-eslint` to be run whenever a `.ts` or `.vue` file is saved is
+included, with instructions for how to enable that code, in
+`tools/editor/autoformat.el`.
