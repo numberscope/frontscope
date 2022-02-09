@@ -1,10 +1,10 @@
-import { SequenceExportModule } from './SequenceInterface'
+import {SequenceExportModule} from './SequenceInterface'
 const seqFiles = require.context('.', false, /\.ts$/)
 
-const seqMODULES: { [key: string]: SequenceExportModule } = {};
+const seqMODULES: {[key: string]: SequenceExportModule} = {}
 
-const seqKeyArray: string[] = [];
-seqFiles.keys().forEach((key) => {
+const seqKeyArray: string[] = []
+seqFiles.keys().forEach(key => {
     if (key === './index.js' || key === './modules.js') return
     const exprt = seqFiles(key)
     if (exprt.exportModule) {
@@ -13,4 +13,4 @@ seqFiles.keys().forEach((key) => {
     }
 })
 
-export default seqMODULES;
+export default seqMODULES

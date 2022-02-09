@@ -1,7 +1,10 @@
-import { ValidationStatus } from '@/shared/ValidationStatus';
-import { SequenceParamsSchema, SequenceExportModule,
-         SequenceExportKind } from './SequenceInterface';
-import { SequenceClassDefault } from './SequenceClassDefault';
+import {ValidationStatus} from '@/shared/ValidationStatus'
+import {
+    SequenceParamsSchema,
+    SequenceExportModule,
+    SequenceExportKind,
+} from './SequenceInterface'
+import {SequenceClassDefault} from './SequenceClassDefault'
 
 /**
  *
@@ -10,51 +13,55 @@ import { SequenceClassDefault } from './SequenceClassDefault';
  * and reimplementing the getElement function.
  */
 class SequenceConstant extends SequenceClassDefault {
-    name = "Constant Sequence";
-    description = "A sequence with the same value for all nonnegative indices";
-    params = [new SequenceParamsSchema(
-        'constantValue',
-        'number',
-        'Constant Value',
-        true,
-        '0'
-    )];
-    first = 0;
-    last = Infinity;
-    value = -1n;
+    name = 'Constant Sequence'
+    description = 'A sequence with the same value for all nonnegative indices'
+    params = [
+        new SequenceParamsSchema(
+            'constantValue',
+            'number',
+            'Constant Value',
+            true,
+            '0'
+        ),
+    ]
+    first = 0
+    last = Infinity
+    value = -1n
 
     constructor(sequenceID: number) {
-        super(sequenceID);
+        super(sequenceID)
     }
 
     validate(): ValidationStatus {
-        this.settings['name'] = 'Constant';
-        const superStatus = super.validate();
+        this.settings['name'] = 'Constant'
+        const superStatus = super.validate()
         if (!superStatus.isValid) {
-            return superStatus;
+            return superStatus
         }
 
         if (this.settings['constantValue'] !== undefined) {
-            this.isValid = true;
-            this.value = BigInt(this.settings['constantValue']);
-            this.name = 'Constant = ' + this.settings['constantValue'];
-            return new ValidationStatus(true);
+            this.isValid = true
+            this.value = BigInt(this.settings['constantValue'])
+            this.name = 'Constant = ' + this.settings['constantValue']
+            return new ValidationStatus(true)
         }
 
-        this.isValid = false;
-        return new ValidationStatus(false, ["No constant value was provided."]);
+        this.isValid = false
+        return new ValidationStatus(false, [
+            'No constant value was provided.',
+        ])
     }
 
     getElement(n: number) {
         if (n < 0) {
-            throw RangeError('SequenceConstant requires nonnegative index.');
+            throw RangeError('SequenceConstant requires nonnegative index.')
         }
-        return this.value;
+        return this.value
     }
 }
 
 export const exportModule = new SequenceExportModule(
     SequenceConstant,
-    "Constant Sequence",
+    'Constant Sequence',
     SequenceExportKind.FAMILY
-);
+)
