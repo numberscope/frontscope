@@ -1,5 +1,5 @@
 export enum ParamType {
-    number = "number",
-    text = "text",
-    boolean = "boolean"
+    number = 'number',
+    text = 'text',
+    boolean = 'boolean',
 }

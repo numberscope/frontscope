@@ -1,7 +1,10 @@
-import { ValidationStatus } from '@/shared/ValidationStatus';
-import { SequenceParamsSchema, SequenceExportModule,
-         SequenceExportKind } from './SequenceInterface';
-import { SequenceCached } from './SequenceCached';
+import {ValidationStatus} from '@/shared/ValidationStatus'
+import {
+    SequenceParamsSchema,
+    SequenceExportModule,
+    SequenceExportKind,
+} from './SequenceInterface'
+import {SequenceCached} from './SequenceCached'
 
 /**
  *
@@ -10,54 +13,55 @@ import { SequenceCached } from './SequenceCached';
  * example of using SequenceCached.
  */
 class SequenceNaturals extends SequenceCached {
-    name = "Natural Numbers";
-    description = "A sequence of the natural numbers";
-    params: SequenceParamsSchema[] = [new SequenceParamsSchema(
-        'includeZero',
-        'boolean',
-        'Include Zero',
-        false,
-        false
-    )];
-    private begin = 1;
+    name = 'Natural Numbers'
+    description = 'A sequence of the natural numbers'
+    params: SequenceParamsSchema[] = [
+        new SequenceParamsSchema(
+            'includeZero',
+            'boolean',
+            'Include Zero',
+            false,
+            false
+        ),
+    ]
+    private begin = 1
 
     /**
      *Creates an instance of SequenceNaturals
      * @param {*} sequenceID the sequence identifier of the sequence
      */
-    constructor (sequenceID: number) {
-        super(sequenceID);
+    constructor(sequenceID: number) {
+        super(sequenceID)
     }
 
-    validate(){
-        this.settings['name'] = 'Initializing Naturals...';
-        const superStatus = super.validate();
+    validate() {
+        this.settings['name'] = 'Initializing Naturals...'
+        const superStatus = super.validate()
         if (!superStatus.isValid) {
-            return superStatus;
+            return superStatus
         }
 
         if (this.settings['includeZero'] !== undefined) {
-            this.isValid = true;
-            this.name = "Positive Integers";
+            this.isValid = true
+            this.name = 'Positive Integers'
             if (this.settings['includeZero']) {
-                this.begin = 0;
-                this.name = "Nonnegative Integers";
+                this.begin = 0
+                this.name = 'Nonnegative Integers'
             }
-            return new ValidationStatus(true);
+            return new ValidationStatus(true)
         }
 
-        this.isValid = false;
-        return new ValidationStatus(false, ["includeZero  param is missing"]);
+        this.isValid = false
+        return new ValidationStatus(false, ['includeZero  param is missing'])
     }
 
     calculate(n: number) {
-        return BigInt(n + this.begin);
+        return BigInt(n + this.begin)
     }
-
 }
 
 export const exportModule = new SequenceExportModule(
     SequenceNaturals,
-    "Natural Numbers",
+    'Natural Numbers',
     SequenceExportKind.FAMILY
-);
+)

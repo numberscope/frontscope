@@ -1,10 +1,10 @@
-import { VisualizerExportModule } from './VisualizerInterface'
+import {VisualizerExportModule} from './VisualizerInterface'
 const vizFiles = require.context('.', false, /\.ts$/)
 
-const vizMODULES: { [key: string]: VisualizerExportModule } = {};
+const vizMODULES: {[key: string]: VisualizerExportModule} = {}
 
-const vizKeyArray: string[] = [];
-vizFiles.keys().forEach((key) => {
+const vizKeyArray: string[] = []
+vizFiles.keys().forEach(key => {
     if (key === './index.js' || key === './modules.js') return
     const exprt = vizFiles(key)
     if (exprt.exportModule) {
@@ -13,4 +13,4 @@ vizFiles.keys().forEach((key) => {
     }
 })
 
-export default vizMODULES;
+export default vizMODULES

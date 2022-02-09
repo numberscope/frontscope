@@ -1,29 +1,31 @@
-import { SequenceParamsSchema, SequenceInterface } from './SequenceInterface'
-import { ValidationStatus } from '@/shared/ValidationStatus';
+import {SequenceParamsSchema, SequenceInterface} from './SequenceInterface'
+import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /**
  *
  * @class SequenceClassDefault
  * a minimium working example of a sequence class that implements the interface
  * Primarily intended to be used as a base class for your own sequences.
- * 
+ *
  */
 export class SequenceClassDefault implements SequenceInterface {
-    sequenceID: number;
-    name = 'Base';
-    description = 'A Base sequence class';
-    params: SequenceParamsSchema[] = [new SequenceParamsSchema('name', '', 'displayName', false, '0')];
-    first = 0;
-    last = 0;
-    ready: boolean;
-    isValid: boolean;
+    sequenceID: number
+    name = 'Base'
+    description = 'A Base sequence class'
+    params: SequenceParamsSchema[] = [
+        new SequenceParamsSchema('name', '', 'displayName', false, '0'),
+    ]
+    first = 0
+    last = 0
+    ready: boolean
+    isValid: boolean
 
-    protected settings: { [key: string]: string|number|boolean} = {};
+    protected settings: {[key: string]: string | number | boolean} = {}
 
     constructor(sequenceID: number) {
-        this.sequenceID = sequenceID;
-        this.ready = false;
-        this.isValid = false;
+        this.sequenceID = sequenceID
+        this.ready = false
+        this.isValid = false
     }
 
     /**
@@ -32,19 +34,21 @@ export class SequenceClassDefault implements SequenceInterface {
      * is not necessarily any way to do this.
      */
     initialize(): void {
-        if (this.ready) return;
-        if (this.first < Number.MIN_SAFE_INTEGER
-            || this.first > Number.MAX_SAFE_INTEGER) {
-            throw Error('Sequence first index must be a safe integer');
+        if (this.ready) return
+        if (
+            this.first < Number.MIN_SAFE_INTEGER
+            || this.first > Number.MAX_SAFE_INTEGER
+        ) {
+            throw Error('Sequence first index must be a safe integer')
         }
         if (this.isValid) {
-            this.ready = true;
+            this.ready = true
             return
         }
-        throw Error('Sequence invalid. Run validate and address any errors.');
+        throw Error('Sequence invalid. Run validate and address any errors.')
     }
-            
-    /** 
+
+    /**
      * getElement is how sequences provide their callers with elements.
      * This default implementation produces the not-very-useful sequence with
      * one element, 0, at index 0.
@@ -52,9 +56,9 @@ export class SequenceClassDefault implements SequenceInterface {
      */
     getElement(n: number): bigint {
         if (n !== 0) {
-            throw RangeError(`SequenceClassDefault: Index ${n} != 0 invalid`);
+            throw RangeError(`SequenceClassDefault: Index ${n} != 0 invalid`)
         }
-        return 0n;
+        return 0n
     }
 
     /**
@@ -65,15 +69,15 @@ export class SequenceClassDefault implements SequenceInterface {
      */
     validate(): ValidationStatus {
         this.params.forEach(param => {
-            this.settings[param.name] = param.value;
-        });
+            this.settings[param.name] = param.value
+        })
 
-        if(this.settings['name'] !== undefined) {
-            this.isValid = true;
-            return new ValidationStatus(true);
+        if (this.settings['name'] !== undefined) {
+            this.isValid = true
+            return new ValidationStatus(true)
         }
-        
-        return new ValidationStatus(true, ["name param is undefined."]);
+
+        return new ValidationStatus(true, ['name param is undefined.'])
     }
 }
 
