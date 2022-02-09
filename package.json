@@ -12,7 +12,14 @@
     "format-check-vue": "prettier-eslint \"src/**/*.vue\"",
     "format-write-vue": "prettier-eslint \"src/**/*.vue\" --write",
     "format-check": "npm run format-check-ts && npm run format-check-vue",
-    "format-write": "npm run format-write-ts && npm run format-write-vue"
+    "format-write": "npm run format-write-ts && npm run format-write-vue",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,vue}": [
+      "prettier-eslint --write",
+      "npm run lint"
+    ]
   },
   "dependencies": {
     "axios": "^0.21.2",
