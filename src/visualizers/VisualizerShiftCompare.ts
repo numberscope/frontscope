@@ -2,12 +2,8 @@ import p5 from 'p5'
 import {VisualizerDefault} from './VisualizerDefault'
 import {
     VisualizerInterface,
-    VisualizerParamsSchema,
     VisualizerExportModule,
 } from './VisualizerInterface'
-import {ParamType} from '@/shared/ParamType'
-import {ValidationStatus} from '@/shared/ValidationStatus'
-import {SequenceInterface} from '@/sequences/SequenceInterface'
 
 // CAUTION: This is unstable with some sequences
 // Using it may crash your browser
@@ -17,31 +13,23 @@ class VizShiftCompare
 {
     name = 'Shift Compare'
     private img: p5.Image = new p5.Image()
-    params = [
-        new VisualizerParamsSchema(
-            'mod',
-            ParamType.number,
-            'Mod factor',
-            true,
-            2,
-            'The shift that will be applied'
-        ),
-    ]
-
-    constructor() {
-        super()
-        this.settings.mod = 0 // settings this here to imply type Number
+    mod = {
+        value: 2n,
+        displayName: 'Modulo',
+        required: true,
+        description: 'Modulus used to compare sequence elements',
     }
+    params = {mod: this.mod}
 
-    initialize(sketch: p5, seq: SequenceInterface) {
-        this.sketch = sketch
-        this.seq = seq
-    }
+    checkParameters() {
+        const status = super.checkParameters()
 
-    validate() {
-        this.assignParams()
-        this.isValid = true
-        return new ValidationStatus(true)
+        if (this.mod.value <= 0n) {
+            status.isValid = false
+            status.errors.push('Modulo must be positive')
+        }
+
+        return status
     }
 
     setup() {
@@ -68,7 +56,6 @@ class VizShiftCompare
         // Mouse coordinates look they're floats by default.
         console.log('drawing')
         console.log(this.img.pixels.length)
-        let mod = BigInt(this.settings.mod)
 
         const d = this.sketch.pixelDensity()
         const mx = this.clip(
@@ -82,19 +69,18 @@ class VizShiftCompare
             this.sketch.height
         )
         if (this.sketch.key == 'ArrowUp') {
-            mod += 1n
+            this.mod.value += 1n
             this.sketch.key = ''
-            console.log('UP PRESSED, NEW MOD: ' + mod)
+            console.log('UP PRESSED, NEW MOD: ' + this.mod.value.toString())
         } else if (this.sketch.key == 'ArrowDown') {
-            mod -= 1n
+            this.mod.value -= 1n
             this.sketch.key = ''
-            console.log('DOWN PRESSED, NEW MOD: ' + mod)
+            console.log('DOWN PRESSED, NEW MOD: ' + this.mod.value.toString())
         } else if (this.sketch.key == 'ArrowRight') {
             console.log(console.log('MX: ' + mx + ' MY: ' + my))
         }
         // since settings.mod can be any of string | number | bool,
         // assign it here explictly to a number, to avoid type errors
-        this.settings.mod = Number(mod)
         const xLim = Math.min(this.sketch.width - 1, this.seq.last)
         const yLim = Math.min(this.sketch.height - 1, this.seq.last)
 
@@ -110,7 +96,7 @@ class VizShiftCompare
                             * ((y * d + j) * this.sketch.width * d
                                 + (x * d + i))
                         console.log('x,y: ' + xEl + ', ' + yEl)
-                        if (xEl % mod == yEl % mod) {
+                        if (xEl % this.mod.value == yEl % this.mod.value) {
                             this.img.pixels[index] = 255
                             this.img.pixels[index + 1] = 255
                             this.img.pixels[index + 2] = 255

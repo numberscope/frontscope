@@ -1,11 +1,6 @@
 import p5 from 'p5'
 import {VisualizerDefault} from './VisualizerDefault'
-import {
-    VisualizerParamsSchema,
-    VisualizerExportModule,
-} from './VisualizerInterface'
-import {ParamType} from '@/shared/ParamType'
-import {ValidationStatus} from '@/shared/ValidationStatus'
+import {VisualizerExportModule} from './VisualizerInterface'
 
 // p5 Colour palette class
 class Palette {
@@ -25,156 +20,136 @@ class Palette {
     }
 }
 
-enum ColorStyle {
-    Walker = 0,
-    Corner,
-    Index,
-    Highlight,
-}
+const ColorStyle = {
+    Walker: 0,
+    Destination: 1,
+    Index: 2,
+    Highlighting_one_walker: 3,
+} as const
 
-// params schema
-const schemaChaos = [
-    new VisualizerParamsSchema(
-        'corners',
-        ParamType.number,
-        'Number of corners',
-        true,
-        4,
-        'The number of vertices of the polygon; this value is also used '
-            + 'as a modulus applied to the entries.'
-    ),
-    new VisualizerParamsSchema(
-        'frac',
-        ParamType.number,
-        'Fraction to walk',
-        true,
-        0.5,
-        'What fraction of the way each step takes you toward the '
-            + 'vertex specified by the entry. It should be a '
-            + 'value between 0 and 1 inclusive.'
-    ),
-    new VisualizerParamsSchema(
-        'walkers',
-        ParamType.number,
-        'Number of walkers',
-        true,
-        1,
-        'The number w of walkers. The visualizer will break the sequence '
-            + 'into subsequences based on the residue mod w of the index, '
-            + 'each with a separate walker.'
-    ),
-    // it would be nice to change this to an enum, if the params schema allowed
-    new VisualizerParamsSchema(
-        'style',
-        ParamType.number,
-        'Color scheme',
-        true,
-        1,
-        '0 = colour by walker; '
-            + '1 = colour by destination; '
-            + '2 = colour by index; '
-            + '3 = colour one walker.'
-    ),
-    new VisualizerParamsSchema(
-        'gradientLength',
-        ParamType.number,
-        'Colour cycling length',
-        false,
-        10000,
-        'If using colour scheme 2: the number of entries '
-            + 'before recycling the colour sequence.'
-    ),
-    new VisualizerParamsSchema(
-        'highlightWalker',
-        ParamType.number,
-        'Highlighted walker',
-        false,
-        0,
-        'If using colour scheme 3: the walker to highlight.'
-    ),
-    new VisualizerParamsSchema(
-        'first',
-        ParamType.text,
-        'Starting index',
-        true,
-        '',
-        'Index of the first entry to use. If this is blank or less than '
-            + 'the first valid index, visualization will start at the '
-            + 'first valid index.'
-    ),
-    new VisualizerParamsSchema(
-        'last',
-        ParamType.text,
-        'Ending index',
-        true,
-        '',
-        'Index of the last entry to use. If this is blank or greater than '
-            + 'the last valid index, visualization will end at the '
-            + 'last valid index.'
-    ),
-    new VisualizerParamsSchema(
-        'circSize',
-        ParamType.number,
-        'Circle size',
-        true,
-        1,
-        'Size of the dots.'
-    ),
-    new VisualizerParamsSchema(
-        'alpha',
-        ParamType.number,
-        'Circle alpha',
-        true,
-        1,
-        'Alpha factor (from 0.0=transparent to 1.0=solid) of the dots.'
-    ),
-    new VisualizerParamsSchema(
-        'pixelsPerFrame',
-        ParamType.number,
-        'Dots per frame',
-        true,
-        400,
-        'How many dots to draw per frame (more = faster).'
-    ),
-    new VisualizerParamsSchema(
-        'showLabels',
-        ParamType.boolean,
-        'Show corner labels?',
-        true,
-        false,
-        'Whether to label corners of polygon.'
-    ),
-    new VisualizerParamsSchema(
-        'darkMode',
-        ParamType.boolean,
-        'Use dark mode?',
-        true,
-        false,
-        'Whether to make a dark background.'
-    ),
-]
 // other ideas:  previous parts of the sequence fade over time,
 // or shrink over time;
 // circles fade to the outside
 
 class VisualizerChaos extends VisualizerDefault {
     name = 'Chaos'
-    params = schemaChaos
 
     // private properly typed versions of the user parameters
-    private corners = 0
-    private frac = 0
-    private walkers = 0
-    private colorStyle = ColorStyle.Walker
-    private gradientLength = 0
-    private highlightWalker = 0
-    private first = 0
-    private last = 0
-    private circSize = 0
-    private alpha = 1
-    private pixelsPerFrame = 0
-    private showLabels = false
-    private darkMode = false
+    corners = {
+        value: 4,
+        displayName: 'Number of corners',
+        required: true,
+        description:
+            'The number of vertices of the polygon; this value is also used '
+            + 'as a modulus applied to the entries.',
+    }
+    frac = {
+        value: 0.5,
+        displayName: 'Fraction to walk',
+        required: true,
+        description:
+            'What fraction of the way each step takes you toward the '
+            + 'vertex specified by the entry. It should be a '
+            + 'value between 0 and 1 inclusive.',
+    }
+    walkers = {
+        value: 1,
+        displayName: 'Number of walkers',
+        required: true,
+        description:
+            'The number w of walkers. The visualizer will break the sequence '
+            + 'into subsequences based on the residue mod w of the index, '
+            + 'each with a separate walker.',
+    }
+    colorStyle = {
+        value: ColorStyle.Walker as number,
+        from: ColorStyle,
+        displayName: 'Color dots by',
+        required: true,
+    }
+    gradientLength = {
+        value: 10000,
+        displayName: 'Color cycling length',
+        required: false,
+        visibleDependency: 'colorStyle',
+        visibleValue: ColorStyle.Index,
+        description:
+            'The number of entries before recycling the color sequence.',
+    }
+    highlightWalker = {
+        value: 0,
+        displayName: 'Number of walker to highlight',
+        required: false,
+        visibleDependency: 'colorStyle',
+        visibleValue: ColorStyle.Highlighting_one_walker,
+    }
+    first = {
+        value: '' as string | number,
+        forceType: 'number',
+        displayName: 'Starting index',
+        required: false,
+        description:
+            'Index of the first entry to use. If this is blank or less than '
+            + 'the first valid index, visualization will start at the '
+            + 'first valid index.',
+    }
+    last = {
+        value: '' as string | number,
+        forceType: 'number',
+        displayName: 'Ending index',
+        required: false,
+        description:
+            'Index of the last entry to use. If this is blank or greater than '
+            + 'the last valid index, visualization will end at the '
+            + 'last valid index.',
+    }
+    circSize = {
+        value: 1,
+        displayName: 'Circle size',
+        required: true,
+        description: 'Size of the dots.',
+    }
+    alpha = {
+        value: 1,
+        displayName: 'Circle alpha',
+        required: true,
+        description:
+            'Alpha factor (from 0.0=transparent to 1.0=solid) of the dots.',
+    }
+    pixelsPerFrame = {
+        value: 400,
+        displayName: 'Dots per frame',
+        required: true,
+        description: 'How many dots to draw per frame (more = faster).',
+    }
+    showLabels = {
+        value: false,
+        displayName: 'Show corner labels?',
+        required: false,
+        description: 'Whether to label corners of polygon.',
+    }
+    darkMode = {
+        value: false,
+        displayName: 'Use dark mode?',
+        required: false,
+        description: 'Whether to make a dark background',
+    }
+
+    params = {
+        corners: this.corners,
+        frac: this.frac,
+        walkers: this.walkers,
+        colorStyle: this.colorStyle,
+        gradientLength: this.gradientLength,
+        highlightWalker: this.highlightWalker,
+        first: this.first,
+        last: this.last,
+        circSize: this.circSize,
+        alpha: this.alpha,
+        pixelsPerFrame: this.pixelsPerFrame,
+        showLabels: this.showLabels,
+        darkMode: this.darkMode,
+    }
 
     // current state variables (used in setup and draw)
     private seqLength = 0
@@ -185,99 +160,76 @@ class VisualizerChaos extends VisualizerDefault {
     // colour palette
     private currentPalette = new Palette(this.sketch)
 
-    validate() {
-        this.assignParams()
-        this.isValid = false
-
-        // properly typed private versions of parameters
-        this.corners = Number(this.settings.corners)
-        this.frac = Number(this.settings.frac)
-        this.walkers = Number(this.settings.walkers)
-        const style = Number(this.settings.style)
-        this.gradientLength = Number(this.settings.gradientLength)
-        this.highlightWalker = Number(this.settings.highlightWalker)
-        this.first = Number(this.settings.first)
-        this.last = Number(this.settings.last)
-        this.circSize = Number(this.settings.circSize)
-        this.alpha = Number(this.settings.alpha)
-        this.pixelsPerFrame = Number(this.settings.pixelsPerFrame)
-        this.showLabels = Boolean(this.settings.showLabels)
-        this.darkMode = Boolean(this.settings.darkMode)
+    checkParameters() {
+        const status = super.checkParameters()
 
         // validation checks
-        const validationMessages: string[] = []
-        if (!Number.isInteger(this.corners) || this.corners < 2) {
-            validationMessages.push(
+        if (!Number.isInteger(this.corners.value) || this.corners.value < 2) {
+            status.errors.push(
                 'The number of corners must be an integer > 1.'
             )
         }
-        if (this.frac < 0 || this.frac > 1) {
-            validationMessages.push(
+        if (this.frac.value < 0 || this.frac.value > 1) {
+            status.errors.push(
                 'The fraction must be between 0 and 1 inclusive.'
             )
         }
-        if (!Number.isInteger(this.walkers) || this.walkers < 1) {
-            validationMessages.push(
+        if (!Number.isInteger(this.walkers.value) || this.walkers.value < 1) {
+            status.errors.push(
                 'The number of walkers must be an integer > 0.'
             )
         }
-        if (!Number.isInteger(style) || style < 0 || style > 3) {
-            validationMessages.push(
-                'The style must be an integer between 0 and 3 inclusive.'
-            )
-        }
         if (
-            !Number.isInteger(this.gradientLength)
-            || this.gradientLength <= 0
+            !Number.isInteger(this.gradientLength.value)
+            || this.gradientLength.value <= 0
         ) {
-            validationMessages.push(
+            status.errors.push(
                 'The colour cycle length must be a positive integer.'
             )
         }
         if (
-            !Number.isInteger(this.highlightWalker)
-            || this.highlightWalker < 0
-            || this.highlightWalker >= this.walkers
+            !Number.isInteger(this.highlightWalker.value)
+            || this.highlightWalker.value < 0
+            || this.highlightWalker.value >= this.walkers.value
         ) {
-            validationMessages.push(
+            status.errors.push(
                 'The highlighted walker must be an integer '
                     + 'between 0 and one less than the number of walkers.'
             )
         }
-        if (!Number.isInteger(this.first)) {
-            validationMessages.push(
+        if (
+            typeof this.first.value == 'number'
+            && !Number.isInteger(this.first.value)
+        ) {
+            status.errors.push(
                 'The starting index must be an integer (or blank).'
             )
         }
-        if (!Number.isInteger(this.last)) {
-            validationMessages.push(
+        if (
+            typeof this.last.value == 'number'
+            && !Number.isInteger(this.last.value)
+        ) {
+            status.errors.push(
                 'The ending index must be an integer (or blank).'
             )
         }
-        if (this.circSize < 0) {
-            validationMessages.push('The circle size must be positive.')
+        if (this.circSize.value < 0) {
+            status.errors.push('The circle size must be positive.')
         }
-        if (this.alpha < 0 || this.alpha > 1) {
-            validationMessages.push(
-                'The alpha must be between 0 and 1 inclusive.'
-            )
+        if (this.alpha.value < 0 || this.alpha.value > 1) {
+            status.errors.push('The alpha must be between 0 and 1 inclusive.')
         }
         if (
-            !Number.isInteger(this.pixelsPerFrame)
-            || this.pixelsPerFrame < 0
+            !Number.isInteger(this.pixelsPerFrame.value)
+            || this.pixelsPerFrame.value < 0
         ) {
-            validationMessages.push(
+            status.errors.push(
                 'The dots per frame must be a positive integer.'
             )
         }
-        if (validationMessages.length > 0) {
-            return new ValidationStatus(false, validationMessages)
-        }
 
-        this.colorStyle = <ColorStyle>style
-
-        this.isValid = true
-        return new ValidationStatus(true)
+        if (status.errors.length > 0) status.isValid = false
+        return status
     }
 
     numModulus(a: number | bigint, b: number) {
@@ -299,8 +251,10 @@ class VisualizerChaos extends VisualizerDefault {
     chaosWindow(center: p5.Vector, radius: number) {
         // creates corners of a polygon with given centre and radius
         const pts: p5.Vector[] = []
-        for (let i = 0; i < this.corners; i++) {
-            const angle = this.sketch.radians(45 + (360 * i) / this.corners)
+        for (let i = 0; i < this.corners.value; i++) {
+            const angle = this.sketch.radians(
+                45 + (360 * i) / this.corners.value
+            )
             pts.push(p5.Vector.fromAngle(angle, radius).add(center))
         }
         return pts
@@ -323,7 +277,7 @@ class VisualizerChaos extends VisualizerDefault {
         ]
         const darkColor = '#262626'
         const lightColor = '#f5f5f5'
-        if (this.darkMode) {
+        if (this.darkMode.value) {
             this.currentPalette = new Palette(
                 this.sketch,
                 defaultColorList,
@@ -339,14 +293,16 @@ class VisualizerChaos extends VisualizerDefault {
             )
         }
         if (
-            (this.colorStyle === ColorStyle.Walker && this.walkers > 7)
-            || (this.colorStyle === ColorStyle.Corner && this.corners > 7)
+            (this.colorStyle.value === ColorStyle.Walker
+                && this.walkers.value > 7)
+            || (this.colorStyle.value === ColorStyle.Destination
+                && this.corners.value > 7)
         ) {
             let paletteSize = 0
-            if (this.colorStyle === ColorStyle.Walker)
-                paletteSize = this.walkers
-            if (this.colorStyle === ColorStyle.Corner)
-                paletteSize = this.corners
+            if (this.colorStyle.value === ColorStyle.Walker)
+                paletteSize = this.walkers.value
+            if (this.colorStyle.value === ColorStyle.Destination)
+                paletteSize = this.corners.value
             const colorList: string[] = []
             for (let c = 0; c < paletteSize; c++) {
                 let hexString = ''
@@ -358,8 +314,8 @@ class VisualizerChaos extends VisualizerDefault {
             this.currentPalette = new Palette(
                 this.sketch,
                 colorList,
-                this.darkMode ? darkColor : lightColor,
-                this.darkMode ? lightColor : darkColor
+                this.darkMode.value ? darkColor : lightColor,
+                this.darkMode.value ? lightColor : darkColor
             )
         }
 
@@ -372,24 +328,31 @@ class VisualizerChaos extends VisualizerDefault {
 
         // text appearance control
         const labelOutset = 1.1
-        const shrink = Math.log(this.corners)
+        const shrink = Math.log(this.corners.value)
         // Shrink the numbers appropriately (up to about 100 corners or so):
         const textSize = (this.sketch.width * 0.04) / shrink
         // No stroke right now, but could be added
         const textStroke = this.sketch.width * 0
 
         // Adjust the starting and ending points if need be
-        if (this.settings.first === '' || this.first < this.seq.first) {
-            this.first = this.seq.first
+        if (
+            typeof this.first.value === 'string'
+            || this.first.value < this.seq.first
+        ) {
+            this.first.value = this.seq.first
         }
-        if (this.settings.last === '' || this.last > this.seq.last) {
-            this.last = this.seq.last
+        if (
+            typeof this.last.value === 'string'
+            || this.last.value > this.seq.last
+        ) {
+            this.last.value = this.seq.last
         }
-        this.seqLength = this.last - this.first
-        this.myIndex = this.first
+        console.log('Finally,', this.first.value, this.last.value)
+        this.seqLength = this.last.value - this.first.value
+        this.myIndex = this.first.value
 
         // set up arrays of walkers
-        this.walkerPositions = Array.from({length: this.walkers}, () =>
+        this.walkerPositions = Array.from({length: this.walkers.value}, () =>
             center.copy()
         )
 
@@ -415,7 +378,7 @@ class VisualizerChaos extends VisualizerDefault {
                 center,
                 radius * labelOutset
             )
-            for (let c = 0; c < this.corners; c++) {
+            for (let c = 0; c < this.corners.value; c++) {
                 const label = cornersLabels[c]
                 this.sketch.text(String(c), label.x, label.y)
             }
@@ -432,28 +395,40 @@ class VisualizerChaos extends VisualizerDefault {
         // this speeds things up essentially
         const pixelsLimit
             = this.myIndex
-            + Math.min(this.last - this.myIndex + 1, this.pixelsPerFrame)
+            + Math.min(
+                (this.last.value as number) - this.myIndex + 1,
+                this.pixelsPerFrame.value
+            )
+        // stop drawing if we exceed decreed terms
+        if (pixelsLimit <= this.myIndex) {
+            this.sketch.noLoop()
+            return
+        }
+
         for (; this.myIndex < pixelsLimit; this.myIndex++) {
             // get the term
             const myTerm = this.seq.getElement(this.myIndex)
 
             // check its modulus to see which corner to walk toward
-            const myCorner = this.numModulus(myTerm, this.corners)
+            const myCorner = this.numModulus(myTerm, this.corners.value)
             const myCornerPosition = this.cornersList[myCorner]
 
             // check the index modulus to see which walker is walking
-            const myWalker = this.numModulus(this.myIndex, this.walkers)
+            const myWalker = this.numModulus(this.myIndex, this.walkers.value)
 
             // update the walker position
-            this.walkerPositions[myWalker].lerp(myCornerPosition, this.frac)
+            this.walkerPositions[myWalker].lerp(
+                myCornerPosition,
+                this.frac.value
+            )
 
             // choose colour to mark position
             let myColor = this.sketch.color(0)
-            switch (this.colorStyle) {
+            switch (this.colorStyle.value) {
                 case ColorStyle.Walker:
                     myColor = this.currentPalette.colorList[myWalker]
                     break
-                case ColorStyle.Corner:
+                case ColorStyle.Destination:
                     myColor = this.currentPalette.colorList[myCorner]
                     break
                 case ColorStyle.Index:
@@ -469,13 +444,13 @@ class VisualizerChaos extends VisualizerDefault {
                             this.currentPalette.colorList[1],
                             this.numModulus(
                                 this.myIndex,
-                                this.gradientLength
-                            ) / this.gradientLength
+                                this.gradientLength.value
+                            ) / this.gradientLength.value
                         )
                     }
                     break
-                case ColorStyle.Highlight:
-                    if (myWalker == this.highlightWalker) {
+                case ColorStyle.Highlighting_one_walker:
+                    if (myWalker == this.highlightWalker.value) {
                         myColor = this.currentPalette.colorList[0]
                     } else {
                         myColor = this.currentPalette.colorList[1]
@@ -484,20 +459,15 @@ class VisualizerChaos extends VisualizerDefault {
             }
             // The following "255" is needed when in RGB mode;
             // can change in other modes; see p5.js docs on setAlpha
-            myColor.setAlpha(255 * this.alpha)
+            myColor.setAlpha(255 * this.alpha.value)
 
             // draw a circle
             this.sketch.fill(myColor)
             this.sketch.circle(
                 this.walkerPositions[myWalker].x,
                 this.walkerPositions[myWalker].y,
-                this.circSize
+                this.circSize.value
             )
-        }
-
-        // stop drawing if we exceed decreed terms
-        if (this.myIndex > this.last) {
-            this.sketch.noLoop()
         }
     }
 }

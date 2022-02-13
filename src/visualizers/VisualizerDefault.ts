@@ -1,17 +1,11 @@
-import {
-    VisualizerInterface,
-    VisualizerParamsSchema,
-    VisualizerSettings,
-} from './VisualizerInterface'
+import {VisualizerInterface} from './VisualizerInterface'
 import {ValidationStatus} from '@/shared/ValidationStatus'
-import {ParamType} from '@/shared/ParamType'
 import p5 from 'p5'
 import {SequenceInterface} from '@/sequences/SequenceInterface'
 import {SequenceClassDefault} from '@/sequences/SequenceClassDefault'
 
 export class VisualizerDefault implements VisualizerInterface {
-    params: VisualizerParamsSchema[] = []
-    settings: VisualizerSettings = {}
+    params = {}
     ready = false
     sketch: p5 = new p5(sketch => {
         return sketch
@@ -39,35 +33,24 @@ export class VisualizerDefault implements VisualizerInterface {
     }
 
     /**
-      This checks that the params provided are within the bounds you need.
-      Simply assign params to settings (using the provided function)
-      and validate them.
-      Returns a ValidationStatus object (see visualizerInterface.ts for details)
-    
-      The default validation is always false, since it is automatically used
-      by its children. This way, you are required to define a new
-      validate function for every visualizer.
-      */
+     * All implementations based on this default delegate the checking of
+     * parameters to the checkParameters() method.
+     * That leaves the required validate() method to just call checkParameters
+     * and set the isValid property based on the result.
+     */
     validate(): ValidationStatus {
-        this.assignParams()
-        this.isValid = false
-        return new ValidationStatus(false, [
-            'This is the default validation function.',
-            'Please define one for this visualizer',
-        ])
+        const status = this.checkParameters()
+        this.isValid = status.isValid
+        return status
     }
 
-    assignParams(): void {
-        this.params.forEach(param => {
-            let paramValue = param.value
-            if (param.type == ParamType.number)
-                paramValue = Number(paramValue)
-            else if (param.type == ParamType.text)
-                paramValue = String(paramValue)
-            else if (param.type == ParamType.boolean)
-                paramValue = Boolean(paramValue)
-            this.settings[param.name] = paramValue
-        })
+    /**
+     * checkParameters should check that all parameters are well-formed,
+     * in-range, etc.
+     * @returns {ValidationStatus}
+     */
+    checkParameters(): ValidationStatus {
+        return new ValidationStatus(true)
     }
 
     setup(): void {

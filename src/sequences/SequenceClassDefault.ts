@@ -1,4 +1,4 @@
-import {SequenceParamsSchema, SequenceInterface} from './SequenceInterface'
+import {SequenceInterface} from './SequenceInterface'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /**
@@ -12,15 +12,11 @@ export class SequenceClassDefault implements SequenceInterface {
     sequenceID: number
     name = 'Base'
     description = 'A Base sequence class'
-    params: SequenceParamsSchema[] = [
-        new SequenceParamsSchema('name', '', 'displayName', false, '0'),
-    ]
+    params = {}
     first = 0
     last = 0
     ready: boolean
     isValid: boolean
-
-    protected settings: {[key: string]: string | number | boolean} = {}
 
     constructor(sequenceID: number) {
         this.sequenceID = sequenceID
@@ -62,22 +58,24 @@ export class SequenceClassDefault implements SequenceInterface {
     }
 
     /**
-     * Moves the parameter values to the sequence settings,
-     * and checks that the resulting settings are acceptable.
-     * Once this is completed, if it returns a true ValidationStatus,
-     * the sequence has enough information to begin generating sequence members.
+     * All implementations based on this default delegate the checking of
+     * parameters to the checkParameters() method.
+     * That leaves the required validate() method to just call checkParameters
+     * and set the isValid property based on the result.
      */
     validate(): ValidationStatus {
-        this.params.forEach(param => {
-            this.settings[param.name] = param.value
-        })
+        const status = this.checkParameters()
+        this.isValid = status.isValid
+        return status
+    }
 
-        if (this.settings['name'] !== undefined) {
-            this.isValid = true
-            return new ValidationStatus(true)
-        }
-
-        return new ValidationStatus(true, ['name param is undefined.'])
+    /**
+     * checkParameters should check that all parameters are well-formed,
+     * in-range, etc.
+     * @returns {ValidationStatus}
+     */
+    checkParameters(): ValidationStatus {
+        return new ValidationStatus(true)
     }
 }
 

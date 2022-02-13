@@ -1,6 +1,6 @@
 import {SequenceInterface} from '@/sequences/SequenceInterface'
 import {ValidationStatus} from '@/shared/ValidationStatus'
-import {ParamType} from '@/shared/ParamType'
+import {ParamInterface, ParamType} from '@/shared/ParamType'
 import p5 from 'p5'
 
 interface VisualizerConstructor {
@@ -55,12 +55,14 @@ export interface VisualizerSettings {
 export interface VisualizerInterface {
     isValid: boolean
     /**
-     * The parameters for the visualizer to initialize.
-     * In addition to providing the information in the schema,
-     * these will be used as default params in the event the user
-     * does not specify any.
+     * params determines the parameters that will be settable via the
+     * user interface. The value of each key should be a property of the
+     * visualizer implementation. The value of each of these properties
+     * should be an object (so that it can be passed by reference to the UI
+     * for setting); the keys of each such object should be as described
+     * in the ParamInterface source.
      */
-    params: VisualizerParamsSchema[]
+    params: {[key: string]: ParamInterface}
     /**
      * A sequence instance that fulfills the sequence interface.
      */
@@ -70,17 +72,18 @@ export interface VisualizerInterface {
      */
     sketch: p5
     /**
-     * Initialize is simply applying the configuration params to the
-     * visualizer to prepare it to draw.
-     * @param config
-     *    User set configuration settings. Generally if none are provided,
-     *    the visualizer should use its own default
-     */
-    initialize(sketch: p5, seq: SequenceInterface): void
-    /**
-     * Validates the cinfiguration
+     * Validates the configuration
+     * @returns {ValidationStatus}
+     *     whether the validation succeeded, along with any messages if not
      */
     validate(): ValidationStatus
+    /**
+     * Initialize is simply applying the validated configuration params to the
+     * visualizer to prepare it to draw.
+     * @param sketch The p5 instance the visualizer will draw on
+     * @param seq The Sequence object supplying sequence values
+     */
+    initialize(sketch: p5, seq: SequenceInterface): void
     /**
      * Sets up the p5 canvas.
      */

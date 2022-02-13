@@ -1,9 +1,5 @@
 import {ValidationStatus} from '@/shared/ValidationStatus'
-import {
-    SequenceParamsSchema,
-    SequenceExportModule,
-    SequenceExportKind,
-} from './SequenceInterface'
+import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {SequenceCached} from './SequenceCached'
 
 import axios from 'axios'
@@ -19,37 +15,39 @@ export default class OEISSequenceTemplate extends SequenceCached {
     name = 'OEIS Sequence Template'
     description = 'Factory for obtaining sequences from the OEIS'
     oeisSeq = true
-    modulo = 0n
     cacheBlock = 1000
-
-    params: SequenceParamsSchema[] = [
-        new SequenceParamsSchema('oeisId', 'text', 'OEIS ID', true, false),
-        new SequenceParamsSchema('name', 'text', 'Name', false, false),
-        new SequenceParamsSchema(
-            'numElements',
-            'number',
-            'Number of Elements (leave blank to fetch up to first 1000)',
-            false,
-            false
-        ),
-        new SequenceParamsSchema(
-            'modulo',
-            'number',
-            'Modulo to apply to the sequence',
-            false,
-            false
-        ),
-    ]
+    oeisId = {value: '', displayName: 'OEIS ID', required: true}
+    userName = {value: '', displayName: 'Name', required: false}
+    numElements = {
+        value: BigInt(this.cacheBlock),
+        displayName: 'Number of Elements',
+        required: false,
+        description: 'How many elements to try to fetch from the database.',
+    }
+    modulo = {
+        value: 0n,
+        displayName: 'Modulo',
+        required: false,
+        description:
+            'If nonzero, take the residue of each element to this modulus.',
+    }
+    params = {
+        oeisId: this.oeisId,
+        userName: this.userName,
+        numElements: this.numElements,
+        modulo: this.modulo,
+    }
 
     constructor(sequenceID: number) {
         super(sequenceID) // Don't know the index range yet, will fill in later
     }
 
     async fillCache(): Promise<void> {
-        const resp = await axios.get(
-            `http://${process.env.VUE_APP_API_URL}/api/`
-                + `get_oeis_values/${this.settings.oeisId}/${this.cacheBlock}`
-        )
+        const backendUrl
+            = `http://${process.env.VUE_APP_API_URL}/api/`
+            + `get_oeis_values/${this.oeisId.value}/${this.cacheBlock}`
+        console.log('Fetching', backendUrl)
+        const resp = await axios.get(backendUrl)
         this.first = Infinity
         this.last = -Infinity
         for (const k in resp.data.values) {
@@ -57,7 +55,7 @@ export default class OEISSequenceTemplate extends SequenceCached {
             if (index < this.first) this.first = index
             if (index > this.last) this.last = index
             this.cache[index] = BigInt(resp.data.values[k])
-            if (this.modulo) this.cache[index] %= this.modulo
+            if (this.modulo.value) this.cache[index] %= this.modulo.value
         }
         if (this.first === Infinity) {
             /* An empty sequence; perhaps a mistaken OEIS ID. Is there
@@ -70,38 +68,27 @@ export default class OEISSequenceTemplate extends SequenceCached {
         this.cachingTo = this.last
     }
 
-    validate(): ValidationStatus {
-        const superStatus = super.validate()
-        if (!superStatus.isValid) {
-            return superStatus
+    checkParameters(): ValidationStatus {
+        const status = super.checkParameters()
+
+        if (
+            this.oeisId.value.length !== 7
+            || (this.oeisId.value[0] !== 'A' && this.oeisId.value[0] !== 'a')
+        ) {
+            status.isValid = false
+            status.errors.push('OEIS IDs are of form Annnnnn')
         }
 
-        const messages: string[] = []
-        if (!this.settings['oeisId']) {
-            messages.push('oeisID parameter is missing')
+        return status
+    }
+
+    initialize(): void {
+        this.name = this.userName.value || this.oeisId.value
+        if (this.numElements.value) {
+            this.cacheBlock = Number(this.numElements.value)
         }
-        if (this.settings['numElements']) {
-            this.cacheBlock = Number(this.settings['numElements'])
-            if (!Number.isInteger(this.cacheBlock)) {
-                messages.push(
-                    `Number "${this.settings['numElements']}" `
-                        + ' of elements is not an integer.'
-                )
-            }
-        }
-        if (this.settings['modulo']) {
-            try {
-                this.modulo = BigInt(this.settings['modulo'])
-            } catch (syntaxError) {
-                // is there any way to only catch those?
-                messages.push(
-                    'modulo must be an integer: ' + syntaxError.message
-                )
-            }
-        }
-        this.name = this.settings['name'] as string
-        this.isValid = messages.length === 0
-        return new ValidationStatus(this.isValid, messages)
+        console.log('Producing', this.numElements.value, this.cacheBlock)
+        super.initialize()
     }
 }
 

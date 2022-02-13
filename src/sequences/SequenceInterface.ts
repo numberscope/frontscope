@@ -1,27 +1,5 @@
 import {ValidationStatus} from '@/shared/ValidationStatus'
-
-export class SequenceParamsSchema {
-    name: string
-    type: string
-    displayName: string
-    required: boolean
-    value: string | boolean | number
-
-    constructor(
-        name: string,
-        type: string,
-        displayName: string,
-        required: boolean,
-        defaultValue?: string | boolean | number
-    ) {
-        this.name = name || ''
-        this.type = type || ''
-        this.displayName = displayName || ''
-        this.required = required || false
-        this.value = defaultValue || ''
-    }
-}
-
+import {ParamInterface} from '@/shared/ParamType'
 /**
  * Interface for Sequence classes.
  * Every sequence class must implement these properties and functions
@@ -31,7 +9,15 @@ export interface SequenceInterface {
     sequenceID: number
     name: string
     description: string
-    params: SequenceParamsSchema[]
+    /**
+     * params determines the parameters that will be settable via the
+     * user interface. The value of each key should be a property of the
+     * sequence implementation. The value of each of these properties
+     * should be an object (so that it can be passed by reference to the UI
+     * for setting); the keys of each such object should be as described
+     * in the ParamInterface source.
+     */
+    params: {[key: string]: ParamInterface}
     /**
      * first gives the lower limit for valid indices into the Sequence.
      * In other words, an integer number n is a valid index only if
@@ -49,13 +35,18 @@ export interface SequenceInterface {
     readonly last: number
 
     /**
-     * Initialize is called after params are set. It allows us to wait
-     * until all the settings are selected by the user before we actually
-     * build the cache.
-     * Generally this is where you will set the generator function, presuming
-     * it relies on the initialization of the settings from sequenceParams.
-     * @param {SequenceParamsSchema} params
-     *     the parameters schema settings selected by the user
+     * validate is called as soon as the user has set the values of the
+     * parameters. It should check that all of the parameters are sensible
+     * (properly formatted, in range, etc)
+     * @returns {ValidationStatus}
+     *     whether the validation succeeded, along with any messages if not
+     */
+    validate(): ValidationStatus
+
+    /**
+     * Initialize is called after validation. It allows us to wait
+     * until all the parameters are appropriate before we actually
+     * set up the sequence for computation.
      */
     initialize(): void
 
@@ -69,8 +60,6 @@ export interface SequenceInterface {
      * @memberof SequenceGenerator
      */
     getElement(n: number): bigint
-
-    validate(): ValidationStatus
 }
 
 export interface SequenceConstructor {

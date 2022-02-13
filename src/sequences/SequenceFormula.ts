@@ -1,9 +1,4 @@
-import {ValidationStatus} from '@/shared/ValidationStatus'
-import {
-    SequenceParamsSchema,
-    SequenceExportModule,
-    SequenceExportKind,
-} from './SequenceInterface'
+import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {SequenceCached} from './SequenceCached'
 import * as math from 'mathjs'
 
@@ -18,11 +13,10 @@ import * as math from 'mathjs'
 class SequenceFormula extends SequenceCached {
     name = 'Formula: empty'
     description = 'A sequence defined by a formula in n'
-    params: SequenceParamsSchema[] = [
-        new SequenceParamsSchema('formula', 'text', 'Formula', true, 'n'),
-    ]
+    formula = {value: 'n', displayName: 'Formula', required: true}
+    params = {formula: this.formula}
 
-    private formula: math.EvalFunction
+    private evaluator: math.EvalFunction
 
     /**
      *Creates an instance of SequenceFormula
@@ -30,28 +24,23 @@ class SequenceFormula extends SequenceCached {
      */
     constructor(sequenceID: number) {
         super(sequenceID)
-        this.formula = math.compile('n') // tide us over until validate()
+        // tide us over until checkParameters():
+        this.evaluator = math.compile(this.formula.value)
     }
 
-    validate() {
-        this.settings['name'] = 'Formula'
-        const superStatus = super.validate()
-        if (!superStatus.isValid) {
-            return superStatus
-        }
+    checkParameters() {
+        const status = super.checkParameters()
 
-        this.isValid = false
-        if (this.settings['formula'] === undefined) {
-            return new ValidationStatus(false, ['formula  param is missing'])
-        }
         let parsetree = undefined
         try {
-            parsetree = math.parse(this.settings['formula'] as string)
+            parsetree = math.parse(this.formula.value)
         } catch (err) {
-            return new ValidationStatus(false, [
-                'Could not parse formula: ' + this.settings['formula'],
-                err.message,
-            ])
+            status.isValid = false
+            status.errors.push(
+                'Could not parse formula: ' + this.formula.value
+            )
+            status.errors.push(err.message)
+            return status
         }
         const othersymbs = parsetree.filter(
             (node, path, parent) =>
@@ -60,21 +49,21 @@ class SequenceFormula extends SequenceCached {
                 && node.name !== 'n'
         )
         if (othersymbs.length > 0) {
-            return new ValidationStatus(false, [
+            status.isValid = false
+            status.errors.push(
                 "Only 'n' may occur as a free variable in formula.",
                 "Please remove '"
                     + (othersymbs[0] as math.SymbolNode).name
-                    + "'",
-            ])
+                    + "'"
+            )
         }
-        this.formula = parsetree.compile()
-        this.name = 'Formula: ' + this.settings['formula']
-        this.isValid = true
-        return new ValidationStatus(true)
+        this.evaluator = parsetree.compile()
+        this.name = 'Formula: ' + this.formula.value
+        return status
     }
 
     calculate(n: number) {
-        return BigInt(this.formula.evaluate({n: n}))
+        return BigInt(this.evaluator.evaluate({n: n}))
     }
 }
 

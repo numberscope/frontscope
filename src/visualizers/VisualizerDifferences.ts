@@ -1,14 +1,10 @@
 import {SequenceInterface} from '@/sequences/SequenceInterface'
 import {
     VisualizerInterface,
-    VisualizerParamsSchema,
-    VisualizerSettings,
     VisualizerExportModule,
 } from '@/visualizers/VisualizerInterface'
 import p5 from 'p5'
-import {ParamType} from '@/shared/ParamType'
 import {VisualizerDefault} from './VisualizerDefault'
-import {ValidationStatus} from '@/shared/ValidationStatus'
 
 const min = Math.min
 
@@ -17,49 +13,39 @@ class VizDifferences
     implements VisualizerInterface
 {
     name = 'Differences'
-    params: VisualizerParamsSchema[] = []
-    settings: VisualizerSettings = {}
+    n = {value: 20, displayName: 'Elements in top row', required: true}
+    levels = {
+        value: 5,
+        displayName: 'Number of rows',
+        required: false,
+        description:
+            'If blank, defaults to one fewer than the elements in the top row',
+    }
+    params = {n: this.n, levels: this.levels}
     first = 0
 
-    constructor() {
-        super()
-        const numberTermsTopParam = new VisualizerParamsSchema()
-        numberTermsTopParam.name = 'n'
-        numberTermsTopParam.displayName = 'Number of terms of top sequence'
-        numberTermsTopParam.type = ParamType.number
-        numberTermsTopParam.value = 20
-        numberTermsTopParam.required = true
-        numberTermsTopParam.description
-            = 'The number of terms that appear in the top sequence. '
-            + 'This value must be bigger than the number of rows.'
+    checkParameters() {
+        const status = super.checkParameters()
 
-        const levelsParam = new VisualizerParamsSchema()
-        levelsParam.name = 'levels'
-        levelsParam.displayName = 'Number of layers in the pyramid/trapezoid'
-        levelsParam.value = 5
-        levelsParam.type = ParamType.number
-        levelsParam.description = 'The number of rows to display.'
+        if (this.n.value <= this.levels.value) {
+            status.isValid = false
+            status.errors.push(
+                'Elements in top row must be greater than number of rows'
+            )
+        }
 
-        this.params.push(numberTermsTopParam, levelsParam)
-    }
-
-    validate() {
-        this.assignParams()
-        if (this.settings.n <= this.settings.levels)
-            return new ValidationStatus(false, [
-                'n must be greater than levels',
-            ])
-
-        this.isValid = true
-        return new ValidationStatus(true)
+        return status
     }
 
     initialize(sketch: p5, seq: SequenceInterface): void {
         super.initialize(sketch, seq)
-        if (seq.last - seq.first < this.settings.levels) {
+        if (!this.levels.value) {
+            this.levels.value = this.n.value - 1
+        }
+        if (seq.last - seq.first < this.levels.value) {
             throw Error(
                 `Sequence ${seq.name} has too few entries `
-                    + `for ${this.settings.levels} levels.`
+                    + `for ${this.levels.value} levels.`
             )
         }
     }
@@ -117,8 +103,8 @@ class VizDifferences
     }
     draw() {
         this.drawDifferences(
-            Number(this.settings.n),
-            Number(this.settings.levels),
+            Number(this.n.value),
+            Number(this.levels.value),
             this.seq
         )
         this.sketch.noLoop()
