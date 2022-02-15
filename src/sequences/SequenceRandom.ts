@@ -12,9 +12,20 @@ class SequenceRandom extends SequenceCached {
     description =
         'A sequence of integers chosen indepenently uniformly '
         + 'from n to m inclusive.'
-    min = {value: 0, displayName: 'Minimum value attainable', required: true}
-    max = {value: 9, displayName: 'Maximum value attainable', required: true}
-    params = {min: this.min, max: this.max}
+    min = 0
+    max = 9
+    params = {
+        min: {
+            value: this.min,
+            displayName: 'Minimum value attainable',
+            required: true,
+        },
+        max: {
+            value: this.max,
+            displayName: 'Maximum value attainable',
+            required: true,
+        },
+    }
 
     /**
      *Creates an instance of SequenceRandom
@@ -27,13 +38,13 @@ class SequenceRandom extends SequenceCached {
     checkParameters() {
         const status = super.checkParameters()
 
-        if (!Number.isInteger(this.min.value)) {
+        if (!Number.isInteger(this.params.min.value)) {
             status.errors.push('The min value must be an integer.')
         }
-        if (!Number.isInteger(this.max.value)) {
+        if (!Number.isInteger(this.params.max.value)) {
             status.errors.push('The max value must be an integer.')
         }
-        if (this.max.value < this.min.value) {
+        if (this.params.max.value < this.params.min.value) {
             status.errors.push('The max value cannot be less than the min.')
         }
 
@@ -43,17 +54,14 @@ class SequenceRandom extends SequenceCached {
 
     initialize() {
         super.initialize()
-        this.name = `Random integers ${this.min.value} to ${this.max.value}`
+        this.name = `Random integers ${this.min} to ${this.max}`
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     calculate(n: number) {
         // create a random integer between min and max inclusive
         return BigInt(
-            Math.floor(
-                Math.random() * (this.max.value - this.min.value + 1)
-                    + this.min.value
-            )
+            Math.floor(Math.random() * (this.max - this.min + 1) + this.min)
         )
     }
 }

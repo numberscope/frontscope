@@ -26,210 +26,89 @@
                             </li>
                         </ul>
                     </div>
-                    <div v-for="(param, name) in params" v-bind:key="name">
-                        <div v-if="paramVisible[name]">
-                            <div
-                                v-if="paramType[name] === 'bigint'"
-                                class="form-group">
-                                <label v-bind:for="name">
-                                    <span class="redtext">{{
-                                        param.required ? '*' : ''
-                                    }}</span
-                                    >{{ param.displayName }}
-                                </label>
-                                <input
-                                    class="form-control"
-                                    v-bind:id="name"
-                                    v-bind:value="param.value"
-                                    v-on:input="setBigint($event, param)" />
-                                <small
-                                    v-bind:id="name + '-help-text'"
-                                    class="form-text text-muted">
-                                    {{ param.description }}
-                                </small>
-                            </div>
-                            <div
-                                v-if="paramType[name] === 'number'"
-                                class="form-group">
-                                <label v-bind:for="name">
-                                    <span class="redtext">{{
-                                        param.required ? '*' : ''
-                                    }}</span
-                                    >{{ param.displayName }}
-                                </label>
-                                <input
-                                    class="form-control"
-                                    v-bind:id="name"
-                                    v-model.number="param.value" />
-                                <small
-                                    v-bind:id="name + '-help-text'"
-                                    class="form-text text-muted">
-                                    {{ param.description }}
-                                </small>
-                            </div>
-                            <div
-                                v-if="paramType[name] === 'enum'"
-                                class="form-group">
-                                <label v-bind:for="name">
-                                    {{ param.displayName }}
-                                </label>
-                                <select
-                                    class="form-select"
-                                    v-bind:id="name"
-                                    v-model.number="param.value">
-                                    <option
-                                        v-for="(
-                                            optval, optname
-                                        ) in param.from"
-                                        v-bind:key="optname"
-                                        v-bind:value="optval">
-                                        {{ optname }}
-                                    </option>
-                                </select>
-                                <small
-                                    v-bind:id="name + '-help-text'"
-                                    class="form-text text-muted">
-                                    {{ param.description }}
-                                </small>
-                            </div>
-                            <div
-                                v-if="paramType[name] === 'string'"
-                                class="form-group">
-                                <label v-bind:for="name">
-                                    <span class="redtext">{{
-                                        param.required ? '*' : ''
-                                    }}</span
-                                    >{{ param.displayName }}
-                                </label>
-                                <input
-                                    class="form-control"
-                                    v-bind:id="name"
-                                    v-model="param.value" />
-                                <small
-                                    v-bind:id="name + '-help-text'"
-                                    class="form-text text-muted">
-                                    {{ param.description }}
-                                </small>
-                            </div>
-                            <div
-                                v-if="paramType[name] === 'array'"
-                                class="form-group">
-                                <label v-bind:for="name">
-                                    <span class="redtext">{{
-                                        param.required ? '*' : ''
-                                    }}</span
-                                    >{{ param.displayName }}
-                                </label>
-                                <input
-                                    class="form-control"
-                                    v-bind:id="name"
-                                    v-bind:value="param.value"
-                                    v-on:input="
-                                        setArray($event, param.value)
-                                    " />
-                                <small
-                                    v-bind:id="name + '-help-text'"
-                                    class="form-text text-muted">
-                                    {{ param.description }}
-                                </small>
-                            </div>
-                            <div
-                                v-if="paramType[name] === 'object'"
-                                class="form-group">
-                                <label v-bind:for="name">
-                                    <span class="redtext">{{
-                                        param.required ? '*' : ''
-                                    }}</span
-                                    >{{ param.displayName }}
-                                </label>
-                                <input
-                                    class="form-control"
-                                    v-bind:id="name"
-                                    v-bind:value="param.value" />
-                                <small
-                                    v-bind:id="name + '-help-text'"
-                                    class="form-text text-muted">
-                                    {{ param.description }}
-                                </small>
-                            </div>
-                            <div
-                                v-if="paramType[name] === 'vector'"
-                                class="form-group">
-                                <label v-bind:for="name">
-                                    <span class="redtext">{{
-                                        param.required ? '*' : ''
-                                    }}</span
-                                    >{{ param.displayName }}
-                                </label>
-                                <input
-                                    class="form-control"
-                                    v-bind:id="name"
-                                    v-bind:value="getVector(param.value)"
-                                    v-on:input="
-                                        setVector($event, param.value)
-                                    " />
-                                <small
-                                    v-bind:id="name + '-help-text'"
-                                    class="form-text text-muted">
-                                    {{ param.description }}
-                                </small>
-                            </div>
-                            <div
-                                v-if="
-                                    param.type == ParamType.number ||
-                                    param.type == ParamType.text
-                                "
-                                class="form-group">
-                                <label v-bind:for="param.name">
-                                    {{ param.displayName }}
-                                </label>
-                                <input
-                                    class="form-control"
-                                    v-bind:id="param.name"
-                                    v-model="param.value" />
-                                <small
-                                    v-bind:id="param.name + '-help-text'"
-                                    class="form-text text-muted">
-                                    {{ param.description }}
-                                </small>
-                            </div>
-                            <div
+                    <div
+                        v-for="(param, name) in visibleParams"
+                        v-bind:class="groupClass(param.indent)"
+                        v-bind:key="name">
+                        <div class="labeled-input">
+                            <input
                                 v-if="paramType[name] === 'boolean'"
-                                class="form-check">
-                                <input
-                                    type="checkbox"
-                                    class="form-check-input"
-                                    :id="name"
-                                    v-model="param.value" />
-                                <label class="form-check-label" :for="name">
-                                    {{ param.displayName }}
-                                </label>
-                                <small
-                                    v-bind:id="name + '-help-text'"
-                                    class="form-text text-muted">
-                                    {{ param.description }}
-                                </small>
-                            </div>
-                            <div
+                                type="checkbox"
+                                class="left-input"
+                                :id="name"
+                                v-model="param.value" />
+                            <input
                                 v-if="paramType[name] === 'color'"
-                                class="form-group">
-                                <input
-                                    type="color"
-                                    class="form-color-input"
-                                    :id="name"
-                                    v-model="param.value" />
-                                <label
-                                    class="form-check-label"
-                                    v-bind:for="name">
-                                    {{ param.displayName }}
-                                </label>
-                                <small
-                                    v-bind:id="name + '-help-text'"
-                                    class="form-text text-muted">
-                                    {{ param.description }}
-                                </small>
-                            </div>
+                                type="color"
+                                class="left-input"
+                                :id="name"
+                                v-model="param.value" />
+                            <label class="form-label" v-bind:for="name">
+                                <span
+                                    v-if="
+                                        param.required &&
+                                        !boxes.includes(paramType[name])
+                                    "
+                                    class="redtext"
+                                    >*</span
+                                >{{ param.displayName
+                                }}{{
+                                    boxes.includes(paramType[name]) ? '' : ':'
+                                }}
+                            </label>
+                            <input
+                                class="form-control"
+                                v-if="paramType[name] === 'bigint'"
+                                v-bind:id="name"
+                                v-bind:value="param.value"
+                                v-on:input="setBigint($event, param)" />
+                            <input
+                                class="form-control"
+                                v-if="paramType[name] === 'number'"
+                                v-bind:id="name"
+                                v-model.number="param.value" />
+                            <select
+                                class="form-select"
+                                v-if="paramType[name] === 'enum'"
+                                v-bind:id="name"
+                                v-model.number="param.value">
+                                <option
+                                    v-for="(optval, optname) in stringsOf(
+                                        param.from
+                                    )"
+                                    v-bind:key="optname"
+                                    v-bind:value="optval">
+                                    {{ optname }}
+                                </option>
+                            </select>
+                            <input
+                                class="form-control"
+                                v-if="paramType[name] === 'string'"
+                                v-bind:id="name"
+                                v-model="param.value" />
+                            <input
+                                class="form-control"
+                                v-if="paramType[name] === 'array'"
+                                v-bind:id="name"
+                                v-bind:value="param.value"
+                                v-on:input="setArray($event, param.value)" />
+                            <input
+                                class="form-control"
+                                v-if="paramType[name] === 'object'"
+                                v-bind:id="name"
+                                v-bind:value="param.value" />
+                            <input
+                                class="form-control"
+                                v-if="paramType[name] === 'vector'"
+                                v-bind:id="name"
+                                v-bind:value="getVector(param.value)"
+                                v-on:input="setVector($event, param.value)" />
                         </div>
+                        <small
+                            v-bind:id="name + '-help-text'"
+                            class="form-text text-muted">
+                            {{ param.description }}
+                        </small>
                     </div>
                     <small v-if="Object.values(params).some(v => v.required)">
                         <span class="redtext">*</span>Parameters with an
@@ -268,12 +147,19 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {ParamType} from '@/shared/ParamType'
     import p5 from 'p5'
+    import {ParamInterface} from '@/shared/Paramable.ts'
 
     export default Vue.extend({
         name: 'SeqVizParamsModal',
         methods: {
+            groupClass(indent: number): string {
+                let retval = 'form-group'
+                if (indent) {
+                    retval += ` indent${indent}`
+                }
+                return retval
+            },
             setBigint(e: Event, p: {value: BigInt}) {
                 const target = e.target as HTMLInputElement
                 try {
@@ -312,6 +198,17 @@
                     a.pop()
                 }
             },
+            stringsOf(enumObj: {[key: string]: string | number}): {
+                [key: string]: number
+            } {
+                const retval: {[key: string]: number} = {}
+                for (const prop in enumObj) {
+                    if (typeof enumObj[prop] === 'number') {
+                        retval[prop] = enumObj[prop] as number
+                    }
+                }
+                return retval
+            },
         },
         props: {
             params: Object,
@@ -332,9 +229,12 @@
                     type = typeof this.params[name].value
                 }
                 types[name] = this.params[name].forceType || type
-                console.log('Concluded', name, 'is', types[name])
             }
-            return {paramType: types}
+            // We supply our own type designations for all of the
+            // params; and `boxes` is a constant giving the types
+            // for which the controls are small boxes that come to
+            // the left of the label, as opposed to the right
+            return {paramType: types, boxes: ['boolean', 'color']}
         },
         computed: {
             requiredMissing() {
@@ -350,22 +250,22 @@
                 }
                 return false
             },
-            paramVisible() {
-                const viz: {[key: string]: boolean} = {}
+            visibleParams() {
+                const viz: {[key: string]: ParamInterface} = {}
                 for (const name in this.params) {
                     if (this.params[name].visibleDependency) {
                         const dependsOn
                             = this.params[this.params[name].visibleDependency]
-                        viz[name]
-                            = dependsOn.value === this.params[name].visibleValue
-                    } else {
-                        viz[name] = true
+                        if (
+                            dependsOn.value !== this.params[name].visibleValue
+                        ) {
+                            continue
+                        }
                     }
+                    viz[name] = this.params[name]
                 }
-                console.log(viz)
                 return viz
             },
-            ParamType: () => ParamType,
         },
     })
 </script>
@@ -394,11 +294,27 @@
         background: #dddddd;
     }
 
-    .form-color-input {
+    .labeled-input {
+        display: flex;
+        align-items: baseline;
+    }
+
+    .indent1 {
+        margin-left: 1.5em;
+    }
+    .indent2 {
+        margin-left: 3em;
+    }
+
+    .form-control {
+        flex: 1;
+    }
+
+    .form-label {
         margin-right: 0.5em;
     }
 
-    .form-select {
-        margin-left: 0.5em;
+    .left-input {
+        margin-right: 0.5em;
     }
 </style>

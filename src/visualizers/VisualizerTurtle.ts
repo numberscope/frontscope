@@ -14,47 +14,55 @@ class VisualizerTurtle
 {
     name = 'Turtle'
     private rotMap = new Map<string, number>()
-    domain = {
-        value: [0n, 1n, 2n, 3n, 4n],
-        displayName: 'Sequence Domain',
-        required: true,
-        description: '(comma-separated list of values)',
-    }
-    range = {
-        value: [30, 45, 60, 90, 120],
-        displayName: 'Angles',
-        required: true,
-        description: '(comma-separated list of values in degrees)',
-    }
-    stepSize = {value: 20, displayName: 'Step Size', required: true}
-    start = {
-        value: new p5.Vector(),
-        displayName: 'Start',
-        required: true,
-        description: 'coordinates of the point where drawing will start',
-    }
-    strokeWeight = {value: 5, displayName: 'Stroke Width', required: true}
-    bgColor = {
-        value: '#666666',
-        forceType: 'color',
-        displayName: 'Background Color',
-        required: false,
-    }
-    strokeColor = {
-        value: '#ff0000',
-        forceType: 'color',
-        displayName: 'Stroke Color',
-        required: false,
-    }
+    domain = [0n, 1n, 2n, 3n, 4n]
+    range = [30, 45, 60, 90, 120]
+    stepSize = 20
+    start = new p5.Vector()
+    strokeWeight = 5
+    bgColor = '#666666'
+    strokeColor = '#ff0000'
 
     params = {
-        domain: this.domain,
-        range: this.range,
-        stepSize: this.stepSize,
-        start: this.start,
-        strokeWeight: this.strokeWeight,
-        bgColor: this.bgColor,
-        strokeColor: this.strokeColor,
+        domain: {
+            value: this.domain,
+            displayName: 'Sequence Domain',
+            required: true,
+            description: '(comma-separated list of values)',
+        },
+        range: {
+            value: this.range,
+            displayName: 'Angles',
+            required: true,
+            description: '(comma-separated list of values in degrees)',
+        },
+        stepSize: {
+            value: this.stepSize,
+            displayName: 'Step Size',
+            required: true,
+        },
+        start: {
+            value: this.start,
+            displayName: 'Start',
+            required: true,
+            description: 'coordinates of the point where drawing will start',
+        },
+        strokeWeight: {
+            value: this.strokeWeight,
+            displayName: 'Stroke Width',
+            required: true,
+        },
+        bgColor: {
+            value: this.bgColor,
+            forceType: 'color',
+            displayName: 'Background Color',
+            required: false,
+        },
+        strokeColor: {
+            value: this.strokeColor,
+            forceType: 'color',
+            displayName: 'Stroke Color',
+            required: false,
+        },
     }
 
     private currentIndex = 0
@@ -71,11 +79,10 @@ class VisualizerTurtle
         this.X = 0
         this.Y = 0
 
-        console.log('initializing turtle')
-        for (let i = 0; i < this.domain.value.length; i++) {
+        for (let i = 0; i < this.domain.length; i++) {
             this.rotMap.set(
-                this.domain.value[i].toString(),
-                (Math.PI / 180) * this.range.value[i]
+                this.domain[i].toString(),
+                (Math.PI / 180) * this.range[i]
             )
         }
 
@@ -84,22 +91,25 @@ class VisualizerTurtle
 
     checkParameters() {
         const status = super.checkParameters()
-        if (this.domain.value.length != this.range.value.length) {
+
+        if (
+            this.params.domain.value.length != this.params.range.value.length
+        ) {
             status.isValid = false
             status.errors.push(
                 'Domain and range must have the same number of entries'
             )
         }
-        console.log('Hoho', this.domain.value.toString())
+
         return status
     }
 
     setup() {
         this.X = this.sketch.width / 2
         this.Y = this.sketch.height / 2
-        this.sketch.background(this.bgColor.value)
-        this.sketch.stroke(this.strokeColor.value)
-        this.sketch.strokeWeight(this.strokeWeight.value)
+        this.sketch.background(this.bgColor)
+        this.sketch.stroke(this.strokeColor)
+        this.sketch.strokeWeight(this.strokeWeight)
         this.sketch.frameRate(30)
     }
 
@@ -116,8 +126,8 @@ class VisualizerTurtle
         const oldY = this.Y
 
         this.orientation = this.orientation + angle
-        this.X += this.stepSize.value * Math.cos(this.orientation)
-        this.Y += this.stepSize.value * Math.sin(this.orientation)
+        this.X += this.stepSize * Math.cos(this.orientation)
+        this.Y += this.stepSize * Math.sin(this.orientation)
 
         this.sketch.line(oldX, oldY, this.X, this.Y)
         if (this.currentIndex > this.seq.last) this.sketch.noLoop()

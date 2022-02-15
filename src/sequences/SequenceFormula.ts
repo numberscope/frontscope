@@ -13,8 +13,14 @@ import * as math from 'mathjs'
 class SequenceFormula extends SequenceCached {
     name = 'Formula: empty'
     description = 'A sequence defined by a formula in n'
-    formula = {value: 'n', displayName: 'Formula', required: true}
-    params = {formula: this.formula}
+    formula = 'n'
+    params = {
+        formula: {
+            value: this.formula,
+            displayName: 'Formula',
+            required: true,
+        },
+    }
 
     private evaluator: math.EvalFunction
 
@@ -25,7 +31,7 @@ class SequenceFormula extends SequenceCached {
     constructor(sequenceID: number) {
         super(sequenceID)
         // tide us over until checkParameters():
-        this.evaluator = math.compile(this.formula.value)
+        this.evaluator = math.compile(this.formula)
     }
 
     checkParameters() {
@@ -33,11 +39,11 @@ class SequenceFormula extends SequenceCached {
 
         let parsetree = undefined
         try {
-            parsetree = math.parse(this.formula.value)
+            parsetree = math.parse(this.params.formula.value)
         } catch (err) {
             status.isValid = false
             status.errors.push(
-                'Could not parse formula: ' + this.formula.value
+                'Could not parse formula: ' + this.params.formula.value
             )
             status.errors.push(err.message)
             return status
@@ -58,8 +64,12 @@ class SequenceFormula extends SequenceCached {
             )
         }
         this.evaluator = parsetree.compile()
-        this.name = 'Formula: ' + this.formula.value
         return status
+    }
+
+    initialize(): void {
+        super.initialize()
+        this.name = 'Formula: ' + this.formula
     }
 
     calculate(n: number) {

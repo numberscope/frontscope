@@ -1,23 +1,11 @@
-import {ValidationStatus} from '@/shared/ValidationStatus'
-import {ParamInterface} from '@/shared/ParamType'
+import {ParamableInterface} from '@/shared/Paramable'
 /**
  * Interface for Sequence classes.
  * Every sequence class must implement these properties and functions
  * to be compatible with Numberscope.
  */
-export interface SequenceInterface {
+export interface SequenceInterface extends ParamableInterface {
     sequenceID: number
-    name: string
-    description: string
-    /**
-     * params determines the parameters that will be settable via the
-     * user interface. The value of each key should be a property of the
-     * sequence implementation. The value of each of these properties
-     * should be an object (so that it can be passed by reference to the UI
-     * for setting); the keys of each such object should be as described
-     * in the ParamInterface source.
-     */
-    params: {[key: string]: ParamInterface}
     /**
      * first gives the lower limit for valid indices into the Sequence.
      * In other words, an integer number n is a valid index only if
@@ -33,23 +21,12 @@ export interface SequenceInterface {
      * all indices not less than first are valid.
      */
     readonly last: number
-
-    /**
-     * validate is called as soon as the user has set the values of the
-     * parameters. It should check that all of the parameters are sensible
-     * (properly formatted, in range, etc)
-     * @returns {ValidationStatus}
-     *     whether the validation succeeded, along with any messages if not
-     */
-    validate(): ValidationStatus
-
     /**
      * Initialize is called after validation. It allows us to wait
      * until all the parameters are appropriate before we actually
      * set up the sequence for computation.
      */
     initialize(): void
-
     /**
      * getElement is what clients of SequenceInterface call to get
      * the actual entries in the sequence. It retrieves the nth element

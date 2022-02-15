@@ -10,12 +10,14 @@ import {SequenceCached} from './SequenceCached'
 class SequenceNaturals extends SequenceCached {
     name = 'Natural Numbers'
     description = 'A sequence of the natural numbers'
-    includeZero = {
-        value: false,
-        displayName: 'Include Zero',
-        required: false,
+    includeZero = false
+    params = {
+        includeZero: {
+            value: this.includeZero,
+            displayName: 'Include Zero',
+            required: false,
+        },
     }
-    params = {includeZero: this.includeZero}
     private begin = 1
 
     /**
@@ -28,7 +30,7 @@ class SequenceNaturals extends SequenceCached {
 
     initialize() {
         if (this.ready) return
-        if (this.includeZero.value) {
+        if (this.includeZero) {
             this.name = 'Nonnegative Integers'
             this.begin = 0
         } else {

@@ -1,5 +1,5 @@
 import {SequenceInterface} from './SequenceInterface'
-import {ValidationStatus} from '@/shared/ValidationStatus'
+import {Paramable} from '@/shared/Paramable'
 
 /**
  *
@@ -8,17 +8,19 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
  * Primarily intended to be used as a base class for your own sequences.
  *
  */
-export class SequenceClassDefault implements SequenceInterface {
+export class SequenceClassDefault
+    extends Paramable
+    implements SequenceInterface
+{
     sequenceID: number
     name = 'Base'
     description = 'A Base sequence class'
-    params = {}
     first = 0
     last = 0
     ready: boolean
-    isValid: boolean
 
     constructor(sequenceID: number) {
+        super()
         this.sequenceID = sequenceID
         this.ready = false
         this.isValid = false
@@ -55,27 +57,6 @@ export class SequenceClassDefault implements SequenceInterface {
             throw RangeError(`SequenceClassDefault: Index ${n} != 0 invalid`)
         }
         return 0n
-    }
-
-    /**
-     * All implementations based on this default delegate the checking of
-     * parameters to the checkParameters() method.
-     * That leaves the required validate() method to just call checkParameters
-     * and set the isValid property based on the result.
-     */
-    validate(): ValidationStatus {
-        const status = this.checkParameters()
-        this.isValid = status.isValid
-        return status
-    }
-
-    /**
-     * checkParameters should check that all parameters are well-formed,
-     * in-range, etc.
-     * @returns {ValidationStatus}
-     */
-    checkParameters(): ValidationStatus {
-        return new ValidationStatus(true)
     }
 }
 

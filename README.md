@@ -50,11 +50,14 @@ which provides the basic expectations of a visualizer. See below for the easy
 way to do this. These include the following:
 
 1. `isValid`: a boolean that is used to determine if the visualizer is ready to
-   draw. Generally this will remain false until the visualizer's `validate`
-   method is called (see below).
+   draw. Generally this will be set automatically based on what you return from
+   the `checkParameters` method (see below).
 2. `params`: The engine expects all visualizers to have parameters that can be
-   set by the user, though these parameters can be empty. Use an array of
-   `visualizerParamsSchema` objects.
+   set by the user, though these parameters can be empty. This `params`
+   property is an object mapping parameter names to (plain) objects that
+   satisfy the `ParamInterface` -- basically, they describe the parameter,
+   giving whether it is required, how it should be labeled and presented
+   in the UI, and so on.
 3. `seq`: A sequence object that implements the sequence interface. Usually, the
    way this is handled is to set `seq` to be an instance of the default sequence
    (`sequenceClassDefault`) upon creation, until the visualizer `initialize()`
@@ -72,6 +75,10 @@ way to do this. These include the following:
    engine that the visualizer is valid. The engine will call `validate` before
    it calls `initialize` and will only proceed if the `isValid` property of the
    `ValidationStatus` object is `true`. Otherwise it will display the error.
+   Generally speaking, the framework takes care of these bookkeeping details and
+   you can simply implement the `checkParameters()` method that just has to
+   examine if parameter values are sensible and return a ValidationStatus
+   accordingly.
 7. `setup()`: a method that acts on the p5 sketch to set up the canvas for
    drawing. Called just prior to draw.
 8. `draw()`: the method that does the bulk of the visualizer's work. This is
@@ -82,9 +89,10 @@ way to do this. These include the following:
 ### The easy way
 
 The simplest and fastest way to set up your visualizer is to extend the
-`visualizerDefault` class. This guarantees that you will implement the
-interface, however you will still need to provide the details of your `validate`
-`initialize` `setup` and `draw` functions. The default class provides a rough
+`VisualizerDefault` class. This guarantees that you will implement the
+interface, however you will still need to supply your collection of `params`,
+and provide the details of your `checkParameters`, `initialize`, `setup`,
+and `draw` functions. The default class provides a rough
 template for the best way to structure a visualizer.
 
 The provided example visualizers are good starting points for how to extend the
@@ -93,9 +101,26 @@ default class.
 ### Example: `VisualizerDifferences.ts`
 
 If you open this file, located in `src/visualizers/VisualizerDifferences.ts`,
-and follow along, you'll notice that it sets the name and params immediately.
-`settings` is the internal representation of those params in the class, and that
-is usually how you can access the params you created.
+and follow along, you'll notice that it begins by setting its name. Then
+it has the two user-settable properties that control its behavior. Then it has
+its `params` object that describe how these two properties should appear in the
+UI (look in `src/shared/Paramable.ts` or other visualizers for all of the
+options you can set in the params object).
+
+In `checkParameters`, the versions of
+the control values in the params object are checked for consistency.
+This visualizer only has one validation check. It makes sure that the `number`
+is no less than the `levels`. If that is not the case, it  invalidates
+the status and adds an error message that is displayed to the user on the
+settings popup. All these specific validation checks are of course unique
+to each visualizer.
+
+If the checks pass and a valid ValidationStatus is returned, the param values
+are copied into the top-level properties of the visualizer. That's why you
+will see them used directly at the top level in the rest of the visualizer code.
+
+Note there's no constructor for the VizDifferences class; generally the default
+constructor supplied by the base class does everything you need.
 
 #### Where to put your visualizers
 
@@ -104,75 +129,47 @@ first letter of every word, no spaces).
 
 #### Creating params and assigning their values
 
-The `constructor` calls the constructor of the default class, which is empty,
-but which may eventually implement useful scaffolding, so it's good practice to
-call `super();`. In the differences visualizer, the constructor is where all the
-params are built and set using the `visualizerParamsSchema` object.
-
-If you have a lot of params, this may not be the best way to set them: check out
-`visualizerTurtle` for a different approach if you have a lot of params. In this
-visualizer, we build the params schema as an array containing all the params.
-Then, in the constructor, we simply assign `this.params = shemaTurtle`. This
-would allow you to set up your params schema in a separate file if you wanted
-to, which could assist with keeping your code tidy.
+If you have a lot of params, the specification of the `params` object gets
+rather long. Unfortunately, we want TypeScript to be able to see the types
+of the value properties for each individual param. So they should generally
+be initialized to the same contents as the top-level properties of the
+visualizer that they correspond to. So currently there is not a practical way
+to move that long specification outside of the Visualizer class definition.
 
 These params will be used by the frontend engine to build the UI display that
-asks the user to set the values. These values are then assigned to the params,
-usually with `assignParams`, a helper function provided in the default
-visualizer, in `validate()`. This takes the param values (as
-`visualizerSettings`) from the UI and assigns them to the appropriate params so
-they can be used. You may implement your own way of moving settings from the UI
-to params but this is a good way to do it because the settings are already
-assigned names that match the params you set.
+asks the user to set the values. Currently, when the use clicks the "save"
+button, the values are validated, and if validation is successful, they are
+copied to the corresponding top-level properties of the visualizer. All of this
+is done for you by the infrastructure; you just need to write the
+`checkParameters()` method that decides if the parameter values are OK to use,
+and returns a ValidationStatus object accordingly.
 
-#### Params vs. settings
+#### Params vs. top-level properties
 
 A good way to think about params is that these are the user-facing structures
-that you create to ask for values, which you then inject into your visualizer.
-The way this happens is that `assignParams` will create a setting for each param
-you make. So for example, if you create a param called `color`, the UI will
-create a popup field asking the user to set a value for `color`. Once that is
-received, it is available to you in the `params` but it hasn't been converted
-into a form that your visualizer can interact with yet.
+that you create to ask for values, which are then injected into top-level
+properties of your visualizer. Movement of data in that direction is an
+automatic part of validation, occurring when the user clicks 'save'.
 
-Calling `assignParams` (if you've extended the default class), will create a
-setting called `color`, which you can get via `this.settings['color']` or
-`this.settings.color`.
-
-In short, if you use `visualizerParamSchema` arrays to create params for your
-visualizer, the UI will automatically generate a popup for the user to choose
-values, and if you call `assignParams` in `validate` (assuming you extended the
-`visualizerDefault`), those values will get assigned to your visualizer settings
-so you can use them.
-
-> The reason `settings` is not in the interface is that you aren't required to
-> use them. The interface simply guarantees that the frontend UI engine gets
-> what it expects, and since the only object that interacts with `settings` is
-> the visualizer itself internally, you aren't forced to use `settings`.
-> However, it's a good idea, and that's the pattern recommended by the default
-> class.
-
-#### Validating
-
- This visualizer only has one validation check. It makes sure that the `number`
- is more than to the `levels`. If this is not the case, it will return a
- `ValidationStatus` with an error message that is displayed to the user on the
- settings popup. Otherwise, it sets the visualizer's `isValid` setting to `true`
- and then returns a passing `ValidationStatus`. This, and all specific
- validations, are unique to each visualizer, and you will probably want to
- create your own checks.
+On the other hand, you may need to update some of the top-level properties
+in the course of your visualizer's operation: maybe you have it responding
+to keystrokes, or it fills in some unspecified values, or what have you. If you
+change any of the top-level properties corresponding to params, you should
+update the params to reflect that change so that the new values will show
+up in the UI. You can do that by calling `this.refreshParams()`.
 
 #### Drawing your sequence
 
-`drawDifferences` is a helper function that is not required, but simplifies the
-`draw` function later on. This particular visualizer uses it to do the bulk of
-the drawing work.
+Returning to the example, `drawDifferences` is a helper function that
+is not required, but simplifies the `draw` function later on. This particular
+visualizer uses it to do the bulk of the drawing work.
 
-`setup` is mostly empty and just logs out a notice to the console, as this
-visualizer doesn't have any setup work to do.
+There is an optional `setup` method that can be defined to prepare to draw.
+However, this visualizer doesn't have any setup work to do, so the method is
+not present here.
 
-`draw` calls `drawDifferences` with some arguments and then stops the sketch
-from drawing, as normally `draw` is called in a loop.
+The method `draw` calls `drawDifferences` with some arguments and then stops
+the sketch from drawing, as normally `draw` is called in a loop.
 
 To access each sequence element, use `this.seq`. This is a `SequenceInterface`
 object, which is guaranteed to have a method `getElement(n)` that returns the
@@ -187,8 +184,7 @@ though the `visualizerDifferences` sets it explicitly.
 
 The other arguments in the export module are the visualizer itself
 (`VizDifferences` in the example case, which is the name of the class we
-created), and a description, which is empty in the example (the empty string
-`""`).
+created), and a description.
 
 If you place the file containing your visualizer class definition with the
 export module in the folder name `Visualizers`, the engine will automatically

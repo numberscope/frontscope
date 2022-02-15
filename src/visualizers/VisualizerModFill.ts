@@ -4,28 +4,27 @@ import {
     VisualizerInterface,
     VisualizerExportModule,
 } from '@/visualizers/VisualizerInterface'
-import p5 from 'p5'
 
 class VizModFill extends VisualizerDefault implements VisualizerInterface {
     name = 'Mod Fill'
-    modDimension = {value: 10n, displayName: 'Mod dimension', required: true}
-    params = {modDimension: this.modDimension}
+    modDimension = 10n
+    params = {
+        modDimension: {
+            value: this.modDimension,
+            displayName: 'Mod dimension',
+            required: true,
+        },
+    }
+
     rectWidth = 0
     rectHeight = 0
     i = 0
     ready = false
 
-    initialize(sketch: p5, seq: SequenceInterface) {
-        this.sketch = sketch
-        this.seq = seq
-
-        this.ready = true
-    }
-
     checkParameters() {
         const status = super.checkParameters()
 
-        if (this.modDimension.value <= 0n) {
+        if (this.params.modDimension.value <= 0n) {
             status.isValid = false
             status.errors.push('Mod dimension must be positive')
         }
@@ -36,7 +35,7 @@ class VizModFill extends VisualizerDefault implements VisualizerInterface {
     drawNew(num: number, seq: SequenceInterface) {
         const black = this.sketch.color(0)
         this.sketch.fill(black)
-        for (let mod = 1n; mod <= this.modDimension.value; mod++) {
+        for (let mod = 1n; mod <= this.modDimension; mod++) {
             const s = seq.getElement(num)
             const x = Number(mod - 1n) * this.rectWidth
             const y
@@ -46,9 +45,8 @@ class VizModFill extends VisualizerDefault implements VisualizerInterface {
     }
 
     setup() {
-        const modDimension = Number(this.modDimension.value)
-        this.rectWidth = this.sketch.width / modDimension
-        this.rectHeight = this.sketch.height / modDimension
+        this.rectWidth = this.sketch.width / Number(this.modDimension)
+        this.rectHeight = this.sketch.height / Number(this.modDimension)
         this.sketch.noStroke()
         this.i = this.seq.first
     }

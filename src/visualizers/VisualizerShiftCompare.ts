@@ -13,18 +13,20 @@ class VizShiftCompare
 {
     name = 'Shift Compare'
     private img: p5.Image = new p5.Image()
-    mod = {
-        value: 2n,
-        displayName: 'Modulo',
-        required: true,
-        description: 'Modulus used to compare sequence elements',
+    mod = 2n
+    params = {
+        mod: {
+            value: this.mod,
+            displayName: 'Modulo',
+            required: true,
+            description: 'Modulus used to compare sequence elements',
+        },
     }
-    params = {mod: this.mod}
 
     checkParameters() {
         const status = super.checkParameters()
 
-        if (this.mod.value <= 0n) {
+        if (this.params.mod.value <= 0n) {
             status.isValid = false
             status.errors.push('Modulo must be positive')
         }
@@ -38,7 +40,6 @@ class VizShiftCompare
             this.sketch.height
         )
         this.img.loadPixels() // Enables pixel-level editing.
-        console.log(this.sketch.height, this.sketch.width)
     }
 
     clip(a: number, min: number, max: number) {
@@ -54,9 +55,6 @@ class VizShiftCompare
     draw() {
         // Ensure mouse coordinates are sane.
         // Mouse coordinates look they're floats by default.
-        console.log('drawing')
-        console.log(this.img.pixels.length)
-
         const d = this.sketch.pixelDensity()
         const mx = this.clip(
             Math.round(this.sketch.mouseX),
@@ -69,13 +67,13 @@ class VizShiftCompare
             this.sketch.height
         )
         if (this.sketch.key == 'ArrowUp') {
-            this.mod.value += 1n
+            this.mod += 1n
             this.sketch.key = ''
-            console.log('UP PRESSED, NEW MOD: ' + this.mod.value.toString())
+            this.refreshParams()
         } else if (this.sketch.key == 'ArrowDown') {
-            this.mod.value -= 1n
+            this.mod -= 1n
             this.sketch.key = ''
-            console.log('DOWN PRESSED, NEW MOD: ' + this.mod.value.toString())
+            this.refreshParams()
         } else if (this.sketch.key == 'ArrowRight') {
             console.log(console.log('MX: ' + mx + ' MY: ' + my))
         }
@@ -95,8 +93,7 @@ class VizShiftCompare
                             = 4
                             * ((y * d + j) * this.sketch.width * d
                                 + (x * d + i))
-                        console.log('x,y: ' + xEl + ', ' + yEl)
-                        if (xEl % this.mod.value == yEl % this.mod.value) {
+                        if (xEl % this.mod == yEl % this.mod) {
                             this.img.pixels[index] = 255
                             this.img.pixels[index + 1] = 255
                             this.img.pixels[index + 2] = 255

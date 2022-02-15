@@ -1,18 +1,20 @@
 import {VisualizerInterface} from './VisualizerInterface'
-import {ValidationStatus} from '@/shared/ValidationStatus'
-import p5 from 'p5'
+import {Paramable} from '@/shared/Paramable'
 import {SequenceInterface} from '@/sequences/SequenceInterface'
 import {SequenceClassDefault} from '@/sequences/SequenceClassDefault'
+import p5 from 'p5'
 
-export class VisualizerDefault implements VisualizerInterface {
-    params = {}
+export class VisualizerDefault
+    extends Paramable
+    implements VisualizerInterface
+{
+    name = 'Default Visualizer'
+    description = 'Base class for implementing Visualizers'
     ready = false
     sketch: p5 = new p5(sketch => {
         return sketch
     })
     seq: SequenceInterface = new SequenceClassDefault(0)
-    public isValid = false
-
     /***
       Sets the sketch and the sequence to draw with
       This is also where you would generate any settings or
@@ -31,32 +33,9 @@ export class VisualizerDefault implements VisualizerInterface {
             )
         }
     }
-
-    /**
-     * All implementations based on this default delegate the checking of
-     * parameters to the checkParameters() method.
-     * That leaves the required validate() method to just call checkParameters
-     * and set the isValid property based on the result.
-     */
-    validate(): ValidationStatus {
-        const status = this.checkParameters()
-        this.isValid = status.isValid
-        return status
-    }
-
-    /**
-     * checkParameters should check that all parameters are well-formed,
-     * in-range, etc.
-     * @returns {ValidationStatus}
-     */
-    checkParameters(): ValidationStatus {
-        return new ValidationStatus(true)
-    }
-
     setup(): void {
         return
     }
-
     draw(): void {
         return
     }

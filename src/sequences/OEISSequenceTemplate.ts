@@ -16,26 +16,26 @@ export default class OEISSequenceTemplate extends SequenceCached {
     description = 'Factory for obtaining sequences from the OEIS'
     oeisSeq = true
     cacheBlock = 1000
-    oeisId = {value: '', displayName: 'OEIS ID', required: true}
-    userName = {value: '', displayName: 'Name', required: false}
-    numElements = {
-        value: BigInt(this.cacheBlock),
-        displayName: 'Number of Elements',
-        required: false,
-        description: 'How many elements to try to fetch from the database.',
-    }
-    modulo = {
-        value: 0n,
-        displayName: 'Modulo',
-        required: false,
-        description:
-            'If nonzero, take the residue of each element to this modulus.',
-    }
+    oeisId = ''
+    givenName = ''
+    modulo = 0n
     params = {
-        oeisId: this.oeisId,
-        userName: this.userName,
-        numElements: this.numElements,
-        modulo: this.modulo,
+        oeisId: {value: '', displayName: 'OEIS ID', required: true},
+        givenName: {value: '', displayName: 'Name', required: false},
+        cacheBlock: {
+            value: this.cacheBlock,
+            displayName: 'Number of Elements',
+            required: false,
+            description:
+                'How many elements to try to fetch from the database.',
+        },
+        modulo: {
+            value: this.modulo,
+            displayName: 'Modulo',
+            required: false,
+            description:
+                'If nonzero, take the residue of each element to this modulus.',
+        },
     }
 
     constructor(sequenceID: number) {
@@ -45,8 +45,7 @@ export default class OEISSequenceTemplate extends SequenceCached {
     async fillCache(): Promise<void> {
         const backendUrl
             = `http://${process.env.VUE_APP_API_URL}/api/`
-            + `get_oeis_values/${this.oeisId.value}/${this.cacheBlock}`
-        console.log('Fetching', backendUrl)
+            + `get_oeis_values/${this.oeisId}/${this.cacheBlock}`
         const resp = await axios.get(backendUrl)
         this.first = Infinity
         this.last = -Infinity
@@ -55,7 +54,7 @@ export default class OEISSequenceTemplate extends SequenceCached {
             if (index < this.first) this.first = index
             if (index > this.last) this.last = index
             this.cache[index] = BigInt(resp.data.values[k])
-            if (this.modulo.value) this.cache[index] %= this.modulo.value
+            if (this.modulo) this.cache[index] %= this.modulo
         }
         if (this.first === Infinity) {
             /* An empty sequence; perhaps a mistaken OEIS ID. Is there
@@ -72,22 +71,34 @@ export default class OEISSequenceTemplate extends SequenceCached {
         const status = super.checkParameters()
 
         if (
-            this.oeisId.value.length !== 7
-            || (this.oeisId.value[0] !== 'A' && this.oeisId.value[0] !== 'a')
+            this.params.oeisId.value.length !== 7
+            || (this.params.oeisId.value[0] !== 'A'
+                && this.params.oeisId.value[0] !== 'a')
         ) {
-            status.isValid = false
             status.errors.push('OEIS IDs are of form Annnnnn')
         }
+        if (typeof this.params.cacheBlock.value === 'number') {
+            if (
+                this.params.cacheBlock.value < 0
+                || !Number.isInteger(this.params.cacheBlock.value)
+            ) {
+                status.errors.push(
+                    'Number of elements must be a positive integer.'
+                )
+            }
+        }
+
+        if (status.errors.length > 0) status.isValid = false
 
         return status
     }
 
     initialize(): void {
-        this.name = this.userName.value || this.oeisId.value
-        if (this.numElements.value) {
-            this.cacheBlock = Number(this.numElements.value)
+        this.name = this.givenName || this.oeisId
+        if (this.cacheBlock < 1) {
+            this.cacheBlock = 1000
+            this.refreshParams()
         }
-        console.log('Producing', this.numElements.value, this.cacheBlock)
         super.initialize()
     }
 }

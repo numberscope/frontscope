@@ -1,36 +1,38 @@
 import {SequenceInterface} from '@/sequences/SequenceInterface'
-import {
-    VisualizerInterface,
-    VisualizerExportModule,
-} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import p5 from 'p5'
 import {VisualizerDefault} from './VisualizerDefault'
 
 const min = Math.min
 
-class VizDifferences
-    extends VisualizerDefault
-    implements VisualizerInterface
-{
+class VizDifferences extends VisualizerDefault {
     name = 'Differences'
-    n = {value: 20, displayName: 'Elements in top row', required: true}
-    levels = {
-        value: 5,
-        displayName: 'Number of rows',
-        required: false,
-        description:
-            'If blank, defaults to one fewer than the elements in the top row',
+
+    n = 20
+    levels = 5
+
+    params = {
+        n: {
+            value: this.n,
+            displayName: 'Elements in top row',
+            required: true,
+        },
+        levels: {
+            value: this.levels,
+            displayName: 'Number of rows',
+            required: false,
+            description: 'If blank, defaults to the length of top row',
+        },
     }
-    params = {n: this.n, levels: this.levels}
     first = 0
 
     checkParameters() {
         const status = super.checkParameters()
 
-        if (this.n.value <= this.levels.value) {
+        if (this.params.n.value < this.params.levels.value) {
             status.isValid = false
             status.errors.push(
-                'Elements in top row must be greater than number of rows'
+                'Number of rows cannot exceed length of first row'
             )
         }
 
@@ -39,13 +41,14 @@ class VizDifferences
 
     initialize(sketch: p5, seq: SequenceInterface): void {
         super.initialize(sketch, seq)
-        if (!this.levels.value) {
-            this.levels.value = this.n.value - 1
+        if (!this.levels) {
+            this.levels = this.n
+            this.refreshParams()
         }
-        if (seq.last - seq.first < this.levels.value) {
+        if (seq.last - seq.first + 1 < this.levels) {
             throw Error(
                 `Sequence ${seq.name} has too few entries `
-                    + `for ${this.levels.value} levels.`
+                    + `for ${this.levels} levels.`
             )
         }
     }
@@ -68,7 +71,7 @@ class VizDifferences
 
         const workingSequence = []
         const end = min(sequence.first + n - 1, sequence.last)
-        const levels = min(lvls, end - this.first)
+        const levels = min(lvls, end - this.first + 1)
 
         // workingSequence cannibalizes the first n elements
         for (let i = sequence.first; i <= end; i++) {
@@ -76,7 +79,6 @@ class VizDifferences
         }
 
         for (let i = 0; i < levels; i++) {
-            console.log(workingSequence)
             hue = ((i * 255) / 6) % 255
             myColor = this.sketch.color(hue, 150, 200)
             this.sketch.fill(myColor)
@@ -98,15 +100,9 @@ class VizDifferences
             firstX = firstX + (1 / 2) * xDelta
         }
     }
-    setup() {
-        console.log('Set up')
-    }
+
     draw() {
-        this.drawDifferences(
-            Number(this.n.value),
-            Number(this.levels.value),
-            this.seq
-        )
+        this.drawDifferences(this.n, this.levels, this.seq)
         this.sketch.noLoop()
     }
 }
@@ -114,5 +110,6 @@ class VizDifferences
 export const exportModule = new VisualizerExportModule(
     'Differences',
     VizDifferences,
-    ''
+    'Produces a table of differences between consecutive terms, '
+        + 'potentially iterated several times.'
 )
