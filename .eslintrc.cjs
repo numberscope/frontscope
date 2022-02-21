@@ -12,4 +12,8 @@ module.exports = {
     env: {
         'vue/setup-compiler-macros': true,
     },
+    rules: {
+        'max-len': ['error', {code: 80, comments: 80}],
+        'operator-linebreak': [2, 'before'],
+    },
 }
