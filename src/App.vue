@@ -1,16 +1,19 @@
 <script setup lang="ts">
-    import {RouterLink, RouterView} from 'vue-router'
-    import HelloWorld from '@/components/HelloWorld.vue'
+    import FooterComponent from './views/minor/FooterComponent.vue'
+    import NavBar from './views/minor/NavBar.vue'
+    import {RouterView} from 'vue-router'
 </script>
 
 <template>
-    <header>
-        <HelloWorld msg="Numberscope" />
-        <nav>
-            <RouterLink to="/">Home</RouterLink>
-            <RouterLink to="/about">About</RouterLink>
-        </nav>
-    </header>
-
-    <RouterView />
+    <main>
+        <NavBar />
+        <RouterView />
+    </main>
+    <FooterComponent />
 </template>
+
+<style>
+    main {
+        min-height: 100vh;
+    }
+</style>

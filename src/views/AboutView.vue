@@ -1,3 +1,38 @@
 <template>
-    <h1>About</h1>
+    <div class="container" id="aboutContent">
+        <h1>About Numberscope</h1>
+        <p>
+            Numberscope is a project in the University of Colorado Boulder's
+            Experimental Mathematics lab. It is led by
+            <a href="https://math.katestange.net/">Dr. Katherine E. Stange</a
+            >, a number theorist and professor at CU Boulder. Dr. Stange and
+            the rest of the Numberscope team are passionate about math
+            education and open source projects.
+        </p>
+        <h2>Contributors</h2>
+        <ul>
+            <li>Abdullatif Khalid Abduljaleel</li>
+            <li>Tobias Aldape</li>
+            <li>Khaled Allen</li>
+            <li>Isabel Anaya</li>
+            <li>Sebastian Bozlee</li>
+            <li>Brendan Heaney</li>
+            <li>Steven Hristopoulos</li>
+            <li>Ang Li</li>
+            <li>Theodore Lincke</li>
+            <li>Josiah Martinez</li>
+            <li>Willem Mirkovich</li>
+            <li>Liam Mulhall</li>
+            <li>Katherine Stange</li>
+            <li>Daniel H. Taylor</li>
+            <li>Glen Whitney</li>
+        </ul>
+    </div>
 </template>
+
+<style>
+    #aboutContent {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+</style>
