@@ -30,7 +30,8 @@ class SequenceFormula extends SequenceCached {
      */
     constructor(sequenceID: number) {
         super(sequenceID)
-        // tide us over until checkParameters():
+        // It is mandatory to initialize the `evaluator` property here,
+        // so just use a simple dummy formula until the user provides one.
         this.evaluator = math.compile(this.formula)
     }
 

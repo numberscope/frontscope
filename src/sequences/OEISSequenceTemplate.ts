@@ -46,14 +46,14 @@ export default class OEISSequenceTemplate extends SequenceCached {
         const backendUrl
             = `http://${process.env.VUE_APP_API_URL}/api/`
             + `get_oeis_values/${this.oeisId}/${this.cacheBlock}`
-        const resp = await axios.get(backendUrl)
+        const response = await axios.get(backendUrl)
         this.first = Infinity
         this.last = -Infinity
-        for (const k in resp.data.values) {
+        for (const k in response.data.values) {
             const index = Number(k)
             if (index < this.first) this.first = index
             if (index > this.last) this.last = index
-            this.cache[index] = BigInt(resp.data.values[k])
+            this.cache[index] = BigInt(response.data.values[k])
             if (this.modulo) this.cache[index] %= this.modulo
         }
         if (this.first === Infinity) {
