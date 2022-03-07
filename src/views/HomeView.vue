@@ -1,7 +1,3 @@
-<script setup lang="ts">
-    import {RouterLink} from 'vue-router'
-</script>
-
 <template>
     <div id="homeContent">
         <h1>Numberscope</h1>
@@ -14,6 +10,10 @@
         </RouterLink>
     </div>
 </template>
+
+<script setup lang="ts">
+    import {RouterLink} from 'vue-router'
+</script>
 
 <style>
     #homeContent {
