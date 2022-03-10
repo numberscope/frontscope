@@ -1,21 +1,73 @@
 import {ValidationStatus} from './ValidationStatus'
+/**
+ * The following collection of properties specifies how a given parameter
+ * should be displayed in the user interface (UI), and provides a location
+ * for communicating tentative values of the parameter back to the
+ * implementation.
+ */
 export interface ParamInterface {
-    /* value: any type. The UI will determine what sort of control to use
+    /* The value property is the primary one, and may be of any type.
+     * The UI will determine what sort of control to use
      * from the type of the value property of each param (a checkbox
-     * for boolean, textbox for string, etc.) (Note the actual type
-     * may be overriden by the forceType property below.)
-     * Simultaneously the initial contents of the `value` property gives
-     * the default for this parameter.
+     * for boolean, textbox for string, etc.)
+     * Note that some specialized controls can be selected, or the
+     * actual type may be overriden, by the forceType property below.
+     * Simultaneously, the initial contents of the `value` property gives
+     * the default for this parameter; and new tentative settings for this
+     * parameter from the UI will initially be stored in `value` for
+     * validation (before being copied into top-level properties of the
+     * implementing class).
      */
     value: unknown
-    forceType?: string // UI should treat as this type regardless of actual type
-    from?: {[key: string]: number | string} // enum from which value comes
-    displayName: string // the main label of the control for this param
-    required: boolean // whether the parameter must be specified
-    visibleDependency?: string // Only visible when this param has value:::
+    /* An optional property adjusting or refining the type detected from the
+     * initial setting of the `value` property. Typically, this is used to
+     * select a more specialized interface for the parameter, from one of the
+     * following conventional values of that `forceType` may be given:
+     * -  color: Uses a color picker in the UI, and sets the `value` as
+     *    the string `#RRGGBB` hexadecimal color specifier.
+     * One other possible use of `forceType` is to initialize the input field
+     * to a string that doesn't actually correspond to a valid value for that
+     * type. For example, currently the only way to initialize a `number`
+     * input field to be blank is to initially set the `value` property
+     * to the empty string (marked as type `string | number`) and also
+     * set `forceType` to `'number'`.
+     */
+    forceType?: string
+    /* If the value is an element of an Enum, typescript/Vue unfortunately
+     * cannot extract the list of all of the possible enumerated values
+     * (so that the UI can create a dropdown select box). So in that case,
+     * set the `from` property of this object to the Enum object from
+     * which the `value` comes.
+     */
+    from?: {[key: string]: number | string}
+    // The main label of the control for this param:
+    displayName: string
+    // whether the parameter must be specified
+    required: boolean
+    /* If you want the control for this parameter only to be visible when
+     * some other parameter has a specific value (because it is otherwise
+     * irrelevant), set this `visibleDependency` property to the name of
+     * the other parameter, and the following `visibleValue` property
+     * to the value that the `visibleDependency` parameter should have
+     * in order for this parameter to be visible.
+     * For example, if this parameter is 'backgroundColor' but it should
+     * only be displayed if the 'mode' parameter has the value 'color'
+     * (instead of, say, 'greyscale'), then on the 'backgroundColor' param,
+     * set `visibleDependency` to 'mode' and `visibleValue` to 'color'.
+     */
+    visibleDependency?: string
+    /* Note that the visibleValue property does not actually need to be
+     * declared in TypeScript, as it is only accessed via plain JavaScript
+     * in Vue.
+     */
     // visibleValue: any
-    description?: string // additional explanation text to display
-    indent?: number // if specified as 1 or 2, indent this one that many em
+
+    // Additional explanation text to display:
+    description?: string
+    /* If the `indent` property is present and has the value 1 or 2, the UI
+     * will indent the control for this parameter by that many em.
+     */
+    indent?: number
 }
 
 export interface ParamableInterface {
