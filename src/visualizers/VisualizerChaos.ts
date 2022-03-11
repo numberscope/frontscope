@@ -50,6 +50,7 @@ class VisualizerChaos extends VisualizerDefault {
     params = {
         corners: {
             value: this.corners,
+            forceType: 'integer',
             displayName: 'Number of corners',
             required: true,
             description:
@@ -67,6 +68,7 @@ class VisualizerChaos extends VisualizerDefault {
         },
         walkers: {
             value: this.walkers,
+            forceType: 'integer',
             displayName: 'Number of walkers',
             required: true,
             description:
@@ -82,6 +84,7 @@ class VisualizerChaos extends VisualizerDefault {
         },
         gradientLength: {
             value: this.gradientLength,
+            forceType: 'integer',
             displayName: 'Color cycling length',
             required: false,
             visibleDependency: 'colorStyle',
@@ -91,6 +94,7 @@ class VisualizerChaos extends VisualizerDefault {
         },
         highlightWalker: {
             value: this.highlightWalker,
+            forceType: 'integer',
             displayName: 'Number of walker to highlight',
             required: false,
             visibleDependency: 'colorStyle',
@@ -98,7 +102,7 @@ class VisualizerChaos extends VisualizerDefault {
         },
         first: {
             value: '' as string | number,
-            forceType: 'number',
+            forceType: 'integer',
             displayName: 'Starting index',
             required: false,
             description:
@@ -108,7 +112,7 @@ class VisualizerChaos extends VisualizerDefault {
         },
         last: {
             value: '' as string | number,
-            forceType: 'number',
+            forceType: 'integer',
             displayName: 'Ending index',
             required: false,
             description:
@@ -141,6 +145,7 @@ class VisualizerChaos extends VisualizerDefault {
         },
         pixelsPerFrame: {
             value: this.pixelsPerFrame,
+            forceType: 'integer',
             displayName: 'Dots to draw per frame',
             required: true,
             description: '(more = faster).',
@@ -174,7 +179,7 @@ class VisualizerChaos extends VisualizerDefault {
         const status = super.checkParameters()
 
         const p = this.params
-        if (!Number.isInteger(p.corners.value) || p.corners.value < 2) {
+        if (p.corners.value < 2) {
             status.errors.push(
                 'The number of corners must be an integer > 1.'
             )
@@ -184,43 +189,23 @@ class VisualizerChaos extends VisualizerDefault {
                 'The fraction must be between 0 and 1 inclusive.'
             )
         }
-        if (!Number.isInteger(p.walkers.value) || p.walkers.value < 1) {
+        if (p.walkers.value < 1) {
             status.errors.push(
-                'The number of walkers must be an integer > 0.'
+                'The number of walkers must be a positive integer.'
             )
         }
-        if (
-            !Number.isInteger(p.gradientLength.value)
-            || p.gradientLength.value <= 0
-        ) {
+        if (p.gradientLength.value < 1) {
             status.errors.push(
                 'The colour cycle length must be a positive integer.'
             )
         }
         if (
-            !Number.isInteger(p.highlightWalker.value)
-            || p.highlightWalker.value < 0
+            p.highlightWalker.value < 0
             || p.highlightWalker.value >= p.walkers.value
         ) {
             status.errors.push(
                 'The highlighted walker must be an integer '
                     + 'between 0 and one less than the number of walkers.'
-            )
-        }
-        if (
-            typeof p.first.value == 'number'
-            && !Number.isInteger(p.first.value)
-        ) {
-            status.errors.push(
-                'The starting index must be an integer (or blank).'
-            )
-        }
-        if (
-            typeof p.last.value == 'number'
-            && !Number.isInteger(p.last.value)
-        ) {
-            status.errors.push(
-                'The ending index must be an integer (or blank).'
             )
         }
         if (p.circSize.value < 0) {
@@ -229,10 +214,7 @@ class VisualizerChaos extends VisualizerDefault {
         if (p.alpha.value < 0 || p.alpha.value > 1) {
             status.errors.push('The alpha must be between 0 and 1 inclusive.')
         }
-        if (
-            !Number.isInteger(p.pixelsPerFrame.value)
-            || p.pixelsPerFrame.value < 0
-        ) {
+        if (p.pixelsPerFrame.value < 1) {
             status.errors.push(
                 'The dots per frame must be a positive integer.'
             )

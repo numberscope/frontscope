@@ -25,6 +25,8 @@ export interface ParamInterface {
      * following conventional values of that `forceType` may be given:
      * -  color: Uses a color picker in the UI, and sets the `value` as
      *    the string `#RRGGBB` hexadecimal color specifier.
+     * -  integer: Used for when the value is a `number` but the UI should
+     *    enforce that only an integer be stored in it.
      * One other possible use of `forceType` is to initialize the input field
      * to a string that doesn't actually correspond to a valid value for that
      * type. For example, currently the only way to initialize a `number`

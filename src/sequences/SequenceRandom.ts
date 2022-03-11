@@ -17,11 +17,13 @@ class SequenceRandom extends SequenceCached {
     params = {
         min: {
             value: this.min,
+            forceType: 'integer',
             displayName: 'Minimum value attainable',
             required: true,
         },
         max: {
             value: this.max,
+            forceType: 'integer',
             displayName: 'Maximum value attainable',
             required: true,
         },
@@ -38,17 +40,11 @@ class SequenceRandom extends SequenceCached {
     checkParameters() {
         const status = super.checkParameters()
 
-        if (!Number.isInteger(this.params.min.value)) {
-            status.errors.push('The min value must be an integer.')
-        }
-        if (!Number.isInteger(this.params.max.value)) {
-            status.errors.push('The max value must be an integer.')
-        }
         if (this.params.max.value < this.params.min.value) {
+            status.isValid = false
             status.errors.push('The max value cannot be less than the min.')
         }
 
-        if (status.errors.length > 0) status.isValid = false
         return status
     }
 

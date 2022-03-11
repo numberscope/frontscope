@@ -14,11 +14,13 @@ class VizDifferences extends VisualizerDefault {
     params = {
         n: {
             value: this.n,
+            forceType: 'integer',
             displayName: 'Elements in top row',
             required: true,
         },
         levels: {
             value: this.levels,
+            forceType: 'integer',
             displayName: 'Number of rows',
             required: false,
             description: 'If blank, defaults to the length of top row',

@@ -64,6 +64,12 @@
                                 v-on:input="setBigint($event, param)" />
                             <input
                                 class="form-control"
+                                v-if="paramType[name] === 'integer'"
+                                v-bind:id="name"
+                                v-bind:value="param.value"
+                                v-on:input="setInteger($event, param)" />
+                            <input
+                                class="form-control"
                                 v-if="paramType[name] === 'number'"
                                 v-bind:id="name"
                                 v-model.number="param.value" />
@@ -164,6 +170,18 @@
                 const target = e.target as HTMLInputElement
                 try {
                     p.value = BigInt(target.value)
+                } catch {
+                    // Continue with old value
+                }
+                // Give user a beat to see that they typed something before it
+                // is possibly deleted because not of correct format
+                setTimeout(() => this.$forceUpdate(), 500)
+            },
+            setInteger(e: Event, p: {value: number}) {
+                const target = e.target as HTMLInputElement
+                try {
+                    p.value = parseInt(target.value, 10)
+                    if (isNaN(p.value)) p.value = 0
                 } catch {
                     // Continue with old value
                 }

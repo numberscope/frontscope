@@ -37,6 +37,7 @@ class VisualizerTurtle
         },
         stepSize: {
             value: this.stepSize,
+            forceType: 'integer',
             displayName: 'Step Size',
             required: true,
         },
@@ -48,6 +49,7 @@ class VisualizerTurtle
         },
         strokeWeight: {
             value: this.strokeWeight,
+            forceType: 'integer',
             displayName: 'Stroke Width',
             required: true,
         },
