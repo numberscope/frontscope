@@ -56,6 +56,8 @@ export interface ParamInterface {
      * only be displayed if the 'mode' parameter has the value 'color'
      * (instead of, say, 'greyscale'), then on the 'backgroundColor' param,
      * set `visibleDependency` to 'mode' and `visibleValue` to 'color'.
+     * Note that parameters with a `visibleDependency` will be displayed
+     * with a distinctive appearance when they are visible.
      */
     visibleDependency?: string
     /* Note that the visibleValue property does not actually need to be
@@ -66,10 +68,6 @@ export interface ParamInterface {
 
     // Additional explanation text to display:
     description?: string
-    /* If the `indent` property is present and has the value 1 or 2, the UI
-     * will indent the control for this parameter by that many em.
-     */
-    indent?: number
 }
 
 export interface ParamableInterface {

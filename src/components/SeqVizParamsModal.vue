@@ -28,7 +28,7 @@
                     </div>
                     <div
                         v-for="(param, name) in visibleParams"
-                        v-bind:class="groupClass(param.indent)"
+                        v-bind:class="groupClass(param.visibleDependency)"
                         v-bind:key="name">
                         <div class="labeled-input">
                             <input
@@ -161,10 +161,10 @@
     export default Vue.extend({
         name: 'SeqVizParamsModal',
         methods: {
-            groupClass(indent: number): string {
+            groupClass(dependency: undefined | string): string {
                 let retval = 'form-group'
-                if (indent) {
-                    retval += ` indent${indent}`
+                if (dependency) {
+                    retval += ` dependent`
                 }
                 return retval
             },
@@ -351,11 +351,9 @@
         align-items: baseline;
     }
 
-    .indent1 {
+    .dependent {
         margin-left: 1.5em;
-    }
-    .indent2 {
-        margin-left: 3em;
+        background-color: ghostwhite;
     }
 
     .form-control {

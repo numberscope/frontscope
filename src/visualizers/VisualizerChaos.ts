@@ -131,7 +131,6 @@ class VisualizerChaos extends VisualizerDefault {
             required: true,
             visibleDependency: 'dummyDotControl',
             visibleValue: true,
-            indent: 1,
         },
         alpha: {
             value: this.alpha,
@@ -141,7 +140,6 @@ class VisualizerChaos extends VisualizerDefault {
                 'Alpha factor (from 0.0=transparent to 1.0=solid) of the dots.',
             visibleDependency: 'dummyDotControl',
             visibleValue: true,
-            indent: 1,
         },
         pixelsPerFrame: {
             value: this.pixelsPerFrame,
@@ -151,7 +149,6 @@ class VisualizerChaos extends VisualizerDefault {
             description: '(more = faster).',
             visibleDependency: 'dummyDotControl',
             visibleValue: true,
-            indent: 1,
         },
         showLabels: {
             value: this.showLabels,
