@@ -23,7 +23,7 @@ class VizDifferences extends VisualizerDefault {
             forceType: 'integer',
             displayName: 'Number of rows',
             required: false,
-            description: 'If blank, defaults to the length of top row',
+            description: 'If zero, defaults to the length of top row',
         },
     }
     first = 0

@@ -156,6 +156,8 @@
     import p5 from 'p5'
     import {ParamInterface} from '@/shared/Paramable.ts'
 
+    const reminder = '(Note: must be an integer.) '
+
     export default Vue.extend({
         name: 'SeqVizParamsModal',
         methods: {
@@ -166,18 +168,52 @@
                 }
                 return retval
             },
-            setBigint(e: Event, p: {value: BigInt}) {
+            integerReminder(
+                is: string,
+                was: string,
+                p: {description: string}
+            ) {
+                // differing by initial 0 is ok:
+                is = is.replace(/^0/, '')
+                was = was.replace(/^0/, '')
+                if (is === was) {
+                    // all is well, display immediately
+                    if (
+                        p.description
+                        && p.description.substring(0, reminder.length)
+                            === reminder
+                    ) {
+                        p.description = p.description.substring(
+                            reminder.length
+                        )
+                    }
+                    this.$forceUpdate()
+                } else {
+                    // Give user a beat to see that they typed something
+                    // before it is deleted because not of correct format
+                    setTimeout(() => {
+                        // Make sure there is a description
+                        if (!p.description) p.description = ''
+                        if (
+                            p.description.substring(0, reminder.length)
+                            !== reminder
+                        ) {
+                            p.description = reminder + p.description
+                        }
+                        this.$forceUpdate()
+                    }, 500)
+                }
+            },
+            setBigint(e: Event, p: {value: BigInt; description: string}) {
                 const target = e.target as HTMLInputElement
                 try {
                     p.value = BigInt(target.value)
                 } catch {
                     // Continue with old value
                 }
-                // Give user a beat to see that they typed something before it
-                // is possibly deleted because not of correct format
-                setTimeout(() => this.$forceUpdate(), 500)
+                this.integerReminder(p.value.toString(), target.value, p)
             },
-            setInteger(e: Event, p: {value: number}) {
+            setInteger(e: Event, p: {value: number; description: string}) {
                 const target = e.target as HTMLInputElement
                 try {
                     p.value = parseInt(target.value, 10)
@@ -185,9 +221,7 @@
                 } catch {
                     // Continue with old value
                 }
-                // Give user a beat to see that they typed something before it
-                // is possibly deleted because not of correct format
-                setTimeout(() => this.$forceUpdate(), 500)
+                this.integerReminder(p.value.toString(), target.value, p)
             },
             getVector(vec: p5.Vector) {
                 let retval = vec.x.toString()
