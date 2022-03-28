@@ -1,5 +1,5 @@
-import {SequenceParamsSchema, SequenceInterface} from './SequenceInterface'
-import {ValidationStatus} from '@/shared/ValidationStatus'
+import {SequenceInterface} from './SequenceInterface'
+import {Paramable} from '@/shared/Paramable'
 
 /**
  *
@@ -8,21 +8,19 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
  * Primarily intended to be used as a base class for your own sequences.
  *
  */
-export class SequenceClassDefault implements SequenceInterface {
+export class SequenceClassDefault
+    extends Paramable
+    implements SequenceInterface
+{
     sequenceID: number
     name = 'Base'
     description = 'A Base sequence class'
-    params: SequenceParamsSchema[] = [
-        new SequenceParamsSchema('name', '', 'displayName', false, '0'),
-    ]
     first = 0
     last = 0
     ready: boolean
-    isValid: boolean
-
-    protected settings: {[key: string]: string | number | boolean} = {}
 
     constructor(sequenceID: number) {
+        super()
         this.sequenceID = sequenceID
         this.ready = false
         this.isValid = false
@@ -59,25 +57,6 @@ export class SequenceClassDefault implements SequenceInterface {
             throw RangeError(`SequenceClassDefault: Index ${n} != 0 invalid`)
         }
         return 0n
-    }
-
-    /**
-     * Moves the parameter values to the sequence settings,
-     * and checks that the resulting settings are acceptable.
-     * Once this is completed, if it returns a true ValidationStatus,
-     * the sequence has enough information to begin generating sequence members.
-     */
-    validate(): ValidationStatus {
-        this.params.forEach(param => {
-            this.settings[param.name] = param.value
-        })
-
-        if (this.settings['name'] !== undefined) {
-            this.isValid = true
-            return new ValidationStatus(true)
-        }
-
-        return new ValidationStatus(true, ['name param is undefined.'])
     }
 }
 

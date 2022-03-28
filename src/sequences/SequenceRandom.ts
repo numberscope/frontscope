@@ -1,9 +1,4 @@
-import {ValidationStatus} from '@/shared/ValidationStatus'
-import {
-    SequenceParamsSchema,
-    SequenceExportModule,
-    SequenceExportKind,
-} from './SequenceInterface'
+import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {SequenceCached} from './SequenceCached'
 
 /**
@@ -17,25 +12,22 @@ class SequenceRandom extends SequenceCached {
     description =
         'A sequence of integers chosen indepenently uniformly '
         + 'from n to m inclusive.'
-    params: SequenceParamsSchema[] = [
-        new SequenceParamsSchema(
-            'min',
-            'number',
-            'Minimum value attainable',
-            true,
-            '0'
-        ),
-        new SequenceParamsSchema(
-            'max',
-            'number',
-            'Maximum value attainable',
-            true,
-            9
-        ),
-    ]
-
-    private minimum = 0
-    private maximum = 0
+    min = 0
+    max = 9
+    params = {
+        min: {
+            value: this.min,
+            forceType: 'integer',
+            displayName: 'Minimum value attainable',
+            required: true,
+        },
+        max: {
+            value: this.max,
+            forceType: 'integer',
+            displayName: 'Maximum value attainable',
+            required: true,
+        },
+    }
 
     /**
      *Creates an instance of SequenceRandom
@@ -45,52 +37,27 @@ class SequenceRandom extends SequenceCached {
         super(sequenceID)
     }
 
-    validate() {
-        this.settings['name'] = 'Random'
-        const superStatus = super.validate()
-        if (!superStatus.isValid) {
-            return superStatus
+    checkParameters() {
+        const status = super.checkParameters()
+
+        if (this.params.max.value < this.params.min.value) {
+            status.isValid = false
+            status.errors.push('The max value cannot be less than the min.')
         }
 
-        this.isValid = false
-        if (
-            this.settings['min'] == undefined
-            || this.settings['max'] == undefined
-        ) {
-            return new ValidationStatus(false, [
-                'The min or max parameter is missing.',
-            ])
-        }
-        this.minimum = Number(this.settings.min)
-        this.maximum = Number(this.settings.max)
+        return status
+    }
 
-        if (!Number.isInteger(this.minimum))
-            return new ValidationStatus(false, [
-                'The min value must be an integer.',
-            ])
-        if (!Number.isInteger(this.maximum))
-            return new ValidationStatus(false, [
-                'The max value must be an integer.',
-            ])
-
-        this.name
-            = 'Random integers '
-            + String(Number(this.settings.min))
-            + ' to '
-            + String(Number(this.settings.max))
-
-        this.isValid = true
-        return new ValidationStatus(true)
+    initialize() {
+        super.initialize()
+        this.name = `Random integers ${this.min} to ${this.max}`
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     calculate(n: number) {
         // create a random integer between min and max inclusive
         return BigInt(
-            Math.floor(
-                Math.random() * (this.maximum - this.minimum + 1)
-                    + this.minimum
-            )
+            Math.floor(Math.random() * (this.max - this.min + 1) + this.min)
         )
     }
 }

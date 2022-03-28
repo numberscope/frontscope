@@ -1,37 +1,11 @@
-import {ValidationStatus} from '@/shared/ValidationStatus'
-
-export class SequenceParamsSchema {
-    name: string
-    type: string
-    displayName: string
-    required: boolean
-    value: string | boolean | number
-
-    constructor(
-        name: string,
-        type: string,
-        displayName: string,
-        required: boolean,
-        defaultValue?: string | boolean | number
-    ) {
-        this.name = name || ''
-        this.type = type || ''
-        this.displayName = displayName || ''
-        this.required = required || false
-        this.value = defaultValue || ''
-    }
-}
-
+import {ParamableInterface} from '@/shared/Paramable'
 /**
  * Interface for Sequence classes.
  * Every sequence class must implement these properties and functions
  * to be compatible with Numberscope.
  */
-export interface SequenceInterface {
+export interface SequenceInterface extends ParamableInterface {
     sequenceID: number
-    name: string
-    description: string
-    params: SequenceParamsSchema[]
     /**
      * first gives the lower limit for valid indices into the Sequence.
      * In other words, an integer number n is a valid index only if
@@ -47,18 +21,12 @@ export interface SequenceInterface {
      * all indices not less than first are valid.
      */
     readonly last: number
-
     /**
-     * Initialize is called after params are set. It allows us to wait
-     * until all the settings are selected by the user before we actually
-     * build the cache.
-     * Generally this is where you will set the generator function, presuming
-     * it relies on the initialization of the settings from sequenceParams.
-     * @param {SequenceParamsSchema} params
-     *     the parameters schema settings selected by the user
+     * Initialize is called after validation. It allows us to wait
+     * until all the parameters are appropriate before we actually
+     * set up the sequence for computation.
      */
     initialize(): void
-
     /**
      * getElement is what clients of SequenceInterface call to get
      * the actual entries in the sequence. It retrieves the nth element
@@ -69,8 +37,6 @@ export interface SequenceInterface {
      * @memberof SequenceGenerator
      */
     getElement(n: number): bigint
-
-    validate(): ValidationStatus
 }
 
 export interface SequenceConstructor {

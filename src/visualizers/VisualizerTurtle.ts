@@ -2,75 +2,9 @@ import p5 from 'p5'
 import {VisualizerDefault} from './VisualizerDefault'
 import {
     VisualizerInterface,
-    VisualizerParamsSchema,
     VisualizerExportModule,
 } from './VisualizerInterface'
-import {ParamType} from '@/shared/ParamType'
-import {ValidationStatus} from '@/shared/ValidationStatus'
 import {SequenceInterface} from '@/sequences/SequenceInterface'
-
-const schemaTurtle = [
-    new VisualizerParamsSchema(
-        'domain',
-        ParamType.text,
-        'Sequence Domain',
-        true,
-        '0,1,2,3,4',
-        'Comma seperated numbers'
-    ),
-    new VisualizerParamsSchema(
-        'range',
-        ParamType.text,
-        'Angles',
-        true,
-        '30,45,60,90,120',
-        'Comma seperated numbers'
-    ),
-    new VisualizerParamsSchema(
-        'stepSize',
-        ParamType.number,
-        'Step Size',
-        true,
-        20
-    ),
-    new VisualizerParamsSchema(
-        'strokeWeight',
-        ParamType.number,
-        'Stroke Width',
-        true,
-        5
-    ),
-    new VisualizerParamsSchema(
-        'startingX',
-        ParamType.number,
-        'X start',
-        false,
-        0,
-        'Where to start drawing'
-    ),
-    new VisualizerParamsSchema(
-        'startingY',
-        ParamType.number,
-        'Y start',
-        false,
-        0,
-        'Where to start drawing'
-    ),
-    new VisualizerParamsSchema(
-        'bgColor',
-        ParamType.text,
-        'Background Color',
-        false,
-        '#666666'
-    ),
-    new VisualizerParamsSchema(
-        'strokeColor',
-        ParamType.text,
-        'Stroke Color',
-        false,
-        '#ff0000'
-    ),
-]
 
 // Turtle needs work
 // Throwing the same error on previous numberscope website
@@ -79,18 +13,64 @@ class VisualizerTurtle
     implements VisualizerInterface
 {
     name = 'Turtle'
-    private rotMap: {[key: number]: number} = {}
-    private domain: number[] = []
-    private range: number[] = []
+    private rotMap = new Map<string, number>()
+    domain = [0n, 1n, 2n, 3n, 4n]
+    range = [30, 45, 60, 90, 120]
+    stepSize = 20
+    start = new p5.Vector()
+    strokeWeight = 5
+    bgColor = '#666666'
+    strokeColor = '#ff0000'
+
+    params = {
+        domain: {
+            value: this.domain,
+            displayName: 'Sequence Domain',
+            required: true,
+            description: '(comma-separated list of values)',
+        },
+        range: {
+            value: this.range,
+            displayName: 'Angles',
+            required: true,
+            description: '(comma-separated list of values in degrees)',
+        },
+        stepSize: {
+            value: this.stepSize,
+            forceType: 'integer',
+            displayName: 'Step Size',
+            required: true,
+        },
+        start: {
+            value: this.start,
+            displayName: 'Start',
+            required: true,
+            description: 'coordinates of the point where drawing will start',
+        },
+        strokeWeight: {
+            value: this.strokeWeight,
+            forceType: 'integer',
+            displayName: 'Stroke Width',
+            required: true,
+        },
+        bgColor: {
+            value: this.bgColor,
+            forceType: 'color',
+            displayName: 'Background Color',
+            required: false,
+        },
+        strokeColor: {
+            value: this.strokeColor,
+            forceType: 'color',
+            displayName: 'Stroke Color',
+            required: false,
+        },
+    }
+
     private currentIndex = 0
     private orientation = 0
     private X = 0
     private Y = 0
-
-    constructor() {
-        super()
-        this.params = schemaTurtle
-    }
 
     initialize(sketch: p5, seq: SequenceInterface) {
         this.sketch = sketch
@@ -101,54 +81,55 @@ class VisualizerTurtle
         this.X = 0
         this.Y = 0
 
-        console.log('initializing turtle')
         for (let i = 0; i < this.domain.length; i++) {
-            this.rotMap[this.domain[i]] = (Math.PI / 180) * this.range[i]
+            this.rotMap.set(
+                this.domain[i].toString(),
+                (Math.PI / 180) * this.range[i]
+            )
         }
 
         this.ready = true
     }
 
-    validate() {
-        this.assignParams()
+    checkParameters() {
+        const status = super.checkParameters()
 
-        const domain = String(this.settings.domain).split(',')
-        const range = String(this.settings.range).split(',')
-        this.domain = domain.map(n => Number(n))
-        this.range = range.map(n => Number(n))
-
-        const status = new ValidationStatus(true)
-        if (this.domain.length != this.range.length) {
+        if (
+            this.params.domain.value.length != this.params.range.value.length
+        ) {
             status.isValid = false
             status.errors.push(
                 'Domain and range must have the same number of entries'
             )
         }
-        this.isValid = true
+
         return status
     }
 
     setup() {
         this.X = this.sketch.width / 2
         this.Y = this.sketch.height / 2
-        this.sketch.background(String(this.settings.bgColor))
-        this.sketch.stroke(String(this.settings.strokeColor))
-        this.sketch.strokeWeight(Number(this.settings.strokeWidth))
+        this.sketch.background(this.bgColor)
+        this.sketch.stroke(this.strokeColor)
+        this.sketch.strokeWeight(this.strokeWeight)
         this.sketch.frameRate(30)
     }
 
     draw() {
-        const currElement = Number(this.seq.getElement(this.currentIndex++))
-        const angle = this.rotMap[currElement]
+        const currElement = this.seq.getElement(this.currentIndex++)
+        const angle = this.rotMap.get(currElement.toString())
 
-        if (angle == undefined) this.sketch.noLoop()
+        if (angle == undefined) {
+            this.sketch.noLoop()
+            return
+        }
 
         const oldX = this.X
         const oldY = this.Y
 
         this.orientation = this.orientation + angle
-        this.X += Number(this.settings.stepSize) * Math.cos(this.orientation)
-        this.Y += Number(this.settings.stepSize) * Math.sin(this.orientation)
+        this.X += this.stepSize * Math.cos(this.orientation)
+        this.Y += this.stepSize * Math.sin(this.orientation)
 
         this.sketch.line(oldX, oldY, this.X, this.Y)
         if (this.currentIndex > this.seq.last) this.sketch.noLoop()

@@ -1,65 +1,56 @@
 import {SequenceInterface} from '@/sequences/SequenceInterface'
-import {
-    VisualizerInterface,
-    VisualizerParamsSchema,
-    VisualizerSettings,
-    VisualizerExportModule,
-} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import p5 from 'p5'
-import {ParamType} from '@/shared/ParamType'
 import {VisualizerDefault} from './VisualizerDefault'
-import {ValidationStatus} from '@/shared/ValidationStatus'
 
 const min = Math.min
 
-class VizDifferences
-    extends VisualizerDefault
-    implements VisualizerInterface
-{
+class VizDifferences extends VisualizerDefault {
     name = 'Differences'
-    params: VisualizerParamsSchema[] = []
-    settings: VisualizerSettings = {}
+
+    n = 20
+    levels = 5
+
+    params = {
+        n: {
+            value: this.n,
+            forceType: 'integer',
+            displayName: 'Elements in top row',
+            required: true,
+        },
+        levels: {
+            value: this.levels,
+            forceType: 'integer',
+            displayName: 'Number of rows',
+            required: false,
+            description: 'If zero, defaults to the length of top row',
+        },
+    }
     first = 0
 
-    constructor() {
-        super()
-        const numberTermsTopParam = new VisualizerParamsSchema()
-        numberTermsTopParam.name = 'n'
-        numberTermsTopParam.displayName = 'Number of terms of top sequence'
-        numberTermsTopParam.type = ParamType.number
-        numberTermsTopParam.value = 20
-        numberTermsTopParam.required = true
-        numberTermsTopParam.description
-            = 'The number of terms that appear in the top sequence. '
-            + 'This value must be bigger than the number of rows.'
+    checkParameters() {
+        const status = super.checkParameters()
 
-        const levelsParam = new VisualizerParamsSchema()
-        levelsParam.name = 'levels'
-        levelsParam.displayName = 'Number of layers in the pyramid/trapezoid'
-        levelsParam.value = 5
-        levelsParam.type = ParamType.number
-        levelsParam.description = 'The number of rows to display.'
+        if (this.params.n.value < this.params.levels.value) {
+            status.isValid = false
+            status.errors.push(
+                'Number of rows cannot exceed length of first row'
+            )
+        }
 
-        this.params.push(numberTermsTopParam, levelsParam)
-    }
-
-    validate() {
-        this.assignParams()
-        if (this.settings.n <= this.settings.levels)
-            return new ValidationStatus(false, [
-                'n must be greater than levels',
-            ])
-
-        this.isValid = true
-        return new ValidationStatus(true)
+        return status
     }
 
     initialize(sketch: p5, seq: SequenceInterface): void {
         super.initialize(sketch, seq)
-        if (seq.last - seq.first < this.settings.levels) {
+        if (!this.levels) {
+            this.levels = this.n
+            this.refreshParams()
+        }
+        if (seq.last - seq.first + 1 < this.levels) {
             throw Error(
                 `Sequence ${seq.name} has too few entries `
-                    + `for ${this.settings.levels} levels.`
+                    + `for ${this.levels} levels.`
             )
         }
     }
@@ -82,7 +73,7 @@ class VizDifferences
 
         const workingSequence = []
         const end = min(sequence.first + n - 1, sequence.last)
-        const levels = min(lvls, end - this.first)
+        const levels = min(lvls, end - this.first + 1)
 
         // workingSequence cannibalizes the first n elements
         for (let i = sequence.first; i <= end; i++) {
@@ -90,7 +81,6 @@ class VizDifferences
         }
 
         for (let i = 0; i < levels; i++) {
-            console.log(workingSequence)
             hue = ((i * 255) / 6) % 255
             myColor = this.sketch.color(hue, 150, 200)
             this.sketch.fill(myColor)
@@ -112,15 +102,9 @@ class VizDifferences
             firstX = firstX + (1 / 2) * xDelta
         }
     }
-    setup() {
-        console.log('Set up')
-    }
+
     draw() {
-        this.drawDifferences(
-            Number(this.settings.n),
-            Number(this.settings.levels),
-            this.seq
-        )
+        this.drawDifferences(this.n, this.levels, this.seq)
         this.sketch.noLoop()
     }
 }
@@ -128,5 +112,6 @@ class VizDifferences
 export const exportModule = new VisualizerExportModule(
     'Differences',
     VizDifferences,
-    ''
+    'Produces a table of differences between consecutive terms, '
+        + 'potentially iterated several times.'
 )
