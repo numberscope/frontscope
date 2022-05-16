@@ -30,7 +30,7 @@
 <script lang="ts">
     import SeqSelector from './SeqSelector.vue'
     import SeqGetter from './SeqGetter.vue'
-    import SeqVizParamsModal from './SeqVizParamsModel.vue'
+    import SeqVizParamsModal from './SeqVizParamsModal.vue'
     import {
         SequenceInterface,
         SequenceConstructor,
