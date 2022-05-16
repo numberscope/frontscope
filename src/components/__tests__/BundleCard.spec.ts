@@ -25,5 +25,4 @@ describe('BundleCard', () => {
     //     wrapper.findAll('a')[1].trigger('click')
     //     expect(wrapper.emitted()).toHaveProperty('removeBundle')
     // })
-    console.log('add a test if/when possible')
 })

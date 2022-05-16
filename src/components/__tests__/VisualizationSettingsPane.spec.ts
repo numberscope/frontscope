@@ -10,5 +10,4 @@ describe('VisualizationSettingsPane', () => {
 
     This file is a placeholder.
     */
-    console.log('add a test if/when possible')
 })
