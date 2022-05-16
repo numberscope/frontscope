@@ -1,10 +1,10 @@
 import {describe} from 'vitest'
 // import {mount} from '@vue/test-utils'
-// import CanvasArea from '../CanvasArea.vue'
+// import SeqVizParamsModel from '../SeqVizParamsModel.vue'
 
-describe('CanvasArea', () => {
+describe('SeqVizParamsModel', () => {
     /*
-    If we try to import CanvasArea, we get an error when we do
+    If we try to import SeqVizParamsModel, we get an error when we do
     `npm run test:unit`:
 
     TypeError: document.hasFocus is not a function
