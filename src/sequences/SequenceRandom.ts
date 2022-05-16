@@ -11,7 +11,7 @@ class SequenceRandom extends SequenceCached {
     name = 'Random Integers in Range'
     // prettier-ignore
     description
-        = 'A sequence of integers chosen indepenently uniformly '
+        = 'A sequence of integers chosen independently uniformly '
         + 'from n to m inclusive.'
     min = 0
     max = 9
