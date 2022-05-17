@@ -6,7 +6,7 @@
                 <p class="card-text">
                     This is a bundle of {{ seq.name + ' + ' + viz.name }}.
                 </p>
-                <div :id="this.uid"></div>
+                <div :id="uid"></div>
                 <a
                     v-on:click="$emit('drawBundle', {seq: seq, viz: viz})"
                     href="#"
@@ -26,8 +26,19 @@
 
 <script lang="ts">
     import p5 from 'p5'
+    // we need to make our own unique id's
+    // see https://github.com/vuejs/vue/issues/5886#issuecomment-308607131
+    let uid = 0
     export default {
         name: 'BundleCard',
+        // we need to make our own unique id's
+        // see https://github.com/vuejs/vue/issues/5886#issuecomment-308607131
+        data() {
+            uid += 1
+            return {
+                uid: `bundle-card-${uid}`,
+            }
+        },
         mounted() {
             const seq = this.seq
             seq.initialize()
@@ -46,7 +57,7 @@
                         sketch.noLoop()
                     }
                 }
-            }, document.getElementById(this.uid) as HTMLElement)
+            }, document.getElementById(`bundle-card-${uid}`) as HTMLElement)
             thumb.setup()
             thumb.draw()
         },
