@@ -6,8 +6,7 @@
                 <p class="card-text">
                     This is a bundle of {{ seq.name + ' + ' + viz.name }}.
                 </p>
-                <!-- this.uid comes from vue-unique-id package -->
-                <div :id="this.uid"></div>
+                <div :id="cid"></div>
                 <a
                     v-on:click="$emit('drawBundle', {seq: seq, viz: viz})"
                     href="#"
@@ -27,8 +26,17 @@
 
 <script lang="ts">
     import p5 from 'p5'
+    // we need a unique id for each canvas
+    // see https://github.com/vuejs/vue/issues/5886#issuecomment-308647738
+    let cid = 0
     export default {
         name: 'BundleCard',
+        // we need a unique id for each canvas
+        // see https://github.com/vuejs/vue/issues/5886#issuecomment-308647738
+        beforeCreate() {
+            this.cid = cid.toString()
+            cid += 1
+        },
         mounted() {
             const seq = this.seq
             seq.initialize()
@@ -47,8 +55,7 @@
                         sketch.noLoop()
                     }
                 }
-                // this.uid comes from vue-unique-id package
-            }, document.getElementById(this.uid) as HTMLElement)
+            }, document.getElementById(this.cid) as HTMLElement)
             thumb.setup()
             thumb.draw()
         },
