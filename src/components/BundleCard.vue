@@ -6,7 +6,7 @@
                 <p class="card-text">
                     This is a bundle of {{ seq.name + ' + ' + viz.name }}.
                 </p>
-                <div :id="uid"></div>
+                <div :id="this.uid"></div>
                 <a
                     v-on:click="$emit('drawBundle', {seq: seq, viz: viz})"
                     href="#"
@@ -57,7 +57,7 @@
                         sketch.noLoop()
                     }
                 }
-            }, document.getElementById(`bundle-card-${uid}`) as HTMLElement)
+            }, document.getElementById(this.uid) as HTMLElement)
             thumb.setup()
             thumb.draw()
         },
