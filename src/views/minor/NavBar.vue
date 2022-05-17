@@ -1,18 +1,17 @@
 <script setup lang="ts">
     import {RouterLink} from 'vue-router'
+    import LogoWithMicroscope from '../../assets/img/LogoWithMicroscope.png'
 </script>
 
 <template>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
             <div class="container-fluid">
                 <RouterLink class="navbar-brand" to="/">
                     <img
-                        src="../../public/microscope-32x32.png"
-                        alt="A microscope icon."
-                        width="32"
-                        height="32" />
-                    Numberscope
+                        :src="LogoWithMicroscope"
+                        id="logoWithMicroscope"
+                        alt="A microscope icon." />
                 </RouterLink>
                 <button
                     class="navbar-toggler"
@@ -49,3 +48,13 @@
         </nav>
     </header>
 </template>
+
+<style>
+    .navbar-custom {
+        background-color: #809fff;
+        color: white;
+    }
+    #logoWithMicroscope {
+        width: 10em;
+    }
+</style>

@@ -15,28 +15,16 @@
 <style>
     main {
         min-height: 100vh;
-    }
-    #app {
-        font-family: Avenir, Helvetica, Arial, sans-serif;
+        font-family: Arial, Helvetica, sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         color: #2c3e50;
     }
-    #nav {
+    nav {
         padding: 30px;
     }
-    #nav a {
+    nav a {
         font-weight: bold;
         color: #2c3e50;
-    }
-    #nav a.router-link-exact-active {
-        color: #42b983;
-    }
-    .pagecontainer {
-        position: relative;
-        min-height: 100vh;
-    }
-    #containerwrap {
-        padding-bottom: 100px; /* Footer height */
     }
 </style>

@@ -22,7 +22,8 @@
 
 <style>
     footer {
-        background-color: lightgrey;
+        background-color: #2b3166;
+        color: white;
         padding-top: 16px;
         padding-bottom: 16px;
     }
