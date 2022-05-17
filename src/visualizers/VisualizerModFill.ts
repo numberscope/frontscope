@@ -1,9 +1,7 @@
-import {SequenceInterface} from '../sequences/SequenceInterface'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {VisualizerDefault} from '../visualizers/VisualizerDefault'
-import {
-    VisualizerInterface,
-    VisualizerExportModule,
-} from '@/visualizers/VisualizerInterface'
+import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 
 class VizModFill extends VisualizerDefault implements VisualizerInterface {
     name = 'Mod Fill'

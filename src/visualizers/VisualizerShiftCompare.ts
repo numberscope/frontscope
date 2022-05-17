@@ -1,9 +1,7 @@
 import p5 from 'p5'
 import {VisualizerDefault} from './VisualizerDefault'
-import {
-    VisualizerInterface,
-    VisualizerExportModule,
-} from './VisualizerInterface'
+import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 
 // CAUTION: This is unstable with some sequences
 // Using it may crash your browser

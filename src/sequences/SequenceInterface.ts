@@ -1,4 +1,4 @@
-import {ParamableInterface} from '../shared/Paramable'
+import type {ParamableInterface} from '../shared/Paramable'
 /**
  * Interface for Sequence classes.
  * Every sequence class must implement these properties and functions

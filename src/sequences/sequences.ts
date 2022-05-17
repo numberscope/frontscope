@@ -1,16 +1,19 @@
-import {SequenceExportModule} from './SequenceInterface'
-const seqFiles = require.context('.', false, /\.ts$/)
+import type {SequenceExportModule} from './SequenceInterface'
 
+// import each module in the current directory with a .ts file extension
+const seqFiles = import.meta.globEager('./*.ts')
+
+// object we will export
 const seqMODULES: {[key: string]: SequenceExportModule} = {}
 
-const seqKeyArray: string[] = []
-seqFiles.keys().forEach(key => {
-    if (key === './index.js' || key === './modules.js') return
-    const exprt = seqFiles(key)
-    if (exprt.exportModule) {
-        seqKeyArray.push(key)
-        seqMODULES[key.replace(/(\.\/|\.ts)/g, '')] = exprt.exportModule
+// for each file in the list of visualizer files...
+for (const file in seqFiles) {
+    if (seqFiles[file].exportModule) {
+        // add the export module to our object
+        // prettier-ignore
+        seqMODULES[file.replace(/(\.\/|\.ts)/g, '')]
+        = seqFiles[file].exportModule
     }
-})
+}
 
 export default seqMODULES

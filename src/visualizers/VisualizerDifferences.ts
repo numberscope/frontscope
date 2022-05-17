@@ -1,6 +1,6 @@
-import {SequenceInterface} from '../sequences/SequenceInterface'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import p5 from 'p5'
+import type p5 from 'p5'
 import {VisualizerDefault} from './VisualizerDefault'
 
 const min = Math.min
