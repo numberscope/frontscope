@@ -24,9 +24,6 @@
     footer {
         background-color: #3f2d81;
         color: white;
-        padding-top: 16px;
-        padding-bottom: 16px;
-        padding-left: 4px;
-        padding-right: 4px;
+        padding: 16px 4px;
     }
 </style>
