@@ -11,8 +11,9 @@
                 >.
             </p>
             <p>
-                By using this website, you agree any images you create are
-                released into the public domain according to
+                By using this website, you agree that any images or media you
+                create using the tools on this website are released by you
+                into the public domain according to
                 <a
                     class="footer-link"
                     href="https://creativecommons.org/publicdomain/zero/1.0/"
