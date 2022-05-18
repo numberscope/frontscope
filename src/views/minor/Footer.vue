@@ -12,7 +12,12 @@
             </p>
             <p>
                 By using this website, you agree any images you create are
-                released into the public domain.
+                released into the public domain according to
+                <a
+                    class="footer-link"
+                    href="https://creativecommons.org/publicdomain/zero/1.0/"
+                    >CC0 1.0</a
+                >.
             </p>
         </div>
     </footer>
@@ -22,7 +27,7 @@
     const currentYear = new Date().getFullYear()
     // prettier-ignore
     const copyrightText
-    = `Copyright © 2020-${currentYear} Regents of University of Colorado`
+    = `Copyright © 2020-${currentYear} Regents of the University of Colorado`
     export default {
         /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
         data() {

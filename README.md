@@ -1,6 +1,6 @@
 # Numberscope Frontend
 
-Copyright 2020-2022 Regents of University of Colorado.
+Copyright 2020-2022 Regents of the University of Colorado.
 
 This project is licensed under the
 [MIT License](https://opensource.org/licenses/MIT). See the text of the MIT
