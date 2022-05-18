@@ -5,9 +5,12 @@
             Numberscope is a project in the University of Colorado Boulder's
             Experimental Mathematics lab. It is led by
             <a href="https://math.katestange.net/">Dr. Katherine E. Stange</a
-            >, a number theorist and professor at CU Boulder. Dr. Stange and
-            the rest of the Numberscope team are passionate about math
-            education and open source projects.
+            >, a number theorist and professor at CU Boulder and
+            <a href="http://studioinfinity.org/">Dr. Glen Whitney</a>, founder
+            of the National Museum of Mathematics in New York City and
+            passionate promoter of math engagement and learning. Drs. Stange
+            and Whitney and the rest of the Numberscope team are passionate
+            about math education and open source projects.
         </p>
         <h2>Contributors</h2>
         <ul>
@@ -25,7 +28,6 @@
             <li>Liam Mulhall</li>
             <li>Katherine Stange</li>
             <li>Daniel H. Taylor</li>
-            <li>Glen Whitney</li>
         </ul>
     </div>
 </template>
