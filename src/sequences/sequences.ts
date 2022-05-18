@@ -16,6 +16,4 @@ for (const file in seqFiles) {
     }
 }
 
-console.log(JSON.stringify(seqMODULES, null, 2))
-
 export default seqMODULES
