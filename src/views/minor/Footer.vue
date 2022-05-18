@@ -1,20 +1,33 @@
 <template>
     <footer class="page-footer font-small">
-        <div class="footer-copyright text-center py-3" style="color: white">
+        <div class="text-center py-3" style="color: white">
             {{ copyright }}
+            <p>
+                Licensed under the
+                <a
+                    class="footer-link"
+                    href="https://opensource.org/licenses/MIT">
+                    MIT License</a
+                >.
+            </p>
+            <p>
+                By using this website, you agree any images you create are
+                released into the public domain.
+            </p>
         </div>
     </footer>
 </template>
 
 <script>
     const currentYear = new Date().getFullYear()
+    // prettier-ignore
     const copyrightText
-        = `Copyright © 2020-${currentYear} University of Colorado Boulder`
+    = `Copyright © 2020-${currentYear} Regents of University of Colorado`
     export default {
         /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
         data() {
             return {
-                copyright: copyrightText
+                copyright: copyrightText,
             }
         },
         name: 'FooterComponent',
@@ -27,6 +40,11 @@
         position: absolute;
         bottom: 0;
         width: 100%;
-        height: 100px;
+    }
+    .footer-link {
+        color: orange;
+    }
+    .footer-link:hover {
+        color: white;
     }
 </style>
