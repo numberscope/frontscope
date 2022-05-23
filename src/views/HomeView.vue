@@ -2,8 +2,7 @@
     <div id="homeContent">
         <img :src="background4" id="background4" />
         <p id="numberscopeDescription">
-            Numberscope is a tool for creating beautiful visualizations of
-            integer sequences.
+            The Online Tool for Visualizing Integer Sequences
         </p>
         <RouterLink class="btn btn-primary" to="/scope">
             Go to the 'Scope
