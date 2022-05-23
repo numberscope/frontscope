@@ -26,7 +26,6 @@
             <li>Josiah Martinez</li>
             <li>Willem Mirkovich</li>
             <li>Liam Mulhall</li>
-            <li>Katherine Stange</li>
             <li>Daniel H. Taylor</li>
         </ul>
     </div>
