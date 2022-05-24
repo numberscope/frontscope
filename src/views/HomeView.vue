@@ -7,6 +7,14 @@
         <RouterLink class="btn btn-primary" to="/scope">
             Go to the 'Scope
         </RouterLink>
+        <p class="mt-4">
+            By using this website, you agree that any images or media you
+            create using the tools on this website are released by you into
+            the public domain according to
+            <a href="https://creativecommons.org/publicdomain/zero/1.0/"
+                >CC0 1.0</a
+            >.
+        </p>
         <div>
             <div class="row" id="visualizerInfo">
                 <div class="col">
