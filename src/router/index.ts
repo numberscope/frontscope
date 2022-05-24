@@ -3,6 +3,7 @@ import HelpView from '../views/HelpView.vue'
 import HomeView from '../views/HomeView.vue'
 import ScopeView from '../views/ScopeView.vue'
 import {createRouter, createWebHistory} from 'vue-router'
+import AcknowledgementsView from '../views/AcknowledgementsView.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +27,11 @@ const router = createRouter({
             path: '/help',
             name: 'help',
             component: HelpView,
+        },
+        {
+            path: '/acknowledgements',
+            name: 'acknowledgments',
+            component: AcknowledgementsView,
         },
     ],
 })

@@ -1,3 +1,7 @@
+<script setup lang="ts">
+    import {RouterLink} from 'vue-router'
+</script>
+
 <template>
     <footer class="text-center">
         <p>{{ copyright }}</p>
@@ -16,6 +20,13 @@
                 href="https://creativecommons.org/publicdomain/zero/1.0/"
                 >CC0 1.0</a
             >.
+        </p>
+        <p>
+            Thank you very much to
+            <!-- prettier-ignore -->
+            <RouterLink class="footer-link" to="/acknowledgements">
+                those who made Numberscope possible</RouterLink>
+            over the years!
         </p>
     </footer>
 </template>
