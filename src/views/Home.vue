@@ -1,22 +1,17 @@
 <template>
     <div>
-        <div class="container widecontainer" id="home">
-            <img
-                class="mx-auto"
-                src="@/assets/imgs/homepage/backgroundx.jpg"
-                width="100%" />
-            <div class="centered carousel-caption">
-                <h1>
-                    <span style="color: #f75c03">
-                        <b>NUMBERSCOPE</b>
-                    </span>
+        <div class="container splashcontainer" id="home">
+            <div class="maintitle">
+                <h1 style="color: #f75c03">
+                    <b>NUMBERSCOPE</b>
                     <br />
-                    <span width="2500">
-                        <font size="4" color="#f75c03">
-                            THE ONLINE TOOL FOR VISUALIZING INTEGER SEQUENCES
-                        </font>
+                    <!-- Vue does not respecct &nbsp; so must use a -->
+                    <!-- JavaScript escape below:  :-(  -->
+                    <span style="font-size: 50%; color: darkgreen">
+                        THE ONLINE TOOL FOR VISUALIZING INTEGER{{
+                            '\xa0'
+                        }}SEQUENCES
                     </span>
-                    <br />
                 </h1>
                 <router-link
                     :to="{name: 'Canvas'}"
@@ -24,6 +19,14 @@
                     class="btn btn-warning">
                     Get Started!
                 </router-link>
+                <br />
+                <br />
+                By using this website, you agree that any images or media you
+                create with its tools are released by you into the public
+                domain according to
+                <a href="https://creativecommons.org/publicdomain/zero/1.0/">
+                    CC0 1.0</a
+                >.
             </div>
         </div>
         <div class="row detailrow">
@@ -88,21 +91,24 @@
 </script>
 
 <style>
-    .widecontainer {
+    .splashcontainer {
         max-width: 2500px;
+        min-height: 375px;
+        background-image: url('../assets/imgs/homepage/backgroundx.jpg');
+        background-repeat: no-repeat;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .maintitle {
+        text-align: center;
+        font-size: small;
+        color: grey;
+        width: 55%;
     }
     .detailrow {
         padding: 50px;
         background-color: #809fff;
-    }
-    /* Text inside image TODO change this 
-       to background image, I wasnt having luck
-     */
-    .centered {
-        position: absolute;
-        top: 45%;
-        left: 50%;
-        transform: translate(-50%, -50%);
     }
 
     /* hover over to make background orange */

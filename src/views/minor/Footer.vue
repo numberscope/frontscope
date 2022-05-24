@@ -1,22 +1,13 @@
 <template>
-    <footer class="page-footer font-small">
-        <div class="footer-copyright text-center py-3" style="color: white">
-            {{ copyright }}
-        </div>
-    </footer>
+    <!-- Since the copyright has moved to the NavBar, just ensure there -->
+    <!-- remains a dark blue band to mark the bottom of the page. Also, -->
+    <!-- this leaves the footer as a place where additional boilerplate -->
+    <!-- be placed in the future if needed. -->
+    <footer class="page-footer font-small">{{ '\xa0' }}</footer>
 </template>
 
 <script>
-    const currentYear = new Date().getFullYear()
-    const copyrightText
-        = `Copyright © 2020-${currentYear} University of Colorado Boulder`
     export default {
-        /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-        data() {
-            return {
-                copyright: copyrightText
-            }
-        },
         name: 'FooterComponent',
     }
 </script>
@@ -27,6 +18,11 @@
         position: absolute;
         bottom: 0;
         width: 100%;
-        height: 100px;
+    }
+    .footer-link {
+        color: orange;
+    }
+    .footer-link:hover {
+        color: white;
     }
 </style>

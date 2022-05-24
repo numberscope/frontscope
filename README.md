@@ -1,5 +1,11 @@
 # Numberscope Frontend
 
+Copyright 2020-2022 Regents of the University of Colorado.
+
+This project is licensed under the
+[MIT License](https://opensource.org/licenses/MIT). See the text of the MIT
+License in LICENSE.md.
+
 ## Project setup
 
 ```
@@ -110,7 +116,7 @@ options you can set in the params object).
 In `checkParameters`, the versions of
 the control values in the params object are checked for consistency.
 This visualizer only has one validation check. It makes sure that the `number`
-is no less than the `levels`. If that is not the case, it  invalidates
+is no less than the `levels`. If that is not the case, it invalidates
 the status and adds an error message that is displayed to the user on the
 settings popup. All these specific validation checks are of course unique
 to each visualizer.

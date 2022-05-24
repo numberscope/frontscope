@@ -49,12 +49,31 @@
                     </li>
                 </ul>
             </div>
+            <span style="text-align: right; font-size: small">
+                {{ copyright }} <br />
+                Licensed under the
+                <a
+                    class="footer-link"
+                    href="https://opensource.org/licenses/MIT">
+                    MIT License</a
+                >.
+            </span>
         </nav>
     </div>
 </template>
 
 <script>
+    const currentYear = new Date().getFullYear()
+    // prettier-ignore
+    const copyrightText
+    = `Copyright © 2020-${currentYear} Regents of the University of Colorado`
     export default {
+        /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+        data() {
+            return {
+                copyright: copyrightText,
+            }
+        },
         name: 'NavBar',
     }
 </script>
