@@ -1,5 +1,4 @@
 <template>
-    <!-- eslint-disable -->
     <div class="container" id="helpContent">
         <h1>Need help?</h1>
         <nav>
