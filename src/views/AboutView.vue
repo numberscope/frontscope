@@ -28,8 +28,15 @@
             <li>Liam Mulhall</li>
             <li>Daniel H. Taylor</li>
         </ul>
+        <h2>
+            <RouterLink to="/acknowledgements">Acknowledgements</RouterLink>
+        </h2>
     </div>
 </template>
+
+<script lang="ts">
+    import {RouterLink} from 'vue-router'
+</script>
 
 <style>
     #aboutContent {
