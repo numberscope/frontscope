@@ -5,7 +5,9 @@
                 class="mx-auto"
                 src="@/assets/imgs/homepage/backgroundx.jpg"
                 width="100%" />
-            <div class="centered carousel-caption">
+            <div
+                class="centered carousel-caption"
+                style="width: 60%; color: grey; font-size: small">
                 <h1>
                     <span style="color: #f75c03">
                         <b>NUMBERSCOPE</b>
@@ -24,6 +26,14 @@
                     class="btn btn-warning">
                     Get Started!
                 </router-link>
+                <br />
+                <br />
+                (See copyright notice below. By using this website, you agree
+                that any images or media you create with its tools are
+                released by you into the public domain according to
+                <a href="https://creativecommons.org/publicdomain/zero/1.0/">
+                    CC0 1.0</a
+                >.)
             </div>
         </div>
         <div class="row detailrow">
