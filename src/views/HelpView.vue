@@ -1,5 +1,5 @@
-<!-- eslint-disable -->
 <template>
+    <!-- eslint-disable -->
     <div class="container" id="helpContent">
         <h1>Need help?</h1>
         <nav>
@@ -20,7 +20,7 @@
                     <i class="bi bi-question-circle"></i> <a href="#">User Guide</a>
                 </li>
                 <li>
-                    <i class="bi bi-file-text"></i> <a href="#">Documentation</a>
+                    <i class="bi bi-file-text"></i> <RouterLink to="/documentation">Documentation</RouterLink>
                 </li>
                 <li>
                     <i class="bi bi-github"></i> <a href="https://github.com/numberscope">Find Us on GitHub</a>
@@ -32,6 +32,10 @@
         </nav>
     </div>
 </template>
+
+<script>
+    import {RouterLink} from 'vue-router'
+</script>
 
 <style>
     #helpContent {

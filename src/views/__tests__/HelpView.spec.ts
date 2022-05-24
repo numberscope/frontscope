@@ -3,13 +3,13 @@ import {expect, test} from 'vitest'
 import {mount} from '@vue/test-utils'
 
 test('has links to guide, docs, github, and email', () => {
-    const wrapper = mount(HelpView)
+    const wrapper = mount(HelpView, {shallow: true})
 
     // guide
     expect(wrapper.html()).toContain('#')
 
     // docs
-    expect(wrapper.html()).toContain('#')
+    // this will change as we get rid of the old user manual and add new docs
 
     // github
     expect(wrapper.html()).toContain('https://github.com/numberscope')
