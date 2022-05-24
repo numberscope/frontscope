@@ -1,31 +1,13 @@
 <template>
-    <footer class="page-footer font-small">
-        <div class="text-center py-3" style="color: white">
-            {{ copyright }}
-            <p>
-                Licensed under the
-                <a
-                    class="footer-link"
-                    href="https://opensource.org/licenses/MIT">
-                    MIT License</a
-                >.
-            </p>
-        </div>
-    </footer>
+    <!-- Since the copyright has moved to the NavBar, just ensure there -->
+    <!-- remains a dark blue band to mark the bottom of the page. Also, -->
+    <!-- this leaves the footer as a place where additional boilerplate -->
+    <!-- be placed in the future if needed. -->
+    <footer class="page-footer font-small">{{ '\xa0' }}</footer>
 </template>
 
 <script>
-    const currentYear = new Date().getFullYear()
-    // prettier-ignore
-    const copyrightText
-    = `Copyright © 2020-${currentYear} Regents of the University of Colorado`
     export default {
-        /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-        data() {
-            return {
-                copyright: copyrightText,
-            }
-        },
         name: 'FooterComponent',
     }
 </script>
