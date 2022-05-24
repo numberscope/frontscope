@@ -43,11 +43,33 @@
                             </RouterLink>
                         </li>
                     </ul>
+                    <span class="navbar-text">
+                        {{ copyright }} | Licensed Under the
+                        <a href="https://opensource.org/licenses/MIT">
+                            MIT License</a
+                        >
+                    </span>
+                    <span class="navbar-text"> </span>
                 </div>
             </div>
         </nav>
     </header>
 </template>
+
+<script lang="ts">
+    const currentYear = new Date().getFullYear()
+    // prettier-ignore
+    const copyrightText
+    = `Copyright © 2020-${currentYear} Regents of the University of Colorado`
+    export default {
+        data() {
+            return {
+                copyright: copyrightText,
+            }
+        },
+        name: 'CopyAndLicense',
+    }
+</script>
 
 <style>
     .navbar-custom {
