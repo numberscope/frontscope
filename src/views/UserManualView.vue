@@ -94,69 +94,78 @@ ignorePatterns in .eslintrc.cjs. -->
                         break
                     case 'shiftCompare':
                         this.tool = 'Shift Compare'
-                        this.desc =
-                            'Draws an image of x and y dimensions. ' +
-                            "Using each pixel's coordinates as indices " +
-                            'into the sequence, compares the two elements, ' +
-                            'and if they are congruent (in the given ' +
-                            'modulus), colors the corresponding pixel ' +
-                            'white, or black otherwise.'
+                        this.desc = [
+                            'Draws an image of x and y dimensions.',
+                            "Using each pixel's coordinates as indices",
+                            'into the sequence, compares the two elements,',
+                            'and if they are congruent (in the given',
+                            'modulus), colors the corresponding pixel',
+                            'white, or black otherwise.',
+                        ].join(' ')
                         this.params = [
                             {
-                                text:
-                                    'No external parameters. ' +
-                                    "Press 'up' and 'down' arrow keys " +
-                                    'to increase and decrease the ' +
+                                text: [
+                                    'No external parameters.',
+                                    "Press 'up' and 'down' arrow keys",
+                                    'to increase and decrease the',
                                     'modulus, respectively.',
+                                ].join(' '),
                             },
                         ]
                         break
                     case 'turtle':
                         this.tool = 'Turtle'
-                        this.desc =
-                            'Draws a polygonal curve, turning after each ' +
-                            'segment by an angle corresponding to the ' +
-                            'next value in the sequence.'
+                        this.desc = [
+                            'Draws a polygonal curve, turning after each',
+                            'segment by an angle corresponding to the',
+                            'next value in the sequence.',
+                        ].join(' ')
                         this.params = [
                             {
-                                text:
-                                    'Domain: a comma-separated list ' +
-                                    'of numbers, including all possible ' +
-                                    'values that may occur in the sequence. ' +
-                                    'One way to ensure that there are only ' +
-                                    'a small number of possible values is ' +
-                                    'to take remainders of your sequence in ' +
+                                text: [
+                                    'Domain: a comma-separated list',
+                                    'of numbers, including all possible',
+                                    'values that may occur in the sequence.',
+                                    'One way to ensure that there are only',
+                                    'a small number of possible values is',
+                                    'to take remainders of your sequence in',
                                     'a small modulus.',
+                                ].join(' '),
                             },
                             {
-                                text:
-                                    'Range: a comma-separated list ' +
-                                    'of numbers. These are turning angles, ' +
-                                    'corresponding positionally to the ' +
-                                    'domain elements. Range and domain ' +
+                                text: [
+                                    'Range: a comma-separated list',
+                                    'of numbers. These are turning angles,',
+                                    'corresponding positionally to the',
+                                    'domain elements. Range and domain',
                                     'must be the same length.',
+                                ].join(' '),
                             },
                             {
-                                text:
-                                    'Step Size: a number. Gives the length ' +
+                                text: [
+                                    'Step Size: a number. Gives the length',
                                     'of the segment drawn for each entry.',
+                                ].join(' '),
                             },
                             {
-                                text:
-                                    'Stroke Weight: a number. Gives the width ' +
+                                text: [
+                                    'Stroke Weight: a number. Gives the width',
                                     'of the segment drawn for each entry.',
+                                ].join(' '),
                             },
                             {
-                                text:
-                                    'Starting X/Y: numbers. These give the ' +
+                                text: [
+                                    'Starting X/Y: numbers. These give the',
                                     'coordinates of the starting positon.',
+                                ].join(' '),
                             },
                         ]
                         break
                     default:
                         this.tool = 'Tool'
-                        this.desc =
-                            'Select a tool on the left to learn about it.'
+                        this.desc = [
+                            'Select a tool on the left to learn about it.',
+                        ].join(' ')
                         this.params = []
                         break
                 }

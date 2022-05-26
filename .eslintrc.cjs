@@ -16,8 +16,4 @@ module.exports = {
         'max-len': ['error', {code: 80, comments: 80}],
         'operator-linebreak': [2, 'before'],
     },
-    ignorePatterns: [
-        '/src/views/HelpView.vue',
-        '/src/views/UserManualView.vue',
-    ],
 }

@@ -36,6 +36,10 @@
 
 <script lang="ts">
     import {RouterLink} from 'vue-router'
+    // To be honest: this check exists only to avoid "unused variable" warning
+    if (!RouterLink) {
+        console.log('Failed import of RouterLink')
+    }
 </script>
 
 <style>
