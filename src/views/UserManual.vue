@@ -1,6 +1,3 @@
-<!-- When you remove this file, remember to also remove this file from
-ignorePatterns in .eslintrc.cjs. -->
-
 <template>
     <div>
         <div class="container" style="max-width: 2500px" id="home">
