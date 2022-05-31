@@ -1,4 +1,4 @@
-import Footer from '../FooterComponent.vue'
+import Footer from '../Footer.vue'
 import {expect, test} from 'vitest'
 import {mount} from '@vue/test-utils'
 

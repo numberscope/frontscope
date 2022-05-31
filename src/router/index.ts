@@ -1,10 +1,10 @@
-import AboutView from '../views/AboutView.vue'
-import HelpView from '../views/HelpView.vue'
-import HomeView from '../views/HomeView.vue'
-import ScopeView from '../views/ScopeView.vue'
+import About from '../views/About.vue'
+import Help from '../views/Help.vue'
+import Home from '../views/Home.vue'
+import Scope from '../views/Scope.vue'
 import {createRouter, createWebHistory} from 'vue-router'
-import AcknowledgementsView from '../views/AcknowledgementsView.vue'
-import UserManualView from '../views/UserManualView.vue'
+import Acknowledgements from '../views/Acknowledgements.vue'
+import UserManual from '../views/UserManual.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,32 +12,32 @@ const router = createRouter({
         {
             path: '/',
             name: 'home',
-            component: HomeView,
+            component: Home,
         },
         {
             path: '/scope',
             name: 'scope',
-            component: ScopeView,
+            component: Scope,
         },
         {
             path: '/about',
             name: 'about',
-            component: AboutView,
+            component: About,
         },
         {
             path: '/help',
             name: 'help',
-            component: HelpView,
+            component: Help,
         },
         {
             path: '/acknowledgements',
             name: 'acknowledgments',
-            component: AcknowledgementsView,
+            component: Acknowledgements,
         },
         {
             path: '/documentation',
             name: 'documentation',
-            component: UserManualView,
+            component: UserManual,
         },
     ],
 })

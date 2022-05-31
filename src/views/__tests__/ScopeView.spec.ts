@@ -1,7 +1,7 @@
-// import ScopeView from '../ScopeView.vue'
+// import Scope from '../Scope.vue'
 import {test} from 'vitest'
 // import {mount} from '@vue/test-utils'
 
-test('ScopeView', () => {
+test('Scope', () => {
     // skip test for now
 })

@@ -1,9 +1,9 @@
-import HelpView from '../HelpView.vue'
+import Help from '../Help.vue'
 import {expect, test} from 'vitest'
 import {mount} from '@vue/test-utils'
 
 test('has links to guide, docs, github, and email', () => {
-    const wrapper = mount(HelpView, {shallow: true})
+    const wrapper = mount(Help, {shallow: true})
 
     // guide
     expect(wrapper.html()).toContain('#')

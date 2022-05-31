@@ -15,5 +15,6 @@ module.exports = {
     rules: {
         'max-len': ['error', {code: 80, comments: 80}],
         'operator-linebreak': [2, 'before'],
+        'vue/multi-word-component-names': 'off',
     },
 }
