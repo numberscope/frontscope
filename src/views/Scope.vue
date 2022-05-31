@@ -48,7 +48,7 @@
     export default {
         name: 'ToolMain',
         components: {
-            VisualizationMenu: VisualizationMenu,
+            VisualizationMenu,
             SequenceMenu,
             CanvasArea,
             BundleManager,
