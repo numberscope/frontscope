@@ -6,9 +6,12 @@ This project is licensed under the
 [MIT License](https://opensource.org/licenses/MIT). See the text of the MIT
 License in LICENSE.md.
 
-## Recommended IDE Setup
+## Recommended Editor or IDE Setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin).
+
+See [this doc](./doc/visual-studio-code-setup.md) for more info on setting up
+your editor or IDE.
 
 ## Type Support for `.vue` Imports in TS
 
@@ -54,3 +57,8 @@ npm run test:unit
 ```sh
 npm run lint
 ```
+
+## Making a Visualizer
+
+For info on how to make a visualizer, see
+[this doc](./doc/making-a-visualizer.md).
