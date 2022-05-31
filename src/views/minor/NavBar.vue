@@ -28,23 +28,34 @@
                     id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <RouterLink class="nav-link" to="/scope">
+                            <RouterLink
+                                class="nav-link"
+                                id="scopeLink"
+                                to="/scope">
                                 The 'Scope
                             </RouterLink>
                         </li>
                         <li class="nav-item">
-                            <RouterLink class="nav-link" to="/about">
+                            <RouterLink
+                                class="nav-link"
+                                id="aboutLink"
+                                to="/about">
                                 About
                             </RouterLink>
                         </li>
                         <li class="nav-item">
-                            <RouterLink class="nav-link" to="/help">
+                            <RouterLink
+                                class="nav-link"
+                                id="helpLink"
+                                to="/help">
                                 Help
                             </RouterLink>
                         </li>
                     </ul>
                     <span class="navbar-text">
-                        {{ copyright }} | Licensed Under the
+                        {{ copyright }}
+                        <br />
+                        Licensed Under the
                         <a href="https://opensource.org/licenses/MIT">
                             MIT License</a
                         >
@@ -72,6 +83,16 @@
 </script>
 
 <style>
+    /*
+    I used ID's instead of a class because Bootstrap's CSS wasn't being
+    overridden when I used a class. ¯\_(ツ)_/¯
+    */
+    #scopeLink,
+    #aboutLink,
+    #helpLink {
+        color: white;
+        text-decoration: underline;
+    }
     .navbar-custom {
         background-color: #809fff;
         color: white;
