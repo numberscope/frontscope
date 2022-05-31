@@ -105,6 +105,7 @@
     }
     .navbar-text {
         text-align: right;
+        font-size: small;
     }
     .navbar-custom {
         background-color: #809fff;
