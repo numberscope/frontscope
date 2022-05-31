@@ -91,7 +91,20 @@
     #aboutLink,
     #helpLink {
         color: white;
+    }
+    .navbar-text a {
+        text-decoration: none;
+    }
+    #scopeLink:hover,
+    #aboutLink:hover,
+    #helpLink:hover {
         text-decoration: underline;
+    }
+    .navbar-text a:hover {
+        text-decoration: underline;
+    }
+    .navbar-text {
+        text-align: right;
     }
     .navbar-custom {
         background-color: #809fff;
