@@ -11,7 +11,7 @@
                 The
                 <a
                     href="https://www.colorado.edu/math/content/experimental-mathematics-lab"
-                    >ExperimentalMathematics Lab</a
+                    >Experimental Mathematics Lab</a
                 >
                 at the University of Colorado Boulder, as a project of which
                 Numberscope was founded, and which continues to run
