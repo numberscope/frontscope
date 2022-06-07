@@ -3,7 +3,13 @@ import {expect, test} from 'vitest'
 import {mount} from '@vue/test-utils'
 
 test('has links to guide, docs, github, and email', () => {
-    const wrapper = mount(Help, {shallow: true})
+    const wrapper = mount(Help, {
+        global: {
+            stubs: {
+                RouterLink: true,
+            },
+        },
+    })
 
     // guide
     expect(wrapper.html()).toContain('#')
