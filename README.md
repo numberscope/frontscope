@@ -67,6 +67,16 @@ This script uses a configuration file to check for TypeScript errors in your
 npm run build
 ```
 
+### Preview Built Version
+
+```sh
+npm run preview
+```
+
+This script serves the built files for you to preview. (This is different from
+`npm run dev` in that there isn't any hot module replacement. It is generally
+closer to what you'll run in production.)
+
 ### Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```sh
