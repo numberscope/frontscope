@@ -52,11 +52,20 @@ and `npm run test:unit` are run when you `git commit`.
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### Compile and Minify for Production
 
 ```sh
 npm run build
 ```
+
+### Type-Check
+
+```sh
+npm run typecheck
+```
+
+This script uses a configuration file to check for TypeScript errors in your
+`.ts` and `.vue` files.
 
 ### Run Unit Tests with [Vitest](https://vitest.dev/)
 
