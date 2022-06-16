@@ -30,9 +30,21 @@ See [Vite Configuration Reference](https://vitejs.dev/config/).
 
 ## Project Setup
 
+Install dependencies:
+
 ```sh
 npm install
 ```
+
+Install Git hooks using [Husky](https://github.com/typicode/husky):
+
+```sh
+npm prepare
+```
+
+For a comprehensive list of what commands are run when you `git commit`, see
+[this file](./.husky/pre-commit). As of this writing, `npm run check-format`
+and `npm run test:unit` are run when you `git commit`.
 
 ### Compile and Hot-Reload for Development
 
