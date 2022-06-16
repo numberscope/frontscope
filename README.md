@@ -52,6 +52,17 @@ and `npm run test:unit` are run when you `git commit`.
 npm run dev
 ```
 
+### Check Formatting
+
+```sh
+npm run check-format
+```
+
+If you would like to check the formatting of your code before you `git commit`,
+you can run `npm run check-format` at any time. As of this writing, this script
+runs `prettier` on the project's files and then runs `eslint` on the project's
+files.
+
 ### Type-Check
 
 ```sh
