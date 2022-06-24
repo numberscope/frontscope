@@ -25,11 +25,7 @@ If you're looking for the code responsible for retrieving integer sequences from
 the [Online Encyclopedia of Integer Sequences (OEIS)](https://oeis.org/), see
 [backscope](https://github.com/numberscope/backscope).
 
-## Development
-
-### Setting Up the Project to Work From the Source Code
-
-#### Getting the Code
+## Setting Up the Project to Work From the Source Code
 
 1. Install [Git](https://git-scm.com/) if you don't already have it on your
    system.
@@ -38,30 +34,25 @@ the [Online Encyclopedia of Integer Sequences (OEIS)](https://oeis.org/), see
     cd /where/you/keep/your/code/
     git clone https://github.com/numberscope/frontscope.git
     ```
+3. If you don't already have [Node.js](https://nodejs.org/en/) installed on your
+   system, go ahead an install it.
+4. Install dependencies. (This should also install Git hooks using
+   [Husky](https://github.com/typicode/husky). If it doesn't, run
+   `npm prepare`).
+   ```sh
+   npm install
+   ```
+   (For a comprehensive list of what commands are run when you `git commit`, see
+   [this file](./.husky/pre-commit). As of this writing, `npm run check-format`
+   and `npm run test:unit` are run when you `git commit`.)
+5. Compile and hot-reload for development:
+   ```sh
+   npm run dev
+   ```
 
-#### Project Setup
+## Development
 
-If you don't already have [Node.js](https://nodejs.org/en/) installed on your
-system, go ahead an install it.
-
-Install dependencies. (This should also install Git hooks using
-[Husky](https://github.com/typicode/husky). If it doesn't, run `npm prepare`).
-
-```sh
-npm install
-```
-
-For a comprehensive list of what commands are run when you `git commit`, see
-[this file](./.husky/pre-commit). As of this writing, `npm run check-format`
-and `npm run test:unit` are run when you `git commit`.
-
-##### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-##### Check Formatting
+### Check Formatting
 
 ```sh
 npm run check-format
@@ -72,7 +63,7 @@ you can run `npm run check-format` at any time. As of this writing, this script
 runs `prettier` on the project's files and then runs `eslint` on the project's
 files.
 
-##### Type-Check
+### Type-Check
 
 ```sh
 npm run typecheck
@@ -81,13 +72,13 @@ npm run typecheck
 This script uses a configuration file to check for TypeScript errors in your
 `.ts` and `.vue` files.
 
-##### Compile and Minify for Production
+### Compile and Minify for Production
 
 ```sh
 npm run build
 ```
 
-##### Preview Built Version
+### Preview Built Version
 
 ```sh
 npm run preview
@@ -97,13 +88,13 @@ This script serves the built files for you to preview. (This is different from
 `npm run dev` in that there isn't any hot module replacement. It is generally
 closer to what you'll run in production.)
 
-##### Run Unit Tests with [Vitest](https://vitest.dev/)
+### Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```sh
 npm run test:unit
 ```
 
-##### Lint with [ESLint](https://eslint.org/)
+### Lint with [ESLint](https://eslint.org/)
 
 ```sh
 npm run lint
@@ -114,6 +105,10 @@ npm run lint
 For info on how to make a visualizer, see
 [this doc](./doc/making-a-visualizer.md).
 
+### Customize Configuration
+
+See [Vite Configuration Reference](https://vitejs.dev/config/).
+
 ### Recommended Editor or IDE Setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin).
@@ -121,17 +116,20 @@ For info on how to make a visualizer, see
 See [this doc](./doc/visual-studio-code-setup.md) for more info on setting up
 your editor or IDE.
 
-### Type Support for `.vue` Imports in TS
+#### Type Support for `.vue` Imports in TypeScript
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+TypeScript cannot handle type information for `.vue` imports by default, so we
+replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need
+[TypeScript Vue Plugin(Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin)
+to make the TypeScript language service aware of `.vue` types.
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has
+also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669)
+that is more performant. You can enable it by the following steps:
 
 1. Disable the built-in TypeScript Extension
     1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
-
-### Customize Configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+    2. Find `TypeScript and JavaScript Language Features`, right click and
+       select `Disable (Workspace)`
+2. Reload the VSCode window by running `Developer: Reload Window` from the
+   command palette.
