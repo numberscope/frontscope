@@ -1,4 +1,25 @@
-# frontscope
+# frontscope: Numberscope's Front End
+
+![Cool Visualizer](./src/assets/img/specimens/6.png)
+
+## What is Numberscope?
+
+Numberscope will be a free web tool for researchers, citizen-scientists, and
+artists. Combine your favourite integer sequences with a suite of visualizers:
+online tools that illustrate integer sequences and their properties. It is
+currently in development.
+
+## What does the code in this repository do?
+
+The code in this repository is responsible for creating and displaying the
+aforementioned visualizers. It's also responsible for Numberscope's user
+interface.
+
+If you're looking for the code responsible for retrieving integer sequences from
+the [Online Encyclopedia of Integer Sequences (OEIS)](https://oeis.org/), see
+[backscope](https://github.com/numberscope/backscope).
+
+## Development
 
 Copyright 2020-2022 Regents of the University of Colorado.
 
@@ -6,14 +27,14 @@ This project is licensed under the
 [MIT License](https://opensource.org/licenses/MIT). See the text of the MIT
 License in LICENSE.md.
 
-## Recommended Editor or IDE Setup
+### Recommended Editor or IDE Setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin).
 
 See [this doc](./doc/visual-studio-code-setup.md) for more info on setting up
 your editor or IDE.
 
-## Type Support for `.vue` Imports in TS
+### Type Support for `.vue` Imports in TS
 
 TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
 
@@ -24,11 +45,11 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
     2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
 2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
 
-## Customize configuration
+### Customize configuration
 
 See [Vite Configuration Reference](https://vitejs.dev/config/).
 
-## Project Setup
+### Project Setup
 
 Install dependencies:
 
@@ -46,13 +67,13 @@ For a comprehensive list of what commands are run when you `git commit`, see
 [this file](./.husky/pre-commit). As of this writing, `npm run check-format`
 and `npm run test:unit` are run when you `git commit`.
 
-### Compile and Hot-Reload for Development
+#### Compile and Hot-Reload for Development
 
 ```sh
 npm run dev
 ```
 
-### Check Formatting
+#### Check Formatting
 
 ```sh
 npm run check-format
@@ -63,7 +84,7 @@ you can run `npm run check-format` at any time. As of this writing, this script
 runs `prettier` on the project's files and then runs `eslint` on the project's
 files.
 
-### Type-Check
+#### Type-Check
 
 ```sh
 npm run typecheck
@@ -72,13 +93,13 @@ npm run typecheck
 This script uses a configuration file to check for TypeScript errors in your
 `.ts` and `.vue` files.
 
-### Compile and Minify for Production
+#### Compile and Minify for Production
 
 ```sh
 npm run build
 ```
 
-### Preview Built Version
+#### Preview Built Version
 
 ```sh
 npm run preview
@@ -88,19 +109,19 @@ This script serves the built files for you to preview. (This is different from
 `npm run dev` in that there isn't any hot module replacement. It is generally
 closer to what you'll run in production.)
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+#### Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```sh
 npm run test:unit
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+#### Lint with [ESLint](https://eslint.org/)
 
 ```sh
 npm run lint
 ```
 
-## Making a Visualizer
+### Making a Visualizer
 
 For info on how to make a visualizer, see
 [this doc](./doc/making-a-visualizer.md).
