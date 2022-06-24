@@ -39,16 +39,16 @@ the [Online Encyclopedia of Integer Sequences (OEIS)](https://oeis.org/), see
 4. Install dependencies. (This should also install Git hooks using
    [Husky](https://github.com/typicode/husky). If it doesn't, run
    `npm prepare`).
-   ```sh
-   npm install
-   ```
-   (For a comprehensive list of what commands are run when you `git commit`, see
-   [this file](./.husky/pre-commit). As of this writing, `npm run check-format`
-   and `npm run test:unit` are run when you `git commit`.)
+    ```sh
+    npm install
+    ```
+    (For a comprehensive list of what commands are run when you `git commit`, see
+    [this file](./.husky/pre-commit). As of this writing, `npm run check-format`
+    and `npm run test:unit` are run when you `git commit`.)
 5. Compile and hot-reload for development:
-   ```sh
-   npm run dev
-   ```
+    ```sh
+    npm run dev
+    ```
 
 ## Development
 
