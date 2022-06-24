@@ -1,5 +1,11 @@
 # frontscope: Numberscope's Front End
 
+Copyright 2020-2022 Regents of the University of Colorado.
+
+This project is licensed under the
+[MIT License](https://opensource.org/licenses/MIT). See the text of the MIT
+License in LICENSE.md.
+
 ![Cool Visualizer](./src/assets/img/specimens/6.png)
 
 ## What is Numberscope?
@@ -20,12 +26,6 @@ the [Online Encyclopedia of Integer Sequences (OEIS)](https://oeis.org/), see
 [backscope](https://github.com/numberscope/backscope).
 
 ## Development
-
-Copyright 2020-2022 Regents of the University of Colorado.
-
-This project is licensed under the
-[MIT License](https://opensource.org/licenses/MIT). See the text of the MIT
-License in LICENSE.md.
 
 ### Recommended Editor or IDE Setup
 
