@@ -7,8 +7,7 @@
         "preview": "vite preview --port 5050",
         "test:unit": "vitest run",
         "typecheck": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
-        "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-        "check-format": "prettier . --write && npm run lint",
+        "lint": "prettier . --write && eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
         "prepare": "husky install"
     },
     "dependencies": {
