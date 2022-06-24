@@ -10,22 +10,22 @@ License in LICENSE.md.
 
 ## What is Numberscope?
 
-Numberscope will be a free web tool for researchers, citizen-scientists, and
+Numberscope is a tool for researchers, citizen-scientists, and
 artists. Combine your favourite integer sequences with a suite of visualizers:
 online tools that illustrate integer sequences and their properties. It is
 currently in development.
 
 ## What does the code in this repository do?
 
-The code in this repository is responsible for creating and displaying the
-aforementioned visualizers. It's also responsible for Numberscope's user
-interface.
+The code in this repository is responsible for defining and displaying the
+visualizers, and for establishing how to specify the sequences the
+visualizers act on. In general, it provides Numberscope's user interface.
 
-If you're looking for the code responsible for retrieving integer sequences from
-the [Online Encyclopedia of Integer Sequences (OEIS)](https://oeis.org/), see
-[backscope](https://github.com/numberscope/backscope).
+If you're looking for the code responsible for retrieving integer sequences
+from the [Online Encyclopedia of Integer Sequences (OEIS)](https://oeis.org/),
+see [backscope](https://github.com/numberscope/backscope).
 
-## Setting Up the Project to Work From the Source Code
+## Setting up to run from source
 
 1. Install [Git](https://git-scm.com/) if you don't already have it on your
    system.
@@ -34,36 +34,46 @@ the [Online Encyclopedia of Integer Sequences (OEIS)](https://oeis.org/), see
     cd /where/you/keep/your/code/
     git clone https://github.com/numberscope/frontscope.git
     ```
-3. If you don't already have [Node.js](https://nodejs.org/en/) installed on your
-   system, go ahead an install it.
-4. Install dependencies. (This should also install Git hooks using
-   [Husky](https://github.com/typicode/husky). If it doesn't, run
-   `npm prepare`).
+3. If you don't already have [Node.js](https://nodejs.org/en/), install it.
+4. Install dependencies:
     ```sh
+    cd frontscope
     npm install
     ```
-    (For a comprehensive list of what commands are run when you `git commit`, see
-    [this file](./.husky/pre-commit). As of this writing, `npm run check-format`
-    and `npm run test:unit` are run when you `git commit`.)
-5. Compile and hot-reload for development:
+    (This command should also install Git hooks using
+    [Husky](https://github.com/typicode/husky). If it doesn't, run
+    `npm prepare`. For a comprehensive list of what commands are run when
+    you `git commit` -- typically linting and testing -- see
+    [this file](./.husky/pre-commit).)
+5. Compile and start server with hot-reloading for development:
     ```sh
     npm run dev
     ```
 
 ## Development
 
-### Check Formatting
+### Making a new visualizer
+
+For info on how to make a visualizer, see
+[this doc](./doc/making-a-visualizer.md).
+
+### Additional `npm` scripts
+
+This section documents all of the other facilities available via `npm` scripts
+for working with the project's code.
+
+#### Check formatting
 
 ```sh
-npm run check-format
+npm run lint
 ```
 
-If you would like to check the formatting of your code before you `git commit`,
-you can run `npm run check-format` at any time. As of this writing, this script
-runs `prettier` on the project's files and then runs `eslint` on the project's
-files.
+If you would like to check the formatting of your code before you
+`git commit`, you can run `npm run lint` at any time, which runs
+[Prettier](https://prettier.io/) and then [ESLint](https://eslint.org/)
+on the project's files.
 
-### Type-Check
+#### Type checking
 
 ```sh
 npm run typecheck
@@ -72,13 +82,13 @@ npm run typecheck
 This script uses a configuration file to check for TypeScript errors in your
 `.ts` and `.vue` files.
 
-### Compile and Minify for Production
+#### Compile and "minify" for production
 
 ```sh
 npm run build
 ```
 
-### Preview Built Version
+#### Preview built version
 
 ```sh
 npm run preview
@@ -88,31 +98,30 @@ This script serves the built files for you to preview. (This is different from
 `npm run dev` in that there isn't any hot module replacement. It is generally
 closer to what you'll run in production.)
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+#### Run unit tests with [Vitest](https://vitest.dev/)
 
 ```sh
 npm run test:unit
 ```
-
 ### Lint with [ESLint](https://eslint.org/)
 
 ```sh
 npm run lint
 ```
 
-### Making a Visualizer
+### Making a visualizer
 
 For info on how to make a visualizer, see
 [this doc](./doc/making-a-visualizer.md).
 
-### Recommended Editor or IDE Setup
+### Recommended editor or IDE setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin).
 
 See [this doc](./doc/visual-studio-code-setup.md) for more info on setting up
 your editor or IDE.
 
-#### Type Support for `.vue` Imports in TypeScript
+#### Type support for `.vue` imports in TypeScript
 
 TypeScript cannot handle type information for `.vue` imports by default, so we
 replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need
