@@ -105,10 +105,6 @@ npm run lint
 For info on how to make a visualizer, see
 [this doc](./doc/making-a-visualizer.md).
 
-### Customize Configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
 ### Recommended Editor or IDE Setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin).
