@@ -27,44 +27,41 @@ the [Online Encyclopedia of Integer Sequences (OEIS)](https://oeis.org/), see
 
 ## Development
 
-### Getting the Code
+### Setting Up the Project to Work From the Source Code
+
+#### Getting the Code
 
 1. Install [Git](https://git-scm.com/) if you don't already have it on your
    system.
 2. Clone frontscope to an appropriate location on your computer:
-   ```sh
-   cd /where/you/keep/your/code/
-   git clone https://github.com/numberscope/frontscope.git
-   ```
+    ```sh
+    cd /where/you/keep/your/code/
+    git clone https://github.com/numberscope/frontscope.git
+    ```
 
-### Project Setup
+#### Project Setup
 
 If you don't already have [Node.js](https://nodejs.org/en/) installed on your
 system, go ahead an install it.
 
-Install dependencies:
+Install dependencies. (This should also install Git hooks using
+[Husky](https://github.com/typicode/husky). If it doesn't, run `npm prepare`).
 
 ```sh
 npm install
-```
-
-Install Git hooks using [Husky](https://github.com/typicode/husky):
-
-```sh
-npm prepare
 ```
 
 For a comprehensive list of what commands are run when you `git commit`, see
 [this file](./.husky/pre-commit). As of this writing, `npm run check-format`
 and `npm run test:unit` are run when you `git commit`.
 
-#### Compile and Hot-Reload for Development
+##### Compile and Hot-Reload for Development
 
 ```sh
 npm run dev
 ```
 
-#### Check Formatting
+##### Check Formatting
 
 ```sh
 npm run check-format
@@ -75,7 +72,7 @@ you can run `npm run check-format` at any time. As of this writing, this script
 runs `prettier` on the project's files and then runs `eslint` on the project's
 files.
 
-#### Type-Check
+##### Type-Check
 
 ```sh
 npm run typecheck
@@ -84,13 +81,13 @@ npm run typecheck
 This script uses a configuration file to check for TypeScript errors in your
 `.ts` and `.vue` files.
 
-#### Compile and Minify for Production
+##### Compile and Minify for Production
 
 ```sh
 npm run build
 ```
 
-#### Preview Built Version
+##### Preview Built Version
 
 ```sh
 npm run preview
@@ -100,13 +97,13 @@ This script serves the built files for you to preview. (This is different from
 `npm run dev` in that there isn't any hot module replacement. It is generally
 closer to what you'll run in production.)
 
-#### Run Unit Tests with [Vitest](https://vitest.dev/)
+##### Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```sh
 npm run test:unit
 ```
 
-#### Lint with [ESLint](https://eslint.org/)
+##### Lint with [ESLint](https://eslint.org/)
 
 ```sh
 npm run lint
@@ -135,6 +132,6 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
     2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
 2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
 
-### Customize configuration
+### Customize Configuration
 
 See [Vite Configuration Reference](https://vitejs.dev/config/).
