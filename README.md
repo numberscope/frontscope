@@ -35,10 +35,10 @@ see [backscope](https://github.com/numberscope/backscope).
     git clone https://github.com/numberscope/frontscope.git
     ```
 3. In your `frontscope` directory, create a `.env` file and populate it:
-   ```sh
-   touch .env
-   echo "VITE_API_URL=127.0.0.1:5000" > .env
-   ```
+    ```sh
+    touch .env
+    echo "VITE_API_URL=127.0.0.1:5000" > .env.local
+    ```
 4. If you don't already have [Node.js](https://nodejs.org/en/), install it.
 5. Install dependencies:
     ```sh
