@@ -45,7 +45,7 @@ export default class OEISSequenceTemplate extends SequenceCached {
     async fillCache(): Promise<void> {
         // prettier-ignore
         const backendUrl
-            = `http://${process.env.VUE_APP_API_URL}/api/`
+            = `http://${import.meta.env.VITE_API_URL}/api/`
             + `get_oeis_values/${this.oeisId}/${this.cacheBlock}`
         const response = await axios.get(backendUrl)
         this.first = Infinity

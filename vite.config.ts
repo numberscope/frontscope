@@ -14,4 +14,5 @@ export default defineConfig({
     build: {
         target: 'esnext',
     },
+    envDir: 'root',
 })
