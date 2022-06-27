@@ -34,8 +34,13 @@ see [backscope](https://github.com/numberscope/backscope).
     cd /where/you/keep/your/code/
     git clone https://github.com/numberscope/frontscope.git
     ```
-3. If you don't already have [Node.js](https://nodejs.org/en/), install it.
-4. Install dependencies:
+3. In your `frontscope` directory, create a `.env` file and populate it:
+   ```sh
+   touch .env
+   echo "VITE_API_URL=127.0.0.1:5000" > .env
+   ```
+4. If you don't already have [Node.js](https://nodejs.org/en/), install it.
+5. Install dependencies:
     ```sh
     cd frontscope
     npm install
@@ -45,7 +50,7 @@ see [backscope](https://github.com/numberscope/backscope).
     `npm prepare`. For a comprehensive list of what commands are run when
     you `git commit` -- typically linting and testing -- see
     [this file](./.husky/pre-commit).)
-5. Compile and start server with hot-reloading for development:
+6. Compile and start server with hot-reloading for development:
     ```sh
     npm run dev
     ```
