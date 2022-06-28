@@ -1,8 +1,9 @@
 ## Building a Visualizer
 
-Big picture, every visualizer needs to implement the `visualizerInterface.ts`
-which provides the basic expectations of a visualizer. See below for the easy
-way to do this. These include the following:
+Big picture, every visualizer needs to implement the interface defined in
+`VisualizerInterface.ts` which specifies the basic expectations of a visualizer.
+(See below for the easy way to do this.) This interface includes the following
+data and methods:
 
 1. `isValid`: a boolean that is used to determine if the visualizer is ready to
    draw. Generally this will be set automatically based on what you return from
@@ -22,7 +23,7 @@ way to do this. These include the following:
 4. `sketch`: a `p5` sketch object already live on the page. Usually, this will
    be set by the module manager when a visualizer is created, so all you need to
    do is provide that `initialize()` sets `this.sketch = sketch` (see the
-   `visualizerDefault` for an example).
+   `VisualizerDefault` for an example).
 5. `initialize(sketch, seq)`: a method that is called by the engine to prepare
    the visualizer for drawing. Good practice is to check that `isValid` is true
    before intializing, though you are free to initialize however you like.
@@ -74,13 +75,17 @@ If the checks pass and a valid ValidationStatus is returned, the param values
 are copied into the top-level properties of the visualizer. That's why you
 will see them used directly at the top level in the rest of the visualizer code.
 
-Note there's no constructor for the VizDifferences class; generally the default
-constructor supplied by the base class does everything you need.
+Note there's no constructor for the VisualizerDifferences class; generally the
+default constructor supplied by the base class does everything you need.
 
 #### Where to put your visualizers
 
 Place your new visualizer in `src/visualizers`, named in PascalCase (capital
-first letter of every word, no spaces).
+first letter of every word, no spaces). Also make sure your source file contains
+an `exportModule` describing your visualizer, as in the VisualizerDifferences.ts
+example, so that the menu of visualizers displayed in the frontscope will pick
+up your new visualizer and allow it as an option. (There are more details on
+this "exporting" step below.)
 
 #### Creating params and assigning their values
 
@@ -135,10 +140,10 @@ object, which is guaranteed to have a method `getElement(n)` that returns the
 The engine expects visualizers to be packaged in `visualizerExportModules` which
 take as their arguments the name of the visualizer which is displayed in the UI.
 You can also reference the name of the visualizer to maintain consistency,
-though the `visualizerDifferences` sets it explicitly.
+though the `VisualizerDifferences` sets it explicitly.
 
 The other arguments in the export module are the visualizer itself
-(`VizDifferences` in the example case, which is the name of the class we
+(`VisualizerDifferences` in the example case, which is the name of the class we
 created), and a description.
 
 If you place the file containing your visualizer class definition with the

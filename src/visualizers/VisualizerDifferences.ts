@@ -5,7 +5,7 @@ import {VisualizerDefault} from './VisualizerDefault'
 
 const min = Math.min
 
-class VizDifferences extends VisualizerDefault {
+class VisualizerDifferences extends VisualizerDefault {
     name = 'Differences'
 
     n = 20
@@ -113,7 +113,7 @@ class VizDifferences extends VisualizerDefault {
 
 export const exportModule = new VisualizerExportModule(
     'Differences',
-    VizDifferences,
+    VisualizerDifferences,
     // prettier-ignore
     'Produces a table of differences between consecutive terms, '
     + 'potentially iterated several times.'
