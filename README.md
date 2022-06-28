@@ -29,17 +29,21 @@ see [backscope](https://github.com/numberscope/backscope).
 
 1. Install [Git](https://git-scm.com/) if you don't already have it on your
    system.
-2. Clone frontscope to an appropriate location on your computer:
+2. Similarly, if you don't already have [Node.js](https://nodejs.org/en/),
+   install it.
+3. Clone frontscope to an appropriate location on your computer, and switch
+   into the new repository's top-level directory:
     ```sh
     cd /where/you/keep/your/code/
     git clone https://github.com/numberscope/frontscope.git
+    cd frontscope
     ```
-3. In your `frontscope` directory, create a `.env` file and populate it:
+4. If you will be connecting to an instance of `backscope` (for obtaining
+   information about OEIS sequences) running locally on your machine, then
+   in your `frontscope` directory, create a `.env.local` file and populate it:
     ```sh
-    touch .env
     echo "VITE_API_URL=127.0.0.1:5000" > .env.local
     ```
-4. If you don't already have [Node.js](https://nodejs.org/en/), install it.
 5. Install dependencies:
     ```sh
     cd frontscope
@@ -50,10 +54,13 @@ see [backscope](https://github.com/numberscope/backscope).
     `npm prepare`. For a comprehensive list of what commands are run when
     you `git commit` -- typically linting and testing -- see
     [this file](./.husky/pre-commit).)
-6. Compile and start server with hot-reloading for development:
+6. Compile and start a server running frontscope, with hot-reloading for
+   development:
     ```sh
     npm run dev
     ```
+    The output of this command will provide instructions for connecting to the
+    new running instance of frontscope with your browser.
 
 ## Development
 
