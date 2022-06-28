@@ -40,13 +40,12 @@ see [backscope](https://github.com/numberscope/backscope).
     ```
 4. If you will be connecting to an instance of `backscope` (for obtaining
    information about OEIS sequences) running locally on your machine, then
-   in your `frontscope` directory, create a `.env.local` file and populate it:
+   create a `.env.local` file and populate it:
     ```sh
     echo "VITE_API_URL=127.0.0.1:5000" > .env.local
     ```
 5. Install dependencies:
     ```sh
-    cd frontscope
     npm install
     ```
     (This command should also install Git hooks using
@@ -55,7 +54,7 @@ see [backscope](https://github.com/numberscope/backscope).
     you `git commit` -- typically linting and testing -- see
     [this file](./.husky/pre-commit).)
 6. Compile and start a server running frontscope, with hot-reloading for
-   development:
+    development:
     ```sh
     npm run dev
     ```
