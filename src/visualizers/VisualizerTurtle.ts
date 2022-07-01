@@ -1,13 +1,11 @@
 import p5 from 'p5'
 import {VisualizerDefault} from './VisualizerDefault'
-import {
-    VisualizerInterface,
-    VisualizerExportModule,
-} from './VisualizerInterface'
-import {SequenceInterface} from '@/sequences/SequenceInterface'
+import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 // Turtle needs work
-// Throwing the same error on previous numberscope website
+// Throwing the same error on previous Numberscope website
 class VisualizerTurtle
     extends VisualizerDefault
     implements VisualizerInterface

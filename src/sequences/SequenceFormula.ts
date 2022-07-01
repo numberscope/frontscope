@@ -26,7 +26,7 @@ class SequenceFormula extends SequenceCached {
 
     /**
      *Creates an instance of SequenceFormula
-     * @param {*} sequenceID the sequence identifer of the sequence
+     * @param {*} sequenceID the sequence identifier of the sequence
      */
     constructor(sequenceID: number) {
         super(sequenceID)
@@ -51,6 +51,7 @@ class SequenceFormula extends SequenceCached {
         }
         const othersymbs = parsetree.filter(
             (node, path, parent) =>
+                // prettier-ignore
                 node.type === 'SymbolNode'
                 && parent?.type !== 'FunctionNode'
                 && node.name !== 'n'
@@ -59,9 +60,10 @@ class SequenceFormula extends SequenceCached {
             status.isValid = false
             status.errors.push(
                 "Only 'n' may occur as a free variable in formula.",
+                // prettier-ignore
                 "Please remove '"
-                    + (othersymbs[0] as math.SymbolNode).name
-                    + "'"
+                + (othersymbs[0] as math.SymbolNode).name
+                + "'"
             )
         }
         this.evaluator = parsetree.compile()

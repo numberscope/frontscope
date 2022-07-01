@@ -1,6 +1,6 @@
-import {SequenceInterface} from '@/sequences/SequenceInterface'
-import {ParamableInterface} from '@/shared/Paramable'
-import p5 from 'p5'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
+import type {ParamableInterface} from '../shared/Paramable'
+import type p5 from 'p5'
 
 interface VisualizerConstructor {
     new (): VisualizerInterface

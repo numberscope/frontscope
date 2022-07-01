@@ -1,11 +1,11 @@
-import {SequenceInterface} from '@/sequences/SequenceInterface'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import p5 from 'p5'
+import type p5 from 'p5'
 import {VisualizerDefault} from './VisualizerDefault'
 
 const min = Math.min
 
-class VizDifferences extends VisualizerDefault {
+class VisualizerDifferences extends VisualizerDefault {
     name = 'Differences'
 
     n = 20
@@ -49,8 +49,9 @@ class VizDifferences extends VisualizerDefault {
         }
         if (seq.last - seq.first + 1 < this.levels) {
             throw Error(
+                // prettier-ignore
                 `Sequence ${seq.name} has too few entries `
-                    + `for ${this.levels} levels.`
+                + `for ${this.levels} levels.`
             )
         }
     }
@@ -92,6 +93,7 @@ class VizDifferences extends VisualizerDefault {
                     firstY + i * yDelta
                 )
                 if (j < workingSequence.length - 1) {
+                    // prettier-ignore
                     workingSequence[j]
                         = workingSequence[j + 1] - workingSequence[j]
                 }
@@ -111,7 +113,8 @@ class VizDifferences extends VisualizerDefault {
 
 export const exportModule = new VisualizerExportModule(
     'Differences',
-    VizDifferences,
+    VisualizerDifferences,
+    // prettier-ignore
     'Produces a table of differences between consecutive terms, '
-        + 'potentially iterated several times.'
+    + 'potentially iterated several times.'
 )

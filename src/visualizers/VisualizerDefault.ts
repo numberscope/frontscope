@@ -1,7 +1,7 @@
-import {VisualizerInterface} from './VisualizerInterface'
-import {Paramable} from '@/shared/Paramable'
-import {SequenceInterface} from '@/sequences/SequenceInterface'
-import {SequenceClassDefault} from '@/sequences/SequenceClassDefault'
+import type {VisualizerInterface} from './VisualizerInterface'
+import {Paramable} from '../shared/Paramable'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
+import {SequenceClassDefault} from '../sequences/SequenceClassDefault'
 import p5 from 'p5'
 
 export class VisualizerDefault
@@ -28,6 +28,7 @@ export class VisualizerDefault
             this.ready = true
         } else {
             throw (
+                // prettier-ignore
                 'The visualizer is not valid. '
                 + 'Run validate and address any errors.'
             )

@@ -1,9 +1,7 @@
 import p5 from 'p5'
 import {VisualizerDefault} from './VisualizerDefault'
-import {
-    VisualizerInterface,
-    VisualizerExportModule,
-} from './VisualizerInterface'
+import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 
 // CAUTION: This is unstable with some sequences
 // Using it may crash your browser
@@ -89,8 +87,8 @@ class VizShiftCompare
                 const yEl = this.seq.getElement(y)
                 for (let i = 0; i < d; i++) {
                     for (let j = 0; j < d; j++) {
-                        const index
-                            = 4
+                        // prettier-ignore
+                        const index = 4
                             * ((y * d + j) * this.sketch.width * d
                                 + (x * d + i))
                         if (xEl % this.mod == yEl % this.mod) {

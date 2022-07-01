@@ -1,9 +1,7 @@
-import {SequenceInterface} from '@/sequences/SequenceInterface'
-import {VisualizerDefault} from '@/visualizers/VisualizerDefault'
-import {
-    VisualizerInterface,
-    VisualizerExportModule,
-} from '@/visualizers/VisualizerInterface'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
+import {VisualizerDefault} from '../visualizers/VisualizerDefault'
+import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 
 class VizModFill extends VisualizerDefault implements VisualizerInterface {
     name = 'Mod Fill'
@@ -38,6 +36,7 @@ class VizModFill extends VisualizerDefault implements VisualizerInterface {
         for (let mod = 1n; mod <= this.modDimension; mod++) {
             const s = seq.getElement(num)
             const x = Number(mod - 1n) * this.rectWidth
+            // prettier-ignore
             const y
                 = this.sketch.height - Number((s % mod) + 1n) * this.rectHeight
             this.sketch.rect(x, y, this.rectWidth, this.rectHeight)

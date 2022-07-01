@@ -152,13 +152,10 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue'
     import p5 from 'p5'
-    import {ParamInterface} from '@/shared/Paramable.ts'
-
+    import {ParamInterface} from '../shared/Paramable.ts'
     const reminder = '(Note: must be an integer.) '
-
-    export default Vue.extend({
+    export default {
         name: 'SeqVizParamsModal',
         methods: {
             groupClass(dependency: undefined | string): string {
@@ -179,9 +176,10 @@
                 if (is === was) {
                     // all is well, display immediately
                     if (
+                        // prettier-ignore
                         p.description
                         && p.description.substring(0, reminder.length)
-                            === reminder
+                        === reminder
                     ) {
                         p.description = p.description.substring(
                             reminder.length
@@ -195,6 +193,7 @@
                         // Make sure there is a description
                         if (!p.description) p.description = ''
                         if (
+                            // prettier-ignore
                             p.description.substring(0, reminder.length)
                             !== reminder
                         ) {
@@ -292,6 +291,7 @@
             requiredMissing() {
                 for (const name in this.params) {
                     if (
+                        // prettier-ignore
                         this.params[name].required
                         && (this.params[name].value === undefined
                             || this.params[name].value === null
@@ -306,8 +306,9 @@
                 const viz: {[key: string]: ParamInterface} = {}
                 for (const name in this.params) {
                     if (this.params[name].visibleDependency) {
+                        // prettier-ignore
                         const dependsOn
-                            = this.params[this.params[name].visibleDependency]
+                        = this.params[this.params[name].visibleDependency]
                         if (
                             dependsOn.value !== this.params[name].visibleValue
                         ) {
@@ -319,51 +320,42 @@
                 return viz
             },
         },
-    })
+    }
 </script>
 
 <style scoped>
     .modal {
         display: block;
     }
-
     .modal-backdrop {
         position: absolute;
         background: rgba(0, 0, 0, 0.5);
         z-index: -1;
     }
-
     .modal-content {
         max-height: 90vh;
         overflow: scroll;
     }
-
     .redtext {
         color: red;
     }
-
     .btn:disabled {
         background: #dddddd;
     }
-
     .labeled-input {
         display: flex;
         align-items: baseline;
     }
-
     .dependent {
         margin-left: 1.5em;
         background-color: ghostwhite;
     }
-
     .form-control {
         flex: 1;
     }
-
     .form-label {
         margin-right: 0.5em;
     }
-
     .left-input {
         margin-right: 0.5em;
     }

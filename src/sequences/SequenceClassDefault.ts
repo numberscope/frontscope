@@ -1,5 +1,5 @@
-import {SequenceInterface} from './SequenceInterface'
-import {Paramable} from '@/shared/Paramable'
+import type {SequenceInterface} from './SequenceInterface'
+import {Paramable} from '../shared/Paramable'
 
 /**
  *
@@ -34,6 +34,7 @@ export class SequenceClassDefault
     initialize(): void {
         if (this.ready) return
         if (
+            // prettier-ignore
             this.first < Number.MIN_SAFE_INTEGER
             || this.first > Number.MAX_SAFE_INTEGER
         ) {

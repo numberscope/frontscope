@@ -1,86 +1,117 @@
+<script setup lang="ts">
+    import {RouterLink} from 'vue-router'
+    import LogoWithMicroscope from '../../assets/img/LogoWithMicroscope.png'
+</script>
+
 <template>
-    <div>
-        <nav
-            class="navbar navbar-expand-lg navbar-light sticky-top"
-            data-toggle="collapse">
-            <router-link :to="{name: 'Home'}" class="navbar-brand">
-                <img
-                    class="orange"
-                    src="@/assets/imgs/MicroscopeLogo.png"
-                    width="210"
-                    height="40" />
-            </router-link>
-
-            <button
-                class="navbar-toggler"
-                type="button"
-                data-toggle="collapse"
-                data-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <router-link
-                            :to="{name: 'Home'}"
-                            class="orange nav-link">
-                            <font color="#fff"><b>The Scope</b></font>
-                        </router-link>
-                    </li>
-
-                    <li class="nav-item">
-                        <router-link
-                            :to="{name: 'Home'}"
-                            class="orange nav-link">
-                            <font color="#fff"><b>Specimens</b></font>
-                        </router-link>
-                    </li>
-
-                    <li class="nav-item">
-                        <router-link
-                            :to="{name: 'UserManual'}"
-                            class="orange nav-link">
-                            <font color="#fff"><b>User Manual</b></font>
-                        </router-link>
-                    </li>
-                </ul>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+            <div class="container-fluid">
+                <RouterLink class="navbar-brand" to="/">
+                    <img
+                        :src="LogoWithMicroscope"
+                        id="logoWithMicroscope"
+                        alt="A microscope icon." />
+                </RouterLink>
+                <button
+                    class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation.">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div
+                    class="collapse navbar-collapse"
+                    id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <RouterLink
+                                class="nav-link"
+                                id="scopeLink"
+                                to="/scope">
+                                The 'Scope
+                            </RouterLink>
+                        </li>
+                        <li class="nav-item">
+                            <RouterLink
+                                class="nav-link"
+                                id="aboutLink"
+                                to="/about">
+                                About
+                            </RouterLink>
+                        </li>
+                        <li class="nav-item">
+                            <RouterLink
+                                class="nav-link"
+                                id="helpLink"
+                                to="/help">
+                                Help
+                            </RouterLink>
+                        </li>
+                    </ul>
+                    <span class="navbar-text">
+                        {{ copyright }}
+                        <br />
+                        Licensed Under the
+                        <a href="https://opensource.org/licenses/MIT">
+                            MIT License</a
+                        >
+                    </span>
+                    <span class="navbar-text"> </span>
+                </div>
             </div>
-            <span style="text-align: right; font-size: small">
-                {{ copyright }} <br />
-                Licensed under the
-                <a
-                    class="footer-link"
-                    href="https://opensource.org/licenses/MIT">
-                    MIT License</a
-                >.
-            </span>
         </nav>
-    </div>
+    </header>
 </template>
 
-<script>
+<script lang="ts">
     const currentYear = new Date().getFullYear()
     // prettier-ignore
     const copyrightText
     = `Copyright © 2020-${currentYear} Regents of the University of Colorado`
     export default {
-        /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
         data() {
             return {
                 copyright: copyrightText,
             }
         },
-        name: 'NavBar',
+        name: 'CopyAndLicense',
     }
 </script>
 
 <style>
-    .navbar {
-        margin-bottom: 20px;
+    /*
+    I used ID's instead of a class because Bootstrap's CSS wasn't being
+    overridden when I used a class. ¯\_(ツ)_/¯
+    */
+    #scopeLink,
+    #aboutLink,
+    #helpLink {
+        color: white;
+    }
+    .navbar-text a {
+        text-decoration: none;
+    }
+    #scopeLink:hover,
+    #aboutLink:hover,
+    #helpLink:hover {
+        text-decoration: underline;
+    }
+    .navbar-text a:hover {
+        text-decoration: underline;
+    }
+    .navbar-text {
+        text-align: right;
+        font-size: small;
+    }
+    .navbar-custom {
         background-color: #809fff;
+        color: white;
+    }
+    #logoWithMicroscope {
+        width: 10em;
     }
 </style>

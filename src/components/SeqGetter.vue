@@ -4,7 +4,7 @@
     </a>
 </template>
 
-<script>
+<script lang="ts">
     export default {
         name: 'SeqGetter',
         props: {
@@ -18,12 +18,10 @@
     a {
         cursor: pointer;
     }
-
     li:hover {
         background-color: #809fff;
         color: #ffffff;
     }
-
     li {
         text-align: left;
     }

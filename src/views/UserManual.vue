@@ -1,10 +1,7 @@
 <template>
     <div>
         <div class="container" style="max-width: 2500px" id="home">
-            <img
-                class="mx-auto"
-                src="@/assets/imgs/homepage/background200px.jpg"
-                width="100%" />
+            <img class="mx-auto background" :src="background200px" />
             <div class="centered carousel-caption">
                 <h1>
                     <span style="color: #f75c03">
@@ -65,15 +62,15 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue'
-
-    export default Vue.extend({
+    import background200px from '../assets/img/homepage/background200px.jpg'
+    export default {
         name: 'UserManual',
         data() {
             return {
                 tool: 'Tool',
                 params: [] as {text: string}[], // get the type correct
                 desc: 'Select a tool on the left to learn about it.',
+                background200px: background200px,
             }
         },
         methods: {
@@ -94,78 +91,90 @@
                         break
                     case 'shiftCompare':
                         this.tool = 'Shift Compare'
-                        this.desc
-                            = 'Draws an image of x and y dimensions. '
-                            + "Using each pixel's coordinates as indices "
-                            + 'into the sequence, compares the two elements, '
-                            + 'and if they are congruent (in the given '
-                            + 'modulus), colors the corresponding pixel '
-                            + 'white, or black otherwise.'
+                        this.desc = [
+                            'Draws an image of x and y dimensions.',
+                            "Using each pixel's coordinates as indices",
+                            'into the sequence, compares the two elements,',
+                            'and if they are congruent (in the given',
+                            'modulus), colors the corresponding pixel',
+                            'white, or black otherwise.',
+                        ].join(' ')
                         this.params = [
                             {
-                                text:
-                                    'No external parameters. '
-                                    + "Press 'up' and 'down' arrow keys "
-                                    + 'to increase and decrease the '
-                                    + 'modulus, respectively.',
+                                text: [
+                                    'No external parameters.',
+                                    "Press 'up' and 'down' arrow keys",
+                                    'to increase and decrease the',
+                                    'modulus, respectively.',
+                                ].join(' '),
                             },
                         ]
                         break
                     case 'turtle':
                         this.tool = 'Turtle'
-                        this.desc
-                            = 'Draws a polygonal curve, turning after each '
-                            + 'segment by an angle corresponding to the '
-                            + 'next value in the sequence.'
+                        this.desc = [
+                            'Draws a polygonal curve, turning after each',
+                            'segment by an angle corresponding to the',
+                            'next value in the sequence.',
+                        ].join(' ')
                         this.params = [
                             {
-                                text:
-                                    'Domain: a comma-separated list '
-                                    + 'of numbers, including all possible '
-                                    + 'values that may occur in the sequence. '
-                                    + 'One way to ensure that there are only '
-                                    + 'a small number of possible values is '
-                                    + 'to take remainders of your sequence in '
-                                    + 'a small modulus.',
+                                text: [
+                                    'Domain: a comma-separated list',
+                                    'of numbers, including all possible',
+                                    'values that may occur in the sequence.',
+                                    'One way to ensure that there are only',
+                                    'a small number of possible values is',
+                                    'to take remainders of your sequence in',
+                                    'a small modulus.',
+                                ].join(' '),
                             },
                             {
-                                text:
-                                    'Range: a comma-separated list '
-                                    + 'of numbers. These are turning angles, '
-                                    + 'corresponding positionally to the '
-                                    + 'domain elements. Range and domain '
-                                    + 'must be the same length.',
+                                text: [
+                                    'Range: a comma-separated list',
+                                    'of numbers. These are turning angles,',
+                                    'corresponding positionally to the',
+                                    'domain elements. Range and domain',
+                                    'must be the same length.',
+                                ].join(' '),
                             },
                             {
-                                text:
-                                    'Step Size: a number. Gives the length '
-                                    + 'of the segment drawn for each entry.',
+                                text: [
+                                    'Step Size: a number. Gives the length',
+                                    'of the segment drawn for each entry.',
+                                ].join(' '),
                             },
                             {
-                                text:
-                                    'Stroke Weight: a number. Gives the width '
-                                    + 'of the segment drawn for each entry.',
+                                text: [
+                                    'Stroke Weight: a number. Gives the width',
+                                    'of the segment drawn for each entry.',
+                                ].join(' '),
                             },
                             {
-                                text:
-                                    'Starting X/Y: numbers. These give the '
-                                    + 'coordinates of the starting positon.',
+                                text: [
+                                    'Starting X/Y: numbers. These give the',
+                                    'coordinates of the starting positon.',
+                                ].join(' '),
                             },
                         ]
                         break
                     default:
                         this.tool = 'Tool'
-                        this.desc
-                            = 'Select a tool on the left to learn about it.'
+                        this.desc = [
+                            'Select a tool on the left to learn about it.',
+                        ].join(' ')
                         this.params = []
                         break
                 }
             },
         },
-    })
+    }
 </script>
 
 <style>
+    .background {
+        width: 100%;
+    }
     /* Text inside image TODO change this
    to background image, I wasnt having luck*/
     .centered {
@@ -174,17 +183,14 @@
         left: 50%;
         transform: translate(-50%, -50%);
     }
-
     /* hover over to make background orange */
     .orange:hover {
         background-color: orange;
     }
-
     /* sidebar */
     .side {
         background-color: #f75c03;
     }
-
     /* user manual selector buttons */
     .side button {
         padding: 5px;
@@ -192,11 +198,9 @@
         border: none;
         margin: 5px;
     }
-
     .side button:hover {
         background-color: #809fff;
     }
-
     /* main manual style */
     .page {
         padding-top: 50px;
@@ -206,7 +210,6 @@
         background-color: white;
         border: 2px solid #809fff;
     }
-
     /* Hover to make text orange */
     .textorange:hover {
         color: orange;

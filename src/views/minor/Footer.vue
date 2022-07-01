@@ -1,23 +1,24 @@
-<template>
-    <!-- Since the copyright has moved to the NavBar, just ensure there -->
-    <!-- remains a dark blue band to mark the bottom of the page. Also, -->
-    <!-- this leaves the footer as a place where additional boilerplate -->
-    <!-- be placed in the future if needed. -->
-    <footer class="page-footer font-small">{{ '\xa0' }}</footer>
-</template>
-
-<script>
-    export default {
-        name: 'FooterComponent',
-    }
+<script setup lang="ts">
+    import {RouterLink} from 'vue-router'
 </script>
+
+<template>
+    <footer class="text-center">
+        <p>
+            Thank you very much to
+            <!-- prettier-ignore -->
+            <RouterLink class="footer-link" to="/acknowledgements">
+                those who made Numberscope possible</RouterLink>
+            over the years!
+        </p>
+    </footer>
+</template>
 
 <style>
     footer {
         background-color: #3333ff;
-        position: absolute;
-        bottom: 0;
-        width: 100%;
+        color: white;
+        padding: 16px 4px;
     }
     .footer-link {
         color: orange;

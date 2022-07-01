@@ -28,19 +28,17 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue'
-    import SeqSelector from '@/components/SeqSelector.vue'
-    import SeqGetter from '@/components/SeqGetter.vue'
-    import SeqVizParamsModal from '@/components/SeqVizParamsModal.vue'
+    import SeqSelector from './SeqSelector.vue'
+    import SeqGetter from './SeqGetter.vue'
+    import SeqVizParamsModal from './SeqVizParamsModal.vue'
     import {
         SequenceInterface,
         SequenceConstructor,
         SequenceExportModule,
         SequenceExportKind,
-    } from '@/sequences/SequenceInterface.ts'
-    import {SequenceClassDefault} from '@/sequences/SequenceClassDefault.ts'
-
-    export default Vue.extend({
+    } from '../sequences/SequenceInterface.ts'
+    import {SequenceClassDefault} from '../sequences/SequenceClassDefault.ts'
+    export default {
         name: 'SequenceMenu',
         props: {
             sequences: Array,
@@ -63,8 +61,9 @@
                 if (seq.kind == SequenceExportKind.INSTANCE) {
                     this.$emit('createSeq', this.liveSequence)
                 } else {
+                    // prettier-ignore
                     const constructor
-                        = seq.constructorOrSequence as SequenceConstructor
+                    = seq.constructorOrSequence as SequenceConstructor
                     this.liveSequence = new constructor(this.sequences.length)
                     this.openParamsModal()
                 }
@@ -79,8 +78,9 @@
                 )
             },
             loadSeq: function (seq: SequenceExportModule) {
+                // prettier-ignore
                 const constructor
-                    = seq.constructorOrSequence as SequenceConstructor
+                = seq.constructorOrSequence as SequenceConstructor
                 this.liveSequence = new constructor(this.sequences.length)
                 this.loadingInstance = true
                 this.openParamsModal()
@@ -92,8 +92,9 @@
                 console.log(activeSeq)
                 if (isInstance) {
                     // instances are already constructed
+                    // prettier-ignore
                     this.liveSequence
-                        = activeSeq.constructorOrSequence as SequenceInterface
+                    = activeSeq.constructorOrSequence as SequenceInterface
                 }
                 const validationResult = this.liveSequence.validate()
                 if (validationResult.isValid) {
@@ -129,7 +130,7 @@
                 errors: [] as string[],
             }
         },
-    })
+    }
 </script>
 
 <style scoped>
