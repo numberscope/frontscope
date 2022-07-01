@@ -27,24 +27,24 @@ see [backscope](https://github.com/numberscope/backscope).
 
 ## Setting up to run from source
 
-1. Install [Git](https://git-scm.com/) if you don't already have it on your
-   system.
-2. Similarly, if you don't already have [Node.js](https://nodejs.org/en/),
-   install it.
-3. Clone frontscope to an appropriate location on your computer, and switch
-   into the new repository's top-level directory:
+1.  Install [Git](https://git-scm.com/) if you don't already have it on your
+    system.
+2.  Similarly, if you don't already have [Node.js](https://nodejs.org/en/),
+    install it.
+3.  Clone frontscope to an appropriate location on your computer, and switch
+    into the new repository's top-level directory:
     ```sh
     cd /where/you/keep/your/code/
     git clone https://github.com/numberscope/frontscope.git
     cd frontscope
     ```
-4. If you will be connecting to an instance of `backscope` (for obtaining
-   information about OEIS sequences) running locally on your machine, then
-   create a `.env.local` file and populate it:
+4.  If you will be connecting to an instance of `backscope` (for obtaining
+    information about OEIS sequences) running locally on your machine, then
+    create a `.env.local` file and populate it:
     ```sh
     echo "VITE_API_URL=127.0.0.1:5000" > .env.local
     ```
-5. Install dependencies:
+5.  Install dependencies:
     ```sh
     npm install
     ```
@@ -53,7 +53,7 @@ see [backscope](https://github.com/numberscope/backscope).
     `npm prepare`. For a comprehensive list of what commands are run when
     you `git commit` -- typically linting and testing -- see
     [this file](./.husky/pre-commit).)
-6. Compile and start a server running frontscope, with hot-reloading for
+6.  Compile and start a server running frontscope, with hot-reloading for
     development:
     ```sh
     npm run dev
@@ -133,9 +133,9 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has
 also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669)
 that is more performant. You can enable it by the following steps:
 
-1. Disable the built-in TypeScript Extension
-    1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2. Find `TypeScript and JavaScript Language Features`, right click and
-       select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the
-   command palette.
+1.  Disable the built-in TypeScript Extension
+    1.  Run `Extensions: Show Built-in Extensions` from VSCode's command palette
+    2.  Find `TypeScript and JavaScript Language Features`, right click and
+        select `Disable (Workspace)`
+2.  Reload the VSCode window by running `Developer: Reload Window` from the
+    command palette.
