@@ -28,7 +28,6 @@ export class VisualizerDefault
             this.ready = true
         } else {
             throw (
-                // prettier-ignore
                 'The visualizer is not valid. '
                 + 'Run validate and address any errors.'
             )

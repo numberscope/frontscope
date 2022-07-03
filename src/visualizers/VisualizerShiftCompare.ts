@@ -87,10 +87,10 @@ class VizShiftCompare
                 const yEl = this.seq.getElement(y)
                 for (let i = 0; i < d; i++) {
                     for (let j = 0; j < d; j++) {
-                        // prettier-ignore
-                        const index = 4
-                            * ((y * d + j) * this.sketch.width * d
+                        const index =
+                            ((y * d + j) * this.sketch.width * d
                                 + (x * d + i))
+                            * 4
                         if (xEl % this.mod == yEl % this.mod) {
                             this.img.pixels[index] = 255
                             this.img.pixels[index + 1] = 255

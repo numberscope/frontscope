@@ -36,9 +36,8 @@ class VizModFill extends VisualizerDefault implements VisualizerInterface {
         for (let mod = 1n; mod <= this.modDimension; mod++) {
             const s = seq.getElement(num)
             const x = Number(mod - 1n) * this.rectWidth
-            // prettier-ignore
-            const y
-                = this.sketch.height - Number((s % mod) + 1n) * this.rectHeight
+            const y =
+                this.sketch.height - Number((s % mod) + 1n) * this.rectHeight
             this.sketch.rect(x, y, this.rectWidth, this.rectHeight)
         }
     }

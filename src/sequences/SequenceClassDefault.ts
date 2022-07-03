@@ -34,7 +34,6 @@ export class SequenceClassDefault
     initialize(): void {
         if (this.ready) return
         if (
-            // prettier-ignore
             this.first < Number.MIN_SAFE_INTEGER
             || this.first > Number.MAX_SAFE_INTEGER
         ) {

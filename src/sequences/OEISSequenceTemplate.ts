@@ -43,9 +43,8 @@ export default class OEISSequenceTemplate extends SequenceCached {
     }
 
     async fillCache(): Promise<void> {
-        // prettier-ignore
-        const backendUrl
-            = `http://${import.meta.env.VITE_API_URL}/api/`
+        const backendUrl =
+            `http://${import.meta.env.VITE_API_URL}/api/`
             + `get_oeis_values/${this.oeisId}/${this.cacheBlock}`
         const response = await axios.get(backendUrl)
         this.first = Infinity
@@ -72,7 +71,6 @@ export default class OEISSequenceTemplate extends SequenceCached {
         const status = super.checkParameters()
 
         if (
-            // prettier-ignore
             this.params.oeisId.value.length !== 7
             || (this.params.oeisId.value[0] !== 'A'
                 && this.params.oeisId.value[0] !== 'a')
@@ -81,7 +79,6 @@ export default class OEISSequenceTemplate extends SequenceCached {
         }
         if (typeof this.params.cacheBlock.value === 'number') {
             if (
-                // prettier-ignore
                 this.params.cacheBlock.value < 0
                 || !Number.isInteger(this.params.cacheBlock.value)
             ) {

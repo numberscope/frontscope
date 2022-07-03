@@ -176,10 +176,9 @@
                 if (is === was) {
                     // all is well, display immediately
                     if (
-                        // prettier-ignore
                         p.description
                         && p.description.substring(0, reminder.length)
-                        === reminder
+                            === reminder
                     ) {
                         p.description = p.description.substring(
                             reminder.length
@@ -193,7 +192,6 @@
                         // Make sure there is a description
                         if (!p.description) p.description = ''
                         if (
-                            // prettier-ignore
                             p.description.substring(0, reminder.length)
                             !== reminder
                         ) {
@@ -291,7 +289,6 @@
             requiredMissing() {
                 for (const name in this.params) {
                     if (
-                        // prettier-ignore
                         this.params[name].required
                         && (this.params[name].value === undefined
                             || this.params[name].value === null
@@ -306,9 +303,8 @@
                 const viz: {[key: string]: ParamInterface} = {}
                 for (const name in this.params) {
                     if (this.params[name].visibleDependency) {
-                        // prettier-ignore
-                        const dependsOn
-                        = this.params[this.params[name].visibleDependency]
+                        const dependsOn =
+                            this.params[this.params[name].visibleDependency]
                         if (
                             dependsOn.value !== this.params[name].visibleValue
                         ) {
