@@ -7,7 +7,7 @@
         "preview": "vite preview --port 5050",
         "test:unit": "vitest run",
         "typecheck": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
-        "lint": "prettier-eslint --list-different",
+        "lint": "prettier-eslint --write \"**/*.*\"",
         "prepare": "husky install"
     },
     "dependencies": {
