@@ -79,10 +79,9 @@ for working with the project's code.
 npm run lint
 ```
 
-If you would like to check the formatting of your code before you
-`git commit`, you can run `npm run lint` at any time, which runs
-[Prettier](https://prettier.io/) and then [ESLint](https://eslint.org/)
-on the project's files.
+If you would like to format your code before you `git commit`, you can run `npm run lint` at any time, which runs [Prettier](https://prettier.io/) and then
+[ESLint](https://eslint.org/) on the project's files. Note that this doesn't
+simply _check_ the formatting of your files, it _formats_ them!
 
 #### Type checking
 
