@@ -10,16 +10,16 @@ License in LICENSE.md.
 
 ## What is Numberscope?
 
-Numberscope is a tool for researchers, citizen-scientists, and
-artists. Combine your favourite integer sequences with a suite of visualizers:
-online tools that illustrate integer sequences and their properties. It is
-currently in development.
+Numberscope is a tool for researchers, citizen-scientists, and artists.
+Combine your favourite integer sequences with a suite of visualizers: online
+tools that illustrate integer sequences and their properties. It is currently
+in development.
 
 ## What does the code in this repository do?
 
 The code in this repository is responsible for defining and displaying the
-visualizers, and for establishing how to specify the sequences the
-visualizers act on. In general, it provides Numberscope's user interface.
+visualizers, and for establishing how to specify the sequences the visualizers
+act on. In general, it provides Numberscope's user interface.
 
 If you're looking for the code responsible for retrieving integer sequences
 from the [Online Encyclopedia of Integer Sequences (OEIS)](https://oeis.org/),
@@ -50,8 +50,8 @@ see [backscope](https://github.com/numberscope/backscope).
     ```
     (This command should also install Git hooks using
     [Husky](https://github.com/typicode/husky). If it doesn't, run
-    `npm prepare`. For a comprehensive list of what commands are run when
-    you `git commit` -- typically linting and testing -- see
+    `npm prepare`. For a comprehensive list of what commands are run when you
+    `git commit` -- typically linting and testing -- see
     [this file](./.husky/pre-commit).)
 6.  Compile and start a server running frontscope, with hot-reloading for
     development:
@@ -73,7 +73,7 @@ For info on how to make a visualizer, see
 This section documents all of the other facilities available via `npm` scripts
 for working with the project's code.
 
-#### Check formatting
+#### Check and repair formatting
 
 ```sh
 npm run lint
@@ -81,8 +81,12 @@ npm run lint
 
 If you would like to format your code before you `git commit`, you can run
 `npm run lint` at any time, which runs [Prettier](https://prettier.io/) and
-then [ESLint](https://eslint.org/) on the project's files. Note that this
-doesn't simply _check_ the formatting of your files, it _formats_ them!
+then [ESLint](https://eslint.org/) with the `--fix` option on the project's
+files. Note that this doesn't simply _check_ the formatting of your files, it
+_formats_ them! (If possible -- there are some formatting/code errors that it
+does not know how to fix, which will simpy be reported as errors; and if any
+such are present when this command is run as part of a commit via the standard
+git hooks this project sets up, the commit will not be accepted.)
 
 #### Type checking
 
@@ -117,7 +121,10 @@ npm run test:unit
 
 ### Recommended editor or IDE setup
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin).
+[VSCode](https://code.visualstudio.com/) +
+[Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)
+(and disable Vetur) +
+[TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin).
 
 See [this doc](./doc/visual-studio-code-setup.md) for more info on setting up
 your editor or IDE.
@@ -130,11 +137,13 @@ replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need
 to make the TypeScript language service aware of `.vue` types.
 
 If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has
-also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669)
+also implemented a
+[Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669)
 that is more performant. You can enable it by the following steps:
 
 1.  Disable the built-in TypeScript Extension
-    1.  Run `Extensions: Show Built-in Extensions` from VSCode's command palette
+    1.  Run `Extensions: Show Built-in Extensions` from VSCode's command
+        palette
     2.  Find `TypeScript and JavaScript Language Features`, right click and
         select `Disable (Workspace)`
 2.  Reload the VSCode window by running `Developer: Reload Window` from the
