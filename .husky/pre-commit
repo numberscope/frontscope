@@ -1,5 +1,7 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npm run lint
+npm run lint:list || echo 'Files listed above will be reformatted and staged.'
+npm run lint:staged
+npm run lint:check
 npm run test:unit

@@ -7,7 +7,10 @@
         "preview": "vite preview --port 5050",
         "test:unit": "vitest run",
         "typecheck": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
-        "lint": "prettier-eslint --write \"**/*.*\"",
+        "lint:check": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore",
+        "lint:list": "prettier-eslint --list-different \"**/*.*\"",
+        "lint:staged": "lint-staged",
+        "lint": "prettier-eslint --write \"**/*.*\" && npm run lint:check",
         "prepare": "husky install"
     },
     "dependencies": {
@@ -31,6 +34,7 @@
         "happy-dom": "^2.39.1",
         "husky": "^7.0.4",
         "jsdom": "^19.0.0",
+        "lint-staged": "^13.0.3",
         "mathjs": "^10.5.3",
         "prettier": "^2.7.1",
         "prettier-eslint": "^15.0.1",
@@ -40,5 +44,8 @@
         "vitest": "^0.2.5",
         "vue-tsc": "^0.31.1",
         "vue-unique-id": "^3.2.1"
+    },
+    "lint-staged": {
+        "*": "prettier-eslint --write"
     }
 }
