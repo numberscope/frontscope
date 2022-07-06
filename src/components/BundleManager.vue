@@ -70,7 +70,6 @@
         computed: {
             readyToBundle: function (): boolean {
                 return (
-                    // prettier-ignore
                     this.activeSeq !== null
                     && this.activeSeq.isValid !== undefined
                     && this.activeViz !== null

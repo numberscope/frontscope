@@ -11,9 +11,8 @@ for (const file in vizFiles) {
     // if it has an export module...
     if (vizFiles[file].exportModule) {
         // add the export module to our object
-        // prettier-ignore
-        vizMODULES[file.replace(/(\.\/|\.ts)/g, '')]
-        = vizFiles[file].exportModule
+        vizMODULES[file.replace(/(\.\/|\.ts)/g, '')] =
+            vizFiles[file].exportModule
     }
 }
 

@@ -61,9 +61,8 @@
                 if (seq.kind == SequenceExportKind.INSTANCE) {
                     this.$emit('createSeq', this.liveSequence)
                 } else {
-                    // prettier-ignore
-                    const constructor
-                    = seq.constructorOrSequence as SequenceConstructor
+                    const constructor =
+                        seq.constructorOrSequence as SequenceConstructor
                     this.liveSequence = new constructor(this.sequences.length)
                     this.openParamsModal()
                 }
@@ -78,9 +77,8 @@
                 )
             },
             loadSeq: function (seq: SequenceExportModule) {
-                // prettier-ignore
-                const constructor
-                = seq.constructorOrSequence as SequenceConstructor
+                const constructor =
+                    seq.constructorOrSequence as SequenceConstructor
                 this.liveSequence = new constructor(this.sequences.length)
                 this.loadingInstance = true
                 this.openParamsModal()
@@ -92,9 +90,8 @@
                 console.log(activeSeq)
                 if (isInstance) {
                     // instances are already constructed
-                    // prettier-ignore
-                    this.liveSequence
-                    = activeSeq.constructorOrSequence as SequenceInterface
+                    this.liveSequence =
+                        activeSeq.constructorOrSequence as SequenceInterface
                 }
                 const validationResult = this.liveSequence.validate()
                 if (validationResult.isValid) {

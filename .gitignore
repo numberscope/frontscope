@@ -4,6 +4,7 @@ logs
 npm-debug.log*
 
 node_modules
+coverage
 dist
 
 # File for storing your local configuration

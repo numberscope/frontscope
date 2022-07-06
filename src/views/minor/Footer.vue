@@ -6,9 +6,9 @@
     <footer class="text-center">
         <p>
             Thank you very much to
-            <!-- prettier-ignore -->
             <RouterLink class="footer-link" to="/acknowledgements">
-                those who made Numberscope possible</RouterLink>
+                those who made Numberscope possible
+            </RouterLink>
             over the years!
         </p>
     </footer>

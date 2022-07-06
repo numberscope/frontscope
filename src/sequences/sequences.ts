@@ -10,9 +10,8 @@ const seqMODULES: {[key: string]: SequenceExportModule} = {}
 for (const file in seqFiles) {
     if (seqFiles[file].exportModule) {
         // add the export module to our object
-        // prettier-ignore
-        seqMODULES[file.replace(/(\.\/|\.ts)/g, '')]
-        = seqFiles[file].exportModule
+        seqMODULES[file.replace(/(\.\/|\.ts)/g, '')] =
+            seqFiles[file].exportModule
     }
 }
 

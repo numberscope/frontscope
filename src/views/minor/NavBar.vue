@@ -69,9 +69,9 @@
 
 <script lang="ts">
     const currentYear = new Date().getFullYear()
-    // prettier-ignore
-    const copyrightText
-    = `Copyright © 2020-${currentYear} Regents of the University of Colorado`
+    const copyrightText =
+        `Copyright © 2020-${currentYear}`
+        + ' Regents of the University of Colorado'
     export default {
         data() {
             return {
