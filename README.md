@@ -88,6 +88,32 @@ does not know how to fix, which will simpy be reported as errors; and if any
 such are present when this command is run as part of a commit via the standard
 git hooks this project sets up, the commit will not be accepted.)
 
+```sh
+npm run lint:check
+```
+
+Like `npm run lint` but only reports problems; does not modify any of your
+source files. Note that this script might not report any errors but a
+subsequent `npm run lint` might modify files, since `prettier` does not have a
+"diagnostic" mode in which it reports discrepancies with its preferred
+formatting, and some formatting not preferred by prettier is acceptable to
+eslint.
+
+```sh
+npm run lint:list
+```
+
+Like `npm run lint` but only lists the files that would be changed; does not
+modify any source files or report what the problems were or report any
+unfixable problems.
+
+```sh
+npm run lint:staged
+```
+
+For internal purposes only, used in the pre-commit hook to reformat and stage
+any resulting changes to the files being committed.
+
 #### Type checking
 
 ```sh

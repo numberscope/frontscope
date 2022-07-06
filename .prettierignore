@@ -4,6 +4,8 @@
 *.png
 *.ico
 *~
+.husky
+.prettierignore
 .vscode
 node_modules
 dist
