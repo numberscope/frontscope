@@ -54,6 +54,7 @@ class VisualizerChaos extends VisualizerDefault {
             displayName: 'Number of corners',
             required: true,
             description:
+                // prettier-ignore
                 'The number of vertices of the polygon; this value is also '
                 + 'used as a modulus applied to the entries.',
         },
@@ -62,6 +63,7 @@ class VisualizerChaos extends VisualizerDefault {
             displayName: 'Fraction to walk',
             required: true,
             description:
+                // prettier-ignore
                 'What fraction of the way each step takes you toward the '
                 + 'vertex specified by the entry. It should be a '
                 + 'value between 0 and 1 inclusive.',
@@ -72,6 +74,7 @@ class VisualizerChaos extends VisualizerDefault {
             displayName: 'Number of walkers',
             required: true,
             description:
+                // prettier-ignore
                 'The number w of walkers. The sequence will be broken into '
                 + 'subsequences based on the residue mod w '
                 + 'of the index, each with a separate walker.',
@@ -106,6 +109,7 @@ class VisualizerChaos extends VisualizerDefault {
             displayName: 'Starting index',
             required: false,
             description:
+                // prettier-ignore
                 'Index of the first entry to use. If this is blank or less '
                 + 'than the first valid index, visualization will start '
                 + 'at the first valid index.',
@@ -116,6 +120,7 @@ class VisualizerChaos extends VisualizerDefault {
             displayName: 'Ending index',
             required: false,
             description:
+                // prettier-ignore
                 'Index of the last entry to use. If this is blank or greater '
                 + 'than the last valid index, visualization will end at the '
                 + 'last valid index.',
@@ -197,12 +202,14 @@ class VisualizerChaos extends VisualizerDefault {
             )
         }
         if (
+            // prettier-ignore
             p.highlightWalker.value < 0
             || p.highlightWalker.value >= p.walkers.value
         ) {
             status.errors.push(
+                // prettier-ignore
                 'The highlighted walker must be an integer '
-                    + 'between 0 and one less than the number of walkers.'
+                + 'between 0 and one less than the number of walkers.'
             )
         }
         if (p.circSize.value < 0) {
@@ -280,6 +287,7 @@ class VisualizerChaos extends VisualizerDefault {
             )
         }
         if (
+            // prettier-ignore
             (this.colorStyle === ColorStyle.Walker
                 && this.walkers > defaultColorList.length)
             || (this.colorStyle === ColorStyle.Destination
@@ -326,6 +334,7 @@ class VisualizerChaos extends VisualizerDefault {
         // Adjust the starting and ending points if need be
         let adjusted = false
         if (
+            // prettier-ignore
             typeof this.params.first.value === 'string'
             || this.first < this.seq.first
         ) {
@@ -333,6 +342,7 @@ class VisualizerChaos extends VisualizerDefault {
             adjusted = true
         }
         if (
+            // prettier-ignore
             typeof this.params.last.value === 'string'
             || this.last > this.seq.last
         ) {
@@ -385,8 +395,9 @@ class VisualizerChaos extends VisualizerDefault {
 
         // we do pixelsPerFrame pixels each time through the draw cycle;
         // this speeds things up essentially
-        const pixelsLimit =
-            this.myIndex
+        // prettier-ignore
+        const pixelsLimit
+            = this.myIndex
             + Math.min(this.last - this.myIndex + 1, this.pixelsPerFrame)
 
         for (; this.myIndex < pixelsLimit; this.myIndex++) {

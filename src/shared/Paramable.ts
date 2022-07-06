@@ -168,9 +168,10 @@ export class Paramable implements ParamableInterface {
                 me[prop] = 0
             } else {
                 throw Error(
+                    // prettier-ignore
                     `figure out ${this.params[prop].value} (`
-                        + `${typeof this.params[prop].value}) `
-                        + `to ${typeof me[prop]}`
+                    + `${typeof this.params[prop].value}) `
+                    + `to ${typeof me[prop]}`
                 )
             }
         }
