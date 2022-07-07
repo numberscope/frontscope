@@ -27,6 +27,7 @@ describe('SeqGetter', () => {
         const wrapper = mount(SeqSelector, {
             props: {
                 title: 'Foo Title',
+                isInstance: false,
             },
         })
         expect(wrapper.text()).toContain('Foo Title')

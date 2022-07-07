@@ -3,8 +3,8 @@
         <div class="row" v-if="drawingActive">
             <div class="col-sm-12">
                 <CanvasArea
-                    v-bind:activeViz="activeViz"
-                    v-bind:activeSeq="activeSeq"
+                    v-bind:activeViz="guaranteeViz()"
+                    v-bind:activeSeq="guaranteeSeq()"
                     v-on:closeCanvas="closeCanvas()" />
             </div>
         </div>
@@ -33,19 +33,20 @@
 </template>
 
 <script lang="ts">
+    import {defineComponent} from 'vue'
     import VisualizationMenu from '../components/VisualizationMenu.vue'
     import SequenceMenu from '../components/SequenceMenu.vue'
     import CanvasArea from '../components/CanvasArea.vue'
     import BundleManager from '../components/BundleManager.vue'
     import VISUALIZERS from '../visualizers/visualizers'
     import SEQUENCES from '../sequences/sequences'
+    import type {SequenceInterface} from '../sequences/SequenceInterface'
     import {
-        SequenceInterface,
-        SequenceExportModule,
         SequenceExportKind,
+        SequenceExportModule,
     } from '../sequences/SequenceInterface'
-    import {VisualizerInterface} from '../visualizers/VisualizerInterface'
-    export default {
+    import type {VisualizerInterface} from '../visualizers/VisualizerInterface'
+    export default defineComponent({
         name: 'ToolMain',
         components: {
             VisualizationMenu,
@@ -54,8 +55,14 @@
             BundleManager,
         },
         methods: {
+            guaranteeViz: function () {
+                return this.activeViz as VisualizerInterface
+            },
             setActiveViz: function (newViz: VisualizerInterface) {
                 this.activeViz = newViz
+            },
+            guaranteeSeq: function () {
+                return this.activeSeq as SequenceInterface
             },
             setActiveSeq: function (newSeq: SequenceInterface) {
                 this.activeSeq = newSeq
@@ -71,8 +78,8 @@
             },
             bundleSeqVizPair: function () {
                 const bundle = {
-                    seq: this.activeSeq,
-                    viz: this.activeViz,
+                    seq: this.activeSeq as SequenceInterface,
+                    viz: this.activeViz as VisualizerInterface,
                 }
                 this.seqVizPairs.push(bundle)
                 this.clearActive()
@@ -108,14 +115,14 @@
                 visualizers: visualizers,
                 sequences: sequences,
                 seqVizPairs: [] as {
-                    seq: SequenceInterface | null // Get the type correct
-                    viz: VisualizerInterface | null
+                    seq: SequenceInterface
+                    viz: VisualizerInterface
                 }[],
-                activeViz: null as VisualizerInterface | null, // ditto
-                activeSeq: null as SequenceInterface | null, // ditto
+                activeViz: null as VisualizerInterface | null,
+                activeSeq: null as SequenceInterface | null,
                 drawingActive: false,
             }
             return state
         },
-    }
+    })
 </script>

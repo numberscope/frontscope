@@ -18,5 +18,7 @@ module.exports = {
             {overrides: {'=': 'after'}},
         ],
         'vue/multi-word-component-names': 'off',
+        // For the Paramable interface, v-model directives need type annotation
+        'vue/valid-v-model': 'off',
     },
 }

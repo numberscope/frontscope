@@ -355,7 +355,7 @@ class VisualizerChaos extends VisualizerDefault {
         this.sketch.frameRate(10)
 
         // canvas clear/background
-        this.sketch.clear()
+        this.sketch.clear(0, 0, 0, 0)
         this.sketch.background(this.currentPalette.backgroundColor)
 
         // Draw corner labels if desired

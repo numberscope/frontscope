@@ -6,14 +6,14 @@
                 v-for="seq in isGetter(sequences, false)"
                 v-bind:title="seq.name"
                 v-bind:isInstance="seq.kind == instanceKind"
-                v-bind:key="seq.id"
+                v-bind:key="seq.name"
                 v-on:set-seq-params="setParams(seq)"
                 v-on:stage-instance="createSeq(true, seq)" />
             <hr />
             <SeqGetter
                 v-for="seq in isGetter(sequences, true)"
                 v-bind:title="seq.name"
-                v-bind:key="seq.id"
+                v-bind:key="seq.name"
                 v-on:load-seq="loadSeq(seq)" />
         </ul>
         <SeqVizParamsModal
@@ -28,22 +28,29 @@
 </template>
 
 <script lang="ts">
+    import {defineComponent} from 'vue'
+    import type {PropType} from 'vue'
     import SeqSelector from './SeqSelector.vue'
     import SeqGetter from './SeqGetter.vue'
     import SeqVizParamsModal from './SeqVizParamsModal.vue'
-    import {
+    import type {
         SequenceInterface,
         SequenceConstructor,
+    } from '../sequences/SequenceInterface'
+    import {
         SequenceExportModule,
         SequenceExportKind,
-    } from '../sequences/SequenceInterface.ts'
-    import {SequenceClassDefault} from '../sequences/SequenceClassDefault.ts'
-    export default {
+    } from '../sequences/SequenceInterface'
+    import {SequenceClassDefault} from '../sequences/SequenceClassDefault'
+    export default defineComponent({
         name: 'SequenceMenu',
         props: {
-            sequences: Array,
+            sequences: {
+                type: Array as PropType<SequenceExportModule[]>,
+                required: true,
+            },
             activeViz: Object,
-            activeSeq: Object,
+            activeSeq: Object as PropType<SequenceInterface | null>,
         },
         components: {
             SeqSelector,
@@ -127,7 +134,7 @@
                 errors: [] as string[],
             }
         },
-    }
+    })
 </script>
 
 <style scoped>

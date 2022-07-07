@@ -5,13 +5,14 @@
 </template>
 
 <script lang="ts">
-    export default {
+    import {defineComponent} from 'vue'
+    export default defineComponent({
         name: 'SeqGetter',
         props: {
             title: String,
             instanceId: String,
         },
-    }
+    })
 </script>
 
 <style scoped>

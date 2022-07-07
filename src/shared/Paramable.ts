@@ -73,6 +73,7 @@ export interface ParamInterface {
 export interface ParamableInterface {
     name: string
     description: string
+    isValid: boolean
     /**
      * params determines the parameters that will be settable via the
      * user interface. Each key should match a top-level property name of the
@@ -119,11 +120,8 @@ export class Paramable implements ParamableInterface {
     name = 'Paramable'
     description = 'A class which can have parameters set'
     params: {[key: string]: ParamInterface} = {}
-    isValid: boolean
+    isValid = false
 
-    constructor() {
-        this.isValid = false
-    }
     /**
      * All implementations based on this default delegate the checking of
      * parameters to the checkParameters() method.

@@ -25,18 +25,13 @@
 </template>
 
 <script lang="ts">
+    import {defineComponent} from 'vue'
     import p5 from 'p5'
     // we need a unique id for each canvas
     // see https://github.com/vuejs/vue/issues/5886#issuecomment-308647738
-    let cid = 0
-    export default {
+    let cid_count = 0
+    export default defineComponent({
         name: 'BundleCard',
-        // we need a unique id for each canvas
-        // see https://github.com/vuejs/vue/issues/5886#issuecomment-308647738
-        beforeCreate() {
-            this.cid = cid.toString()
-            cid += 1
-        },
         mounted() {
             const seq = this.seq
             seq.initialize()
@@ -61,10 +56,18 @@
         },
         methods: {},
         props: {
-            seq: Object,
-            viz: Object,
+            seq: {type: Object, required: true},
+            viz: {type: Object, required: true},
+            // we need a unique id for each canvas
+            // see https://github.com/vuejs/vue/issues/5886
+            cid: {
+                type: String,
+                default: function () {
+                    return 'Card-' + cid_count++
+                },
+            },
         },
-    }
+    })
 </script>
 
 <style scoped>

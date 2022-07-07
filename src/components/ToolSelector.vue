@@ -5,12 +5,13 @@
 </template>
 
 <script lang="ts">
-    export default {
+    import {defineComponent} from 'vue'
+    export default defineComponent({
         name: 'VizSelector',
         props: {
             title: String,
         },
-    }
+    })
 </script>
 
 <style scoped>

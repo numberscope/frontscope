@@ -63,7 +63,8 @@
 
 <script lang="ts">
     import background200px from '../assets/img/homepage/background200px.jpg'
-    export default {
+    import {defineComponent} from 'vue'
+    export default defineComponent({
         name: 'UserManual',
         data() {
             return {
@@ -168,7 +169,7 @@
                 }
             },
         },
-    }
+    })
 </script>
 
 <style>

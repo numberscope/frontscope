@@ -12,16 +12,26 @@
 </template>
 
 <script lang="ts">
+    import {defineComponent} from 'vue'
+    import type {PropType} from 'vue'
+    import type {VisualizerInterface} from '../visualizers/VisualizerInterface'
+    import type {SequenceInterface} from '../sequences/SequenceInterface'
     import p5 from 'p5'
     import StopDrawingButton from './StopDrawingButton.vue'
-    export default {
+    export default defineComponent({
         name: 'CanvasArea',
         components: {
             StopDrawingButton,
         },
         props: {
-            activeSeq: Object,
-            activeViz: Object,
+            activeSeq: {
+                type: Object as PropType<SequenceInterface>,
+                required: true,
+            },
+            activeViz: {
+                type: Object as PropType<VisualizerInterface>,
+                required: true,
+            },
         },
         methods: {
             closeCanvas: function (): void {
@@ -30,9 +40,6 @@
             },
         },
         mounted: function (): void {
-            console.log('Drawing with Visualizer: ', this.activeViz.name)
-            console.log('Drawing with Sequence', this.activeSeq.name)
-            // params here are ID and finite
             const activeSeq = this.activeSeq
             activeSeq.initialize()
             const activeViz = this.activeViz
@@ -53,7 +60,7 @@
         data: function () {
             return {drawing: {} as p5} // To get correct type
         },
-    }
+    })
 </script>
 
 <style scoped></style>
