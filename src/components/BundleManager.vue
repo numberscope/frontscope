@@ -68,11 +68,11 @@
         },
         props: {
             activeSeq: {
-                type: Object as PropType<SequenceInterface | null>,
+                type: [null, Object] as PropType<SequenceInterface | null>,
                 required: true,
             },
             activeViz: {
-                type: Object as PropType<VisualizerInterface | null>,
+                type: [null, Object] as PropType<VisualizerInterface | null>,
                 required: true,
             },
             bundles: Array as PropType<
