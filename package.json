@@ -46,6 +46,6 @@
         "vue-unique-id": "^3.2.1"
     },
     "lint-staged": {
-        "*": "prettier-eslint --write"
+        "*": "prettier-eslint --write --ignore .prettierignore"
     }
 }
