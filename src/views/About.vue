@@ -35,11 +35,13 @@
 </template>
 
 <script lang="ts">
+    import {defineComponent} from 'vue'
     import {RouterLink} from 'vue-router'
     // To be honest: this check exists only to avoid "unused variable" warning
     if (!RouterLink) {
         console.log('Failed import of RouterLink')
     }
+    export default defineComponent({})
 </script>
 
 <style>

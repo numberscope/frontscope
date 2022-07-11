@@ -5,7 +5,7 @@
             <VizSelector
                 v-for="viz in visualizers"
                 v-bind:title="viz.name"
-                v-bind:key="viz.id"
+                v-bind:key="viz.name"
                 v-on:set-viz-params="setParams(viz)" />
         </ul>
         <SeqVizParamsModal
@@ -18,17 +18,19 @@
 </template>
 
 <script lang="ts">
-    import {
+    import {defineComponent} from 'vue'
+    import type {PropType} from 'vue'
+    import type {
         VisualizerInterface,
         VisualizerExportModule,
     } from '@/visualizers/VisualizerInterface'
     import VizSelector from '../components/ToolSelector.vue'
     import SeqVizParamsModal from '../components/SeqVizParamsModal.vue'
-    export default {
+    export default defineComponent({
         name: 'VizualizationMenu',
         props: {
-            visualizers: Array,
-            activeViz: Object,
+            visualizers: Array as PropType<VisualizerExportModule[]>,
+            activeViz: Object as PropType<VisualizerInterface | null>,
             activeSeq: Object,
         },
         components: {
@@ -65,7 +67,7 @@
                 errors: [] as string[],
             }
         },
-    }
+    })
 </script>
 
 <style scoped>

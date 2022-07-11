@@ -10,7 +10,7 @@ class VizShiftCompare
     implements VisualizerInterface
 {
     name = 'Shift Compare'
-    private img: p5.Image = new p5.Image()
+    private img: p5.Image = new p5.Image(1, 1) // just a dummy
     mod = 2n
     params = {
         mod: {

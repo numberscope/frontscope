@@ -4,4 +4,5 @@
 npm run lint:list || echo 'Files listed above will be reformatted and staged.'
 npm run lint:staged
 npm run lint:check
+npm run typecheck
 npm run test:unit

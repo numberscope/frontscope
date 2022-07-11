@@ -35,15 +35,17 @@
                                 v-if="paramType[name] === 'boolean'"
                                 type="checkbox"
                                 class="left-input"
-                                :id="name"
-                                v-model="param.value" />
+                                :id="name as string"
+                                v-model="param.value as boolean" />
                             <input
                                 v-if="paramType[name] === 'color'"
                                 type="color"
                                 class="left-input"
-                                :id="name"
+                                :id="name as string"
                                 v-model="param.value" />
-                            <label class="form-label" v-bind:for="name">
+                            <label
+                                class="form-label"
+                                v-bind:for="name as string">
                                 <span
                                     v-if="
                                         param.required &&
@@ -59,24 +61,24 @@
                             <input
                                 class="form-control"
                                 v-if="paramType[name] === 'bigint'"
-                                v-bind:id="name"
+                                v-bind:id="name as string"
                                 v-bind:value="param.value"
                                 v-on:input="setBigint($event, param)" />
                             <input
                                 class="form-control"
                                 v-if="paramType[name] === 'integer'"
-                                v-bind:id="name"
+                                v-bind:id="name as string"
                                 v-bind:value="param.value"
                                 v-on:input="setInteger($event, param)" />
                             <input
                                 class="form-control"
                                 v-if="paramType[name] === 'number'"
-                                v-bind:id="name"
+                                v-bind:id="name as string"
                                 v-model.number="param.value" />
                             <select
                                 class="form-select"
                                 v-if="paramType[name] === 'enum'"
-                                v-bind:id="name"
+                                v-bind:id="name as string"
                                 v-model.number="param.value">
                                 <option
                                     v-for="(optval, optname) in stringsOf(
@@ -90,25 +92,30 @@
                             <input
                                 class="form-control"
                                 v-if="paramType[name] === 'string'"
-                                v-bind:id="name"
+                                v-bind:id="name as string"
                                 v-model="param.value" />
                             <input
                                 class="form-control"
                                 v-if="paramType[name] === 'array'"
-                                v-bind:id="name"
+                                v-bind:id="name as string"
                                 v-bind:value="param.value"
-                                v-on:input="setArray($event, param.value)" />
+                                v-on:input="
+                                    setArray(
+                                        $event,
+                                        param.value as [number | BigInt]
+                                    )
+                                " />
                             <input
                                 class="form-control"
                                 v-if="paramType[name] === 'object'"
-                                v-bind:id="name"
+                                v-bind:id="name as string"
                                 v-bind:value="param.value" />
                             <input
                                 class="form-control"
                                 v-if="paramType[name] === 'vector'"
-                                v-bind:id="name"
-                                v-bind:value="getVector(param.value)"
-                                v-on:input="setVector($event, param.value)" />
+                                v-bind:id="name as string"
+                                v-bind:value="getVector(param)"
+                                v-on:input="setVector($event, param)" />
                         </div>
                         <small
                             v-bind:id="name + '-help-text'"
@@ -152,10 +159,12 @@
 </template>
 
 <script lang="ts">
+    import {defineComponent} from 'vue'
+    import type {PropType} from 'vue'
     import p5 from 'p5'
-    import {ParamInterface} from '../shared/Paramable.ts'
+    import type {ParamInterface} from '../shared/Paramable'
     const reminder = '(Note: must be an integer.) '
-    export default {
+    export default defineComponent({
         name: 'SeqVizParamsModal',
         methods: {
             groupClass(dependency: undefined | string): string {
@@ -165,11 +174,7 @@
                 }
                 return retval
             },
-            integerReminder(
-                is: string,
-                was: string,
-                p: {description: string}
-            ) {
+            integerReminder(is: string, was: string, p: ParamInterface) {
                 // differing by initial 0 is ok:
                 is = is.replace(/^0/, '')
                 was = was.replace(/^0/, '')
@@ -201,35 +206,44 @@
                     }, 500)
                 }
             },
-            setBigint(e: Event, p: {value: BigInt; description: string}) {
+            setBigint(e: Event, p: ParamInterface) {
                 const target = e.target as HTMLInputElement
                 try {
                     p.value = BigInt(target.value)
                 } catch {
                     // Continue with old value
                 }
-                this.integerReminder(p.value.toString(), target.value, p)
+                this.integerReminder(
+                    (p.value as BigInt).toString(),
+                    target.value,
+                    p
+                )
             },
-            setInteger(e: Event, p: {value: number; description: string}) {
+            setInteger(e: Event, p: ParamInterface) {
                 const target = e.target as HTMLInputElement
                 try {
                     p.value = parseInt(target.value, 10)
-                    if (isNaN(p.value)) p.value = 0
+                    if (isNaN(p.value as number)) p.value = 0
                 } catch {
                     // Continue with old value
                 }
-                this.integerReminder(p.value.toString(), target.value, p)
+                this.integerReminder(
+                    (p.value as number).toString(),
+                    target.value,
+                    p
+                )
             },
-            getVector(vec: p5.Vector) {
+            getVector(p: ParamInterface) {
+                const vec = p.value as p5.Vector
                 let retval = vec.x.toString()
                 if (!isNaN(vec.y)) retval += `,${vec.y}`
                 return retval
             },
-            setVector(e: Event, vec: p5.Vector) {
+            setVector(e: Event, p: ParamInterface) {
                 const target = e.target as HTMLInputElement
                 const part = target.value.split(',')
-                vec.x = Number(part[0])
-                vec.y = Number(part[1])
+                ;(p.value as p5.Vector).x = Number(part[0])
+                ;(p.value as p5.Vector).y = Number(part[1])
             },
             setArray(e: Event, a: [number | BigInt]) {
                 const target = e.target as HTMLInputElement
@@ -247,9 +261,12 @@
                     a.pop()
                 }
             },
-            stringsOf(enumObj: {[key: string]: string | number}): {
+            stringsOf(
+                enumObj: {[key: string]: string | number} | undefined
+            ): {
                 [key: string]: number
             } {
+                if (!enumObj) return {}
                 const retval: {[key: string]: number} = {}
                 for (const prop in enumObj) {
                     if (typeof enumObj[prop] === 'number') {
@@ -260,8 +277,8 @@
             },
         },
         props: {
-            params: Object,
-            errors: Array,
+            params: {type: Object, required: true},
+            errors: {type: Array as PropType<string[]>, required: true},
             loadingInstance: Boolean,
         },
         data() {
@@ -286,7 +303,7 @@
             return {paramType: types, boxes: ['boolean', 'color']}
         },
         computed: {
-            requiredMissing() {
+            requiredMissing(): boolean {
                 for (const name in this.params) {
                     if (
                         this.params[name].required
@@ -299,7 +316,7 @@
                 }
                 return false
             },
-            visibleParams() {
+            visibleParams(): {[key: string]: ParamInterface} {
                 const viz: {[key: string]: ParamInterface} = {}
                 for (const name in this.params) {
                     if (this.params[name].visibleDependency) {
@@ -316,7 +333,7 @@
                 return viz
             },
         },
-    }
+    })
 </script>
 
 <style scoped>

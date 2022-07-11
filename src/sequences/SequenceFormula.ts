@@ -41,12 +41,12 @@ class SequenceFormula extends SequenceCached {
         let parsetree = undefined
         try {
             parsetree = math.parse(this.params.formula.value)
-        } catch (err) {
+        } catch (err: unknown) {
             status.isValid = false
             status.errors.push(
                 'Could not parse formula: ' + this.params.formula.value
             )
-            status.errors.push(err.message)
+            status.errors.push((err as Error).message)
             return status
         }
         const othersymbs = parsetree.filter(

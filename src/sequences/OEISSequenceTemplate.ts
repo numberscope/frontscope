@@ -1,4 +1,4 @@
-import {ValidationStatus} from '../shared/ValidationStatus'
+import type {ValidationStatus} from '../shared/ValidationStatus'
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {SequenceCached} from './SequenceCached'
 
