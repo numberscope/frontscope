@@ -1,0 +1,11 @@
+site_name: Numberscope
+plugins:
+    - search
+    - semiliterate:
+          exclude_extensions: ['.jpg', '.ttf', '.ico']
+          ignore_folders: [node_modules]
+          include_extensions: ['.png']
+          merge_docs_dir: false
+docs_dir: doc
+markdown_extensions:
+    - pymdownx.superfences

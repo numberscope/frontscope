@@ -11,7 +11,8 @@
         "lint:list": "prettier-eslint --list-different \"**/*.*\"",
         "lint:staged": "lint-staged",
         "lint": "prettier-eslint --write \"**/*.*\" && npm run lint:check",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "postinstall": "python3 -m venv .venv && .venv/bin/pip install -U pip && .venv/bin/pip install -r requirements.txt"
     },
     "dependencies": {
         "p5": "^1.4.1",
