@@ -5,6 +5,7 @@
 *.ico
 *~
 .husky
+.gitignore
 .prettierignore
 .vscode
 node_modules
