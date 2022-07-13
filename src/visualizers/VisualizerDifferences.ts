@@ -5,6 +5,14 @@ import {VisualizerDefault} from './VisualizerDefault'
 
 const min = Math.min
 
+/** md
+# Difference Visualizer
+
+This is a very simple visualizer that just prints a row of values from
+the sequence, and below that between each two terms their difference.
+It can continue this process for as many rows as you like.
+**/
+
 class VisualizerDifferences extends VisualizerDefault {
     name = 'Differences'
 

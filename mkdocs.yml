@@ -1,11 +1,21 @@
 site_name: Numberscope
+nav:
+    - Overview: README.md
+    - User Guide:
+          - Introduction: doc/user_guide.md
+          - ... | flat | src/visualizers/*
+    - Documentation:
+          - ... | flat | doc/*.md
+docs_dir: doc
+theme:
+    name: readthedocs
 plugins:
+    - awesome-pages
     - search
     - semiliterate:
-          exclude_extensions: ['.jpg', '.ttf', '.ico']
+          exclude_extensions: ['.jpg', '.ttf', '.ico', 'LICENSE.md']
           ignore_folders: [node_modules]
           include_extensions: ['.png']
           merge_docs_dir: false
-docs_dir: doc
 markdown_extensions:
     - pymdownx.superfences
