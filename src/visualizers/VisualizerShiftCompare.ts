@@ -3,6 +3,17 @@ import {VisualizerDefault} from './VisualizerDefault'
 import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 
+/** md
+# Shift Compare Visualizer
+
+This visualizer creates an image based on whether entries at various distances
+from each other in the sequence are congruent with respect to a given
+modulus.
+
+_This visualizer documentation page is a stub. You can improve Numberscope
+by adding detail._
+**/
+
 // CAUTION: This is unstable with some sequences
 // Using it may crash your browser
 class VizShiftCompare

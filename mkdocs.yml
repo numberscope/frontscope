@@ -4,7 +4,15 @@ nav:
     - User Guide:
           - Introduction: doc/user_guide.md
           - ... | flat | src/visualizers/*
-    - Documentation:
+    - Extending:
+          - doc/extending.md
+          - doc/running-from-source.md
+          - doc/making-a-visualizer.md
+    - Contributing:
+          - doc/contributing.md
+          - doc/visual-studio-code-setup.md
+          - doc/working-with-pm.md
+    - Other Information:
           - ... | flat | doc/*.md
 docs_dir: doc
 theme:

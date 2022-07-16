@@ -4,6 +4,17 @@ import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 
+/** md
+# Turtle Visualizer
+
+This visualizer interprets a sequence as instructions for a drawing machine,
+with each entry determining what angle to turn and how far to move. It displays
+the resulting path.
+
+_This visualizer documentation page is a stub. You can improve Numberscope
+by adding detail._
+**/
+
 // Turtle needs work
 // Throwing the same error on previous Numberscope website
 class VisualizerTurtle
