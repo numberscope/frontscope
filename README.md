@@ -8,7 +8,7 @@ This project is licensed under the
 [MIT License](https://opensource.org/licenses/MIT). See the text of the MIT
 License in LICENSE.md.
 
-[<img src="src/assets/img/specimens/6.png" width="320" style="float: right;" />](./src/assets/img/specimens/6.png)
+[<img src="src/assets/img/specimens/6.png" width="320" style="float: right; margin-left: 1em;" />](./src/assets/img/specimens/6.png)
 
 ## What is Numberscope?
 
