@@ -6,7 +6,7 @@ import {VisualizerExportModule} from './VisualizerInterface'
 # Chaos Visualizer
 
 This visualizer interprets the sequence entries as instructions for walkers
-traversing the region bounded by the vertices of a regular $n$-gon, and displays
+traversing the region bounded by the vertices of a regular _n_-gon, and displays
 the locations that the walkers visit.
 
 _This visualizer documentation page is a stub. You can improve Numberscope
