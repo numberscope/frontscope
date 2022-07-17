@@ -2,7 +2,7 @@ import {describe} from 'vitest'
 // import {mount} from '@vue/test-utils'
 // import SequenceMenu from '../SequenceMenu.vue'
 
-describe('SequenceMenu', () => {
+describe.todo('SequenceMenu', () => {
     /*
     If we try to import SeqVizParamsModel, we get an error when we do
     `npm run test:unit`:

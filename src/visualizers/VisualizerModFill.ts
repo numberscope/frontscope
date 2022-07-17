@@ -6,18 +6,25 @@ import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 /** md
 # Mod Fill Visualizer
 
+[image should go here]
+
 The _n_-th row of this triangular diagram has _n_ cells which are turned on
 or off according to whether the corresponding residue modulo _n_ occurs for
-an element of the sequence.
+some entry of the sequence. The entries are considered in order, filling the
+corresponding cells in turn, so you can get an idea of when various residues
+occur by watching the order the cells are filled in as the diagram is drawn.
 
-_This visualizer documentation page is a stub. You can improve Numberscope
-by adding detail._
+## Parameters
 **/
 
 class VizModFill extends VisualizerDefault implements VisualizerInterface {
     name = 'Mod Fill'
     modDimension = 10n
     params = {
+        /** md
+- modDimension: The number of rows to display, which corresponds to the largest
+    modulus to consider.
+         **/
         modDimension: {
             value: this.modDimension,
             displayName: 'Mod dimension',

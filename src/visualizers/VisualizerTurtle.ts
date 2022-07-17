@@ -7,12 +7,13 @@ import type {SequenceInterface} from '../sequences/SequenceInterface'
 /** md
 # Turtle Visualizer
 
-This visualizer interprets a sequence as instructions for a drawing machine,
-with each entry determining what angle to turn and how far to move. It displays
-the resulting path.
+[image should go here]
 
-_This visualizer documentation page is a stub. You can improve Numberscope
-by adding detail._
+This visualizer interprets a sequence as instructions for a drawing machine,
+with each entry determining what angle to turn before drawing the next
+straight segment. It displays the resulting polygonal path.
+
+## Parameters
 **/
 
 // Turtle needs work
@@ -32,42 +33,69 @@ class VisualizerTurtle
     strokeColor = '#ff0000'
 
     params = {
+        /** md
+- domain: A comma-separated list of all of the values that may occur in the
+    sequence. (One way to ensure a small number of possible values is to use a
+    sequence that has been reduced with respect to some small modulus. But
+    some sequences, like A014577 "The regular paper-folding sequence", naturally
+    have a small domain.)
+         **/
         domain: {
             value: this.domain,
             displayName: 'Sequence Domain',
             required: true,
             description: '(comma-separated list of values)',
         },
+        /** md
+- range: a comma-separated list of numbers. These are turning angles,
+    corresponding positionally to the domain elements. Range and domain must
+    be the same length.
+         **/
         range: {
             value: this.range,
             displayName: 'Angles',
             required: true,
             description: '(comma-separated list of values in degrees)',
         },
+        /** md
+- stepSize: a number. Gives the length of the segment drawn for each entry.
+         **/
         stepSize: {
             value: this.stepSize,
             forceType: 'integer',
             displayName: 'Step Size',
             required: true,
         },
+        /**
+- start: x,y coordinates of the point where drawing will start
+         **/
         start: {
             value: this.start,
             displayName: 'Start',
             required: true,
             description: 'coordinates of the point where drawing will start',
         },
+        /**
+- strokeWeight: a number. Gives the width of the segment drawn for each entry.
+         **/
         strokeWeight: {
             value: this.strokeWeight,
             forceType: 'integer',
             displayName: 'Stroke Width',
             required: true,
         },
+        /**
+- bgColor: The background color of the visualizer canvas
+         **/
         bgColor: {
             value: this.bgColor,
             forceType: 'color',
             displayName: 'Background Color',
             required: false,
         },
+        /**
+- strokeColor: The color used for drawing the path.
+         **/
         strokeColor: {
             value: this.strokeColor,
             forceType: 'color',

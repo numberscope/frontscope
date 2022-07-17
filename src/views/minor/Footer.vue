@@ -1,14 +1,10 @@
-<script setup lang="ts">
-    import {RouterLink} from 'vue-router'
-</script>
-
 <template>
     <footer class="text-center">
         <p>
             Thank you very much to
-            <RouterLink class="footer-link" to="/acknowledgements">
+            <a href="/doc/doc/acknowledgments/index.html" class="footer-link">
                 those who made Numberscope possible
-            </RouterLink>
+            </a>
             over the years!
         </p>
     </footer>

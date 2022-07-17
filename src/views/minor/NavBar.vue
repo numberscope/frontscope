@@ -36,12 +36,11 @@
                             </RouterLink>
                         </li>
                         <li class="nav-item">
-                            <RouterLink
+                            <a
+                                href="/doc/doc/about/index.html"
                                 class="nav-link"
-                                id="aboutLink"
-                                to="/about">
-                                About
-                            </RouterLink>
+                                >About</a
+                            >
                         </li>
                         <li class="nav-item">
                             <RouterLink

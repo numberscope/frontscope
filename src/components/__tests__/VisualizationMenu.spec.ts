@@ -2,7 +2,7 @@ import {describe} from 'vitest'
 // import {mount} from '@vue/test-utils'
 // import VisualizationMenu from '../VisualizationMenu.vue'
 
-describe('VisualizationMenu', () => {
+describe.todo('VisualizationMenu', () => {
     /*
     If we try to import VisualizationMenu, we get an error when we do
     `npm run test:unit`:

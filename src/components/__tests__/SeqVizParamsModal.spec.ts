@@ -2,7 +2,7 @@ import {describe} from 'vitest'
 // import {mount} from '@vue/test-utils'
 // import SeqVizParamsModal from '../SeqVizParamsModal.vue'
 
-describe('SeqVizParamsModal', () => {
+describe.todo('SeqVizParamsModal', () => {
     /*
     If we try to import SeqVizParamsModel, we get an error when we do
     `npm run test:unit`:
