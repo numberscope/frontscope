@@ -89,6 +89,9 @@
     #goToScopeButton {
         background-color: #3333ff;
     }
+    #goToScopeButton:hover {
+        text-decoration: underline;
+    }
     #numberscopeDescription {
         margin-top: 2em;
         margin-bottom: 2em;
