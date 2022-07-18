@@ -1,6 +1,8 @@
 <template>
     <div id="homeContent">
-        <img :src="background4" id="background4" />
+        <RouterLink to="/scope">
+            <img :src="background4" id="background4" />
+        </RouterLink>
         <p id="numberscopeDescription">
             The Online Tool for Visualizing Integer Sequences
         </p>
