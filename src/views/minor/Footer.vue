@@ -3,8 +3,8 @@
         <p>
             Thank you very much to
             <a href="/doc/doc/acknowledgments/index.html" class="footer-link">
-                those who made Numberscope possible
-            </a>
+                those who made Numberscope possible</a
+            >
             over the years!
         </p>
     </footer>
