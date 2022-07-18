@@ -53,6 +53,6 @@ that is more performant. You can enable it by the following steps:
 There are of course many other possible editors and IDEs. For example, one can
 use the venerable Emacs editor, which has many packages for highlighting code
 and autoformatting it. Support for the latter that respects Numberscope's
-particular setup is supported by `tools/editor/autoformat.el` in this
+particular setup is provided by `tools/editor/autoformat.el` in this
 repository. That Emacs package runs source files through the `prettier-eslint`
 formatter (see the following page) every time they are saved in Emacs.

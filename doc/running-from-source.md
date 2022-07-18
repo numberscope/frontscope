@@ -47,4 +47,4 @@ find any problems, and get your idea working. There are many possibilities for
 these tools, but if you're just starting out, Numberscope recommends an IDE
 called "VSCode" with some additional features added by plugins (Volar and a
 TypeScript Vue module for it). The details for this part of the setup are in
-the [Contributing](contributing.md) section.
+the [Contributing](visual-studio-code-setup.md) section.
