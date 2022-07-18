@@ -38,12 +38,13 @@
                         <li class="nav-item">
                             <a
                                 href="/doc/doc/about/index.html"
-                                class="nav-link">
+                                class="nav-link"
+                                id="aboutLink">
                                 About
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/doc/" class="nav-link">
+                            <a href="/doc/" class="nav-link" id="docLink">
                                 Documentation
                             </a>
                         </li>
@@ -85,7 +86,7 @@
     */
     #scopeLink,
     #aboutLink,
-    #helpLink {
+    #docLink {
         color: white;
     }
     .navbar-text a {
@@ -93,7 +94,7 @@
     }
     #scopeLink:hover,
     #aboutLink:hover,
-    #helpLink:hover {
+    #docLink:hover {
         text-decoration: underline;
     }
     .navbar-text a:hover {
