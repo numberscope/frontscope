@@ -9,6 +9,9 @@ for public math engagement and lifelong learning. Drs. Stange and Whitney and
 the rest of the Numberscope team are passionate about math education and open
 source projects.
 
+You can find [Numberscope on GitHub](https://github.com/numberscope) or
+[contact the organizers](mailto:numberscope@colorado.edu).
+
 ## Contributors
 
 -   Abdullatif Khalid Abduljaleel

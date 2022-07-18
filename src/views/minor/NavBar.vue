@@ -38,17 +38,14 @@
                         <li class="nav-item">
                             <a
                                 href="/doc/doc/about/index.html"
-                                class="nav-link"
-                                >About</a
-                            >
+                                class="nav-link">
+                                About
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <RouterLink
-                                class="nav-link"
-                                id="helpLink"
-                                to="/help">
-                                Help
-                            </RouterLink>
+                            <a href="/doc/" class="nav-link">
+                                Documentation
+                            </a>
                         </li>
                     </ul>
                     <span class="navbar-text">
