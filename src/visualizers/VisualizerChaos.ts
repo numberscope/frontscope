@@ -2,6 +2,17 @@ import p5 from 'p5'
 import {VisualizerDefault} from './VisualizerDefault'
 import {VisualizerExportModule} from './VisualizerInterface'
 
+/** md
+# Chaos Visualizer
+
+This visualizer interprets the sequence entries as instructions for walkers
+traversing the region bounded by the vertices of a regular _n_-gon, and displays
+the locations that the walkers visit.
+
+_This visualizer documentation page is a stub. You can improve Numberscope
+by adding detail._
+**/
+
 // p5 Colour palette class
 class Palette {
     colorList: p5.Color[] = []

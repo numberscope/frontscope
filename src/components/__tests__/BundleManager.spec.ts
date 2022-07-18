@@ -2,7 +2,7 @@ import {describe} from 'vitest'
 // import {mount} from '@vue/test-utils'
 // import BundleManager from '../BundleManager.vue'
 
-describe('BundleManager', () => {
+describe.todo('BundleManager', () => {
     /*
     If we try to import BundleManager, we get an error when we do
     `npm run test:unit`:

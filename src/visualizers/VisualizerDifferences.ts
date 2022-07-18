@@ -5,6 +5,19 @@ import {VisualizerDefault} from './VisualizerDefault'
 
 const min = Math.min
 
+/** md
+# Difference Visualizer
+
+(example image should go here)
+
+This is a very simple visualizer that just prints a row of values from
+the sequence, and below that, between each two terms, their difference.
+It can continue this process, adding rows that indicate differences
+between the terms in the row above, for as many rows as you like.
+
+## Parameters
+**/
+
 class VisualizerDifferences extends VisualizerDefault {
     name = 'Differences'
 
@@ -12,12 +25,18 @@ class VisualizerDifferences extends VisualizerDefault {
     levels = 5
 
     params = {
+        /** md
+- n: The number of terms of the sequence to display in the top row.
+         **/
         n: {
             value: this.n,
             forceType: 'integer',
             displayName: 'Elements in top row',
             required: true,
         },
+        /** md
+- levels: The number of rows to produce. Cannot be larger than n.
+         **/
         levels: {
             value: this.levels,
             forceType: 'integer',

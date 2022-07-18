@@ -1,4 +1,25 @@
 <template>
+    <!--
+## The main Numberscope interface
+
+On the left-hand side you will see the Sequence Menu and below that the
+Visualizer Menu. Click on an entry in either to bring up a settings dialog.
+When the parameters are to your liking, click on "Save Changes." A
+description of the component will appear in the central display area.
+
+When you have chosen and configured both a Sequence and a Visualizer,
+a "Create Bundle" button will appear. Clicking it will create a
+small preview panel for that combination. The "Draw" button on that
+panel will zoom to a full-screen view of the visualization you've
+created. Hit the "&lt; Back" button at the top left of that view (_not_
+your browser's `Back` button) to return to the main interface.
+
+You can create as many visualization bundles as you wish, and cycle
+back and forth between any of them and the main page.
+
+The remaining pages of the User Guide provide information on each of the
+implemented visualizers.
+      -->
     <div class="container-fluid">
         <div class="row" v-if="drawingActive">
             <div class="col-sm-12">

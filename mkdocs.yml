@@ -1,0 +1,30 @@
+site_name: Numberscope
+nav:
+    - Overview: README.md
+    - User Guide:
+          - Introduction: doc/user_guide.md
+          - ... | flat | src/visualizers/*
+    - Extending:
+          - doc/extending.md
+          - doc/running-from-source.md
+          - doc/making-a-visualizer.md
+    - Contributing:
+          - doc/contributing.md
+          - doc/visual-studio-code-setup.md
+          - doc/working-with-pm.md
+    - Other Information:
+          - ... | flat | doc/*.md
+docs_dir: doc
+site_dir: dist/doc
+theme:
+    name: readthedocs
+plugins:
+    - awesome-pages
+    - search
+    - semiliterate:
+          exclude_extensions: ['.jpg', '.ttf', '.ico', 'LICENSE.md']
+          ignore_folders: [node_modules, dist]
+          include_extensions: ['.png']
+          merge_docs_dir: false
+markdown_extensions:
+    - pymdownx.superfences

@@ -2,7 +2,7 @@ import {describe} from 'vitest'
 // import {mount} from '@vue/test-utils'
 // import CanvasArea from '../CanvasArea.vue'
 
-describe('CanvasArea', () => {
+describe.todo('CanvasArea', () => {
     /*
     If we try to import CanvasArea, we get an error when we do
     `npm run test:unit`:

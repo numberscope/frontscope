@@ -14,5 +14,13 @@ export default defineConfig({
     build: {
         target: 'esnext',
     },
-    envDir: 'root',
+    preview: {
+        port: 5050,
+        proxy: {
+            '^/doc$': {
+                target: 'http://localhost:5050/doc/index.html',
+                followRedirects: true,
+            },
+        },
+    },
 })
