@@ -9,7 +9,7 @@
         <RouterLink id="goToScopeButton" class="btn btn-primary" to="/scope">
             Go to the 'Scope
         </RouterLink>
-        <p class="mt-4">
+        <p>
             By using this website, you agree that any images or media you
             create using the tools on this website are released by you into
             the public domain according to
@@ -37,13 +37,14 @@
     }
     #goToScopeButton {
         background-color: #3333ff;
+        margin-bottom: 1ex;
     }
     #goToScopeButton:hover {
         text-decoration: underline;
     }
     #numberscopeDescription {
-        margin-top: 2em;
-        margin-bottom: 2em;
+        margin-top: 1.5ex;
+        margin-bottom: 1.5ex;
         font-weight: bold;
         font-size: large;
     }

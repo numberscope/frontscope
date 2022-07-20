@@ -28,23 +28,19 @@
                     id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <RouterLink
-                                class="nav-link"
-                                id="scopeLink"
-                                to="/scope">
+                            <RouterLink class="nav-link" to="/scope">
                                 The 'Scope
                             </RouterLink>
                         </li>
                         <li class="nav-item">
                             <a
                                 href="/doc/doc/about/index.html"
-                                class="nav-link"
-                                id="aboutLink">
+                                class="nav-link">
                                 About
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/doc/" class="nav-link" id="docLink">
+                            <a href="/doc/" class="nav-link">
                                 Documentation
                             </a>
                         </li>
@@ -80,21 +76,16 @@
 </script>
 
 <style>
-    /*
-    I used ID's instead of a class because Bootstrap's CSS wasn't being
-    overridden when I used a class. ¯\_(ツ)_/¯
-    */
-    #scopeLink,
-    #aboutLink,
-    #docLink {
+    .navbar-nav li.nav-item .nav-link {
+        color: white;
+    }
+    .navbar-nav li.nav-item .nav-link:hover {
         color: white;
     }
     .navbar-text a {
         text-decoration: none;
     }
-    #scopeLink:hover,
-    #aboutLink:hover,
-    #docLink:hover {
+    .nav-link:hover {
         text-decoration: underline;
     }
     .navbar-text a:hover {

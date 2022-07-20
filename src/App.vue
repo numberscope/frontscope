@@ -14,7 +14,7 @@
 
 <style>
     main {
-        min-height: 100vh;
+        min-height: 80vh;
         font-family: Arial, Helvetica, sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
