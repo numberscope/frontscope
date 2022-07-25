@@ -20,7 +20,7 @@
         cursor: pointer;
     }
     li:hover {
-        background-color: #809fff;
+        background-color: var(--ns-light-blue);
         color: #ffffff;
     }
     li {

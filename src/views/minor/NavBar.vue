@@ -96,7 +96,7 @@
         font-size: small;
     }
     .navbar-custom {
-        background-color: #809fff;
+        background-color: var(--ns-light-blue);
         color: white;
     }
     #logoWithMicroscope {

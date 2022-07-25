@@ -23,7 +23,7 @@
 
 <style>
     footer {
-        background-color: #3333ff;
+        background-color: var(--ns-dark-blue);
         color: white;
         padding: 16px 4px;
     }

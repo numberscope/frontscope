@@ -36,7 +36,7 @@
         max-width: 50%;
     }
     #goToScopeButton {
-        background-color: #3333ff;
+        background-color: var(--ns-dark-blue);
         margin-bottom: 1ex;
     }
     #goToScopeButton:hover {

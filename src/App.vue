@@ -13,6 +13,10 @@
 </script>
 
 <style>
+    :root {
+        --ns-light-blue: #809fff;
+        --ns-dark-blue: #3333ff;
+    }
     main {
         min-height: 80vh;
         font-family: Arial, Helvetica, sans-serif;
