@@ -25,7 +25,13 @@
     footer {
         background-color: var(--ns-dark-blue);
         color: white;
-        padding: 16px 4px;
+        padding-top: 10px;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+    footer p {
+        margin-bottom: 0.5rem;
     }
     .footer-link {
         color: orange;
