@@ -77,10 +77,10 @@
 
 <style>
     .navbar-nav li.nav-item .nav-link {
-        color: white;
+        color: var(--ns-navigation-foreground);
     }
     .navbar-nav li.nav-item .nav-link:hover {
-        color: white;
+        color: var(--ns-navigation-foreground);
     }
     .navbar-text a {
         text-decoration: none;
@@ -96,8 +96,8 @@
         font-size: small;
     }
     .navbar-custom {
-        background-color: var(--ns-light-blue);
-        color: white;
+        color: var(--ns-navigation-foreground);
+        background-color: var(--ns-navigation-background);
     }
     #logoWithMicroscope {
         width: 10em;

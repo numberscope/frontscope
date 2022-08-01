@@ -23,11 +23,10 @@
 
 <style>
     footer {
-        background-color: var(--ns-dark-blue);
-        color: white;
+        color: var(--ns-information-foreground);
+        background-color: var(--ns-information-background);
+        height: var(--ns-footer-height);
         padding-top: 10px;
-        position: fixed;
-        bottom: 0;
         width: 100%;
     }
     footer p {

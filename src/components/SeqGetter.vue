@@ -20,8 +20,8 @@
         cursor: pointer;
     }
     li:hover {
-        background-color: var(--ns-light-blue);
-        color: #ffffff;
+        color: var(--ns-navigation-foreground);
+        background-color: var(--ns-navigation-background);
     }
     li {
         text-align: left;

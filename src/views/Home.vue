@@ -6,7 +6,7 @@
         <p id="numberscopeDescription">
             The Online Tool for Visualizing Integer Sequences
         </p>
-        <RouterLink id="goToScopeButton" class="btn btn-primary" to="/scope">
+        <RouterLink id="goToScopeButton" class="btn" to="/scope">
             Go to the 'Scope
         </RouterLink>
         <p>
@@ -36,11 +36,12 @@
         max-width: 50%;
     }
     #goToScopeButton {
-        background-color: var(--ns-dark-blue);
         margin-bottom: 1ex;
+        border-color: var(--ns-information-background);
     }
     #goToScopeButton:hover {
-        text-decoration: underline;
+        color: var(--ns-navigation-foreground);
+        background-color: var(--ns-navigation-background);
     }
     #numberscopeDescription {
         margin-top: 1.5ex;
