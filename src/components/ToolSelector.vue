@@ -1,6 +1,6 @@
 <template>
     <a v-on:click="$emit('set-viz-params', title)">
-        <li class="list-group-item">{{ title }}</li>
+        <li class="btn">{{ title }}</li>
     </a>
 </template>
 
@@ -19,10 +19,12 @@
         cursor: pointer;
     }
     li:hover {
-        background-color: #809fff;
-        color: #ffffff;
+        color: var(--ns-navigation-foreground);
+        background-color: var(--ns-navigation-background);
     }
     li {
         text-align: left;
+        width: 100%;
+        border-color: var(--ns-information-background);
     }
 </style>

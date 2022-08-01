@@ -13,18 +13,26 @@
 </script>
 
 <style>
+    :root {
+        --ns-foreground: #2c3e50;
+        --ns-navigation-foreground: white;
+        --ns-navigation-background: #809fff;
+        --ns-information-foreground: white;
+        --ns-information-background: #3333ff;
+        --ns-footer-height: 9ex;
+    }
     main {
-        min-height: 100vh;
+        min-height: calc(100vh - var(--ns-footer-height));
         font-family: Arial, Helvetica, sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        color: #2c3e50;
+        color: var(--ns-foreground);
     }
     nav {
         padding: 30px;
     }
     nav a {
         font-weight: bold;
-        color: #2c3e50;
+        color: var(--ns-foreground);
     }
 </style>

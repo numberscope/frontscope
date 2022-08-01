@@ -28,10 +28,7 @@
                     id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <RouterLink
-                                class="nav-link"
-                                id="scopeLink"
-                                to="/scope">
+                            <RouterLink class="nav-link" to="/scope">
                                 The 'Scope
                             </RouterLink>
                         </li>
@@ -79,21 +76,16 @@
 </script>
 
 <style>
-    /*
-    I used ID's instead of a class because Bootstrap's CSS wasn't being
-    overridden when I used a class. ¯\_(ツ)_/¯
-    */
-    #scopeLink,
-    #aboutLink,
-    #helpLink {
-        color: white;
+    .navbar-nav li.nav-item .nav-link {
+        color: var(--ns-navigation-foreground);
+    }
+    .navbar-nav li.nav-item .nav-link:hover {
+        color: var(--ns-navigation-foreground);
     }
     .navbar-text a {
         text-decoration: none;
     }
-    #scopeLink:hover,
-    #aboutLink:hover,
-    #helpLink:hover {
+    .nav-link:hover {
         text-decoration: underline;
     }
     .navbar-text a:hover {
@@ -104,8 +96,8 @@
         font-size: small;
     }
     .navbar-custom {
-        background-color: #809fff;
-        color: white;
+        color: var(--ns-navigation-foreground);
+        background-color: var(--ns-navigation-background);
     }
     #logoWithMicroscope {
         width: 10em;
