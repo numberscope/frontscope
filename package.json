@@ -15,7 +15,7 @@
         "help:doc:serve:3": "echo Numberscope interface itself.",
         "doc:serve": ".venv/bin/mkdocs serve",
         "help:build": "run-s -s help:build:*",
-        "help:build:1": "echo Compiles frontscope (and minifies the result),",
+        "help:build:1": "echo Compiles frontscope and minifies the result,",
         "help:build:2": "echo producing a bundle ready for installation",
         "help:build:3": "echo on a server.",
         "build": "npm run typecheck && vite build && .venv/bin/mkdocs build",
