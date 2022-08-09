@@ -19,7 +19,7 @@ in development.
 
 ## How do I use it?
 
-The project will soon be extablishing a public Numberscope server that you can
+The project will soon be establishing a public Numberscope server that you can
 visit and experiment with. In the meantime, see
 [Running from source](doc/running-from-source.md).
 

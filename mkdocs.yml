@@ -18,27 +18,24 @@ docs_dir: doc
 site_dir: dist/doc
 theme:
     name: readthedocs
+    custom_dir: doc_theme/
     prev_next_buttons_location: both
     sticky_navigation: false
-extra_css: [doc/css/theme_override.css, doc/css/coordinate.css]
-extra_javascript: [doc/themejs/theme_override.js]
+extra_css: [css/coordinate.css, css/override.css]
 plugins:
     - awesome-pages
     - search
     - semiliterate:
           exclude_extensions: ['.jpg', '.ttf', '.ico', 'LICENSE.md']
           ignore_folders: [node_modules, dist, coverage]
-          include_extensions: ['.png', '.css', 'override.js']
+          include_extensions: ['.png']
           merge_docs_dir: false
           semiliterate:
               - pattern: '\.ts' # Standard in-code markup
                 extract:
                     start: '^\s*/\*\*+\W?md\b' # Opening like /** md
                     stop: '^\s*\*\*/\s*$' # closing **/ by itself on a line
-              - pattern: 'App.vue$' # Grab CSS needed to coordinate styles
-                destination: ../doc/css/coordinate.css
-                extract:
-                    start: 'style'
-                    stop: 'main'
+              - pattern: '[.](.*).generator$'
+                destination: '\1'
 markdown_extensions:
     - pymdownx.superfences
