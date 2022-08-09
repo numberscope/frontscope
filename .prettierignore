@@ -4,6 +4,7 @@
 *.png
 *.ttf
 *.txt
+*.generator
 *~
 .gitignore
 .husky

@@ -12,3 +12,6 @@ site
 
 # File for storing your local configuration
 *.local
+
+# Emacs backup files
+*~

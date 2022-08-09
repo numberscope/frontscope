@@ -1,6 +1,17 @@
+header {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 250;
+}
+
+nav {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
 .wy-grid-for-nav,
 .wy-nav-side {
-    top: 40px;
+    top: 50px;
 }
 
 .wy-nav-side .icon-home {
@@ -22,8 +33,13 @@
     color: var(--ns-navigation-foreground);
 }
 
+.wy-side-scroll {
+    padding-bottom: 10ex;
+}
+
 .wy-nav-content {
-    padding-top: 0.5ex;
+    padding-top: 3ex;
+    max-width: 100%;
 }
 
 .wy-breadcrumbs {

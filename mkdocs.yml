@@ -1,4 +1,5 @@
 site_name: Numberscope
+site_url: 'http://numberscope.colorado.edu/doc'
 nav:
     - Overview: README.md
     - User Guide:
@@ -22,6 +23,7 @@ theme:
     prev_next_buttons_location: both
     sticky_navigation: false
 extra_css: [css/coordinate.css, css/override.css]
+extra_javascript: [js/scroll_navigation.js]
 plugins:
     - awesome-pages
     - search
