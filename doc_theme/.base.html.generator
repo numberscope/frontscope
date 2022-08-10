@@ -1,0 +1,3 @@
+{! "\syspath mkdocs/themes/readthedocs/base.html" extract:
+  replace: [ ['([<]body.*$)', '\1\n{%- block topmatter %} {% endblock %}'] ]
+!}
