@@ -119,7 +119,4 @@ of the available scripts.
         'vue-tsc': '^0.38.8',
         'vue-unique-id': '^3.2.1',
     },
-    'lint-staged': {
-        '*': 'prettier-eslint --write',
-    },
 }
