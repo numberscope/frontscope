@@ -1,13 +1,13 @@
 # Using package manager scripts
 
-This repository sets up a number of utility "scripts" that you can run with
-the package manager to manipulate and execute the project's code. This page
-documents all of the available scripts. The commands shown below to run them
-presume you are using the `npm` package manager; adjust them accordingly for
-an alternate package manager.
+This repository is designed to work with the [pnpm](https://pnpm.io/) package
+manager, and precludes installation of packages with other package managers.
+It also sets up a number of utility "scripts" that you can run via the package
+manager to manipulate and execute the project's code. This page documents all
+of the available scripts.
 
 <!-- prettier-ignore -->
-{! ../package.json extract: {start: 'scripts', stop: '},', replace: [
+{! ../package.json5 extract: {start: 'scripts', stop: '},', replace: [
     ['help:(\D*)".*".*echo (.*)"', '### npm run \1\n\2'], # one-liner like test
     '"help:\D*:\d*".*echo (.*)"', # a numbered continuation line of help
     ['"help:(\D*)":.*"', '### npm run \1\n'], # header of a block of help lines
