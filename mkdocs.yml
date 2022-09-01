@@ -12,7 +12,7 @@ nav:
     - Contributing:
           - CONTRIBUTING.md
           - doc/onboarding.md
-          - doc/working-with-pm.md
+          - package.md
           - doc/working-with-git-and-github.md
           - doc/gitting-it-right.md
           - doc/code-principles.md
@@ -51,7 +51,7 @@ plugins:
               terminate: '<!-- CUT HERE -->'
           merge_docs_dir: false
           semiliterate:
-              - pattern: '\.ts' # Standard in-code markup
+              - pattern: '\.(?:ts|json5)' # Standard in-code markup
                 extract:
                     start: '^\s*/\*\*+\W?md\b' # Opening like /** md
                     stop: '^\s*\*\*/\s*$' # closing **/ by itself on a line
