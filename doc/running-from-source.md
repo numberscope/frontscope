@@ -1,5 +1,8 @@
 # Setting up to run from source
 
+If you would like a longer, set-by-step set of instructions that doesn't
+assume much prior programming experience, see [this doc](./onboarding.md).
+
 1.  Prerequisites: To install and run properly, `frontscope` needs
     [Git](https://git-scm.com/), [Node.js](https://nodejs.org/en/), and
     [Python](https://www.python.org/) (version 3.5 or later) with a working
