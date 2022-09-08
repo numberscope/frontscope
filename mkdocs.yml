@@ -28,7 +28,12 @@ plugins:
     - awesome-pages
     - search
     - semiliterate:
-          exclude_extensions: ['.jpg', '.ttf', '.ico', 'LICENSE.md']
+          exclude_extensions:
+              - '.jpg'
+              - '.ttf'
+              - '.ico'
+              - '.spec.ts'
+              - 'LICENSE.md'
           ignore_folders: [node_modules, dist, coverage]
           include_extensions: ['.png']
           merge_docs_dir: false

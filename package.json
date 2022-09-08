@@ -13,12 +13,12 @@
         "help:doc:serve:1": "echo This is like the 'dev' script, but for the",
         "help:doc:serve:2": "echo embedded documentation rather than the",
         "help:doc:serve:3": "echo Numberscope interface itself.",
-        "doc:serve": ".venv/bin/mkdocs serve",
+        "doc:serve": "cd tools && node pyrun.mjs mkdocs serve",
         "help:build": "run-s -s help:build:*",
         "help:build:1": "echo Compiles frontscope and minifies the result,",
         "help:build:2": "echo producing a bundle ready for installation",
         "help:build:3": "echo on a server.",
-        "build": "npm run typecheck && vite build && .venv/bin/mkdocs build",
+        "build": "npm run typecheck && vite build && cd tools && node pyrun.mjs mkdocs build",
         "help:preview": "run-s -s help:build:*",
         "help:preview:1": "echo Serves the most recently built files -- the",
         "help:preview:2": "echo contents of the 'dist/' directory -- for you",
@@ -72,7 +72,7 @@
         "lint:staged": "lint-staged",
         "//only lifecycle scripts below here": "echo",
         "prepare": "husky install",
-        "postinstall": "python3 -m venv .venv && .venv/bin/pip install -U pip && .venv/bin/pip install -r requirements.txt"
+        "postinstall": "python3 -m venv .venv && cd tools && node pyrun.mjs pip install -U pip && node pyrun.mjs pip install -r requirements.txt"
     },
     "dependencies": {
         "p5": "^1.4.1",
