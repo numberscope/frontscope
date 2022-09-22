@@ -6,6 +6,7 @@ import type {ParamableInterface} from '../shared/Paramable'
  */
 export interface SequenceInterface extends ParamableInterface {
     sequenceID: number
+
     /**
      * first gives the lower limit for valid indices into the Sequence.
      * In other words, an integer number n is a valid index only if
@@ -13,6 +14,7 @@ export interface SequenceInterface extends ParamableInterface {
      * negative) integer value is allowed.
      */
     readonly first: number
+
     /**
      * last is the counterpart to first, giving the upper limit for valid
      * indices into the Sequence. An integer number n is a valid index
@@ -21,12 +23,14 @@ export interface SequenceInterface extends ParamableInterface {
      * all indices not less than first are valid.
      */
     readonly last: number
+
     /**
      * Initialize is called after validation. It allows us to wait
      * until all the parameters are appropriate before we actually
      * set up the sequence for computation.
      */
     initialize(): void
+
     /**
      * getElement is what clients of SequenceInterface call to get
      * the actual entries in the sequence. It retrieves the nth element
@@ -37,6 +41,22 @@ export interface SequenceInterface extends ParamableInterface {
      * @memberof SequenceGenerator
      */
     getElement(n: number): bigint
+
+    /**
+     * getFactors is what clients of SequenceInterface call to get the factors
+     * of an entry in the sequence. It retrieves the factors of the nth element
+     * of the sequence, so long as n is an integer between the
+     * SequenceInterface.first and .last indices, inclusive.
+     * Note that the return is either null (which means that the implementation
+     * was unable to factor the entry) or an array of pairs of BigInts
+     * (prime, power), with the following special cases:
+     *   * If the entry is negative, (-1, 1) is included among the factors.
+     *   * If the entry is one, the array of factors is empty.
+     *   * If the entry is zero, the array of factors is [(0,1)]
+     * @param {number} n the index of the element in the sequence we want
+     * @returns {Array<[bigint, bigint]>? factorization
+     */
+    getFactors(n: number): [bigint, bigint][] | null
 }
 
 export interface SequenceConstructor {

@@ -58,6 +58,16 @@ export class SequenceClassDefault
         }
         return 0n
     }
+
+    /**
+     * getFactors is how sequences provide their callers with the
+     * factorizations of elements. This default implementation declines to
+     * factor anything.
+     * @param {number} n the index of the entry to get the factors of
+     */
+    getFactors(_n: number): [bigint, bigint][] | null {
+        return null
+    }
 }
 
 /* For a Sequence implementation to appear as an option in the main tool,

@@ -10,7 +10,10 @@ module.exports = {
         'vue/setup-compiler-macros': true,
     },
     rules: {
-        '@typescript-eslint/no-unused-vars': 'error',
+        '@typescript-eslint/no-unused-vars': [
+            'error',
+            {argsIgnorePattern: '^_'},
+        ],
         'max-len': ['error', {code: 80, comments: 80}],
         'operator-linebreak': [
             'error',
