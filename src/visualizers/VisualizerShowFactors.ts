@@ -13,7 +13,7 @@ the sequence, and below each term, its prime factors.
 **/
 
 class VisualizerShowFactors extends VisualizerDefault {
-    name = 'Differences'
+    name = 'Show Factors'
 
     start = 1
     end = 20
@@ -54,7 +54,11 @@ class VisualizerShowFactors extends VisualizerDefault {
         let myColor = this.sketch.color(100, 255, 150)
         let hue
 
-        for (let i = this.start; i <= this.end; i++) {
+        for (
+            let i = Math.max(this.start, this.seq.first);
+            i <= Math.min(this.end, this.seq.last);
+            i++
+        ) {
             const xCoord = firstX + (i - this.start) * xDelta
             hue = ((i * 255) / 6) % 255
             myColor = this.sketch.color(hue, 150, 200)
