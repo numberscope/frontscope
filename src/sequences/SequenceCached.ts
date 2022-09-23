@@ -20,6 +20,7 @@ export class SequenceCached extends SequenceClassDefault {
     name = 'Cached Base'
     description = 'A base class for cached sequences'
     protected cache: bigint[] = []
+    protected factorCache: ([bigint, bigint][] | null)[] = []
     protected lastCached: number
     protected cachingTo: number
     protected cacheBlock: number
@@ -76,6 +77,7 @@ export class SequenceCached extends SequenceClassDefault {
     fillCache(): void {
         for (let i: number = this.lastCached + 1; i <= this.cachingTo; i++) {
             this.cache[i] = this.calculate(i)
+            this.factorCache[i] = this.factor(i, this.cache[i])
             this.lastCached = i
         }
     }
@@ -104,6 +106,11 @@ export class SequenceCached extends SequenceClassDefault {
         return this.cache[n]
     }
 
+    getFactors(n: number): [bigint, bigint][] | null {
+        this.getElement(n) // fill the cache
+        return this.factorCache[n]
+    }
+
     /**
      * calculate produces the proper value of the sequence for a given index
      * This should be overridden in any derived class.
@@ -111,5 +118,17 @@ export class SequenceCached extends SequenceClassDefault {
      */
     calculate(n: number): bigint {
         return BigInt(n)
+    }
+
+    /**
+     * factor produces the proper factorization of the sequence entry for
+     * a given index. This should be overridden in any derived class. Note it
+     * receives both the sequence index and the value of the entry.
+     * @param {number} n  the index of the entry to factor
+     * @param {bigint} value  the value of the entry to factor
+     * @returns {[bigint,bigint][]?} the factorization
+     */
+    factor(_n: number, _v: bigint): [bigint, bigint][] | null {
+        return null
     }
 }
