@@ -21,13 +21,13 @@
     create a `.env.local` file in the root directory of frontscope and
     populate it:
     ```sh
-    echo "BACKSCOPE_URL=http://127.0.0.1:5000" > .env.local
+    echo "VITE_BACKSCOPE_URL=http://127.0.0.1:5000" > .env.local
     ```
     Otherwise, to connect your instance of frontscope to an instance of
     backscope running on the Numberscope server, create a `.env.local` file in
     the root directory of frontscope and populate it:
     ```sh
-    echo "BACKSCOPE_URL=https://numberscope.colorado.edu" > .env.local
+    echo "VITE_BACKSCOPE_URL=https://numberscope.colorado.edu" > .env.local
     ```
 4.  Install dependencies:
     ```sh
