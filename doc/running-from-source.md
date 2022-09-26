@@ -16,11 +16,18 @@
     git clone https://github.com/numberscope/frontscope.git
     cd frontscope
     ```
-3.  If you will be connecting to an instance of `backscope` (for obtaining
+3.  If you will be connecting to an instance of backscope (for obtaining
     information about OEIS sequences) running locally on your machine, then
-    create a `.env.local` file and populate it:
+    create a `.env.local` file in the root directory of frontscope and
+    populate it:
     ```sh
-    echo "VITE_API_URL=127.0.0.1:5000" > .env.local
+    echo "BACKSCOPE_URL=http://127.0.0.1:5000" > .env.local
+    ```
+    Otherwise, to connect your instance of frontscope to an instance of
+    backscope running on the Numberscope server, create a `.env.local` file in
+    the root directory of frontscope and populate it:
+    ```sh
+    echo "BACKSCOPE_URL=https://numberscope.colorado.edu" > .env.local
     ```
 4.  Install dependencies:
     ```sh
