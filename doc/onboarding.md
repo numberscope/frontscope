@@ -40,9 +40,9 @@ Mathematics Lab.)
 6. Somewhere on your computer, make a directory where you can keep Numberscope
    code. I like to put a directory called `Code` in my home directory. You can
    call this whatever you want.
-7. Fork the numberscope/frontscope repository. A. Go to
-   https://github.com/numberscope/frontscope B. Click the "Fork" button (in
-   the upper right as of this writing)
+7. Fork the numberscope/frontscope repository.
+    - Go to https://github.com/numberscope/frontscope.
+    - Click the "Fork" button (in the upper right as of this writing)
 8. Within your `Code` directory (or whatever you want to name it) clone your
    fork of the `frontscope` repository:
     ```sh
