@@ -1,6 +1,6 @@
 # Setting up to run from source
 
-If you would like a longer, set-by-step set of instructions that doesn't
+If you would like a longer, step-by-step set of instructions that doesn't
 assume much prior programming experience, see [this doc](./onboarding.md).
 
 1.  Prerequisites: To install and run properly, `frontscope` needs
