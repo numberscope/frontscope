@@ -1,5 +1,6 @@
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {SequenceCached} from './SequenceCached'
+import simpleFactor from './SimpleFactor'
 
 /**
  *
@@ -53,12 +54,15 @@ class SequenceRandom extends SequenceCached {
         this.name = `Random integers ${this.min} to ${this.max}`
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    calculate(n: number) {
+    calculate(_n: number) {
         // create a random integer between min and max inclusive
         return BigInt(
             Math.floor(Math.random() * (this.max - this.min + 1) + this.min)
         )
+    }
+
+    factor(_n: number, v: bigint) {
+        return simpleFactor(v)
     }
 }
 
