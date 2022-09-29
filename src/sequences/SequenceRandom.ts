@@ -1,6 +1,6 @@
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {SequenceCached} from './SequenceCached'
-import simpleFactor from './SimpleFactor'
+import simpleFactor from './simpleFactor'
 
 /**
  *
