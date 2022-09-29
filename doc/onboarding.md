@@ -50,11 +50,11 @@ Mathematics Lab.)
     git clone https://github.com/{your-github-username}/frontscope.git
     ```
     If you have trouble, read
-    [this doc](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
+    [this doc](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
     or ping someone for help.
 9. Create a dotenv file (a configuration file) with the URL for the back end:
     ```sh
-    echo "VITE_BACKSCOPE_URL=https://numberscope.colorado.edu" > .env.local
+    echo "VITE_BACKSCOPE_URL=https://numberscope.colorado.edu" > .env
     ```
 10. Go to the newly cloned `frontscope` directory and install the
     dependencies:
