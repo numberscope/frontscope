@@ -2,10 +2,18 @@ import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {VisualizerDefault} from '@/visualizers/VisualizerDefault'
 import {Color} from 'p5'
 import {def} from '@vue/shared'
-import {ceil, e, floor, isBoolean, re, sqrt} from 'mathjs'
+import {
+    ceil,
+    e,
+    floor,
+    isBoolean,
+    re,
+    setPowersetDependencies,
+    sqrt,
+} from 'mathjs'
 import {Teleport} from 'vue'
 
-const FIBONACCI_SEQUENCE = [
+const FIBONACCI_NUMBERS = [
     0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597,
     2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418,
     317811, 514229, 832040, 1346269, 2178309, 3524578, 5702887, 9227465,
@@ -13,7 +21,7 @@ const FIBONACCI_SEQUENCE = [
     433494437, 701408733, 1134903170, 1836311903, 2971215073, 4807526976,
     7778742049, 12586269025,
 ]
-const LUCAS_SEQUENCE = [
+const LUCAS_NUMBERS = [
     2, 1, 3, 4, 7, 11, 18, 29, 47, 76, 123, 199, 322, 521, 843, 1346, 2207,
     3571, 5778, 9349, 15127, 24476, 39603, 64079, 103682, 167761, 271443,
     439204, 710647, 1149851, 1860498, 3010349, 4870847, 7881196, 12752043,
@@ -81,7 +89,6 @@ enum PathType {
     Inwards_Spiral,
 }
 
-//TODO Most of these are not implemented.
 enum Property {
     None,
     Number_Sequence,
@@ -140,14 +147,14 @@ class VisualizerGrid extends VisualizerDefault {
     amountOfNumbers = 40000
     startingIndex = 0
     message = ''
-    preset = Preset.Primes
+    preset = Preset.None
     visualInfo = VisualInfo.None
     pathType = PathType.Spiral
     resetAndAugmentByOne = false
     formula = Formula.N
     backgroundColor = BLACK
-    property1 = Property.None
-    property1Visualization = PropertyVisualization.None
+    property1 = Property.Prime
+    property1Visualization = PropertyVisualization.Color
     property1MainColor = RED
     property2 = Property.None
     property2Visualization = PropertyVisualization.None
@@ -189,6 +196,8 @@ class VisualizerGrid extends VisualizerDefault {
             from: Preset,
             displayName: 'Presets',
             required: false,
+            description:
+                'Note: If a preset is selected, properties no longer function.',
         },
         amountOfNumbers: {
             value: this.amountOfNumbers,
@@ -498,109 +507,11 @@ class VisualizerGrid extends VisualizerDefault {
     }
 
     draw(): void {
-        if (
-            this.property1 != Property.None
-            || this.property2 != Property.None
-            || this.property3 != Property.None
-            || this.property4 != Property.None
-            || this.property5 != Property.None
-            || this.property6 != Property.None
-            || this.property7 != Property.None
-            || this.property8 != Property.None
-            || this.property9 != Property.None
-            || this.property10 != Property.None
-            || this.property11 != Property.None
-            || this.property12 != Property.None
-        ) {
-            this.preset = Preset.None
-        }
-
-        if (this.preset == Preset.Primes) {
-            this.backgroundColor = BLACK
-            this.property1 = Property.Prime
-            this.property1Visualization = PropertyVisualization.Color
-            this.property1MainColor = RED
-        } else if (this.preset == Preset.Abundant_Numbers) {
-            this.backgroundColor = WHITE
-            this.property1 = Property.Abundant
-            this.property1Visualization = PropertyVisualization.Color
-            this.property1MainColor = BLACK
-        } else if (this.preset == Preset.Abundant_Numbers_And_Primes) {
-            this.backgroundColor = WHITE
-            this.property1 = Property.Abundant
-            this.property1Visualization = PropertyVisualization.Color
-            this.property1MainColor = BLACK
-            this.property2 = Property.Prime
-            this.property2Visualization = PropertyVisualization.Color
-            this.property2MainColor = RED
-        } else if (
-            this.preset == Preset.Polygonal_Numbers_Without_Square_Numbers
-        ) {
-            this.backgroundColor = BLACK
-            this.property1 = Property.Triangular_Number
-            this.property1Visualization = PropertyVisualization.Color
-            this.property1MainColor = RED
-            this.property2 = Property.Pentagonal_Number
-            this.property2Visualization = PropertyVisualization.Color
-            this.property2MainColor = ORANGE
-            this.property3 = Property.Hexagonal_Number
-            this.property3Visualization = PropertyVisualization.Color
-            this.property3MainColor = GREEN
-            this.property4 = Property.Heptagonal_Number
-            this.property4Visualization = PropertyVisualization.Color
-            this.property4MainColor = BLUE
-            this.property5 = Property.Octagonal_Number
-            this.property5Visualization = PropertyVisualization.Color
-            this.property5MainColor = PURPLE
-        } else if (
-            this.preset == Preset.Polygonal_Numbers_With_Square_Numbers
-        ) {
-            this.backgroundColor = BLACK
-            this.property1 = Property.Triangular_Number
-            this.property1Visualization = PropertyVisualization.Color
-            this.property1MainColor = RED
-            this.property2 = Property.Square_Number
-            this.property2Visualization = PropertyVisualization.Color
-            this.property2MainColor = ORANGE
-            this.property3 = Property.Pentagonal_Number
-            this.property3Visualization = PropertyVisualization.Color
-            this.property3MainColor = YELLOW
-            this.property4 = Property.Hexagonal_Number
-            this.property4Visualization = PropertyVisualization.Color
-            this.property4MainColor = GREEN
-            this.property5 = Property.Heptagonal_Number
-            this.property5Visualization = PropertyVisualization.Color
-            this.property5MainColor = BLUE
-            this.property6 = Property.Octagonal_Number
-            this.property6Visualization = PropertyVisualization.Color
-            this.property6MainColor = PURPLE
-        }
+        setPresets(this)
 
         this.sketch.strokeWeight(0)
 
-        if (this.resetAndAugmentByOne) {
-            this.pathType = PathType.Rows
-        }
-
-        if (
-            this.visualInfo == VisualInfo.Show_Numbers
-            && this.amountOfNumbers > 400
-        ) {
-            this.amountOfNumbers = 400
-        }
-        if (
-            this.visualInfo == VisualInfo.Show_Path
-            && this.amountOfNumbers > 1000
-        ) {
-            this.amountOfNumbers = 1000
-        }
-
-        if (
-            this.formula == Formula.TWO_TO_THE_N
-            && this.amountOfNumbers > 1000
-        ) {
-            this.amountOfNumbers = 1000
-        }
+        setOverridingSettings(this)
 
         //Round up amount of numbers so that it is a square number.
         const squareRootOfAmountOfNumbers = ceil(sqrt(this.amountOfNumbers))
@@ -613,115 +524,29 @@ class VisualizerGrid extends VisualizerDefault {
         //Set path variables
         setPathVariables(this, squareRootOfAmountOfNumbers, scalingFactor)
 
-        let actualCurrentIndex = this.startingIndex - 1
+        let currentSequenceIndex = this.startingIndex - 1
         let augmentForSequence = 0
 
         for (
-            let currentIndex = 0;
-            currentIndex < this.amountOfNumbers;
-            currentIndex++
+            let iteration = 0;
+            iteration < this.amountOfNumbers;
+            iteration++
         ) {
-            actualCurrentIndex++
+            currentSequenceIndex++
 
             if (currentDirection == 'startNewRow') {
                 if (this.resetAndAugmentByOne) {
-                    actualCurrentIndex = this.startingIndex
+                    currentSequenceIndex = this.startingIndex
                     augmentForSequence++
                 }
             }
 
-            let sequenceElementAsNumber = -1
-            if (this.formula == Formula.N) {
-                sequenceElementAsNumber =
-                    Number(this.seq.getElement(actualCurrentIndex))
-                    + augmentForSequence
-            } else if (this.formula == Formula.N_SQUARED) {
-                sequenceElementAsNumber = Number(
-                    this.seq.getElement(actualCurrentIndex)
-                )
-                sequenceElementAsNumber =
-                    sequenceElementAsNumber * sequenceElementAsNumber
-                    + augmentForSequence
-            } else if (this.formula == Formula.N_SQUARED_PLUS_1) {
-                sequenceElementAsNumber = Number(
-                    this.seq.getElement(actualCurrentIndex)
-                )
-                sequenceElementAsNumber =
-                    sequenceElementAsNumber * sequenceElementAsNumber
-                    + augmentForSequence
-                    + 1
-            } else if (this.formula == Formula.N_SQUARED_MINUS_N) {
-                sequenceElementAsNumber = Number(
-                    this.seq.getElement(actualCurrentIndex)
-                )
-                sequenceElementAsNumber =
-                    sequenceElementAsNumber * sequenceElementAsNumber
-                    - sequenceElementAsNumber
-                    + augmentForSequence
-            } else if (this.formula == Formula.N_SQUARED_MINUS_N_PLUS_1) {
-                sequenceElementAsNumber = Number(
-                    this.seq.getElement(actualCurrentIndex)
-                )
-                sequenceElementAsNumber =
-                    sequenceElementAsNumber * sequenceElementAsNumber
-                    + sequenceElementAsNumber
-                    + augmentForSequence
-                    + 1
-            } else if (this.formula == Formula.TWO_N_SQUARED) {
-                sequenceElementAsNumber = Number(
-                    this.seq.getElement(actualCurrentIndex)
-                )
-                sequenceElementAsNumber =
-                    2 * sequenceElementAsNumber * sequenceElementAsNumber
-                    + augmentForSequence
-            } else if (this.formula == Formula.THREE_N_SQUARED) {
-                sequenceElementAsNumber = Number(
-                    this.seq.getElement(actualCurrentIndex)
-                )
-                sequenceElementAsNumber =
-                    3 * sequenceElementAsNumber * sequenceElementAsNumber
-                    + augmentForSequence
-            } else if (this.formula == Formula.N_CUBED) {
-                sequenceElementAsNumber = Number(
-                    this.seq.getElement(actualCurrentIndex)
-                )
-                sequenceElementAsNumber =
-                    sequenceElementAsNumber
-                        * sequenceElementAsNumber
-                        * sequenceElementAsNumber
-                    + augmentForSequence
-            } else if (this.formula == Formula.N_CUBED_PLUS_N_SQUARED) {
-                sequenceElementAsNumber = Number(
-                    this.seq.getElement(actualCurrentIndex)
-                )
-                sequenceElementAsNumber =
-                    sequenceElementAsNumber
-                        * sequenceElementAsNumber
-                        * sequenceElementAsNumber
-                    + sequenceElementAsNumber * sequenceElementAsNumber
-                    + augmentForSequence
-            } else if (
-                this.formula == Formula.N_CUBED_PLUS_N_SQUARED_PLUS_N
-            ) {
-                sequenceElementAsNumber = Number(
-                    this.seq.getElement(actualCurrentIndex)
-                )
-                sequenceElementAsNumber =
-                    sequenceElementAsNumber
-                        * sequenceElementAsNumber
-                        * sequenceElementAsNumber
-                    + sequenceElementAsNumber * sequenceElementAsNumber
-                    + sequenceElementAsNumber
-                    + augmentForSequence
-            } else if (this.formula == Formula.TWO_TO_THE_N) {
-                sequenceElementAsNumber = Number(
-                    this.seq.getElement(actualCurrentIndex)
-                )
-                sequenceElementAsNumber =
-                    Math.pow(2, sequenceElementAsNumber) + augmentForSequence
-            }
+            const sequenceElementAsNumber = getNumberFromFormula(
+                currentSequenceIndex,
+                augmentForSequence,
+                this
+            )
 
-            //Get sequence element as BigInt
             const sequenceElementAsString = sequenceElementAsNumber.toString()
 
             //Set color for square
@@ -731,14 +556,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.sketch.rect(x, y, scalingFactor, scalingFactor)
 
             //Show numbers
-            if (this.visualInfo == VisualInfo.Show_Numbers) {
-                this.sketch.fill(WHITE)
-                this.sketch.text(
-                    sequenceElementAsString,
-                    x + 0 * scalingFactor,
-                    y + (15 / 20) * scalingFactor
-                )
-            }
+            showNumbers(sequenceElementAsString, scalingFactor, this)
 
             //Save current direction before changing direction
             const previousDirection = currentDirection
@@ -748,19 +566,17 @@ class VisualizerGrid extends VisualizerDefault {
                 this,
                 squareRootOfAmountOfNumbers,
                 this.amountOfNumbers,
-                currentIndex
+                iteration
             )
 
             //Draw path
-            if (this.visualInfo == VisualInfo.Show_Path) {
-                showPath(
-                    this,
-                    currentIndex,
-                    previousDirection,
-                    currentDirection,
-                    scalingFactor
-                )
-            }
+            showPath(
+                this,
+                iteration,
+                previousDirection,
+                currentDirection,
+                scalingFactor
+            )
 
             //Move coordinates
             moveCoordinatesBasedOnDirection(currentDirection, scalingFactor)
@@ -771,8 +587,196 @@ class VisualizerGrid extends VisualizerDefault {
 export const exportModule = new VisualizerExportModule(
     'Grid',
     VisualizerGrid,
-    'Displays a message to the viewer.'
+    'Puts numbers in a grid.'
 )
+
+function setPresets(visualizer: VisualizerGrid) {
+    if (visualizer.preset == Preset.Primes) {
+        visualizer.backgroundColor = BLACK
+        visualizer.property1 = Property.Prime
+        visualizer.property1Visualization = PropertyVisualization.Color
+        visualizer.property1MainColor = RED
+    } else if (visualizer.preset == Preset.Abundant_Numbers) {
+        visualizer.backgroundColor = WHITE
+        visualizer.property1 = Property.Abundant
+        visualizer.property1Visualization = PropertyVisualization.Color
+        visualizer.property1MainColor = BLACK
+    } else if (visualizer.preset == Preset.Abundant_Numbers_And_Primes) {
+        visualizer.backgroundColor = WHITE
+        visualizer.property1 = Property.Abundant
+        visualizer.property1Visualization = PropertyVisualization.Color
+        visualizer.property1MainColor = BLACK
+        visualizer.property2 = Property.Prime
+        visualizer.property2Visualization = PropertyVisualization.Color
+        visualizer.property2MainColor = RED
+    } else if (
+        visualizer.preset == Preset.Polygonal_Numbers_Without_Square_Numbers
+    ) {
+        visualizer.backgroundColor = BLACK
+        visualizer.property1 = Property.Triangular_Number
+        visualizer.property1Visualization = PropertyVisualization.Color
+        visualizer.property1MainColor = RED
+        visualizer.property2 = Property.Pentagonal_Number
+        visualizer.property2Visualization = PropertyVisualization.Color
+        visualizer.property2MainColor = ORANGE
+        visualizer.property3 = Property.Hexagonal_Number
+        visualizer.property3Visualization = PropertyVisualization.Color
+        visualizer.property3MainColor = GREEN
+        visualizer.property4 = Property.Heptagonal_Number
+        visualizer.property4Visualization = PropertyVisualization.Color
+        visualizer.property4MainColor = BLUE
+        visualizer.property5 = Property.Octagonal_Number
+        visualizer.property5Visualization = PropertyVisualization.Color
+        visualizer.property5MainColor = PURPLE
+    } else if (
+        visualizer.preset == Preset.Polygonal_Numbers_With_Square_Numbers
+    ) {
+        visualizer.backgroundColor = BLACK
+        visualizer.property1 = Property.Triangular_Number
+        visualizer.property1Visualization = PropertyVisualization.Color
+        visualizer.property1MainColor = RED
+        visualizer.property2 = Property.Square_Number
+        visualizer.property2Visualization = PropertyVisualization.Color
+        visualizer.property2MainColor = ORANGE
+        visualizer.property3 = Property.Pentagonal_Number
+        visualizer.property3Visualization = PropertyVisualization.Color
+        visualizer.property3MainColor = YELLOW
+        visualizer.property4 = Property.Hexagonal_Number
+        visualizer.property4Visualization = PropertyVisualization.Color
+        visualizer.property4MainColor = GREEN
+        visualizer.property5 = Property.Heptagonal_Number
+        visualizer.property5Visualization = PropertyVisualization.Color
+        visualizer.property5MainColor = BLUE
+        visualizer.property6 = Property.Octagonal_Number
+        visualizer.property6Visualization = PropertyVisualization.Color
+        visualizer.property6MainColor = PURPLE
+    }
+}
+
+function setOverridingSettings(visualizer: VisualizerGrid) {
+    if (visualizer.resetAndAugmentByOne) {
+        visualizer.pathType = PathType.Rows
+    }
+
+    if (
+        visualizer.visualInfo == VisualInfo.Show_Numbers
+        && visualizer.amountOfNumbers > 400
+    ) {
+        visualizer.amountOfNumbers = 400
+    }
+    if (
+        visualizer.visualInfo == VisualInfo.Show_Path
+        && visualizer.amountOfNumbers > 1000
+    ) {
+        visualizer.amountOfNumbers = 1000
+    }
+
+    if (
+        visualizer.formula == Formula.TWO_TO_THE_N
+        && visualizer.amountOfNumbers > 1000
+    ) {
+        visualizer.amountOfNumbers = 1000
+    }
+}
+
+//TODO Clean this code up so that sequenceElementAsNumber = Number(visualizer.seq.getElement(currentSequenceIndex)) isn't repeated.
+function getNumberFromFormula(
+    currentSequenceIndex: number,
+    augmentForSequence: number,
+    visualizer: VisualizerGrid
+) {
+    let sequenceElementAsNumber = -1
+    if (visualizer.formula == Formula.N) {
+        sequenceElementAsNumber = Number(
+            visualizer.seq.getElement(currentSequenceIndex)
+        )
+        sequenceElementAsNumber = sequenceElementAsNumber + augmentForSequence
+    } else if (visualizer.formula == Formula.N_SQUARED) {
+        sequenceElementAsNumber = Number(
+            visualizer.seq.getElement(currentSequenceIndex)
+        )
+        sequenceElementAsNumber =
+            sequenceElementAsNumber * sequenceElementAsNumber
+            + augmentForSequence
+    } else if (visualizer.formula == Formula.N_SQUARED_PLUS_1) {
+        sequenceElementAsNumber = Number(
+            visualizer.seq.getElement(currentSequenceIndex)
+        )
+        sequenceElementAsNumber =
+            sequenceElementAsNumber * sequenceElementAsNumber
+            + augmentForSequence
+            + 1
+    } else if (visualizer.formula == Formula.N_SQUARED_MINUS_N) {
+        sequenceElementAsNumber = Number(
+            visualizer.seq.getElement(currentSequenceIndex)
+        )
+        sequenceElementAsNumber =
+            sequenceElementAsNumber * sequenceElementAsNumber
+            - sequenceElementAsNumber
+            + augmentForSequence
+    } else if (visualizer.formula == Formula.N_SQUARED_MINUS_N_PLUS_1) {
+        sequenceElementAsNumber = Number(
+            visualizer.seq.getElement(currentSequenceIndex)
+        )
+        sequenceElementAsNumber =
+            sequenceElementAsNumber * sequenceElementAsNumber
+            + sequenceElementAsNumber
+            + augmentForSequence
+            + 1
+    } else if (visualizer.formula == Formula.TWO_N_SQUARED) {
+        sequenceElementAsNumber = Number(
+            visualizer.seq.getElement(currentSequenceIndex)
+        )
+        sequenceElementAsNumber =
+            2 * sequenceElementAsNumber * sequenceElementAsNumber
+            + augmentForSequence
+    } else if (visualizer.formula == Formula.THREE_N_SQUARED) {
+        sequenceElementAsNumber = Number(
+            visualizer.seq.getElement(currentSequenceIndex)
+        )
+        sequenceElementAsNumber =
+            3 * sequenceElementAsNumber * sequenceElementAsNumber
+            + augmentForSequence
+    } else if (visualizer.formula == Formula.N_CUBED) {
+        sequenceElementAsNumber = Number(
+            visualizer.seq.getElement(currentSequenceIndex)
+        )
+        sequenceElementAsNumber =
+            sequenceElementAsNumber
+                * sequenceElementAsNumber
+                * sequenceElementAsNumber
+            + augmentForSequence
+    } else if (visualizer.formula == Formula.N_CUBED_PLUS_N_SQUARED) {
+        sequenceElementAsNumber = Number(
+            visualizer.seq.getElement(currentSequenceIndex)
+        )
+        sequenceElementAsNumber =
+            sequenceElementAsNumber
+                * sequenceElementAsNumber
+                * sequenceElementAsNumber
+            + sequenceElementAsNumber * sequenceElementAsNumber
+            + augmentForSequence
+    } else if (visualizer.formula == Formula.N_CUBED_PLUS_N_SQUARED_PLUS_N) {
+        sequenceElementAsNumber = Number(
+            visualizer.seq.getElement(currentSequenceIndex)
+        )
+        sequenceElementAsNumber =
+            sequenceElementAsNumber
+                * sequenceElementAsNumber
+                * sequenceElementAsNumber
+            + sequenceElementAsNumber * sequenceElementAsNumber
+            + sequenceElementAsNumber
+            + augmentForSequence
+    } else if (visualizer.formula == Formula.TWO_TO_THE_N) {
+        sequenceElementAsNumber = Number(
+            visualizer.seq.getElement(currentSequenceIndex)
+        )
+        sequenceElementAsNumber =
+            Math.pow(2, sequenceElementAsNumber) + augmentForSequence
+    }
+
+    return sequenceElementAsNumber
+}
 
 function setPathVariables(
     visualizer: VisualizerGrid,
@@ -810,6 +814,8 @@ function setPathVariables(
         incrementForNumberToTurnAt = squareRootOfAmountOfNumbers - 1
         currentDirection = 'right'
         whetherIncrementShouldIncrementForSpiral = false
+    } else if (visualizer.pathType == PathType.Rows) {
+        currentDirection = 'right'
     }
 }
 
@@ -817,11 +823,12 @@ function changeDirectionBasedOnPathType(
     visualizer: VisualizerGrid,
     squareRootOfAmountOfNumbers: number,
     amountOfNumbers: number,
-    currentIndex: number
+    iteration: number
 ) {
     //Choose direction for next number
     if (visualizer.pathType == PathType.Spiral) {
-        if (currentIndex == numberToTurnAt) {
+        //Turn at the numbers to turn at which increases every other turn because the spiral is outwards.
+        if (iteration == numberToTurnAt) {
             numberToTurnAt += incrementForNumberToTurnAt
             if (whetherIncrementShouldIncrementForSpiral) {
                 incrementForNumberToTurnAt += 1
@@ -841,7 +848,8 @@ function changeDirectionBasedOnPathType(
             }
         }
     } else if (visualizer.pathType == PathType.Inwards_Spiral) {
-        if (currentIndex == numberToTurnAt) {
+        //Turn at the numbers to turn at which decreases every other turn because the spiral is inwards.
+        if (iteration == numberToTurnAt) {
             numberToTurnAt += incrementForNumberToTurnAt
             if (whetherIncrementShouldIncrementForSpiral) {
                 incrementForNumberToTurnAt -= 1
@@ -862,9 +870,9 @@ function changeDirectionBasedOnPathType(
         }
     } else if (visualizer.pathType == PathType.Rows) {
         //Go to new row when the row is complete
-        if ((currentIndex + 1) % squareRootOfAmountOfNumbers == 0) {
+        if ((iteration + 1) % squareRootOfAmountOfNumbers == 0) {
             currentDirection = 'startNewRow'
-        } else if (currentIndex == amountOfNumbers) {
+        } else if (iteration == amountOfNumbers) {
             currentDirection = 'none'
         } else {
             currentDirection = 'right'
@@ -874,40 +882,83 @@ function changeDirectionBasedOnPathType(
 
 function showPath(
     visualizer: VisualizerGrid,
-    currentIndex: number,
+    iteration: number,
     previousDirection: string,
     currentDirection: string,
     scalingFactor: number
 ) {
-    visualizer.sketch.fill(WHITE)
+    if (visualizer.visualInfo == VisualInfo.Show_Path) {
+        visualizer.sketch.fill(WHITE)
 
-    if (currentIndex != 0) {
-        if (previousDirection == 'left') {
+        if (iteration != 0) {
+            if (previousDirection == 'left') {
+                visualizer.sketch.rect(
+                    x + ((10 - 2) / 20) * scalingFactor,
+                    y + ((10 - 2) / 20) * scalingFactor,
+                    ((20 + 2 + 2) / 20) * scalingFactor,
+                    (4 / 20) * scalingFactor
+                )
+            } else if (
+                previousDirection == 'down'
+                || previousDirection == 'downBeforeLeft'
+                || previousDirection == 'downBeforeRight'
+            ) {
+                visualizer.sketch.rect(
+                    x + ((10 - 2) / 20) * scalingFactor,
+                    y + ((10 - 22) / 20) * scalingFactor,
+                    (4 / 20) * scalingFactor,
+                    ((20 + 2 + 2) / 20) * scalingFactor
+                )
+            } else if (previousDirection == 'right') {
+                visualizer.sketch.rect(
+                    x + ((10 - 22) / 20) * scalingFactor,
+                    y + ((10 - 2) / 20) * scalingFactor,
+                    ((20 + 2 + 2) / 20) * scalingFactor,
+                    (4 / 20) * scalingFactor
+                )
+            } else if (previousDirection == 'up') {
+                visualizer.sketch.rect(
+                    x + ((10 - 2) / 20) * scalingFactor,
+                    y + ((10 - 2) / 20) * scalingFactor,
+                    (4 / 20) * scalingFactor,
+                    ((20 + 2 + 2) / 20) * scalingFactor
+                )
+            } else {
+                visualizer.sketch.rect(
+                    x + ((10 - 2) / 20) * scalingFactor,
+                    y + ((10 - 2) / 20) * scalingFactor,
+                    (4 / 20) * scalingFactor,
+                    (4 / 20) * scalingFactor
+                )
+            }
+        }
+
+        if (currentDirection == 'right') {
             visualizer.sketch.rect(
                 x + ((10 - 2) / 20) * scalingFactor,
                 y + ((10 - 2) / 20) * scalingFactor,
                 ((20 + 2 + 2) / 20) * scalingFactor,
                 (4 / 20) * scalingFactor
             )
-        } else if (
-            previousDirection == 'down'
-            || previousDirection == 'downBeforeLeft'
-            || previousDirection == 'downBeforeRight'
-        ) {
+        } else if (currentDirection == 'up') {
             visualizer.sketch.rect(
                 x + ((10 - 2) / 20) * scalingFactor,
                 y + ((10 - 22) / 20) * scalingFactor,
                 (4 / 20) * scalingFactor,
                 ((20 + 2 + 2) / 20) * scalingFactor
             )
-        } else if (previousDirection == 'right') {
+        } else if (currentDirection == 'left') {
             visualizer.sketch.rect(
                 x + ((10 - 22) / 20) * scalingFactor,
                 y + ((10 - 2) / 20) * scalingFactor,
                 ((20 + 2 + 2) / 20) * scalingFactor,
                 (4 / 20) * scalingFactor
             )
-        } else if (previousDirection == 'up') {
+        } else if (
+            currentDirection == 'down'
+            || currentDirection == 'downBeforeLeft'
+            || currentDirection == 'downBeforeRight'
+        ) {
             visualizer.sketch.rect(
                 x + ((10 - 2) / 20) * scalingFactor,
                 y + ((10 - 2) / 20) * scalingFactor,
@@ -922,47 +973,6 @@ function showPath(
                 (4 / 20) * scalingFactor
             )
         }
-    }
-
-    if (currentDirection == 'right') {
-        visualizer.sketch.rect(
-            x + ((10 - 2) / 20) * scalingFactor,
-            y + ((10 - 2) / 20) * scalingFactor,
-            ((20 + 2 + 2) / 20) * scalingFactor,
-            (4 / 20) * scalingFactor
-        )
-    } else if (currentDirection == 'up') {
-        visualizer.sketch.rect(
-            x + ((10 - 2) / 20) * scalingFactor,
-            y + ((10 - 22) / 20) * scalingFactor,
-            (4 / 20) * scalingFactor,
-            ((20 + 2 + 2) / 20) * scalingFactor
-        )
-    } else if (currentDirection == 'left') {
-        visualizer.sketch.rect(
-            x + ((10 - 22) / 20) * scalingFactor,
-            y + ((10 - 2) / 20) * scalingFactor,
-            ((20 + 2 + 2) / 20) * scalingFactor,
-            (4 / 20) * scalingFactor
-        )
-    } else if (
-        currentDirection == 'down'
-        || currentDirection == 'downBeforeLeft'
-        || currentDirection == 'downBeforeRight'
-    ) {
-        visualizer.sketch.rect(
-            x + ((10 - 2) / 20) * scalingFactor,
-            y + ((10 - 2) / 20) * scalingFactor,
-            (4 / 20) * scalingFactor,
-            ((20 + 2 + 2) / 20) * scalingFactor
-        )
-    } else {
-        visualizer.sketch.rect(
-            x + ((10 - 2) / 20) * scalingFactor,
-            y + ((10 - 2) / 20) * scalingFactor,
-            (4 / 20) * scalingFactor,
-            (4 / 20) * scalingFactor
-        )
     }
 }
 
@@ -977,11 +987,7 @@ function moveCoordinatesBasedOnDirection(
         y -= scalingFactor
     } else if (currentDirection == 'left') {
         x -= scalingFactor
-    } else if (
-        currentDirection == 'down'
-        || currentDirection == 'downBeforeLeft'
-        || currentDirection == 'downBeforeRight'
-    ) {
+    } else if (currentDirection == 'down') {
         y += scalingFactor
     } else if (currentDirection == 'startNewRow') {
         x = 0
@@ -995,8 +1001,151 @@ function setColorForSquare(
     visualizer: VisualizerGrid
 ) {
     //Color number
-    colorGradients(preset, sequenceElementAsNumber, visualizer)
+    colorGradientPresets(preset, sequenceElementAsNumber, visualizer)
+    colorMainColorProperties(sequenceElementAsNumber, visualizer)
+}
 
+function colorGradientPresets(
+    preset: Preset,
+    sequenceElementAsNumber: number,
+    visualizer: VisualizerGrid
+) {
+    if (preset == Preset.Factors) {
+        var numberOfFactors = getNumberOfFactors(sequenceElementAsNumber)
+
+        if (
+            numberOfFactors == 0
+            || numberOfFactors == 1
+            || numberOfFactors == 2
+        ) {
+            visualizer.sketch.fill(SHADE0)
+        } else if (numberOfFactors == 3) {
+            visualizer.sketch.fill(SHADE1)
+        } else if (numberOfFactors == 4) {
+            visualizer.sketch.fill(SHADE2)
+        } else if (numberOfFactors == 5) {
+            visualizer.sketch.fill(SHADE3)
+        } else if (numberOfFactors == 6) {
+            visualizer.sketch.fill(SHADE4)
+        } else if (numberOfFactors == 7) {
+            visualizer.sketch.fill(SHADE5)
+        } else if (numberOfFactors == 8) {
+            visualizer.sketch.fill(SHADE6)
+        } else if (numberOfFactors == 9) {
+            visualizer.sketch.fill(SHADE7)
+        } else if (numberOfFactors == 10) {
+            visualizer.sketch.fill(SHADE8)
+        } else if (numberOfFactors == 11) {
+            visualizer.sketch.fill(SHADE9)
+        } else if (numberOfFactors == 12) {
+            visualizer.sketch.fill(SHADE10)
+        } else if (numberOfFactors == 13) {
+            visualizer.sketch.fill(SHADE11)
+        } else if (numberOfFactors == 14) {
+            visualizer.sketch.fill(SHADE12)
+        } else if (numberOfFactors == 15) {
+            visualizer.sketch.fill(SHADE13)
+        } else {
+            visualizer.sketch.fill(SHADE13)
+        }
+    } else if (preset == Preset.Factors_and_Primes) {
+        var numberOfFactors = getNumberOfFactors(sequenceElementAsNumber)
+
+        if (isPrime(sequenceElementAsNumber)) {
+            visualizer.sketch.fill(HIGHLIGHT)
+        } else if (
+            numberOfFactors == 0
+            || numberOfFactors == 1
+            || numberOfFactors == 3
+        ) {
+            visualizer.sketch.fill(SHADE0)
+        } else if (numberOfFactors == 4) {
+            visualizer.sketch.fill(SHADE1)
+        } else if (numberOfFactors == 5) {
+            visualizer.sketch.fill(SHADE2)
+        } else if (numberOfFactors == 6) {
+            visualizer.sketch.fill(SHADE3)
+        } else if (numberOfFactors == 7) {
+            visualizer.sketch.fill(SHADE4)
+        } else if (numberOfFactors == 8) {
+            visualizer.sketch.fill(SHADE5)
+        } else if (numberOfFactors == 9) {
+            visualizer.sketch.fill(SHADE6)
+        } else if (numberOfFactors == 10) {
+            visualizer.sketch.fill(SHADE7)
+        } else if (numberOfFactors == 11) {
+            visualizer.sketch.fill(SHADE8)
+        } else if (numberOfFactors == 12) {
+            visualizer.sketch.fill(SHADE9)
+        } else if (numberOfFactors == 13) {
+            visualizer.sketch.fill(SHADE10)
+        } else if (numberOfFactors == 14) {
+            visualizer.sketch.fill(SHADE11)
+        } else if (numberOfFactors == 15) {
+            visualizer.sketch.fill(SHADE12)
+        } else if (numberOfFactors == 16) {
+            visualizer.sketch.fill(SHADE13)
+        } else {
+            visualizer.sketch.fill(SHADE13)
+        }
+    } else if (preset == Preset.Divisibility) {
+        if (sequenceElementAsNumber == 0 || sequenceElementAsNumber == 1) {
+            visualizer.sketch.fill(SHADE0)
+        } else if (sequenceElementAsNumber % 2 == 0) {
+            visualizer.sketch.fill(SHADE0)
+        } else if (sequenceElementAsNumber % 3 == 0) {
+            visualizer.sketch.fill(SHADE1)
+        } else if (sequenceElementAsNumber % 5 == 0) {
+            visualizer.sketch.fill(SHADE2)
+        } else if (sequenceElementAsNumber % 7 == 0) {
+            visualizer.sketch.fill(SHADE3)
+        } else if (sequenceElementAsNumber % 11 == 0) {
+            visualizer.sketch.fill(SHADE4)
+        } else if (sequenceElementAsNumber % 13 == 0) {
+            visualizer.sketch.fill(SHADE5)
+        } else if (sequenceElementAsNumber % 17 == 0) {
+            visualizer.sketch.fill(SHADE6)
+        } else if (sequenceElementAsNumber % 19 == 0) {
+            visualizer.sketch.fill(SHADE7)
+        } else if (sequenceElementAsNumber % 23 == 0) {
+            visualizer.sketch.fill(SHADE8)
+        } else if (sequenceElementAsNumber % 29 == 0) {
+            visualizer.sketch.fill(SHADE9)
+        } else if (sequenceElementAsNumber % 31 == 0) {
+            visualizer.sketch.fill(SHADE10)
+        } else if (sequenceElementAsNumber % 37 == 0) {
+            visualizer.sketch.fill(SHADE11)
+        } else if (sequenceElementAsNumber % 41 == 0) {
+            visualizer.sketch.fill(SHADE12)
+        } else if (isPrime(sequenceElementAsNumber)) {
+            visualizer.sketch.fill(SHADE13)
+        } else {
+            visualizer.sketch.fill(SHADE13)
+        }
+    } else {
+        visualizer.sketch.fill(visualizer.backgroundColor)
+    }
+}
+
+function showNumbers(
+    sequenceElementAsString: string,
+    scalingFactor: number,
+    visualizer: VisualizerGrid
+) {
+    if (visualizer.visualInfo == VisualInfo.Show_Numbers) {
+        visualizer.sketch.fill(WHITE)
+        visualizer.sketch.text(
+            sequenceElementAsString,
+            x + 0 * scalingFactor,
+            y + (15 / 20) * scalingFactor
+        )
+    }
+}
+
+function colorMainColorProperties(
+    sequenceElementAsNumber: number,
+    visualizer: VisualizerGrid
+) {
     if (
         visualizer.property1 != Property.None
         && visualizer.property1Visualization == PropertyVisualization.Color
@@ -1094,119 +1243,6 @@ function setColorForSquare(
         }
     }
 }
-function colorGradients(
-    preset: Preset,
-    sequenceElementAsNumber: number,
-    visualizer: VisualizerGrid
-) {
-    if (preset == Preset.Factors) {
-        var numberOfFactors = getNumberOfFactors(sequenceElementAsNumber)
-
-        if (numberOfFactors == 2) {
-            visualizer.sketch.fill(SHADE0)
-        } else if (numberOfFactors == 3) {
-            visualizer.sketch.fill(SHADE1)
-        } else if (numberOfFactors == 4) {
-            visualizer.sketch.fill(SHADE2)
-        } else if (numberOfFactors == 5) {
-            visualizer.sketch.fill(SHADE3)
-        } else if (numberOfFactors == 6) {
-            visualizer.sketch.fill(SHADE4)
-        } else if (numberOfFactors == 7) {
-            visualizer.sketch.fill(SHADE5)
-        } else if (numberOfFactors == 8) {
-            visualizer.sketch.fill(SHADE6)
-        } else if (numberOfFactors == 9) {
-            visualizer.sketch.fill(SHADE7)
-        } else if (numberOfFactors == 10) {
-            visualizer.sketch.fill(SHADE8)
-        } else if (numberOfFactors == 11) {
-            visualizer.sketch.fill(SHADE9)
-        } else if (numberOfFactors == 12) {
-            visualizer.sketch.fill(SHADE10)
-        } else if (numberOfFactors == 13) {
-            visualizer.sketch.fill(SHADE11)
-        } else if (numberOfFactors == 14) {
-            visualizer.sketch.fill(SHADE12)
-        } else if (numberOfFactors == 15) {
-            visualizer.sketch.fill(SHADE13)
-        } else {
-            visualizer.sketch.fill(SHADE13)
-        }
-    } else if (preset == Preset.Factors_and_Primes) {
-        var numberOfFactors = getNumberOfFactors(sequenceElementAsNumber)
-
-        if (isPrime(sequenceElementAsNumber)) {
-            visualizer.sketch.fill(HIGHLIGHT)
-        } else if (numberOfFactors == 3) {
-            visualizer.sketch.fill(SHADE0)
-        } else if (numberOfFactors == 4) {
-            visualizer.sketch.fill(SHADE1)
-        } else if (numberOfFactors == 5) {
-            visualizer.sketch.fill(SHADE2)
-        } else if (numberOfFactors == 6) {
-            visualizer.sketch.fill(SHADE3)
-        } else if (numberOfFactors == 7) {
-            visualizer.sketch.fill(SHADE4)
-        } else if (numberOfFactors == 8) {
-            visualizer.sketch.fill(SHADE5)
-        } else if (numberOfFactors == 9) {
-            visualizer.sketch.fill(SHADE6)
-        } else if (numberOfFactors == 10) {
-            visualizer.sketch.fill(SHADE7)
-        } else if (numberOfFactors == 11) {
-            visualizer.sketch.fill(SHADE8)
-        } else if (numberOfFactors == 12) {
-            visualizer.sketch.fill(SHADE9)
-        } else if (numberOfFactors == 13) {
-            visualizer.sketch.fill(SHADE10)
-        } else if (numberOfFactors == 14) {
-            visualizer.sketch.fill(SHADE11)
-        } else if (numberOfFactors == 15) {
-            visualizer.sketch.fill(SHADE12)
-        } else if (numberOfFactors == 16) {
-            visualizer.sketch.fill(SHADE13)
-        } else {
-            visualizer.sketch.fill(SHADE13)
-        }
-    } else if (preset == Preset.Divisibility) {
-        if (sequenceElementAsNumber == 0 || sequenceElementAsNumber == 1) {
-            visualizer.sketch.fill(SHADE0)
-        } else if (sequenceElementAsNumber % 2 == 0) {
-            visualizer.sketch.fill(SHADE0)
-        } else if (sequenceElementAsNumber % 3 == 0) {
-            visualizer.sketch.fill(SHADE1)
-        } else if (sequenceElementAsNumber % 5 == 0) {
-            visualizer.sketch.fill(SHADE2)
-        } else if (sequenceElementAsNumber % 7 == 0) {
-            visualizer.sketch.fill(SHADE3)
-        } else if (sequenceElementAsNumber % 11 == 0) {
-            visualizer.sketch.fill(SHADE4)
-        } else if (sequenceElementAsNumber % 13 == 0) {
-            visualizer.sketch.fill(SHADE5)
-        } else if (sequenceElementAsNumber % 17 == 0) {
-            visualizer.sketch.fill(SHADE6)
-        } else if (sequenceElementAsNumber % 19 == 0) {
-            visualizer.sketch.fill(SHADE7)
-        } else if (sequenceElementAsNumber % 23 == 0) {
-            visualizer.sketch.fill(SHADE8)
-        } else if (sequenceElementAsNumber % 29 == 0) {
-            visualizer.sketch.fill(SHADE9)
-        } else if (sequenceElementAsNumber % 31 == 0) {
-            visualizer.sketch.fill(SHADE10)
-        } else if (sequenceElementAsNumber % 37 == 0) {
-            visualizer.sketch.fill(SHADE11)
-        } else if (sequenceElementAsNumber % 41 == 0) {
-            visualizer.sketch.fill(SHADE12)
-        } else if (isPrime(sequenceElementAsNumber)) {
-            visualizer.sketch.fill(SHADE13)
-        } else {
-            visualizer.sketch.fill(SHADE13)
-        }
-    } else {
-        visualizer.sketch.fill(visualizer.backgroundColor)
-    }
-}
 
 function hasProperty(num: number, property: Property) {
     if (property == Property.Prime) {
@@ -1220,9 +1256,9 @@ function hasProperty(num: number, property: Property) {
     } else if (property == Property.Sum_Of_Two_Squares) {
         return isSumOfTwoSquares(num)
     } else if (property == Property.Fibonacci_Number) {
-        return isFibonacciNumber(num)
+        return isPartOfSequence(num, FIBONACCI_NUMBERS)
     } else if (property == Property.Lucas_Number) {
-        return isLucasNumber(num)
+        return isPartOfSequence(num, LUCAS_NUMBERS)
     } else if (property == Property.Triangular_Number) {
         return isPolygonal(num, 3)
     } else if (property == Property.Square_Number) {
@@ -1247,31 +1283,42 @@ function hasProperty(num: number, property: Property) {
     return false
 }
 
-//Code taken from Stack Overflow : https://stackoverflow.com/questions/40200089/number-prime-test-in-javascript
-//This should be replaced with the getFactors implementation specifically for Numberscope.
+/*
+ *   FUNCTIONS TO CHECK FOR PROPERTIES
+ */
+
+function isPartOfSequence(num: number, sequence: number[]) {
+    for (let x = 0; x < sequence.length; x++) {
+        if (num == sequence[x]) {
+            return true
+        }
+    }
+}
+
+//Taken from Stack Overflow : https://stackoverflow.com/questions/40200089/number-prime-test-in-javascript
+//TODO This should be replaced with the getFactors implementation specifically for Numberscope.
 function isPrime(num: number) {
     if (num == 0 || num == 1) {
         return false
     }
 
-    for (
-        let currentIndex = 2, s = Math.sqrt(num);
-        currentIndex <= s;
-        currentIndex++
-    )
-        if (num % currentIndex === 0) return false
+    for (let x = 2, s = Math.sqrt(num); x <= s; x++) {
+        if (num % x === 0) {
+            return false
+        }
+    }
+
     return num > 1
 }
 
-//Code taken from Stack Overflow : https://stackoverflow.com/questions/22130043/trying-to-find-factors-of-a-number-in-js
-//This should be replaced with the getFactors implementation specifically for Numberscope.
+//Taken from Stack Overflow : https://stackoverflow.com/questions/22130043/trying-to-find-factors-of-a-number-in-js
+//TODO This should be replaced with the getFactors implementation specifically for Numberscope.
 function getNumberOfFactors(num: number) {
     if (num == 0) {
-        return 2
+        return 0
     }
-
     if (num == 1) {
-        return 2
+        return 1
     }
 
     const isEven = num % 2 === 0
@@ -1290,8 +1337,8 @@ function getNumberOfFactors(num: number) {
 }
 
 //Taken from Geeks For Geeks : https://www.geeksforgeeks.org/deficient-number/
-function divisorsSum(num: number) {
-    let sum = 0 // Initialize sum of prime factors
+function getSumOfDivisors(num: number) {
+    let sumOfDivisors = 0 // Initialize sum of prime factors
 
     // Note that this loop runs till square root of n
     for (let i = 1; i <= Math.sqrt(num); i++) {
@@ -1299,18 +1346,19 @@ function divisorsSum(num: number) {
             // If divisors are equal, take only one
             // of them
             if (num / i == i) {
-                sum = sum + i
+                sumOfDivisors = sumOfDivisors + i
             } // Otherwise take both
             else {
-                sum = sum + i
-                sum = sum + num / i
+                sumOfDivisors = sumOfDivisors + i
+                sumOfDivisors = sumOfDivisors + num / i
             }
         }
     }
 
-    return sum
+    return sumOfDivisors
 }
 
+//Taken from Geeks For Geeks : https://www.geeksforgeeks.org/check-whether-number-can-represented-sum-two-squares/
 function isSumOfTwoSquares(num: number) {
     for (let i = 1; i * i <= num; i++) {
         for (let j = 1; j * j <= num; j++)
@@ -1320,41 +1368,11 @@ function isSumOfTwoSquares(num: number) {
     }
 }
 
-function isFibonacciNumber(num: number) {
-    for (
-        let currentIndex = 0;
-        currentIndex < FIBONACCI_SEQUENCE.length;
-        currentIndex++
-    ) {
-        if (num == FIBONACCI_SEQUENCE[currentIndex]) {
-            return true
-        }
-    }
-
-    return false
-}
-
-function isLucasNumber(num: number) {
-    for (
-        let currentIndex = 0;
-        currentIndex < LUCAS_SEQUENCE.length;
-        currentIndex++
-    ) {
-        if (num == LUCAS_SEQUENCE[currentIndex]) {
-            return true
-        }
-    }
-
-    return false
-}
-
 //Modification of Geeks for Geeks : https://www.geeksforgeeks.org/program-check-n-pentagonal-number/
 function isPolygonal(num: number, order: number) {
     let i = 1,
         M
     do {
-        // Substitute values of
-        // i in the formula.
         M = (order - 2) * ((i * (i - 1)) / 2) + i
         i += 1
     } while (M < num)
@@ -1363,10 +1381,10 @@ function isPolygonal(num: number, order: number) {
 
 //Taken from Geeks For Geeks : https://www.geeksforgeeks.org/deficient-number/
 function isAbundant(num: number) {
-    // Check if sum(n) < 2 * n
-    return divisorsSum(num) > 2 * num
+    return getSumOfDivisors(num) > 2 * num
 }
 
+//Taken from Geeks For Geeks : https://www.geeksforgeeks.org/perfect-number/
 function isPerfect(num: number) {
     // To store sum of divisors
     let sum = 1
