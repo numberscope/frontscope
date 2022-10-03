@@ -46,19 +46,24 @@ Mathematics Lab.)
 6. Somewhere on your computer, make a directory where you can keep Numberscope
    code. I like to put a directory called `Code` in my home directory. You can
    call this whatever you want.
-7. Fork the numberscope/frontscope repository.
+7. If you plan to submit your changes, you can "fork" (make your own copy of)
+   the repository:
     - Go to https://github.com/numberscope/frontscope.
-    - Click the "Fork" button (in the upper right as of this writing)
-8. Within your `Code` directory (or whatever you want to name it) clone your
-   fork of the `frontscope` repository:
+    - Click the "Fork" button (in the upper right as of this writing) If you
+      just want to run from source it's not strictly necessary, and you can
+      fork later, it's just a little more complicated. If you want your own
+      fork, use command A, otherwise use command B.
     ```sh
     cd /path/to/your/code/directory/
+    # (A) run the following command if you are forking:
     git clone https://github.com/{your-github-username}/frontscope.git
+    # (B) run the following command if you are cloning:
+    git clone https://github.com/numberscope/frontscope.git
     ```
     If you have trouble, read
     [this doc](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
     or ping someone for help.
-9. Go to the newly cloned `frontscope` directory and install the dependencies:
+8. Go to the newly cloned `frontscope` directory and install the dependencies:
     ```sh
     cd frontscope
     npm install
@@ -66,11 +71,12 @@ Mathematics Lab.)
     You need NodeJS installed to do this. This should install Git hooks using
     [Husky](https://github.com/typicode/husky), but if it doesn't, run
     `npm run prepare`.
-10. Run the development server:
+9. Run the development server:
     ```sh
     npm run dev
     ```
     If this works, then congrats, you've got a working copy of the
     `frontscope` repository on your computer!
 
-See [this doc](./running-from-source.md) for more information.
+See [the doc on running from source](./running-from-source.md) for more
+information.
