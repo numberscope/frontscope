@@ -77,6 +77,9 @@ Mathematics Lab.)
     ```
     If this works, then congrats, you've got a working copy of the
     `frontscope` repository on your computer!
+10. Finally, before you start changing code, please read the
+    [doc on submitting pull requests](./submitting-pull-requests.md) (it
+    outlines how to submit your code changes).
 
 See [the doc on running from source](./running-from-source.md) for more
 information.
