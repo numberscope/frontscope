@@ -20,7 +20,7 @@
     information about OEIS sequences) running locally on your machine, then
     modify your `.env` file:
     ```sh
-    echo "VITE_BACKSCOPE_URL=127.0.0.1:5000" > .env
+    echo "VITE_BACKSCOPE_URL=http://127.0.0.1:5000" > .env
     ```
 4.  Install dependencies:
     ```sh
