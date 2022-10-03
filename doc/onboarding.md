@@ -1,5 +1,11 @@
 # Numberscope onboarding
 
+## A note on commands
+
+Unless otherwise specified, all commands we ask you to run are supposed to be
+run in a Terminal emulator using a shell like Bash or Zsh (on Linux and macOS)
+or in Git Bash (on Windows).
+
 ## Accounts, etc.
 
 (Steps 2 and 3 only apply to the members of the CU Boulder Experimental
