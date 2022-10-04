@@ -35,14 +35,22 @@ Boulder Experimental Mathematics Lab.)
    NodeJS allows you to run JavaScript outside of a web browser. We use it in
    our front end code base.
 4. If you don't have [Python 3](https://www.python.org/) installed, install
-   it.
+   it. We use Python in frontscope for our documentation site.
 5. Make sure you have a `venv` module by running the following command:
     ```sh
     python3 -m venv -h
     ```
     You should see help for the `venv` module. If you don't you might have to
     install the module separately. How you do this depends on your system and
-    might require some googling.
+    might require some googling. We use `venv` for a "virtual environment". In
+    this context, a virtual environment is an empty box, a clean slate, for
+    all of our Python dependencies. It makes it so that we can use the exact
+    dependencies we list in `requirements.txt`. All of the dependencies in
+    `requirements.txt` are installed into a subdirectory in the `.venv`
+    directory. Once you activate a virtual environment, all of the Python
+    commands you run are run using the dependencies in the virutal
+    environment, and not the dependencies you installed elsewhere on your
+    computer.
 6. Somewhere on your computer, make a directory where you can keep Numberscope
    code. I like to put a directory called `Code` in my home directory. You can
    call this whatever you want.
