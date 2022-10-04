@@ -79,7 +79,8 @@ Boulder Experimental Mathematics Lab.)
     npm install
     ```
     You need NodeJS installed to do this.
-9. Run the development server:
+9. Run the development server (this runs a local copy of Numberscope on your
+   computer so you can interact with the webpage):
     ```sh
     npm run dev
     ```
