@@ -85,8 +85,7 @@ Boulder Experimental Mathematics Lab.)
     npm run dev
     ```
     This should print a link that you can open in the browser. Open it and see
-    if Numberscope seems to be working. If it does, then congrats, you've got
-    a working copy of the `frontscope` repository on your computer!
+    if Numberscope seems to be working.
 10. Finally, before you start changing code, please read the
     [doc on submitting pull requests](./submitting-pull-requests.md) (it
     outlines how to submit your code changes).
