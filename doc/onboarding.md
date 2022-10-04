@@ -78,9 +78,7 @@ Boulder Experimental Mathematics Lab.)
     cd frontscope
     npm install
     ```
-    You need NodeJS installed to do this. This should install Git hooks using
-    [Husky](https://github.com/typicode/husky), but if it doesn't, run
-    `npm run prepare`.
+    You need NodeJS installed to do this.
 9. Run the development server:
     ```sh
     npm run dev
