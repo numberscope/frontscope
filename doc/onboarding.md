@@ -8,8 +8,8 @@ or in Git Bash (on Windows).
 
 ## Accounts, etc.
 
-(Steps 2 and 3 only apply to the members of the CU Boulder Experimental
-Mathematics Lab.)
+(Steps 2 and 3 only apply to the members of the Numberscope project at the CU
+Boulder Experimental Mathematics Lab.)
 
 1. If you don't have an account, sign up for [GitHub](https://github.com).
 2. Make sure you've been added to the Numberscope GitHub organization.
