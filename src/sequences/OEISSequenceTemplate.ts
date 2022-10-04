@@ -43,7 +43,10 @@ export default class OEISSequenceTemplate extends SequenceCached {
     }
 
     async fillCache(): Promise<void> {
-        const urlPrefix = `http://${import.meta.env.VITE_API_URL}/api/`
+        // import.meta.env is basically your configuration.
+        // It's set up by Vite automatically
+        // See https://vitejs.dev/guide/env-and-mode.html.
+        const urlPrefix = `${import.meta.env.VITE_BACKSCOPE_URL}/api/`
         const backendUrl =
             urlPrefix + `get_oeis_values/${this.oeisId}/${this.cacheBlock}`
         const response = await axios.get(backendUrl)

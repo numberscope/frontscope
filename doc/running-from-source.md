@@ -18,9 +18,9 @@
     ```
 3.  If you will be connecting to an instance of `backscope` (for obtaining
     information about OEIS sequences) running locally on your machine, then
-    create a `.env.local` file and populate it:
+    modify your `.env` file:
     ```sh
-    echo "VITE_API_URL=127.0.0.1:5000" > .env.local
+    echo "VITE_BACKSCOPE_URL=http://127.0.0.1:5000" > .env
     ```
 4.  Install dependencies:
     ```sh
