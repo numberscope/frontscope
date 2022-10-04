@@ -54,8 +54,8 @@ Boulder Experimental Mathematics Lab.)
 6. Somewhere on your computer, make a directory where you can keep Numberscope
    code. I like to put a directory called `Code` in my home directory. You can
    call this whatever you want.
-7. If you plan to submit your changes, you can "fork" (make your own copy of)
-   the repository:
+7. If you plan to submit new code to become part of Numberscope at some time
+   in the future, it is best to "fork" (make your own copy of) the repository:
     - Go to https://github.com/numberscope/frontscope.
     - Click the "Fork" button (in the upper right as of this writing) If you
       just want to run from source it's not strictly necessary, and you can
