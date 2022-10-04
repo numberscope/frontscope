@@ -60,12 +60,14 @@ Boulder Experimental Mathematics Lab.)
     - Click the "Fork" button (in the upper right as of this writing). If you
       just want to run from source it's not strictly necessary, and you can
       fork later, it's just a little more complicated. If you want your own
-      fork, use command A, otherwise use command B.
+      fork:
     ```sh
     cd /path/to/your/code/directory/
-    # (A) run the following command if you are forking:
     git clone https://github.com/{your-github-username}/frontscope.git
-    # (B) run the following command if you are cloning:
+    ```
+    Otherwise, if you don't want to fork right now:
+    ```sh
+    cd /path/to/your/code/directory/
     git clone https://github.com/numberscope/frontscope.git
     ```
     If you have trouble, read
