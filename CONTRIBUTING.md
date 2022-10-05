@@ -24,6 +24,7 @@ about them.
 1. You don't have Numberscope code.
 
 -   [Create a fork](#create-a-fork).
+-   [Clone your fork](#clone-a-repo).
 -   [Do your work on a branch in your fork](#do-your-work-on-a-branch-in-your-fork).
 
 2. You have Numberscope code.
@@ -71,7 +72,6 @@ about them.
                 -   TODO
             -   2.B.1.B: You haven't made commits.
                 -   [Stash your changes](#stash-your-changes).
-                -   [Clone your fork](#clone-a-repo).
                 -   [Create a branch](#create-a-branch).
                 -   [Do your work on a branch in your fork](#do-your-work-on-a-branch-in-your-fork).
         -   2.B.2: You are working on a different branch.
