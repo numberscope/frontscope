@@ -31,6 +31,7 @@ about them.
 -   1: You have a clone of a Numberscope repository.
     -   1.A: You haven't made changes.
         -   [Create a fork](#create-a-fork).
+        -   [Clone your fork](#clone-a-repo).
         -   [Do your work on a branch in your fork](#do-your-work-on-a-branch-in-your-fork).
     -   1.B: You have made changes.
         -   1.B.1: You are working on the main branch.
@@ -42,21 +43,26 @@ about them.
                 -   [Create a fork](#create-a-fork).
                 -   [Add the remote of your fork](#add-a-remote).
                 -   [Push the branch to your fork](#push-a-branch).
+                -   [Clone your fork](#clone-a-repo).
                 -   [Do your work on a branch in your fork](#do-your-work-on-a-branch-in-your-fork).
         -   1.B.2: You are working on a different branch.
             -   1.B.2.A: You have made commits.
                 -   [Create a fork](#create-a-fork).
                 -   [Add the remote of your fork](#add-a-remote).
                 -   [Push the branch to your fork](#push-a-branch).
+                -   [Clone your fork](#clone-a-repo).
                 -   [Do your work on a branch in your fork](#do-your-work-on-a-branch-in-your-fork).
             -   1.B.2.B: You haven't made commits.
                 -   [Commit your changes](#commit-changes).
                 -   [Create a fork](#create-a-fork).
                 -   [Add the remote of your fork](#add-a-remote).
                 -   [Push the branch to your fork](#push-a-branch).
+                -   [Clone your fork](#clone-a-repo).
                 -   [Do your work on a branch in your fork](#do-your-work-on-a-branch-in-your-fork).
 -   2: You have a fork of a Numberscope repository.
     -   2.A: You haven't made changes.
+        -   [Clone your fork](#clone-a-repo) (if you don't have it on your
+            computer yet).
         -   [Create a branch](#create-a-branch).
         -   [Do your work on a branch in your fork](#do-your-work-on-a-branch-in-your-fork).
     -   2.B: You have made changes.
@@ -65,6 +71,7 @@ about them.
                 -   TODO
             -   2.B.1.B: You haven't made commits.
                 -   [Stash your changes](#stash-your-changes).
+                -   [Clone your fork](#clone-a-repo).
                 -   [Create a branch](#create-a-branch).
                 -   [Do your work on a branch in your fork](#do-your-work-on-a-branch-in-your-fork).
         -   2.B.2: You are working on a different branch.
@@ -117,6 +124,23 @@ Note: This is a GitHub operation, not a Git operation.
    a button that says "Fork". Click that button.
 3. Follow the instructions that GitHub provides. Make your GitHub account the
    owner of the fork.
+
+## Clone a repo
+
+To clone a Git repository to your computer, issue the following command:
+
+```sh
+git clone https://github.com/some_user_or_org/some_repo.git
+```
+
+GitHub allows you to clone the repo a few different ways:
+
+1. via HTTPS (easiest method, doesn't require setup, has limited
+   functionality)
+2. [via SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
+   (hardest method, requires setup, but ultimately very convenient)
+3. [via the GitHub CLI](https://cli.github.com/) (medium difficulty, requires
+   some setup)
 
 ## Add a remote
 
