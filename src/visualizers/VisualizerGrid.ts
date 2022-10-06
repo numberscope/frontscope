@@ -2004,19 +2004,19 @@ class VisualizerGrid extends VisualizerDefault {
             }
 
             const sequenceElementAsNumber = getNumberFromFormula(
+                this,
                 currentSequenceIndex,
-                augmentForSequence,
-                this
+                augmentForSequence
             )
 
             const sequenceElementAsString = sequenceElementAsNumber.toString()
 
-            setColorForSquare(this.preset, sequenceElementAsNumber, this)
+            setColorForSquare(this, sequenceElementAsNumber)
 
             //Draw square
             this.sketch.rect(x, y, scalingFactor, scalingFactor)
 
-            showNumbers(sequenceElementAsString, scalingFactor, this)
+            showNumbers(this, sequenceElementAsString, scalingFactor)
 
             //Save current direction before changing direction
             const previousDirection = currentDirection
@@ -2036,7 +2036,7 @@ class VisualizerGrid extends VisualizerDefault {
                 scalingFactor
             )
 
-            moveCoordinatesBasedOnDirection(currentDirection, scalingFactor)
+            moveCoordinatesBasedOnCurrentDirection(scalingFactor)
         }
         this.sketch.noLoop()
     }
@@ -2126,9 +2126,9 @@ function setOverridingSettings(visualizer: VisualizerGrid) {
 }
 
 function getNumberFromFormula(
+    visualizer: VisualizerGrid,
     currentSequenceIndex: number,
-    augmentForSequence: number,
-    visualizer: VisualizerGrid
+    augmentForSequence: number
 ) {
     let sequenceElementAsNumber = Number(
         visualizer.seq.getElement(currentSequenceIndex)
@@ -2390,10 +2390,7 @@ function showPath(
     }
 }
 
-function moveCoordinatesBasedOnDirection(
-    direction: string,
-    scalingFactor: number
-) {
+function moveCoordinatesBasedOnCurrentDirection(scalingFactor: number) {
     //Move coordinates to direction they're going to
     if (currentDirection == 'right') {
         x += scalingFactor
@@ -2410,22 +2407,22 @@ function moveCoordinatesBasedOnDirection(
 }
 
 function setColorForSquare(
-    preset: Preset,
-    sequenceElementAsNumber: number,
-    visualizer: VisualizerGrid
+    visualizer: VisualizerGrid,
+    sequenceElementAsNumber: number
 ) {
     //Color number
-    colorGradientPresets(preset, sequenceElementAsNumber, visualizer)
-    colorMainColorProperties(sequenceElementAsNumber, visualizer)
+    colorGradientPresets(visualizer, sequenceElementAsNumber)
+    colorMainColorProperties(visualizer, sequenceElementAsNumber)
 }
 
 function colorGradientPresets(
-    preset: Preset,
-    sequenceElementAsNumber: number,
-    visualizer: VisualizerGrid
+    visualizer: VisualizerGrid,
+    sequenceElementAsNumber: number
 ) {
+    const preset = visualizer.preset
+
     if (preset == Preset.Factors) {
-        const numberOfFactors = getNumberOfFactors(sequenceElementAsNumber)
+        const numberOfFactors = sequenceElementAsNumber
 
         if (
             numberOfFactors == 0
@@ -2542,9 +2539,9 @@ function colorGradientPresets(
 }
 
 function showNumbers(
+    visualizer: VisualizerGrid,
     sequenceElementAsString: string,
-    scalingFactor: number,
-    visualizer: VisualizerGrid
+    scalingFactor: number
 ) {
     if (visualizer.visualInfo == VisualInfo.Show_Numbers) {
         visualizer.sketch.fill(visualizer.pathAndNumberColor)
@@ -2557,8 +2554,8 @@ function showNumbers(
 }
 
 function colorMainColorProperties(
-    sequenceElementAsNumber: number,
-    visualizer: VisualizerGrid
+    visualizer: VisualizerGrid,
+    sequenceElementAsNumber: number
 ) {
     if (
         visualizer.property1 != Property.None
