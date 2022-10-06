@@ -1400,18 +1400,7 @@ function isSemiPrime(num: number) {
 =======
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {VisualizerDefault} from '@/visualizers/VisualizerDefault'
-import {Color} from 'p5'
-import {def} from '@vue/shared'
-import {
-    ceil,
-    e,
-    floor,
-    isBoolean,
-    re,
-    setPowersetDependencies,
-    sqrt,
-} from 'mathjs'
-import {Teleport} from 'vue'
+import {ceil, floor, sqrt} from 'mathjs'
 
 const FIBONACCI_NUMBERS = [
     0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597,
@@ -1472,15 +1461,14 @@ let whetherIncrementShouldIncrementForSpiral = true
 
 //User options for visualizer
 enum Preset {
-    None,
+    Custom,
     Primes,
     Factors,
     Factors_and_Primes,
     Divisibility,
     Abundant_Numbers,
     Abundant_Numbers_And_Primes,
-    Polygonal_Numbers_Without_Square_Numbers,
-    Polygonal_Numbers_With_Square_Numbers,
+    Polygonal_Numbers,
 }
 
 enum PathType {
@@ -1494,7 +1482,7 @@ enum Property {
     Number_Sequence,
     Prime,
     Even,
-    Divisible_ByThree,
+    Divisible_By_Three,
     Negative,
     Sum_Of_Two_Squares,
     Fibonacci_Number,
@@ -1511,14 +1499,9 @@ enum Property {
     Semi_Prime,
 }
 
-//TODO The commented out visualizations are yet to be implemented.
 enum PropertyVisualization {
     None,
     Color,
-    //Secondary_Color,
-    //Tint,
-    //Shade,
-    //Circularity,
 }
 
 enum VisualInfo {
@@ -1538,7 +1521,7 @@ enum Formula {
     N_CUBED,
     N_CUBED_PLUS_N_SQUARED,
     N_CUBED_PLUS_N_SQUARED_PLUS_N,
-    TWO_TO_THE_N,
+    TWO_TO_THE_N, //When TWO_TO_THE_N is selected, it always defaults to 400 numbers.
 }
 
 class VisualizerGrid extends VisualizerDefault {
@@ -1547,12 +1530,13 @@ class VisualizerGrid extends VisualizerDefault {
     amountOfNumbers = 40000
     startingIndex = 0
     message = ''
-    preset = Preset.None
+    preset = Preset.Custom
     visualInfo = VisualInfo.None
     pathType = PathType.Spiral
     resetAndAugmentByOne = false
     formula = Formula.N
     backgroundColor = BLACK
+    pathAndNumberColor = WHITE
     property1 = Property.Prime
     property1Visualization = PropertyVisualization.Color
     property1MainColor = RED
@@ -1643,6 +1627,15 @@ class VisualizerGrid extends VisualizerDefault {
             description:
                 'Note: Show_Path defaults to 1,000 numbers, and Show_Numbers defaults to 400 numbers',
         },
+        pathAndNumberColor: {
+            value: this.pathAndNumberColor,
+            forceType: 'color',
+            displayName: 'Path or numbers color:',
+            required: false,
+            visibleDependency: 'visualInfo',
+            visiblePredicate: (dependentValue: VisualInfo) =>
+                dependentValue !== VisualInfo.None,
+        },
         backgroundColor: {
             value: this.backgroundColor,
             forceType: 'color',
@@ -1660,6 +1653,9 @@ class VisualizerGrid extends VisualizerDefault {
             from: PropertyVisualization,
             displayName: 'Property 1 Visualization',
             required: false,
+            visibleDependency: 'property1',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property1MainColor: {
             value: this.property1MainColor,
@@ -1674,12 +1670,18 @@ class VisualizerGrid extends VisualizerDefault {
             from: Property,
             displayName: 'Property 2',
             required: false,
+            visibleDependency: 'property1',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property2Visualization: {
             value: this.property2Visualization,
             from: PropertyVisualization,
             displayName: 'Property 2 Visualization',
             required: false,
+            visibleDependency: 'property2',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property2MainColor: {
             value: this.property2MainColor,
@@ -1694,12 +1696,18 @@ class VisualizerGrid extends VisualizerDefault {
             from: Property,
             displayName: 'Property 3',
             required: false,
+            visibleDependency: 'property2',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property3Visualization: {
             value: this.property3Visualization,
             from: PropertyVisualization,
             displayName: 'Property 3 Visualization',
             required: false,
+            visibleDependency: 'property3',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property3MainColor: {
             value: this.property3MainColor,
@@ -1714,12 +1722,18 @@ class VisualizerGrid extends VisualizerDefault {
             from: Property,
             displayName: 'Property 4',
             required: false,
+            visibleDependency: 'property3',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property4Visualization: {
             value: this.property4Visualization,
             from: PropertyVisualization,
             displayName: 'Property 4 Visualization',
             required: false,
+            visibleDependency: 'property4',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property4MainColor: {
             value: this.property4MainColor,
@@ -1734,12 +1748,18 @@ class VisualizerGrid extends VisualizerDefault {
             from: Property,
             displayName: 'Property 5',
             required: false,
+            visibleDependency: 'property4',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property5Visualization: {
             value: this.property5Visualization,
             from: PropertyVisualization,
             displayName: 'Property 5 Visualization',
             required: false,
+            visibleDependency: 'property5',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property5MainColor: {
             value: this.property5MainColor,
@@ -1754,12 +1774,18 @@ class VisualizerGrid extends VisualizerDefault {
             from: Property,
             displayName: 'Property 6',
             required: false,
+            visibleDependency: 'property5',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property6Visualization: {
             value: this.property6Visualization,
             from: PropertyVisualization,
             displayName: 'Property 6 Visualization',
             required: false,
+            visibleDependency: 'property6',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property6MainColor: {
             value: this.property6MainColor,
@@ -1991,6 +2017,21 @@ export const exportModule = new VisualizerExportModule(
 )
 
 function setPresets(visualizer: VisualizerGrid) {
+    if (visualizer.preset != Preset.Custom) {
+        visualizer.property1 = Property.None
+        visualizer.property2 = Property.None
+        visualizer.property3 = Property.None
+        visualizer.property4 = Property.None
+        visualizer.property5 = Property.None
+        visualizer.property6 = Property.None
+        visualizer.property7 = Property.None
+        visualizer.property8 = Property.None
+        visualizer.property9 = Property.None
+        visualizer.property10 = Property.None
+        visualizer.property11 = Property.None
+        visualizer.property12 = Property.None
+    }
+
     if (visualizer.preset == Preset.Primes) {
         visualizer.backgroundColor = BLACK
         visualizer.property1 = Property.Prime
@@ -2009,28 +2050,7 @@ function setPresets(visualizer: VisualizerGrid) {
         visualizer.property2 = Property.Prime
         visualizer.property2Visualization = PropertyVisualization.Color
         visualizer.property2MainColor = RED
-    } else if (
-        visualizer.preset == Preset.Polygonal_Numbers_Without_Square_Numbers
-    ) {
-        visualizer.backgroundColor = BLACK
-        visualizer.property1 = Property.Triangular_Number
-        visualizer.property1Visualization = PropertyVisualization.Color
-        visualizer.property1MainColor = RED
-        visualizer.property2 = Property.Pentagonal_Number
-        visualizer.property2Visualization = PropertyVisualization.Color
-        visualizer.property2MainColor = ORANGE
-        visualizer.property3 = Property.Hexagonal_Number
-        visualizer.property3Visualization = PropertyVisualization.Color
-        visualizer.property3MainColor = GREEN
-        visualizer.property4 = Property.Heptagonal_Number
-        visualizer.property4Visualization = PropertyVisualization.Color
-        visualizer.property4MainColor = BLUE
-        visualizer.property5 = Property.Octagonal_Number
-        visualizer.property5Visualization = PropertyVisualization.Color
-        visualizer.property5MainColor = PURPLE
-    } else if (
-        visualizer.preset == Preset.Polygonal_Numbers_With_Square_Numbers
-    ) {
+    } else if (visualizer.preset == Preset.Polygonal_Numbers) {
         visualizer.backgroundColor = BLACK
         visualizer.property1 = Property.Triangular_Number
         visualizer.property1Visualization = PropertyVisualization.Color
@@ -2288,7 +2308,7 @@ function showPath(
     scalingFactor: number
 ) {
     if (visualizer.visualInfo == VisualInfo.Show_Path) {
-        visualizer.sketch.fill(WHITE)
+        visualizer.sketch.fill(visualizer.pathAndNumberColor)
 
         if (iteration != 0) {
             if (previousDirection == 'left') {
@@ -2411,7 +2431,7 @@ function colorGradientPresets(
     visualizer: VisualizerGrid
 ) {
     if (preset == Preset.Factors) {
-        var numberOfFactors = getNumberOfFactors(sequenceElementAsNumber)
+        const numberOfFactors = getNumberOfFactors(sequenceElementAsNumber)
 
         if (
             numberOfFactors == 0
@@ -2449,7 +2469,7 @@ function colorGradientPresets(
             visualizer.sketch.fill(SHADE13)
         }
     } else if (preset == Preset.Factors_and_Primes) {
-        var numberOfFactors = getNumberOfFactors(sequenceElementAsNumber)
+        const numberOfFactors = getNumberOfFactors(sequenceElementAsNumber)
 
         if (isPrime(sequenceElementAsNumber)) {
             visualizer.sketch.fill(HIGHLIGHT)
@@ -2533,7 +2553,7 @@ function showNumbers(
     visualizer: VisualizerGrid
 ) {
     if (visualizer.visualInfo == VisualInfo.Show_Numbers) {
-        visualizer.sketch.fill(WHITE)
+        visualizer.sketch.fill(visualizer.pathAndNumberColor)
         visualizer.sketch.text(
             sequenceElementAsString,
             x + 0 * scalingFactor,
@@ -2649,7 +2669,7 @@ function hasProperty(num: number, property: Property) {
         return isPrime(num)
     } else if (property == Property.Even) {
         return num % 2 == 0
-    } else if (property == Property.Divisible_ByThree) {
+    } else if (property == Property.Divisible_By_Three) {
         return num % 3 == 0
     } else if (property == Property.Negative) {
         return num < 0
