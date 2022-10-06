@@ -1429,11 +1429,11 @@ const GREEN = '#14cd33'
 const BLUE = '#3388ff'
 const PURPLE = '#8814cd'
 const CYAN = '#00ffff'
-const MAGENTA = '#ff0080 '
+const MAGENTA = '#ff00ff'
 const VERDANT = '#9BBF30'
-const VIOLET = '#ff00ff'
-const MUSTARD = 'rgb(223,186,105)'
-const GRAY = 'rgb(140, 140, 140)'
+const VIOLET = '#7f00ff'
+const MUSTARD = '#ffdb58'
+const GRAY = '#808080'
 
 const HIGHLIGHT = RED
 const SHADE13 = 'rgb(255, 255, 255)'
@@ -1521,7 +1521,8 @@ enum Formula {
     N_CUBED,
     N_CUBED_PLUS_N_SQUARED,
     N_CUBED_PLUS_N_SQUARED_PLUS_N,
-    TWO_TO_THE_N, //When TWO_TO_THE_N is selected, it always defaults to 400 numbers.
+    TWO_TO_THE_N,
+    //When TWO_TO_THE_N is selected, it always defaults to 400 numbers.
 }
 
 class VisualizerGrid extends VisualizerDefault {
@@ -1625,7 +1626,7 @@ class VisualizerGrid extends VisualizerDefault {
             displayName: 'Show path or numbers',
             required: false,
             description:
-                'Note: Show_Path defaults to 1,000 numbers, and Show_Numbers defaults to 400 numbers',
+                'Note: Show_Path and Show_Numbers default to 400 numbers',
         },
         pathAndNumberColor: {
             value: this.pathAndNumberColor,
@@ -1795,18 +1796,23 @@ class VisualizerGrid extends VisualizerDefault {
             visibleDependency: 'property6Visualization',
             visibleValue: PropertyVisualization.Color,
         },
-        /*
         property7: {
             value: this.property7,
             from: Property,
             displayName: 'Property 7',
             required: false,
+            visibleDependency: 'property6',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property7Visualization: {
             value: this.property7Visualization,
             from: PropertyVisualization,
             displayName: 'Property 7 Visualization',
             required: false,
+            visibleDependency: 'property7',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property7MainColor: {
             value: this.property7MainColor,
@@ -1821,12 +1827,18 @@ class VisualizerGrid extends VisualizerDefault {
             from: Property,
             displayName: 'Property 8',
             required: false,
+            visibleDependency: 'property7',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property8Visualization: {
             value: this.property8Visualization,
             from: PropertyVisualization,
             displayName: 'Property 8 Visualization',
             required: false,
+            visibleDependency: 'property8',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property8MainColor: {
             value: this.property8MainColor,
@@ -1841,12 +1853,18 @@ class VisualizerGrid extends VisualizerDefault {
             from: Property,
             displayName: 'Property 9',
             required: false,
+            visibleDependency: 'property8',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property9Visualization: {
             value: this.property9Visualization,
             from: PropertyVisualization,
             displayName: 'Property 9 Visualization',
             required: false,
+            visibleDependency: 'property9',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property9MainColor: {
             value: this.property9MainColor,
@@ -1861,12 +1879,18 @@ class VisualizerGrid extends VisualizerDefault {
             from: Property,
             displayName: 'Property 10',
             required: false,
+            visibleDependency: 'property9',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property10Visualization: {
             value: this.property10Visualization,
             from: PropertyVisualization,
             displayName: 'Property 10 Visualization',
             required: false,
+            visibleDependency: 'property10',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property10MainColor: {
             value: this.property10MainColor,
@@ -1881,12 +1905,18 @@ class VisualizerGrid extends VisualizerDefault {
             from: Property,
             displayName: 'Property 11',
             required: false,
+            visibleDependency: 'property10',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property11Visualization: {
             value: this.property11Visualization,
             from: PropertyVisualization,
             displayName: 'Property 11 Visualization',
             required: false,
+            visibleDependency: 'property11',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property11MainColor: {
             value: this.property11MainColor,
@@ -1901,12 +1931,18 @@ class VisualizerGrid extends VisualizerDefault {
             from: Property,
             displayName: 'Property 12',
             required: false,
+            visibleDependency: 'property11',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property12Visualization: {
             value: this.property12Visualization,
             from: PropertyVisualization,
             displayName: 'Property 12 Visualization',
             required: false,
+            visibleDependency: 'property12',
+            visiblePredicate: (dependentValue: Property) =>
+                dependentValue !== Property.None,
         },
         property12MainColor: {
             value: this.property12MainColor,
@@ -1916,7 +1952,6 @@ class VisualizerGrid extends VisualizerDefault {
             visibleDependency: 'property12Visualization',
             visibleValue: PropertyVisualization.Color,
         },
-        */
     }
 
     checkParameters() {
@@ -1945,7 +1980,8 @@ class VisualizerGrid extends VisualizerDefault {
             squareRootOfAmountOfNumbers * squareRootOfAmountOfNumbers
 
         //Calculate scaling factor
-        const scalingFactor = 400 / squareRootOfAmountOfNumbers //This is because 20 x 20 is 1:1 scaling.
+        const scalingFactor = 400 / squareRootOfAmountOfNumbers
+        //This is because 20 x 20 is 1:1 scaling.
 
         //Set path variables
         setPathVariables(this, squareRootOfAmountOfNumbers, scalingFactor)
@@ -1975,19 +2011,16 @@ class VisualizerGrid extends VisualizerDefault {
 
             const sequenceElementAsString = sequenceElementAsNumber.toString()
 
-            //Set color for square
             setColorForSquare(this.preset, sequenceElementAsNumber, this)
 
             //Draw square
             this.sketch.rect(x, y, scalingFactor, scalingFactor)
 
-            //Show numbers
             showNumbers(sequenceElementAsString, scalingFactor, this)
 
             //Save current direction before changing direction
             const previousDirection = currentDirection
 
-            //Change direction
             changeDirectionBasedOnPathType(
                 this,
                 squareRootOfAmountOfNumbers,
@@ -1995,7 +2028,6 @@ class VisualizerGrid extends VisualizerDefault {
                 iteration
             )
 
-            //Draw path
             showPath(
                 this,
                 iteration,
@@ -2004,7 +2036,6 @@ class VisualizerGrid extends VisualizerDefault {
                 scalingFactor
             )
 
-            //Move coordinates
             moveCoordinatesBasedOnDirection(currentDirection, scalingFactor)
         }
         this.sketch.noLoop()
@@ -2079,16 +2110,11 @@ function setOverridingSettings(visualizer: VisualizerGrid) {
     }
 
     if (
-        visualizer.visualInfo == VisualInfo.Show_Numbers
+        (visualizer.visualInfo == VisualInfo.Show_Numbers
+            || visualizer.visualInfo == VisualInfo.Show_Path)
         && visualizer.amountOfNumbers > 400
     ) {
         visualizer.amountOfNumbers = 400
-    }
-    if (
-        visualizer.visualInfo == VisualInfo.Show_Path
-        && visualizer.amountOfNumbers > 1000
-    ) {
-        visualizer.amountOfNumbers = 1000
     }
 
     if (
@@ -2099,77 +2125,51 @@ function setOverridingSettings(visualizer: VisualizerGrid) {
     }
 }
 
-//TODO Clean this code up so that sequenceElementAsNumber = Number(visualizer.seq.getElement(currentSequenceIndex)) isn't repeated.
 function getNumberFromFormula(
     currentSequenceIndex: number,
     augmentForSequence: number,
     visualizer: VisualizerGrid
 ) {
-    let sequenceElementAsNumber = -1
+    let sequenceElementAsNumber = Number(
+        visualizer.seq.getElement(currentSequenceIndex)
+    )
     if (visualizer.formula == Formula.N) {
-        sequenceElementAsNumber = Number(
-            visualizer.seq.getElement(currentSequenceIndex)
-        )
         sequenceElementAsNumber = sequenceElementAsNumber + augmentForSequence
     } else if (visualizer.formula == Formula.N_SQUARED) {
-        sequenceElementAsNumber = Number(
-            visualizer.seq.getElement(currentSequenceIndex)
-        )
         sequenceElementAsNumber =
             sequenceElementAsNumber * sequenceElementAsNumber
             + augmentForSequence
     } else if (visualizer.formula == Formula.N_SQUARED_PLUS_1) {
-        sequenceElementAsNumber = Number(
-            visualizer.seq.getElement(currentSequenceIndex)
-        )
         sequenceElementAsNumber =
             sequenceElementAsNumber * sequenceElementAsNumber
             + augmentForSequence
             + 1
     } else if (visualizer.formula == Formula.N_SQUARED_MINUS_N) {
-        sequenceElementAsNumber = Number(
-            visualizer.seq.getElement(currentSequenceIndex)
-        )
         sequenceElementAsNumber =
             sequenceElementAsNumber * sequenceElementAsNumber
             - sequenceElementAsNumber
             + augmentForSequence
     } else if (visualizer.formula == Formula.N_SQUARED_MINUS_N_PLUS_1) {
-        sequenceElementAsNumber = Number(
-            visualizer.seq.getElement(currentSequenceIndex)
-        )
         sequenceElementAsNumber =
             sequenceElementAsNumber * sequenceElementAsNumber
             + sequenceElementAsNumber
             + augmentForSequence
             + 1
     } else if (visualizer.formula == Formula.TWO_N_SQUARED) {
-        sequenceElementAsNumber = Number(
-            visualizer.seq.getElement(currentSequenceIndex)
-        )
         sequenceElementAsNumber =
             2 * sequenceElementAsNumber * sequenceElementAsNumber
             + augmentForSequence
     } else if (visualizer.formula == Formula.THREE_N_SQUARED) {
-        sequenceElementAsNumber = Number(
-            visualizer.seq.getElement(currentSequenceIndex)
-        )
         sequenceElementAsNumber =
             3 * sequenceElementAsNumber * sequenceElementAsNumber
             + augmentForSequence
     } else if (visualizer.formula == Formula.N_CUBED) {
-        sequenceElementAsNumber = Number(
-            visualizer.seq.getElement(currentSequenceIndex)
-        )
         sequenceElementAsNumber =
             sequenceElementAsNumber
                 * sequenceElementAsNumber
                 * sequenceElementAsNumber
             + augmentForSequence
     } else if (visualizer.formula == Formula.N_CUBED_PLUS_N_SQUARED) {
-        sequenceElementAsNumber = Number(
-            visualizer.seq.getElement(currentSequenceIndex)
-        )
         sequenceElementAsNumber =
             sequenceElementAsNumber
                 * sequenceElementAsNumber
@@ -2177,9 +2177,6 @@ function getNumberFromFormula(
             + sequenceElementAsNumber * sequenceElementAsNumber
             + augmentForSequence
     } else if (visualizer.formula == Formula.N_CUBED_PLUS_N_SQUARED_PLUS_N) {
-        sequenceElementAsNumber = Number(
-            visualizer.seq.getElement(currentSequenceIndex)
-        )
         sequenceElementAsNumber =
             sequenceElementAsNumber
                 * sequenceElementAsNumber
@@ -2188,9 +2185,6 @@ function getNumberFromFormula(
             + sequenceElementAsNumber
             + augmentForSequence
     } else if (visualizer.formula == Formula.TWO_TO_THE_N) {
-        sequenceElementAsNumber = Number(
-            visualizer.seq.getElement(currentSequenceIndex)
-        )
         sequenceElementAsNumber =
             Math.pow(2, sequenceElementAsNumber) + augmentForSequence
     }
@@ -2203,7 +2197,7 @@ function setPathVariables(
     squareRootOfAmountOfNumbers: number,
     scalingFactor: number
 ) {
-    //Declare initial movement variables.
+    //Declare initial movement variables
     if (
         visualizer.pathType == PathType.Inwards_Spiral
         || visualizer.pathType == PathType.Rows
@@ -2212,7 +2206,7 @@ function setPathVariables(
         x = 0
         y = 0
     } else if (visualizer.pathType == PathType.Spiral) {
-        //This starts at different places in the center so that the whole spiral is centered
+        //The starting point is placed so that the whole spiral is centered
         if (squareRootOfAmountOfNumbers % 2 == 1) {
             x = (floor(squareRootOfAmountOfNumbers / 2) - 1) * scalingFactor
             y = floor(squareRootOfAmountOfNumbers / 2) * scalingFactor
@@ -2223,13 +2217,13 @@ function setPathVariables(
     }
 
     if (visualizer.pathType == PathType.Spiral) {
-        //This uses an increment that decreases every other time the spiral turns
+        //This uses an increment that decreases every other turn
         numberToTurnAt = 1
         incrementForNumberToTurnAt = 1
         currentDirection = 'right'
         whetherIncrementShouldIncrementForSpiral = true
     } else if (visualizer.pathType == PathType.Inwards_Spiral) {
-        //This uses an increment that increases every other time the spiral turns
+        //This uses an increment that increases every other turn
         numberToTurnAt = squareRootOfAmountOfNumbers - 1
         incrementForNumberToTurnAt = squareRootOfAmountOfNumbers - 1
         currentDirection = 'right'
@@ -2247,7 +2241,7 @@ function changeDirectionBasedOnPathType(
 ) {
     //Choose direction for next number
     if (visualizer.pathType == PathType.Spiral) {
-        //Turn at the numbers to turn at which increases every other turn because the spiral is outwards.
+        //Turn at the numberToTurn at which increases every other turn
         if (iteration == numberToTurnAt) {
             numberToTurnAt += incrementForNumberToTurnAt
             if (whetherIncrementShouldIncrementForSpiral) {
@@ -2268,7 +2262,7 @@ function changeDirectionBasedOnPathType(
             }
         }
     } else if (visualizer.pathType == PathType.Inwards_Spiral) {
-        //Turn at the numbers to turn at which decreases every other turn because the spiral is inwards.
+        //Turn at the numbers to turn at which decreases every other turn
         if (iteration == numberToTurnAt) {
             numberToTurnAt += incrementForNumberToTurnAt
             if (whetherIncrementShouldIncrementForSpiral) {
@@ -2715,8 +2709,9 @@ function isPartOfSequence(num: number, sequence: number[]) {
     }
 }
 
-//Taken from Stack Overflow : https://stackoverflow.com/questions/40200089/number-prime-test-in-javascript
-//TODO This should be replaced with the getFactors implementation specifically for Numberscope.
+//Taken from Stack Overflow :
+//https://stackoverflow.com/questions/40200089/number-prime-test-in-javascript
+//TODO This should be replaced with the getFactors from Numberscope.
 function isPrime(num: number) {
     if (num == 0 || num == 1) {
         return false
@@ -2731,8 +2726,10 @@ function isPrime(num: number) {
     return num > 1
 }
 
-//Taken from Stack Overflow : https://stackoverflow.com/questions/22130043/trying-to-find-factors-of-a-number-in-js
-//TODO This should be replaced with the getFactors implementation specifically for Numberscope.
+//Taken from Stack Overflow :
+//https://stackoverflow.com/
+//questions/22130043/trying-to-find-factors-of-a-number-in-js
+//TODO This should be replaced with the getFactors from Numberscope.
 function getNumberOfFactors(num: number) {
     if (num == 0) {
         return 0
@@ -2756,7 +2753,8 @@ function getNumberOfFactors(num: number) {
     return factors.length
 }
 
-//Taken from Geeks For Geeks : https://www.geeksforgeeks.org/deficient-number/
+//Taken from Geeks For Geeks :
+//https://www.geeksforgeeks.org/deficient-number/
 function getSumOfDivisors(num: number) {
     let sumOfDivisors = 0 // Initialize sum of prime factors
 
@@ -2778,7 +2776,9 @@ function getSumOfDivisors(num: number) {
     return sumOfDivisors
 }
 
-//Taken from Geeks For Geeks : https://www.geeksforgeeks.org/check-whether-number-can-represented-sum-two-squares/
+//Taken from Geeks For Geeks :
+//https://www.geeksforgeeks.org/
+//check-whether-number-can-represented-sum-two-squares/
 function isSumOfTwoSquares(num: number) {
     for (let i = 1; i * i <= num; i++) {
         for (let j = 1; j * j <= num; j++)
@@ -2788,7 +2788,8 @@ function isSumOfTwoSquares(num: number) {
     }
 }
 
-//Modification of Geeks for Geeks : https://www.geeksforgeeks.org/program-check-n-pentagonal-number/
+//Modification of Geeks for Geeks :
+//https://www.geeksforgeeks.org/program-check-n-pentagonal-number/
 function isPolygonal(num: number, order: number) {
     let i = 1,
         M
@@ -2799,12 +2800,14 @@ function isPolygonal(num: number, order: number) {
     return M == num
 }
 
-//Taken from Geeks For Geeks : https://www.geeksforgeeks.org/deficient-number/
+//Taken from Geeks For Geeks :
+//https://www.geeksforgeeks.org/deficient-number/
 function isAbundant(num: number) {
     return getSumOfDivisors(num) > 2 * num
 }
 
-//Taken from Geeks For Geeks : https://www.geeksforgeeks.org/perfect-number/
+//Taken from Geeks For Geeks :
+//https://www.geeksforgeeks.org/perfect-number/
 function isPerfect(num: number) {
     // To store sum of divisors
     let sum = 1
@@ -2823,14 +2826,19 @@ function isPerfect(num: number) {
     return false
 }
 
-//Taken from Geeks for Geeks: https://www.geeksforgeeks.org/check-whether-number-semiprime-not/
+//Taken from Geeks for Geeks:
+//https://www.geeksforgeeks.org/check-whether-number-semiprime-not/
 function isSemiPrime(num: number) {
     let cnt = 0
     for (let i = 2; cnt < 2 && i * i <= num; ++i)
         while (num % i == 0) {
             num /= i // Increment count // of prime numbers
             ++cnt
-        } // If number is greater than 1, // add it to the count variable // as it indicates the number // remain is prime number
+        }
+    // If number is greater than 1,
+    // add it to the count variable
+    // as it indicates the number
+    // remain is prime number
     if (num > 1) ++cnt // Return '1' if count is equal // to '2' else return '0'
     return cnt == 2 ? 1 : 0
 }
