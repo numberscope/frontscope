@@ -322,10 +322,21 @@
                     if (this.params[name].visibleDependency) {
                         const dependsOn =
                             this.params[this.params[name].visibleDependency]
-                        if (
-                            dependsOn.value !== this.params[name].visibleValue
-                        ) {
-                            continue
+                        if ('visiblePredicate' in this.params[name]) {
+                            if (
+                                !this.params[name].visiblePredicate(
+                                    dependsOn.value
+                                )
+                            ) {
+                                continue
+                            }
+                        } else {
+                            if (
+                                dependsOn.value
+                                !== this.params[name].visibleValue
+                            ) {
+                                continue
+                            }
                         }
                     }
                     viz[name] = this.params[name]
