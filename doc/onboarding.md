@@ -87,9 +87,8 @@ Boulder Experimental Mathematics Lab.)
     ```
     This should print a link that you can open in the browser. Open it and see
     if Numberscope seems to be working.
-10. Finally, before you start changing code, please read the
-    [doc on submitting pull requests](./submitting-pull-requests.md) (it
-    outlines how to submit your code changes).
+10. Finally, before you start changing code, please read
+    [our docs on submitting a pull request](../CONTRIBUTING.md#submit-a-pull-request).
 
 See [the doc on running from source](./running-from-source.md) for more
 information.
