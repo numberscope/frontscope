@@ -1451,15 +1451,6 @@ const SHADE2 = 'rgb(040, 040, 040)'
 const SHADE1 = 'rgb(020, 020, 020)'
 const SHADE0 = 'rgb(000, 000, 000)'
 
-//Path variables
-let x = 0
-let y = 0
-let currentDirection = 'right'
-let numberToTurnAt = 0
-let incrementForNumberToTurnAt = 1
-let whetherIncrementShouldIncrementForSpiral = true
-
-//User options for visualizer
 enum Preset {
     Custom,
     Primes,
@@ -1475,6 +1466,15 @@ enum PathType {
     Spiral,
     Rows,
     Inwards_Spiral,
+}
+
+enum Direction {
+    Right,
+    Left,
+    Up,
+    Down,
+    StartNewRow,
+    None,
 }
 
 enum Property {
@@ -1506,7 +1506,6 @@ enum PropertyVisualization {
 
 enum VisualInfo {
     None,
-    Show_Path,
     Show_Numbers,
 }
 
@@ -1538,6 +1537,15 @@ class VisualizerGrid extends VisualizerDefault {
     formula = Formula.N
     backgroundColor = BLACK
     pathAndNumberColor = WHITE
+
+    //Path variables
+    x = 0
+    y = 0
+    currentDirection = Direction.Right
+    numberToTurnAt = 0
+    incrementForNumberToTurnAt = 1
+    whetherIncrementShouldIncrementForSpiral = true
+
     property1 = Property.Prime
     property1Visualization = PropertyVisualization.Color
     property1MainColor = RED
@@ -1604,12 +1612,6 @@ class VisualizerGrid extends VisualizerDefault {
             value: this.pathType,
             from: PathType,
             displayName: 'How path moves about grid',
-            required: false,
-        },
-        formula: {
-            value: this.formula,
-            from: Formula,
-            displayName: 'Formula',
             required: false,
         },
         resetAndAugmentByOne: {
@@ -1968,11 +1970,11 @@ class VisualizerGrid extends VisualizerDefault {
     }
 
     draw(): void {
-        setPresets(this)
+        this.setPresets()
 
         this.sketch.strokeWeight(0)
 
-        setOverridingSettings(this)
+        this.setOverridingSettings()
 
         //Round up amount of numbers so that it is a square number.
         const squareRootOfAmountOfNumbers = ceil(sqrt(this.amountOfNumbers))
@@ -1984,10 +1986,10 @@ class VisualizerGrid extends VisualizerDefault {
         //This is because 20 x 20 is 1:1 scaling.
 
         //Set path variables
-        setPathVariables(this, squareRootOfAmountOfNumbers, scalingFactor)
+        this.setPathVariables(squareRootOfAmountOfNumbers, scalingFactor)
 
         let currentSequenceIndex = this.startingIndex - 1
-        let augmentForSequence = 0
+        let augmentForRow = 0
 
         for (
             let iteration = 0;
@@ -1996,49 +1998,494 @@ class VisualizerGrid extends VisualizerDefault {
         ) {
             currentSequenceIndex++
 
-            if (currentDirection == 'startNewRow') {
+            if (this.currentDirection == Direction.StartNewRow) {
                 if (this.resetAndAugmentByOne) {
                     currentSequenceIndex = this.startingIndex
-                    augmentForSequence++
+                    augmentForRow++
                 }
             }
 
-            const sequenceElementAsNumber = getNumberFromFormula(
-                this,
+            const sequenceElementAsNumber = this.getNumberFromFormula(
                 currentSequenceIndex,
-                augmentForSequence
+                augmentForRow
             )
 
             const sequenceElementAsString = sequenceElementAsNumber.toString()
 
-            setColorForSquare(this, sequenceElementAsNumber)
+            this.setColorForSquare(sequenceElementAsNumber)
 
             //Draw square
-            this.sketch.rect(x, y, scalingFactor, scalingFactor)
+            this.sketch.rect(this.x, this.y, scalingFactor, scalingFactor)
 
-            showNumbers(this, sequenceElementAsString, scalingFactor)
+            this.showNumbers(sequenceElementAsString, scalingFactor)
 
             //Save current direction before changing direction
-            const previousDirection = currentDirection
+            const previousDirection = this.currentDirection
 
-            changeDirectionBasedOnPathType(
-                this,
+            this.changeDirectionBasedOnPathType(
                 squareRootOfAmountOfNumbers,
-                this.amountOfNumbers,
                 iteration
             )
 
-            showPath(
-                this,
-                iteration,
-                previousDirection,
-                currentDirection,
-                scalingFactor
-            )
-
-            moveCoordinatesBasedOnCurrentDirection(scalingFactor)
+            this.moveCoordinatesBasedOnCurrentDirection(scalingFactor)
         }
         this.sketch.noLoop()
+    }
+
+    setPresets() {
+        if (this.preset != Preset.Custom) {
+            this.property1 = Property.None
+            this.property2 = Property.None
+            this.property3 = Property.None
+            this.property4 = Property.None
+            this.property5 = Property.None
+            this.property6 = Property.None
+            this.property7 = Property.None
+            this.property8 = Property.None
+            this.property9 = Property.None
+            this.property10 = Property.None
+            this.property11 = Property.None
+            this.property12 = Property.None
+        }
+
+        if (this.preset == Preset.Primes) {
+            this.backgroundColor = BLACK
+            this.property1 = Property.Prime
+            this.property1Visualization = PropertyVisualization.Color
+            this.property1MainColor = RED
+        } else if (this.preset == Preset.Abundant_Numbers) {
+            this.backgroundColor = WHITE
+            this.property1 = Property.Abundant
+            this.property1Visualization = PropertyVisualization.Color
+            this.property1MainColor = BLACK
+        } else if (this.preset == Preset.Abundant_Numbers_And_Primes) {
+            this.backgroundColor = WHITE
+            this.property1 = Property.Abundant
+            this.property1Visualization = PropertyVisualization.Color
+            this.property1MainColor = BLACK
+            this.property2 = Property.Prime
+            this.property2Visualization = PropertyVisualization.Color
+            this.property2MainColor = RED
+        } else if (this.preset == Preset.Polygonal_Numbers) {
+            this.backgroundColor = BLACK
+            this.property1 = Property.Triangular_Number
+            this.property1Visualization = PropertyVisualization.Color
+            this.property1MainColor = RED
+            this.property2 = Property.Square_Number
+            this.property2Visualization = PropertyVisualization.Color
+            this.property2MainColor = ORANGE
+            this.property3 = Property.Pentagonal_Number
+            this.property3Visualization = PropertyVisualization.Color
+            this.property3MainColor = YELLOW
+            this.property4 = Property.Hexagonal_Number
+            this.property4Visualization = PropertyVisualization.Color
+            this.property4MainColor = GREEN
+            this.property5 = Property.Heptagonal_Number
+            this.property5Visualization = PropertyVisualization.Color
+            this.property5MainColor = BLUE
+            this.property6 = Property.Octagonal_Number
+            this.property6Visualization = PropertyVisualization.Color
+            this.property6MainColor = PURPLE
+        }
+    }
+
+    setOverridingSettings() {
+        if (this.resetAndAugmentByOne) {
+            this.pathType = PathType.Rows
+        }
+
+        if (
+            this.visualInfo == VisualInfo.Show_Numbers
+            && this.amountOfNumbers > 400
+        ) {
+            this.amountOfNumbers = 400
+        }
+    }
+
+    getNumberFromFormula(
+        currentSequenceIndex: number,
+        augmentForRow: number
+    ) {
+        let sequenceElementAsNumber = Number(
+            this.seq.getElement(currentSequenceIndex)
+        )
+        if (this.formula == Formula.N) {
+            sequenceElementAsNumber = sequenceElementAsNumber + augmentForRow
+        } else if (this.formula == Formula.N_SQUARED) {
+            sequenceElementAsNumber =
+                sequenceElementAsNumber * sequenceElementAsNumber
+                + augmentForRow
+        } else if (this.formula == Formula.N_SQUARED_MINUS_N_PLUS_1) {
+            sequenceElementAsNumber =
+                sequenceElementAsNumber * sequenceElementAsNumber
+                + sequenceElementAsNumber
+                + augmentForRow
+                + 1
+        }
+
+        return sequenceElementAsNumber
+    }
+
+    setPathVariables(
+        squareRootOfAmountOfNumbers: number,
+        scalingFactor: number
+    ) {
+        //Declare initial movement variables
+        if (
+            this.pathType == PathType.Inwards_Spiral
+            || this.pathType == PathType.Rows
+        ) {
+            //These all start in the top left corner
+            this.x = 0
+            this.y = 0
+        } else if (this.pathType == PathType.Spiral) {
+            //The starting point is placed so that the whole spiral is centered
+            if (squareRootOfAmountOfNumbers % 2 == 1) {
+                this.x =
+                    (floor(squareRootOfAmountOfNumbers / 2) - 1)
+                    * scalingFactor
+                this.y =
+                    floor(squareRootOfAmountOfNumbers / 2) * scalingFactor
+            } else {
+                this.x =
+                    (floor(squareRootOfAmountOfNumbers / 2) - 1)
+                    * scalingFactor
+                this.y =
+                    floor(squareRootOfAmountOfNumbers / 2) * scalingFactor
+            }
+        }
+
+        if (this.pathType == PathType.Spiral) {
+            //This uses an increment that decreases every other turn
+            this.numberToTurnAt = 1
+            this.incrementForNumberToTurnAt = 1
+            this.currentDirection = Direction.Right
+            this.whetherIncrementShouldIncrementForSpiral = true
+        } else if (this.pathType == PathType.Inwards_Spiral) {
+            //This uses an increment that increases every other turn
+            this.numberToTurnAt = squareRootOfAmountOfNumbers - 1
+            this.incrementForNumberToTurnAt = squareRootOfAmountOfNumbers - 1
+            this.currentDirection = Direction.Right
+            this.whetherIncrementShouldIncrementForSpiral = false
+        } else if (this.pathType == PathType.Rows) {
+            this.currentDirection = Direction.Right
+        }
+    }
+
+    changeDirectionBasedOnPathType(
+        squareRootOfAmountOfNumbers: number,
+        iteration: number
+    ) {
+        //Choose direction for next number
+        if (this.pathType == PathType.Spiral) {
+            //Turn at the numberToTurn at which increases every other turn
+            if (iteration == this.numberToTurnAt) {
+                this.numberToTurnAt += this.incrementForNumberToTurnAt
+                if (this.whetherIncrementShouldIncrementForSpiral) {
+                    this.incrementForNumberToTurnAt += 1
+                    this.whetherIncrementShouldIncrementForSpiral = false
+                } else {
+                    this.whetherIncrementShouldIncrementForSpiral = true
+                }
+
+                if (this.currentDirection == Direction.Right) {
+                    this.currentDirection = Direction.Up
+                } else if (this.currentDirection == Direction.Up) {
+                    this.currentDirection = Direction.Left
+                } else if (this.currentDirection == Direction.Left) {
+                    this.currentDirection = Direction.Down
+                } else if (this.currentDirection == Direction.Down) {
+                    this.currentDirection = Direction.Right
+                }
+            }
+        } else if (this.pathType == PathType.Inwards_Spiral) {
+            //Turn at the numbers to turn at which decreases every other turn
+            if (iteration == this.numberToTurnAt) {
+                this.numberToTurnAt += this.incrementForNumberToTurnAt
+                if (this.whetherIncrementShouldIncrementForSpiral) {
+                    this.incrementForNumberToTurnAt -= 1
+                    this.whetherIncrementShouldIncrementForSpiral = false
+                } else {
+                    this.whetherIncrementShouldIncrementForSpiral = true
+                }
+
+                if (this.currentDirection == Direction.Right) {
+                    this.currentDirection = Direction.Down
+                } else if (this.currentDirection == Direction.Down) {
+                    this.currentDirection = Direction.Left
+                } else if (this.currentDirection == Direction.Left) {
+                    this.currentDirection = Direction.Up
+                } else if (this.currentDirection == Direction.Up) {
+                    this.currentDirection = Direction.Right
+                }
+            }
+        } else if (this.pathType == PathType.Rows) {
+            //Go to new row when the row is complete
+            if ((iteration + 1) % squareRootOfAmountOfNumbers == 0) {
+                this.currentDirection = Direction.StartNewRow
+            } else if (iteration == this.amountOfNumbers) {
+                this.currentDirection = Direction.None
+            } else {
+                this.currentDirection = Direction.Right
+            }
+        }
+    }
+
+    moveCoordinatesBasedOnCurrentDirection(scalingFactor: number) {
+        //Move coordinates to direction they're going to
+        if (this.currentDirection == Direction.Right) {
+            this.x += scalingFactor
+        } else if (this.currentDirection == Direction.Up) {
+            this.y -= scalingFactor
+        } else if (this.currentDirection == Direction.Left) {
+            this.x -= scalingFactor
+        } else if (this.currentDirection == Direction.Down) {
+            this.y += scalingFactor
+        } else if (this.currentDirection == Direction.StartNewRow) {
+            this.x = 0
+            this.y += scalingFactor
+        }
+    }
+
+    setColorForSquare(sequenceElementAsNumber: number) {
+        //Color number
+        this.colorGradientPresets(sequenceElementAsNumber)
+        this.colorMainColorProperties(sequenceElementAsNumber)
+    }
+
+    colorGradientPresets(sequenceElementAsNumber: number) {
+        const preset = this.preset
+
+        if (preset == Preset.Factors) {
+            const numberOfFactors = sequenceElementAsNumber
+
+            if (
+                numberOfFactors == 0
+                || numberOfFactors == 1
+                || numberOfFactors == 2
+            ) {
+                this.sketch.fill(SHADE0)
+            } else if (numberOfFactors == 3) {
+                this.sketch.fill(SHADE1)
+            } else if (numberOfFactors == 4) {
+                this.sketch.fill(SHADE2)
+            } else if (numberOfFactors == 5) {
+                this.sketch.fill(SHADE3)
+            } else if (numberOfFactors == 6) {
+                this.sketch.fill(SHADE4)
+            } else if (numberOfFactors == 7) {
+                this.sketch.fill(SHADE5)
+            } else if (numberOfFactors == 8) {
+                this.sketch.fill(SHADE6)
+            } else if (numberOfFactors == 9) {
+                this.sketch.fill(SHADE7)
+            } else if (numberOfFactors == 10) {
+                this.sketch.fill(SHADE8)
+            } else if (numberOfFactors == 11) {
+                this.sketch.fill(SHADE9)
+            } else if (numberOfFactors == 12) {
+                this.sketch.fill(SHADE10)
+            } else if (numberOfFactors == 13) {
+                this.sketch.fill(SHADE11)
+            } else if (numberOfFactors == 14) {
+                this.sketch.fill(SHADE12)
+            } else if (numberOfFactors == 15) {
+                this.sketch.fill(SHADE13)
+            } else {
+                this.sketch.fill(SHADE13)
+            }
+        } else if (preset == Preset.Factors_and_Primes) {
+            const numberOfFactors = getNumberOfFactors(
+                sequenceElementAsNumber
+            )
+
+            if (isPrime(sequenceElementAsNumber)) {
+                this.sketch.fill(HIGHLIGHT)
+            } else if (
+                numberOfFactors == 0
+                || numberOfFactors == 1
+                || numberOfFactors == 3
+            ) {
+                this.sketch.fill(SHADE0)
+            } else if (numberOfFactors == 4) {
+                this.sketch.fill(SHADE1)
+            } else if (numberOfFactors == 5) {
+                this.sketch.fill(SHADE2)
+            } else if (numberOfFactors == 6) {
+                this.sketch.fill(SHADE3)
+            } else if (numberOfFactors == 7) {
+                this.sketch.fill(SHADE4)
+            } else if (numberOfFactors == 8) {
+                this.sketch.fill(SHADE5)
+            } else if (numberOfFactors == 9) {
+                this.sketch.fill(SHADE6)
+            } else if (numberOfFactors == 10) {
+                this.sketch.fill(SHADE7)
+            } else if (numberOfFactors == 11) {
+                this.sketch.fill(SHADE8)
+            } else if (numberOfFactors == 12) {
+                this.sketch.fill(SHADE9)
+            } else if (numberOfFactors == 13) {
+                this.sketch.fill(SHADE10)
+            } else if (numberOfFactors == 14) {
+                this.sketch.fill(SHADE11)
+            } else if (numberOfFactors == 15) {
+                this.sketch.fill(SHADE12)
+            } else if (numberOfFactors == 16) {
+                this.sketch.fill(SHADE13)
+            } else {
+                this.sketch.fill(SHADE13)
+            }
+        } else if (preset == Preset.Divisibility) {
+            if (
+                sequenceElementAsNumber == 0
+                || sequenceElementAsNumber == 1
+            ) {
+                this.sketch.fill(SHADE0)
+            } else if (sequenceElementAsNumber % 2 == 0) {
+                this.sketch.fill(SHADE0)
+            } else if (sequenceElementAsNumber % 3 == 0) {
+                this.sketch.fill(SHADE1)
+            } else if (sequenceElementAsNumber % 5 == 0) {
+                this.sketch.fill(SHADE2)
+            } else if (sequenceElementAsNumber % 7 == 0) {
+                this.sketch.fill(SHADE3)
+            } else if (sequenceElementAsNumber % 11 == 0) {
+                this.sketch.fill(SHADE4)
+            } else if (sequenceElementAsNumber % 13 == 0) {
+                this.sketch.fill(SHADE5)
+            } else if (sequenceElementAsNumber % 17 == 0) {
+                this.sketch.fill(SHADE6)
+            } else if (sequenceElementAsNumber % 19 == 0) {
+                this.sketch.fill(SHADE7)
+            } else if (sequenceElementAsNumber % 23 == 0) {
+                this.sketch.fill(SHADE8)
+            } else if (sequenceElementAsNumber % 29 == 0) {
+                this.sketch.fill(SHADE9)
+            } else if (sequenceElementAsNumber % 31 == 0) {
+                this.sketch.fill(SHADE10)
+            } else if (sequenceElementAsNumber % 37 == 0) {
+                this.sketch.fill(SHADE11)
+            } else if (sequenceElementAsNumber % 41 == 0) {
+                this.sketch.fill(SHADE12)
+            } else if (isPrime(sequenceElementAsNumber)) {
+                this.sketch.fill(SHADE13)
+            } else {
+                this.sketch.fill(SHADE13)
+            }
+        } else {
+            this.sketch.fill(this.backgroundColor)
+        }
+    }
+
+    showNumbers(sequenceElementAsString: string, scalingFactor: number) {
+        if (this.visualInfo == VisualInfo.Show_Numbers) {
+            this.sketch.fill(this.pathAndNumberColor)
+            this.sketch.text(
+                sequenceElementAsString,
+                this.x + 0 * scalingFactor,
+                this.y + (15 / 20) * scalingFactor
+            )
+        }
+    }
+
+    colorMainColorProperties(sequenceElementAsNumber: number) {
+        if (
+            this.property1 != Property.None
+            && this.property1Visualization == PropertyVisualization.Color
+        ) {
+            if (hasProperty(sequenceElementAsNumber, this.property1)) {
+                this.sketch.fill(this.property1MainColor)
+            }
+        }
+        if (
+            this.property2 != Property.None
+            && this.property2Visualization == PropertyVisualization.Color
+        ) {
+            if (hasProperty(sequenceElementAsNumber, this.property2)) {
+                this.sketch.fill(this.property2MainColor)
+            }
+        }
+        if (
+            this.property3 != Property.None
+            && this.property3Visualization == PropertyVisualization.Color
+        ) {
+            if (hasProperty(sequenceElementAsNumber, this.property3)) {
+                this.sketch.fill(this.property3MainColor)
+            }
+        }
+        if (
+            this.property4 != Property.None
+            && this.property4Visualization == PropertyVisualization.Color
+        ) {
+            if (hasProperty(sequenceElementAsNumber, this.property4)) {
+                this.sketch.fill(this.property4MainColor)
+            }
+        }
+        if (
+            this.property5 != Property.None
+            && this.property5Visualization == PropertyVisualization.Color
+        ) {
+            if (hasProperty(sequenceElementAsNumber, this.property5)) {
+                this.sketch.fill(this.property5MainColor)
+            }
+        }
+        if (
+            this.property6 != Property.None
+            && this.property6Visualization == PropertyVisualization.Color
+        ) {
+            if (hasProperty(sequenceElementAsNumber, this.property6)) {
+                this.sketch.fill(this.property6MainColor)
+            }
+        }
+        if (
+            this.property7 != Property.None
+            && this.property7Visualization == PropertyVisualization.Color
+        ) {
+            if (hasProperty(sequenceElementAsNumber, this.property7)) {
+                this.sketch.fill(this.property7MainColor)
+            }
+        }
+        if (
+            this.property8 != Property.None
+            && this.property8Visualization == PropertyVisualization.Color
+        ) {
+            if (hasProperty(sequenceElementAsNumber, this.property8)) {
+                this.sketch.fill(this.property8MainColor)
+            }
+        }
+        if (
+            this.property9 != Property.None
+            && this.property9Visualization == PropertyVisualization.Color
+        ) {
+            if (hasProperty(sequenceElementAsNumber, this.property9)) {
+                this.sketch.fill(this.property9MainColor)
+            }
+        }
+        if (
+            this.property10 != Property.None
+            && this.property10Visualization == PropertyVisualization.Color
+        ) {
+            if (hasProperty(sequenceElementAsNumber, this.property10)) {
+                this.sketch.fill(this.property10MainColor)
+            }
+        }
+        if (
+            this.property11 != Property.None
+            && this.property11Visualization == PropertyVisualization.Color
+        ) {
+            if (hasProperty(sequenceElementAsNumber, this.property11)) {
+                this.sketch.fill(this.property11MainColor)
+            }
+        }
+        if (
+            this.property12 != Property.None
+            && this.property12Visualization == PropertyVisualization.Color
+        ) {
+            if (hasProperty(sequenceElementAsNumber, this.property12)) {
+                this.sketch.fill(this.property12MainColor)
+            }
+        }
     }
 }
 export const exportModule = new VisualizerExportModule(
@@ -2046,614 +2493,6 @@ export const exportModule = new VisualizerExportModule(
     VisualizerGrid,
     'Puts numbers in a grid.'
 )
-
-function setPresets(visualizer: VisualizerGrid) {
-    if (visualizer.preset != Preset.Custom) {
-        visualizer.property1 = Property.None
-        visualizer.property2 = Property.None
-        visualizer.property3 = Property.None
-        visualizer.property4 = Property.None
-        visualizer.property5 = Property.None
-        visualizer.property6 = Property.None
-        visualizer.property7 = Property.None
-        visualizer.property8 = Property.None
-        visualizer.property9 = Property.None
-        visualizer.property10 = Property.None
-        visualizer.property11 = Property.None
-        visualizer.property12 = Property.None
-    }
-
-    if (visualizer.preset == Preset.Primes) {
-        visualizer.backgroundColor = BLACK
-        visualizer.property1 = Property.Prime
-        visualizer.property1Visualization = PropertyVisualization.Color
-        visualizer.property1MainColor = RED
-    } else if (visualizer.preset == Preset.Abundant_Numbers) {
-        visualizer.backgroundColor = WHITE
-        visualizer.property1 = Property.Abundant
-        visualizer.property1Visualization = PropertyVisualization.Color
-        visualizer.property1MainColor = BLACK
-    } else if (visualizer.preset == Preset.Abundant_Numbers_And_Primes) {
-        visualizer.backgroundColor = WHITE
-        visualizer.property1 = Property.Abundant
-        visualizer.property1Visualization = PropertyVisualization.Color
-        visualizer.property1MainColor = BLACK
-        visualizer.property2 = Property.Prime
-        visualizer.property2Visualization = PropertyVisualization.Color
-        visualizer.property2MainColor = RED
-    } else if (visualizer.preset == Preset.Polygonal_Numbers) {
-        visualizer.backgroundColor = BLACK
-        visualizer.property1 = Property.Triangular_Number
-        visualizer.property1Visualization = PropertyVisualization.Color
-        visualizer.property1MainColor = RED
-        visualizer.property2 = Property.Square_Number
-        visualizer.property2Visualization = PropertyVisualization.Color
-        visualizer.property2MainColor = ORANGE
-        visualizer.property3 = Property.Pentagonal_Number
-        visualizer.property3Visualization = PropertyVisualization.Color
-        visualizer.property3MainColor = YELLOW
-        visualizer.property4 = Property.Hexagonal_Number
-        visualizer.property4Visualization = PropertyVisualization.Color
-        visualizer.property4MainColor = GREEN
-        visualizer.property5 = Property.Heptagonal_Number
-        visualizer.property5Visualization = PropertyVisualization.Color
-        visualizer.property5MainColor = BLUE
-        visualizer.property6 = Property.Octagonal_Number
-        visualizer.property6Visualization = PropertyVisualization.Color
-        visualizer.property6MainColor = PURPLE
-    }
-}
-
-function setOverridingSettings(visualizer: VisualizerGrid) {
-    if (visualizer.resetAndAugmentByOne) {
-        visualizer.pathType = PathType.Rows
-    }
-
-    if (
-        (visualizer.visualInfo == VisualInfo.Show_Numbers
-            || visualizer.visualInfo == VisualInfo.Show_Path)
-        && visualizer.amountOfNumbers > 400
-    ) {
-        visualizer.amountOfNumbers = 400
-    }
-
-    if (
-        visualizer.formula == Formula.TWO_TO_THE_N
-        && visualizer.amountOfNumbers > 1000
-    ) {
-        visualizer.amountOfNumbers = 1000
-    }
-}
-
-function getNumberFromFormula(
-    visualizer: VisualizerGrid,
-    currentSequenceIndex: number,
-    augmentForSequence: number
-) {
-    let sequenceElementAsNumber = Number(
-        visualizer.seq.getElement(currentSequenceIndex)
-    )
-    if (visualizer.formula == Formula.N) {
-        sequenceElementAsNumber = sequenceElementAsNumber + augmentForSequence
-    } else if (visualizer.formula == Formula.N_SQUARED) {
-        sequenceElementAsNumber =
-            sequenceElementAsNumber * sequenceElementAsNumber
-            + augmentForSequence
-    } else if (visualizer.formula == Formula.N_SQUARED_PLUS_1) {
-        sequenceElementAsNumber =
-            sequenceElementAsNumber * sequenceElementAsNumber
-            + augmentForSequence
-            + 1
-    } else if (visualizer.formula == Formula.N_SQUARED_MINUS_N) {
-        sequenceElementAsNumber =
-            sequenceElementAsNumber * sequenceElementAsNumber
-            - sequenceElementAsNumber
-            + augmentForSequence
-    } else if (visualizer.formula == Formula.N_SQUARED_MINUS_N_PLUS_1) {
-        sequenceElementAsNumber =
-            sequenceElementAsNumber * sequenceElementAsNumber
-            + sequenceElementAsNumber
-            + augmentForSequence
-            + 1
-    } else if (visualizer.formula == Formula.TWO_N_SQUARED) {
-        sequenceElementAsNumber =
-            2 * sequenceElementAsNumber * sequenceElementAsNumber
-            + augmentForSequence
-    } else if (visualizer.formula == Formula.THREE_N_SQUARED) {
-        sequenceElementAsNumber =
-            3 * sequenceElementAsNumber * sequenceElementAsNumber
-            + augmentForSequence
-    } else if (visualizer.formula == Formula.N_CUBED) {
-        sequenceElementAsNumber =
-            sequenceElementAsNumber
-                * sequenceElementAsNumber
-                * sequenceElementAsNumber
-            + augmentForSequence
-    } else if (visualizer.formula == Formula.N_CUBED_PLUS_N_SQUARED) {
-        sequenceElementAsNumber =
-            sequenceElementAsNumber
-                * sequenceElementAsNumber
-                * sequenceElementAsNumber
-            + sequenceElementAsNumber * sequenceElementAsNumber
-            + augmentForSequence
-    } else if (visualizer.formula == Formula.N_CUBED_PLUS_N_SQUARED_PLUS_N) {
-        sequenceElementAsNumber =
-            sequenceElementAsNumber
-                * sequenceElementAsNumber
-                * sequenceElementAsNumber
-            + sequenceElementAsNumber * sequenceElementAsNumber
-            + sequenceElementAsNumber
-            + augmentForSequence
-    } else if (visualizer.formula == Formula.TWO_TO_THE_N) {
-        sequenceElementAsNumber =
-            Math.pow(2, sequenceElementAsNumber) + augmentForSequence
-    }
-
-    return sequenceElementAsNumber
-}
-
-function setPathVariables(
-    visualizer: VisualizerGrid,
-    squareRootOfAmountOfNumbers: number,
-    scalingFactor: number
-) {
-    //Declare initial movement variables
-    if (
-        visualizer.pathType == PathType.Inwards_Spiral
-        || visualizer.pathType == PathType.Rows
-    ) {
-        //These all start in the top left corner
-        x = 0
-        y = 0
-    } else if (visualizer.pathType == PathType.Spiral) {
-        //The starting point is placed so that the whole spiral is centered
-        if (squareRootOfAmountOfNumbers % 2 == 1) {
-            x = (floor(squareRootOfAmountOfNumbers / 2) - 1) * scalingFactor
-            y = floor(squareRootOfAmountOfNumbers / 2) * scalingFactor
-        } else {
-            x = (floor(squareRootOfAmountOfNumbers / 2) - 1) * scalingFactor
-            y = floor(squareRootOfAmountOfNumbers / 2) * scalingFactor
-        }
-    }
-
-    if (visualizer.pathType == PathType.Spiral) {
-        //This uses an increment that decreases every other turn
-        numberToTurnAt = 1
-        incrementForNumberToTurnAt = 1
-        currentDirection = 'right'
-        whetherIncrementShouldIncrementForSpiral = true
-    } else if (visualizer.pathType == PathType.Inwards_Spiral) {
-        //This uses an increment that increases every other turn
-        numberToTurnAt = squareRootOfAmountOfNumbers - 1
-        incrementForNumberToTurnAt = squareRootOfAmountOfNumbers - 1
-        currentDirection = 'right'
-        whetherIncrementShouldIncrementForSpiral = false
-    } else if (visualizer.pathType == PathType.Rows) {
-        currentDirection = 'right'
-    }
-}
-
-function changeDirectionBasedOnPathType(
-    visualizer: VisualizerGrid,
-    squareRootOfAmountOfNumbers: number,
-    amountOfNumbers: number,
-    iteration: number
-) {
-    //Choose direction for next number
-    if (visualizer.pathType == PathType.Spiral) {
-        //Turn at the numberToTurn at which increases every other turn
-        if (iteration == numberToTurnAt) {
-            numberToTurnAt += incrementForNumberToTurnAt
-            if (whetherIncrementShouldIncrementForSpiral) {
-                incrementForNumberToTurnAt += 1
-                whetherIncrementShouldIncrementForSpiral = false
-            } else {
-                whetherIncrementShouldIncrementForSpiral = true
-            }
-
-            if (currentDirection == 'right') {
-                currentDirection = 'up'
-            } else if (currentDirection == 'up') {
-                currentDirection = 'left'
-            } else if (currentDirection == 'left') {
-                currentDirection = 'down'
-            } else if (currentDirection == 'down') {
-                currentDirection = 'right'
-            }
-        }
-    } else if (visualizer.pathType == PathType.Inwards_Spiral) {
-        //Turn at the numbers to turn at which decreases every other turn
-        if (iteration == numberToTurnAt) {
-            numberToTurnAt += incrementForNumberToTurnAt
-            if (whetherIncrementShouldIncrementForSpiral) {
-                incrementForNumberToTurnAt -= 1
-                whetherIncrementShouldIncrementForSpiral = false
-            } else {
-                whetherIncrementShouldIncrementForSpiral = true
-            }
-
-            if (currentDirection == 'right') {
-                currentDirection = 'down'
-            } else if (currentDirection == 'down') {
-                currentDirection = 'left'
-            } else if (currentDirection == 'left') {
-                currentDirection = 'up'
-            } else if (currentDirection == 'up') {
-                currentDirection = 'right'
-            }
-        }
-    } else if (visualizer.pathType == PathType.Rows) {
-        //Go to new row when the row is complete
-        if ((iteration + 1) % squareRootOfAmountOfNumbers == 0) {
-            currentDirection = 'startNewRow'
-        } else if (iteration == amountOfNumbers) {
-            currentDirection = 'none'
-        } else {
-            currentDirection = 'right'
-        }
-    }
-}
-
-function showPath(
-    visualizer: VisualizerGrid,
-    iteration: number,
-    previousDirection: string,
-    currentDirection: string,
-    scalingFactor: number
-) {
-    if (visualizer.visualInfo == VisualInfo.Show_Path) {
-        visualizer.sketch.fill(visualizer.pathAndNumberColor)
-
-        if (iteration != 0) {
-            if (previousDirection == 'left') {
-                visualizer.sketch.rect(
-                    x + ((10 - 2) / 20) * scalingFactor,
-                    y + ((10 - 2) / 20) * scalingFactor,
-                    ((20 + 2 + 2) / 20) * scalingFactor,
-                    (4 / 20) * scalingFactor
-                )
-            } else if (
-                previousDirection == 'down'
-                || previousDirection == 'downBeforeLeft'
-                || previousDirection == 'downBeforeRight'
-            ) {
-                visualizer.sketch.rect(
-                    x + ((10 - 2) / 20) * scalingFactor,
-                    y + ((10 - 22) / 20) * scalingFactor,
-                    (4 / 20) * scalingFactor,
-                    ((20 + 2 + 2) / 20) * scalingFactor
-                )
-            } else if (previousDirection == 'right') {
-                visualizer.sketch.rect(
-                    x + ((10 - 22) / 20) * scalingFactor,
-                    y + ((10 - 2) / 20) * scalingFactor,
-                    ((20 + 2 + 2) / 20) * scalingFactor,
-                    (4 / 20) * scalingFactor
-                )
-            } else if (previousDirection == 'up') {
-                visualizer.sketch.rect(
-                    x + ((10 - 2) / 20) * scalingFactor,
-                    y + ((10 - 2) / 20) * scalingFactor,
-                    (4 / 20) * scalingFactor,
-                    ((20 + 2 + 2) / 20) * scalingFactor
-                )
-            } else {
-                visualizer.sketch.rect(
-                    x + ((10 - 2) / 20) * scalingFactor,
-                    y + ((10 - 2) / 20) * scalingFactor,
-                    (4 / 20) * scalingFactor,
-                    (4 / 20) * scalingFactor
-                )
-            }
-        }
-
-        if (currentDirection == 'right') {
-            visualizer.sketch.rect(
-                x + ((10 - 2) / 20) * scalingFactor,
-                y + ((10 - 2) / 20) * scalingFactor,
-                ((20 + 2 + 2) / 20) * scalingFactor,
-                (4 / 20) * scalingFactor
-            )
-        } else if (currentDirection == 'up') {
-            visualizer.sketch.rect(
-                x + ((10 - 2) / 20) * scalingFactor,
-                y + ((10 - 22) / 20) * scalingFactor,
-                (4 / 20) * scalingFactor,
-                ((20 + 2 + 2) / 20) * scalingFactor
-            )
-        } else if (currentDirection == 'left') {
-            visualizer.sketch.rect(
-                x + ((10 - 22) / 20) * scalingFactor,
-                y + ((10 - 2) / 20) * scalingFactor,
-                ((20 + 2 + 2) / 20) * scalingFactor,
-                (4 / 20) * scalingFactor
-            )
-        } else if (
-            currentDirection == 'down'
-            || currentDirection == 'downBeforeLeft'
-            || currentDirection == 'downBeforeRight'
-        ) {
-            visualizer.sketch.rect(
-                x + ((10 - 2) / 20) * scalingFactor,
-                y + ((10 - 2) / 20) * scalingFactor,
-                (4 / 20) * scalingFactor,
-                ((20 + 2 + 2) / 20) * scalingFactor
-            )
-        } else {
-            visualizer.sketch.rect(
-                x + ((10 - 2) / 20) * scalingFactor,
-                y + ((10 - 2) / 20) * scalingFactor,
-                (4 / 20) * scalingFactor,
-                (4 / 20) * scalingFactor
-            )
-        }
-    }
-}
-
-function moveCoordinatesBasedOnCurrentDirection(scalingFactor: number) {
-    //Move coordinates to direction they're going to
-    if (currentDirection == 'right') {
-        x += scalingFactor
-    } else if (currentDirection == 'up') {
-        y -= scalingFactor
-    } else if (currentDirection == 'left') {
-        x -= scalingFactor
-    } else if (currentDirection == 'down') {
-        y += scalingFactor
-    } else if (currentDirection == 'startNewRow') {
-        x = 0
-        y += scalingFactor
-    }
-}
-
-function setColorForSquare(
-    visualizer: VisualizerGrid,
-    sequenceElementAsNumber: number
-) {
-    //Color number
-    colorGradientPresets(visualizer, sequenceElementAsNumber)
-    colorMainColorProperties(visualizer, sequenceElementAsNumber)
-}
-
-function colorGradientPresets(
-    visualizer: VisualizerGrid,
-    sequenceElementAsNumber: number
-) {
-    const preset = visualizer.preset
-
-    if (preset == Preset.Factors) {
-        const numberOfFactors = sequenceElementAsNumber
-
-        if (
-            numberOfFactors == 0
-            || numberOfFactors == 1
-            || numberOfFactors == 2
-        ) {
-            visualizer.sketch.fill(SHADE0)
-        } else if (numberOfFactors == 3) {
-            visualizer.sketch.fill(SHADE1)
-        } else if (numberOfFactors == 4) {
-            visualizer.sketch.fill(SHADE2)
-        } else if (numberOfFactors == 5) {
-            visualizer.sketch.fill(SHADE3)
-        } else if (numberOfFactors == 6) {
-            visualizer.sketch.fill(SHADE4)
-        } else if (numberOfFactors == 7) {
-            visualizer.sketch.fill(SHADE5)
-        } else if (numberOfFactors == 8) {
-            visualizer.sketch.fill(SHADE6)
-        } else if (numberOfFactors == 9) {
-            visualizer.sketch.fill(SHADE7)
-        } else if (numberOfFactors == 10) {
-            visualizer.sketch.fill(SHADE8)
-        } else if (numberOfFactors == 11) {
-            visualizer.sketch.fill(SHADE9)
-        } else if (numberOfFactors == 12) {
-            visualizer.sketch.fill(SHADE10)
-        } else if (numberOfFactors == 13) {
-            visualizer.sketch.fill(SHADE11)
-        } else if (numberOfFactors == 14) {
-            visualizer.sketch.fill(SHADE12)
-        } else if (numberOfFactors == 15) {
-            visualizer.sketch.fill(SHADE13)
-        } else {
-            visualizer.sketch.fill(SHADE13)
-        }
-    } else if (preset == Preset.Factors_and_Primes) {
-        const numberOfFactors = getNumberOfFactors(sequenceElementAsNumber)
-
-        if (isPrime(sequenceElementAsNumber)) {
-            visualizer.sketch.fill(HIGHLIGHT)
-        } else if (
-            numberOfFactors == 0
-            || numberOfFactors == 1
-            || numberOfFactors == 3
-        ) {
-            visualizer.sketch.fill(SHADE0)
-        } else if (numberOfFactors == 4) {
-            visualizer.sketch.fill(SHADE1)
-        } else if (numberOfFactors == 5) {
-            visualizer.sketch.fill(SHADE2)
-        } else if (numberOfFactors == 6) {
-            visualizer.sketch.fill(SHADE3)
-        } else if (numberOfFactors == 7) {
-            visualizer.sketch.fill(SHADE4)
-        } else if (numberOfFactors == 8) {
-            visualizer.sketch.fill(SHADE5)
-        } else if (numberOfFactors == 9) {
-            visualizer.sketch.fill(SHADE6)
-        } else if (numberOfFactors == 10) {
-            visualizer.sketch.fill(SHADE7)
-        } else if (numberOfFactors == 11) {
-            visualizer.sketch.fill(SHADE8)
-        } else if (numberOfFactors == 12) {
-            visualizer.sketch.fill(SHADE9)
-        } else if (numberOfFactors == 13) {
-            visualizer.sketch.fill(SHADE10)
-        } else if (numberOfFactors == 14) {
-            visualizer.sketch.fill(SHADE11)
-        } else if (numberOfFactors == 15) {
-            visualizer.sketch.fill(SHADE12)
-        } else if (numberOfFactors == 16) {
-            visualizer.sketch.fill(SHADE13)
-        } else {
-            visualizer.sketch.fill(SHADE13)
-        }
-    } else if (preset == Preset.Divisibility) {
-        if (sequenceElementAsNumber == 0 || sequenceElementAsNumber == 1) {
-            visualizer.sketch.fill(SHADE0)
-        } else if (sequenceElementAsNumber % 2 == 0) {
-            visualizer.sketch.fill(SHADE0)
-        } else if (sequenceElementAsNumber % 3 == 0) {
-            visualizer.sketch.fill(SHADE1)
-        } else if (sequenceElementAsNumber % 5 == 0) {
-            visualizer.sketch.fill(SHADE2)
-        } else if (sequenceElementAsNumber % 7 == 0) {
-            visualizer.sketch.fill(SHADE3)
-        } else if (sequenceElementAsNumber % 11 == 0) {
-            visualizer.sketch.fill(SHADE4)
-        } else if (sequenceElementAsNumber % 13 == 0) {
-            visualizer.sketch.fill(SHADE5)
-        } else if (sequenceElementAsNumber % 17 == 0) {
-            visualizer.sketch.fill(SHADE6)
-        } else if (sequenceElementAsNumber % 19 == 0) {
-            visualizer.sketch.fill(SHADE7)
-        } else if (sequenceElementAsNumber % 23 == 0) {
-            visualizer.sketch.fill(SHADE8)
-        } else if (sequenceElementAsNumber % 29 == 0) {
-            visualizer.sketch.fill(SHADE9)
-        } else if (sequenceElementAsNumber % 31 == 0) {
-            visualizer.sketch.fill(SHADE10)
-        } else if (sequenceElementAsNumber % 37 == 0) {
-            visualizer.sketch.fill(SHADE11)
-        } else if (sequenceElementAsNumber % 41 == 0) {
-            visualizer.sketch.fill(SHADE12)
-        } else if (isPrime(sequenceElementAsNumber)) {
-            visualizer.sketch.fill(SHADE13)
-        } else {
-            visualizer.sketch.fill(SHADE13)
-        }
-    } else {
-        visualizer.sketch.fill(visualizer.backgroundColor)
-    }
-}
-
-function showNumbers(
-    visualizer: VisualizerGrid,
-    sequenceElementAsString: string,
-    scalingFactor: number
-) {
-    if (visualizer.visualInfo == VisualInfo.Show_Numbers) {
-        visualizer.sketch.fill(visualizer.pathAndNumberColor)
-        visualizer.sketch.text(
-            sequenceElementAsString,
-            x + 0 * scalingFactor,
-            y + (15 / 20) * scalingFactor
-        )
-    }
-}
-
-function colorMainColorProperties(
-    visualizer: VisualizerGrid,
-    sequenceElementAsNumber: number
-) {
-    if (
-        visualizer.property1 != Property.None
-        && visualizer.property1Visualization == PropertyVisualization.Color
-    ) {
-        if (hasProperty(sequenceElementAsNumber, visualizer.property1)) {
-            visualizer.sketch.fill(visualizer.property1MainColor)
-        }
-    }
-    if (
-        visualizer.property2 != Property.None
-        && visualizer.property2Visualization == PropertyVisualization.Color
-    ) {
-        if (hasProperty(sequenceElementAsNumber, visualizer.property2)) {
-            visualizer.sketch.fill(visualizer.property2MainColor)
-        }
-    }
-    if (
-        visualizer.property3 != Property.None
-        && visualizer.property3Visualization == PropertyVisualization.Color
-    ) {
-        if (hasProperty(sequenceElementAsNumber, visualizer.property3)) {
-            visualizer.sketch.fill(visualizer.property3MainColor)
-        }
-    }
-    if (
-        visualizer.property4 != Property.None
-        && visualizer.property4Visualization == PropertyVisualization.Color
-    ) {
-        if (hasProperty(sequenceElementAsNumber, visualizer.property4)) {
-            visualizer.sketch.fill(visualizer.property4MainColor)
-        }
-    }
-    if (
-        visualizer.property5 != Property.None
-        && visualizer.property5Visualization == PropertyVisualization.Color
-    ) {
-        if (hasProperty(sequenceElementAsNumber, visualizer.property5)) {
-            visualizer.sketch.fill(visualizer.property5MainColor)
-        }
-    }
-    if (
-        visualizer.property6 != Property.None
-        && visualizer.property6Visualization == PropertyVisualization.Color
-    ) {
-        if (hasProperty(sequenceElementAsNumber, visualizer.property6)) {
-            visualizer.sketch.fill(visualizer.property6MainColor)
-        }
-    }
-    if (
-        visualizer.property7 != Property.None
-        && visualizer.property7Visualization == PropertyVisualization.Color
-    ) {
-        if (hasProperty(sequenceElementAsNumber, visualizer.property7)) {
-            visualizer.sketch.fill(visualizer.property7MainColor)
-        }
-    }
-    if (
-        visualizer.property8 != Property.None
-        && visualizer.property8Visualization == PropertyVisualization.Color
-    ) {
-        if (hasProperty(sequenceElementAsNumber, visualizer.property8)) {
-            visualizer.sketch.fill(visualizer.property8MainColor)
-        }
-    }
-    if (
-        visualizer.property9 != Property.None
-        && visualizer.property9Visualization == PropertyVisualization.Color
-    ) {
-        if (hasProperty(sequenceElementAsNumber, visualizer.property9)) {
-            visualizer.sketch.fill(visualizer.property9MainColor)
-        }
-    }
-    if (
-        visualizer.property10 != Property.None
-        && visualizer.property10Visualization == PropertyVisualization.Color
-    ) {
-        if (hasProperty(sequenceElementAsNumber, visualizer.property10)) {
-            visualizer.sketch.fill(visualizer.property10MainColor)
-        }
-    }
-    if (
-        visualizer.property11 != Property.None
-        && visualizer.property11Visualization == PropertyVisualization.Color
-    ) {
-        if (hasProperty(sequenceElementAsNumber, visualizer.property11)) {
-            visualizer.sketch.fill(visualizer.property11MainColor)
-        }
-    }
-    if (
-        visualizer.property12 != Property.None
-        && visualizer.property12Visualization == PropertyVisualization.Color
-    ) {
-        if (hasProperty(sequenceElementAsNumber, visualizer.property12)) {
-            visualizer.sketch.fill(visualizer.property12MainColor)
-        }
-    }
-}
 
 function hasProperty(num: number, property: Property) {
     if (property == Property.Prime) {
