@@ -20,7 +20,7 @@ about them.
             -   [Create a fork](./working-with-git-and-github#create-a-fork).
             -   [Add the remote of your fork](./working-with-git-and-github#add-a-remote).
             -   [Push the branch to your fork](./working-with-git-and-github#push-a-branch).
-            -   [Clone your fork](./working-with-git-and-github#clone-a-repo). -
+            -   [Clone your fork](./working-with-git-and-github#clone-a-repo).
             -   [Read about basic Git operations](./working-with-git-and-github#basic-git-operations).
         -   1.B.2: You are working on a different branch.
             -   1.B.2.A: You have made commits.
