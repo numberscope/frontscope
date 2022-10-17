@@ -83,10 +83,17 @@ one of the Numberscope repositories.
 
 ## Create a fork
 
+Creating a fork of a repository is like creating your own personal copy of
+that repository. It's basically the same thing as cloning the repository, but
+it creates a GitHub repository associated with your account that mirrors the
+original, at least until you start making changes to your fork. It also adds
+some neat functionality that makes it easier to sync your fork with the
+original and submit pull requests.
+
 Note: This is a GitHub operation, not a Git operation.
 
-1. Go to the page of the repository you want to clone. For instance, if you
-   want to clone the numberscope/frontscope repository, go to
+1. Go to the page of the repository you want to fork. For instance, if you
+   want to fork the numberscope/frontscope repository, go to
    https://github.com/numberscope/frontscope.
 2. In the upper right corner of the page (as of this writing) there should be
    a button that says "Fork". Click that button.
@@ -104,13 +111,15 @@ git clone https://github.com/some_user_or_org/some_repo.git
 GitHub allows you to clone the repo a few different ways:
 
 1. via HTTPS (easiest method, doesn't require setup, has limited
-   functionality)
+   functionality, you'll eventually need the
+   [GitHub CLI](https://cli.github.com/))
 2. [via SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
    (hardest method, requires setup, but ultimately very convenient)
-3. [via the GitHub CLI](https://cli.github.com/) (medium difficulty, requires
-   some setup)
 
 ## Add a remote
+
+When you use the operation `git push`, you are pushing your local commit(s) to
+a remote version of your repository.
 
 To add a remote version of your repository, issue the following command:
 
@@ -121,8 +130,8 @@ git remote add name_of_remote https://someurl.com/somerepo.git
 ## Basic Git operations
 
 When using Git, it can be helpful to think of it as photographer who stages
-your work, takes a snapshot of it, and stores the photo somewhere safe (i.e.
-GitHub).
+your work ("adds" changes), takes a snapshot of it ("commits" changes), and
+stores the photo somewhere safe ("pushes" changes to e.g. GitHub).
 
 ### Add changes
 
