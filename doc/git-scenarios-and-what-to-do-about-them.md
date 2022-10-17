@@ -14,28 +14,28 @@ about them.
         -   1.B.1: You are working on the main branch.
             -   1.B.1.A: You made commits.
                 -   Ask someone at Numberscope for help
-            -   1.B.1.B: You haven't made commits. -
-                [Stash your changes](./working-with-git-and-github#stash-your-changes). -
-                [Create a branch](./working-with-git-and-github#create-a-branch). -
-                [Create a fork](./working-with-git-and-github#create-a-fork). -
-                [Add the remote of your fork](./working-with-git-and-github#add-a-remote). -
-                [Push the branch to your fork](./working-with-git-and-github#push-a-branch). -
-                [Clone your fork](./working-with-git-and-github#clone-a-repo). -
-                [Read about basic Git operations](./working-with-git-and-github#basic-git-operations).
+            -   1.B.1.B: You haven't made commits.
+            -   [Stash your changes](./working-with-git-and-github#stash-your-changes).
+            -   [Create a branch](./working-with-git-and-github#create-a-branch).
+            -   [Create a fork](./working-with-git-and-github#create-a-fork).
+            -   [Add the remote of your fork](./working-with-git-and-github#add-a-remote).
+            -   [Push the branch to your fork](./working-with-git-and-github#push-a-branch).
+            -   [Clone your fork](./working-with-git-and-github#clone-a-repo). -
+            -   [Read about basic Git operations](./working-with-git-and-github#basic-git-operations).
         -   1.B.2: You are working on a different branch.
-            -   1.B.2.A: You have made commits. -
-                [Create a fork](./working-with-git-and-github#create-a-fork). -
-                [Add the remote of your fork](./working-with-git-and-github#add-a-remote). -
-                [Push the branch to your fork](./working-with-git-and-github#push-a-branch). -
-                [Clone your fork](./working-with-git-and-github#clone-a-repo). -
-                [Read about basic Git operations](./working-with-git-and-github#basic-git-operations).
-            -   1.B.2.B: You haven't made commits. -
-                [Commit your changes](./working-with-git-and-github#commit-changes). -
-                [Create a fork](./working-with-git-and-github#create-a-fork). -
-                [Add the remote of your fork](./working-with-git-and-github#add-a-remote). -
-                [Push the branch to your fork](./working-with-git-and-github#push-a-branch). -
-                [Clone your fork](./working-with-git-and-github#clone-a-repo). -
-                [Read about basic Git operations](./working-with-git-and-github#basic-git-operations).
+            -   1.B.2.A: You have made commits.
+                -   [Create a fork](./working-with-git-and-github#create-a-fork).
+                -   [Add the remote of your fork](./working-with-git-and-github#add-a-remote).
+                -   [Push the branch to your fork](./working-with-git-and-github#push-a-branch).
+                -   [Clone your fork](./working-with-git-and-github#clone-a-repo).
+                -   [Read about basic Git operations](./working-with-git-and-github#basic-git-operations).
+            -   1.B.2.B: You haven't made commits.
+                -   [Commit your changes](./working-with-git-and-github#commit-changes).
+                -   [Create a fork](./working-with-git-and-github#create-a-fork).
+                -   [Add the remote of your fork](./working-with-git-and-github#add-a-remote).
+                -   [Push the branch to your fork](./working-with-git-and-github#push-a-branch).
+                -   [Clone your fork](./working-with-git-and-github#clone-a-repo).
+                -   [Read about basic Git operations](./working-with-git-and-github#basic-git-operations).
 -   2: You have a fork of a Numberscope repository.
     -   2.A: You haven't made changes.
         -   [Clone your fork](./working-with-git-and-github#clone-a-repo) (if
