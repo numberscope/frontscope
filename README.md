@@ -34,7 +34,7 @@ explore sequences with Numberscope.
     sequence? Numberscope is designed to make it easy to add new visualizers,
     and this guide will show you how.
 
--   [Contributing](doc/contributing.md)
+-   [Contributing](./CONTRIBUTING.md)
 
     More extensive information about all aspects of Numberscope's code, and
     how you can have your work become part of the project.
