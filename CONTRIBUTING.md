@@ -28,6 +28,23 @@ applies to other repos as well.)
 Check out our section on
 [Scenarios and what to do about them](#scenarios-and-what-to-do-about-them).
 
+## A note on code organization
+
+The Numberscope system actually comprises two code repositories. This
+documentation is generated from the one called `frontscope`
+([GitHub](https://github.com/numberscope/frontscope)), and is primarily
+concerned with the operation and development of that portion of the system.
+
+The code in this `frontscope` repository is responsible for defining and
+displaying the visualizers, and for establishing how to specify the sequences
+the visualizers act on. In general, it provides Numberscope's user interface.
+
+If you need to deal with the code responsible for retrieving integer sequences
+from the [Online Encyclopedia of Integer Sequences (OEIS)](https://oeis.org/),
+or for performing the computations involved in generating sequence entries and
+their factorizations, see `backscope`
+([GitHub](https://github.com/numberscope/backscope)).
+
 <hr>
 
 # Everything from here down is a specific how-to
