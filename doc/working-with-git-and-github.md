@@ -83,8 +83,10 @@ To unstash your changes, issue the following command:
 git stash apply
 ```
 
-The above command keeps the changes in your stash. If you wish to discard
-those changes from the stash, issue the following command:
+The above command keeps the changes in your stash.
+
+Alternatively, if you wish to discard those changes from the stash, issue the
+following command:
 
 ```sh
 git stash pop
