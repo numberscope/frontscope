@@ -155,20 +155,19 @@ GitHub allows you to clone the repo a few different ways:
 When you use the operation `git push`, you are pushing your local commit(s) to
 a remote version of your repository.
 
+First, [check to see what remotes you have](#check-your-remotes).
+
 To add a remote version of your repository, issue the following command:
 
 ```sh
 git remote add name_of_remote https://someurl.com/somerepo.git
 ```
 
-### Sync local fork with remote original
+### Check your remotes
 
-See [this SO answer](https://stackoverflow.com/a/7244456).
-
-First, check to see what your "remotes" (where you'll be pushing to) are:
-
-(The items in <> brackets are placeholders. You shouldn't actually have the <>
-brackets in the real thing.)
+To check to see what your "remotes" (where you'll be pushing to) are, issue
+the command below. (The items in <> brackets are placeholders. You shouldn't
+actually have the <> brackets in the real thing.)
 
 ```sh
 $ git remote -v
@@ -178,7 +177,17 @@ upstream        git@github.com:<org-or-user-name>/<repo-name>.git (fetch)
 upstream        git@github.com:<org-or-user-name>/<repo-name>.git (push)
 ```
 
-You should have something like the above. If not, set origin and/or upstream:
+The names "origin" and "upstream" are arbitrary. That being said, they are the
+traditional names. "origin" should be your fork, and "upstream" should be the
+original repository.
+
+### Sync local fork with remote original
+
+See [this SO answer](https://stackoverflow.com/a/7244456).
+
+First, [check your remotes](#check-your-remotes). You should have something
+like what was described in the [check your remotes](#check-your-remotes)
+section of this doc. If not, set origin and/or upstream:
 
 ```sh
 git remote add <remote-name> git@github.com:<org-or-user-name>/<repo-name>.git
