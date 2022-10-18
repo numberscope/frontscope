@@ -59,7 +59,11 @@ about them.
                 -   [Read about basic Git operations](./working-with-git-and-github#basic-git-operations).
         -   2.B.2: You are working on a different branch.
             -   2.B.2.A: You have made commits.
-                -   [Read about basic Git operations](./working-with-git-and-github#basic-git-operations).
+            -   This is the correct setup! Congrats. Feel free to
+                [read about basic Git operations](./working-with-git-and-github#basic-git-operations).
+            -   Keep working in this fashion.
             -   2.B.2.B: You haven't made commits.
                 -   [Commit your changes](./working-with-git-and-github#commit-changes).
-                -   [Read about basic Git operations](./working-with-git-and-github#basic-git-operations).
+                -   Now you have the correct setup. Feel free to
+                    [read about basic Git operations](./working-with-git-and-github#basic-git-operations).
+                -   Keep working in this fashion.
