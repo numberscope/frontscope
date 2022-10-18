@@ -14,13 +14,13 @@ The PR submitter should:
 
 -   [ ] All new or changed features are appropriately documented.
 -   [ ] Tests are appropriately modified for all new or changed features.
--   [ ] The PR is passing lint by running npm run lint. There should be no
+-   [ ] The PR is passing lint by running `npm run lint`. There should be no
         changed files and no warnings/errors.
--   [ ] The PR builds by running npm run build. (This also checks type
+-   [ ] The PR builds by running `npm run build`. (This also checks type
         correctness.) There should be no errors, and for now the only allowed
         warning is the one about some assets being too big.
--   [ ] The PR passes all tests. (Right now, just by running npm run
-        test:unit.)
+-   [ ] The PR passes all tests. Right now (Oct. 2022), just by running
+        `npm run test:unit`.
 -   [ ] Numberscope runs properly -- basically the same check as on the
         submitter list, but be sure to exercise as many randomly selected
         behaviors as you have time for, definitely including but not limited
