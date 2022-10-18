@@ -25,7 +25,8 @@ applies to other repos as well.)
 
 ## If you need help with Git and contributing...
 
-Check out our doc on
+If you have a Git setup that isn't what Numberscope requires (i.e. do your
+work in your own fork on a feature branch) check out our doc on
 [Git scenarios and what to do about them](./doc/git-scenarios-and-what-to-do-about-them.md).
 
 ## A note on code organization
