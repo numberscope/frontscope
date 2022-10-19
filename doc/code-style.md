@@ -1,4 +1,4 @@
-# Numberscope code style
+# Code style
 
 Outside of the code style issues that are covered by our automated code style
 tools (ESLint and Prettier as of this writing), we also like to:

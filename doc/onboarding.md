@@ -1,4 +1,7 @@
-# Numberscope onboarding
+# Onboarding
+
+This doc was originally meant for students, but it can also be used by
+contributors.
 
 ## A note on commands
 

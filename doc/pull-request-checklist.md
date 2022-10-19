@@ -1,4 +1,4 @@
-# Pull request (PR) checklist
+# Pull request checklist
 
 ## For PR submitters
 

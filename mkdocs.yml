@@ -11,6 +11,12 @@ nav:
           - doc/making-a-visualizer.md
     - Contributing:
           - CONTRIBUTING.md
+          - doc/working-with-git-and-github.md
+          - doc/git-scenarios-and-what-to-do-about-them.md
+          - doc/onboarding.md
+          - doc/code-principles.md
+          - doc/code-style.md
+          - doc/pull-request-checklist.md
           - doc/visual-studio-code-setup.md
           - doc/working-with-pm.md
     - Other Information:

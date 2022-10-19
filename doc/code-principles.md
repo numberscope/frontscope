@@ -1,4 +1,4 @@
-# Numberscope's code principles guide
+# Code principles
 
 There are two acronyms that can help you write better code.
 
