@@ -14,7 +14,7 @@ Practically speaking, this means:
 -   use a loop or index into an array instead of writing long conditional
     (`if`/`elif`/`else`) blocks or switch statements
 
-## What is KISS (Keep It Short (and) Simple)
+## KISS (Keep It Short (and) Simple)
 
 Practically speaking this means:
 
