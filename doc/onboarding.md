@@ -58,7 +58,7 @@ Boulder Experimental Mathematics Lab.)
    code. I like to put a directory called `Code` in my home directory. You can
    call this whatever you want.
 7. If you plan to submit new code to become part of Numberscope at some time
-   in the future, it is best to "fork" (make your own copy of) the repository:
+   in the future, _you must_ "fork" (make your own copy of) the repository:
     - Go to https://github.com/numberscope/frontscope.
     - Click the "Fork" button (in the upper right as of this writing) and then
       follow the instructions GitHub provides. You need to create the fork on
@@ -90,7 +90,10 @@ Boulder Experimental Mathematics Lab.)
     ```
     This should print a link that you can open in the browser. Open it and see
     if Numberscope seems to be working.
-10. Finally, before you start changing code, please read
+10. If you plan on contributing code to Numberscope, _you must_ work in your
+    fork on a dedicated feature branch. To learn how to create a branch, see
+    [this doc](./working-with-git-and-github.md#create-a-branch).
+11. Finally, before you start changing code, please read
     [our docs on submitting a pull request](../CONTRIBUTING.md#submit-a-pull-request).
 
 See [the doc on running from source](./running-from-source.md) for more
