@@ -22,4 +22,4 @@ of the options.
 The details of these two main steps are on the following pages. If your
 visualizer ends up working well and you'd like to submit it back to the
 Numberscope project for possible inclusion on the public server, that's one of
-the topics in the [Contributing](contributing.md) section.
+the topics in the [Contributing](../CONTRIBUTING.md) section.
