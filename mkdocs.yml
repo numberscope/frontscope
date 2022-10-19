@@ -13,7 +13,7 @@ nav:
           - CONTRIBUTING.md
           - doc/onboarding.md
           - doc/working-with-git-and-github.md
-          - doc/git-scenarios-and-what-to-do-about-them.md
+          - doc/gitting-it-right.md
           - doc/code-principles.md
           - doc/code-style.md
           - doc/pull-request-checklist.md

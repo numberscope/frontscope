@@ -1,4 +1,4 @@
-# Git scenarios and what to do about them
+# Gitting it right
 
 If you find yourself with a Git setup that isn't what Numberscope requires
 (i.e. do your work in your own fork on a feature branch), you might be able to
