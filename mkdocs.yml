@@ -12,13 +12,13 @@ nav:
     - Contributing:
           - CONTRIBUTING.md
           - doc/onboarding.md
+          - doc/working-with-pm.md
           - doc/working-with-git-and-github.md
           - doc/gitting-it-right.md
           - doc/code-principles.md
           - doc/code-style.md
           - doc/pull-request-checklist.md
           - doc/visual-studio-code-setup.md
-          - doc/working-with-pm.md
     - Other Information:
           - ... | flat | doc/*.md
 docs_dir: doc
