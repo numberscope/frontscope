@@ -1,5 +1,5 @@
 site_name: Numberscope
-site_url: 'http://numberscope.colorado.edu/doc'
+site_url: 'https://numberscope.colorado.edu/doc'
 nav:
     - Overview: README.md
     - User Guide:
@@ -10,7 +10,7 @@ nav:
           - doc/running-from-source.md
           - doc/making-a-visualizer.md
     - Contributing:
-          - doc/contributing.md
+          - CONTRIBUTING.md
           - doc/visual-studio-code-setup.md
           - doc/working-with-pm.md
     - Other Information:
