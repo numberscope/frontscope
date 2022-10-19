@@ -9,6 +9,8 @@ The PR submitter should:
     unmodified behaviors and newly implemented ones. In particular, run it via
     'npm run dev' and with the browser console open and make sure there are no
     log messages from Numberscope code, warnings, or errors.
+-   Read over the reviewer checklist and try to make sure in advance that your
+    code is going to proceed as smoothly through the review as possible.
 
 ## For PR reviewers
 
