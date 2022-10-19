@@ -11,8 +11,8 @@ Practically speaking, this means:
 -   use a variable instead of typing the same value multiple times
 -   use your libraries instead of writing something from scratch
 -   use pre-existing solutions instead of writing something from scratch
--   use a loop instead of writing long conditional (`if`/`elif`/`else`) blocks
-    or switch statements
+-   use a loop or index into an array instead of writing long conditional
+    (`if`/`elif`/`else`) blocks or switch statements
 
 ## What is KISS (Keep It Short (and) Simple)
 
