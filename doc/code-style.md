@@ -1,7 +1,7 @@
 # Code style
 
-Outside of the code style issues that are covered by our automated code style
-tools (ESLint and Prettier as of this writing), we also like to:
+Outside of the code style issues that are covered by our automated code
+formatting tools (ESLint and Prettier as of this writing), we also like to:
 
 # Minimize the number of return statements in a function
 
