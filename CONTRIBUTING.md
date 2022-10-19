@@ -1,6 +1,10 @@
 # Contributing to Numberscope
 
-## If you are new to software development and you like videos...
+## If you are new to software development and like written guides...
+
+Read our [onboarding doc](./doc/onboarding.md).
+
+## If you are new to software development and like videos...
 
 Watch the video series on contributing to Numberscope
 [here](https://www.youtube.com/playlist?list=PLA4KIQBQQRb5ccOdr9v0iLw_fKHup1PkU).
@@ -8,7 +12,7 @@ This video series will introduce you to Numberscope, GitHub, the software we
 use in the Numberscope project, and the workflow for contributing to
 Numberscope.
 
-## If you prefer a written guide...
+## If you are experienced, follow these steps...
 
 (This assumes you're working on the numberscope/frontscope repository, but it
 applies to other repos as well.)
