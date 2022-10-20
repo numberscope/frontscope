@@ -4,6 +4,7 @@
 
 The PR submitter should:
 
+-   Please use a `snake_case` name for the branch in the PR.
 -   Write or supplement test(s) for the file(s) you touch in your PR.
 -   Make sure Numberscope runs properly, including former supposedly
     unmodified behaviors and newly implemented ones. In particular, run it via
