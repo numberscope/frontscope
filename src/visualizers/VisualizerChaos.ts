@@ -1,4 +1,5 @@
 import p5 from 'p5'
+import {modulo} from '../shared/math'
 import {VisualizerDefault} from './VisualizerDefault'
 import {VisualizerExportModule} from './VisualizerInterface'
 
@@ -232,22 +233,6 @@ class VisualizerChaos extends VisualizerDefault {
         return status
     }
 
-    numModulus(a: number | bigint, b: number) {
-        // This should be replaced with the modulus function in our own library,
-        // once that exists
-        if (b <= 0) {
-            throw new Error('negative modulus error')
-        }
-        const A = BigInt(a)
-        const B = BigInt(b)
-        // The return value will be a valid number, because b was a number:
-        if (A < 0n) {
-            return Number((A % B) + B)
-        } else {
-            return Number(A % B)
-        }
-    }
-
     chaosWindow(center: p5.Vector, radius: number) {
         // creates corners of a polygon with given centre and radius
         const pts: p5.Vector[] = []
@@ -405,11 +390,13 @@ class VisualizerChaos extends VisualizerDefault {
             const myTerm = this.seq.getElement(this.myIndex)
 
             // check its modulus to see which corner to walk toward
-            const myCorner = this.numModulus(myTerm, this.corners)
+            // (Safe to convert to number since this.corners is "small")
+            const myCorner = Number(modulo(myTerm, this.corners))
             const myCornerPosition = this.cornersList[myCorner]
 
             // check the index modulus to see which walker is walking
-            const myWalker = this.numModulus(this.myIndex, this.walkers)
+            // (Ditto on safety.)
+            const myWalker = Number(modulo(this.myIndex, this.walkers))
 
             // update the walker position
             this.walkerPositions[myWalker].lerp(myCornerPosition, this.frac)
@@ -434,9 +421,9 @@ class VisualizerChaos extends VisualizerDefault {
                         myColor = this.sketch.lerpColor(
                             this.currentPalette.colorList[0],
                             this.currentPalette.colorList[1],
-                            this.numModulus(
-                                this.myIndex,
-                                this.gradientLength
+                            Number(
+                                // Safe since gradientLength is "small"
+                                modulo(this.myIndex, this.gradientLength)
                             ) / this.gradientLength
                         )
                     }

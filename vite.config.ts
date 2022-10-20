@@ -14,6 +14,11 @@ export default defineConfig({
     build: {
         target: 'esnext',
     },
+    optimizeDeps: {
+        esbuildOptions: {
+            target: 'esnext',
+        },
+    },
     preview: {
         port: 5050,
         proxy: {

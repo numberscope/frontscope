@@ -1,4 +1,5 @@
 import p5 from 'p5'
+import {modulo} from '../shared/math'
 import {VisualizerDefault} from './VisualizerDefault'
 import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
@@ -99,16 +100,16 @@ class VizShiftCompare
 
         // Write to image, then to screen for speed.
         for (let x = this.seq.first; x <= xLim; x++) {
-            const xEl = this.seq.getElement(x)
+            const xResidue = modulo(this.seq.getElement(x), this.mod)
             for (let y = this.seq.first; y <= yLim; y++) {
-                const yEl = this.seq.getElement(y)
+                const yResidue = modulo(this.seq.getElement(y), this.mod)
                 for (let i = 0; i < d; i++) {
                     for (let j = 0; j < d; j++) {
                         const index =
                             ((y * d + j) * this.sketch.width * d
                                 + (x * d + i))
                             * 4
-                        if (xEl % this.mod == yEl % this.mod) {
+                        if (xResidue == yResidue) {
                             this.img.pixels[index] = 255
                             this.img.pixels[index + 1] = 255
                             this.img.pixels[index + 2] = 255

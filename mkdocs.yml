@@ -19,6 +19,9 @@ nav:
           - doc/code-style.md
           - doc/pull-request-checklist.md
           - doc/visual-studio-code-setup.md
+    - Internal code and APIs:
+          - doc/working-with-bigints.md
+          - src/shared/math.md
     - Other Information:
           - ... | flat | doc/*.md
 docs_dir: doc
