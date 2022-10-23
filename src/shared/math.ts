@@ -13,7 +13,13 @@ to bigints.
 
 ### Example usage
 ```ts
-import { safeNumber, floorSqrt, modulo, powmod } from '../shared/math'
+import {
+    safeNumber,
+    floorSqrt,
+    modulo,
+    powmod,
+    natlog
+} from '../shared/math'
 try {
   const myNumber = safeNumber(9007199254740992n)
 } catch (err: unknown) {
@@ -34,6 +40,8 @@ const two: bigint = modulo(7, 5n)
 const six: bigint = powmod(6, 2401n, 7n)
 // n to the p is congruent to n mod a prime p,
 // so a to any power of p is as well.
+
+const fortysixish: number = natlog(100000000000000000000n)
 ```
 
 ### Detailed function reference
@@ -108,3 +116,20 @@ If _i_ has a multiplicative inverse modulo _modulus_, returns that inverse,
 otherwise throws a RangeError.
 **/
 export const powmod = modPow // just need to fix the name
+
+const nlg16 = Math.log(16)
+
+/** md
+#### natlog(n: number | bigint): number
+
+Returns the natural log of the input.
+**/
+export function natlog(n: number | bigint): number {
+    if (typeof n === 'number') return Math.log(n)
+    if (n < 0) return NaN
+
+    const s = n.toString(16)
+    const s15 = s.substring(0, 15)
+
+    return nlg16 * (s.length - s15.length) + Math.log(Number('0x' + s15))
+}

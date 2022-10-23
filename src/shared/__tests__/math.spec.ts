@@ -70,3 +70,17 @@ describe('powmod', () => {
         expect(() => math.powmod(12n, -3, 18n)).toThrowError('MUST be')
     })
 })
+
+describe('natlog', () => {
+    it('handles numbers', () => {
+        expect(math.natlog(Math.E)).toBe(1)
+    })
+    it('handles bigints', () => {
+        expect(math.natlog(-10n)).toBe(NaN)
+        // Check log of 10^20:
+        expect(math.natlog(100000000000000000000n)).toBeCloseTo(
+            46.051701859880914,
+            15
+        )
+    })
+})
