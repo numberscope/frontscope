@@ -25,9 +25,11 @@ applies to other repos as well.)
 5. [Push your branch to GitHub](./doc/working-with-git-and-github.md#push-a-branch).
 6. [Read Numberscope's coding principles guide](./doc/code-principles.md).
 7. [Read Numberscope's style guide](./doc/code-style.md). You should also
-   familiarize yourself with frontscope's internal code structure and APIs;
-   the documentation available on these topics is listed in the "Internal code
-   and APIs" section of the navigation bar to the left.
+   familiarize yourself with frontscope's internal code structure and APIs.
+   Documentation on these topics is generally incorporated into the relevant
+   source files (see [this example](src/shared/math.ts)). However, it is all
+   gathered in the "Internal code and APIs" section of the navigation bar in
+   the [online docs](https://numberscope.colorado.edu/doc).
 8. [Work through Numberscope's pull request checklist](./doc/pull-request-checklist.md).
 9. [Submit a pull request](./doc/working-with-git-and-github.md#submit-a-pull-request).
 
