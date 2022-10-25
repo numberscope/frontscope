@@ -1,8 +1,8 @@
 This PR:
 
--   \<does thing A\>
--   \<does thing B\>
--   \<does thing C\>
+-   does thing A
+-   does thing B
+-   does thing C
 
 I have verified the following:
 
@@ -34,6 +34,7 @@ manually.)
 ### `npm run dev`
 
 -   [ ] no errors at command line
+-   [ ] no warnings at command line
 -   [ ] no errors in browser console console,
 -   [ ] parts of frontscope that were changed or affected by the changes are
         working as expected
@@ -46,10 +47,12 @@ manually.)
 will be done automatically using GitHub Actions.)
 
 -   [ ] no errors at command line
+-   [ ] no warnings at command line
 
 ### `npm run preview`
 
 -   [ ] no errors at command line
+-   [ ] no warnings at command line
 -   [ ] docs work as expected
 -   [ ] docs look good
 
