@@ -27,7 +27,7 @@ applies to other repos as well.)
 7. [Read Numberscope's style guide](./doc/code-style.md). You should also
    familiarize yourself with frontscope's internal code structure and APIs.
    Documentation on these topics is generally incorporated into the relevant
-   source files (see [this example](src/shared/math.ts)). However, it is all
+   source files (see [this example](./src/shared/math.ts)). However, it is all
    gathered in the "Internal code and APIs" section of the navigation bar in
    the [online docs](https://numberscope.colorado.edu/doc).
 8. [Work through Numberscope's pull request checklist](./.github/pull_request_template.md).
