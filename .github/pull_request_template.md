@@ -1,5 +1,3 @@
-# \<insert your PR title here\>
-
 This PR:
 
 -   \<does thing A\>
