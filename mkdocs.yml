@@ -17,7 +17,6 @@ nav:
           - doc/gitting-it-right.md
           - doc/code-principles.md
           - doc/code-style.md
-          - doc/pull-request-checklist.md
           - doc/visual-studio-code-setup.md
     - Internal code and APIs:
           - doc/working-with-bigints.md

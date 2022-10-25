@@ -30,7 +30,7 @@ applies to other repos as well.)
    source files (see [this example](src/shared/math.ts)). However, it is all
    gathered in the "Internal code and APIs" section of the navigation bar in
    the [online docs](https://numberscope.colorado.edu/doc).
-8. [Work through Numberscope's pull request checklist](./doc/pull-request-checklist.md).
+8. [Work through Numberscope's pull request checklist](./.github/pull_request_template.md).
 9. [Submit a pull request](./doc/working-with-git-and-github.md#submit-a-pull-request).
 
 ## If you need help with Git and contributing...
@@ -67,7 +67,7 @@ If you've read the
 is ready to be reviewed by someone at Numberscope, follow these steps:
 
 1. Work through
-   [Numberscope's pull request checklist](./doc/pull-request-checklist.md).
+   [Numberscope's pull request checklist](./.github/pull_request_template.md).
 2. Sync your fork with the main numberscope/frontscope repository. The easiest
    way to do this is to navigate to the page of your fork of
    numberscope/frontscope and click "Sync fork" (see the picture below).
