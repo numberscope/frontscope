@@ -1,4 +1,4 @@
-/*
+
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type p5 from 'p5'
@@ -16,22 +16,42 @@ in a sequence as lines with a length equal to their
 value
 
 ## Parameters
-
+**/
+enum CurveMatch {
+    None,
+    Linear,
+    Quadratic,
+    Normal
+}
 
 
 class HistogramVisualizer extends VisualizerDefault {
     name = 'Histogram'
 
-    binWidth = 30
-    terms = 10
+    binSize = 1
+    terms = 100
+    firstIndex = 1
+    curveMatch = CurveMatch.None
+    linear = false
+    quadratic = false
+    normal = false
+    bezier = false
     
     params = 
     {
-        binWidth:
+        binSize:
         {
-            value: this.binWidth,
+            value: this.binSize,
             forceType: 'integer',
-            displayName: 'Bin Width',
+            displayName: 'Bin Size',
+            required: true,
+        },
+
+        firstIndex:
+        {
+            value: this.firstIndex,
+            forceType: 'integer',
+            displayName: 'First Index',
             required: true,
         },
 
@@ -42,53 +62,171 @@ class HistogramVisualizer extends VisualizerDefault {
             displayName: 'How many terms of the series',
             required: true,
         },
+
+        curveMatch: {
+            value: this.curveMatch,
+            from: CurveMatch,
+            displayName: 'Match the Histogram to a Curve?',
+            required: true,
+        },
+
+        linear: 
+        {
+            value: this.linear,
+            displayName: 'Linear',
+            required: false,
+            visibleDependency: 'curveMatch',
+            visibleValue: CurveMatch.Linear,
+        },
+
+        quadratic: 
+        {
+            value: this.quadratic,
+            displayName: 'Quadratic',
+            required: false,
+            visibleDependency: 'curveMatch',
+            visibleValue: CurveMatch.Quadratic,
+        },
+
+        normal: 
+        {
+            value: this.normal,
+            displayName: 'Normal Curve',
+            required: false,
+            visibleDependency: 'curveMatch',
+            visibleValue: CurveMatch.Normal,
+        },
+
     }
     
     checkParameters() {
         const status = super.checkParameters()
 
-        if (this.params.binWidth.value < 1) 
+        if (this.params.binSize.value < 1) 
         {
             status.isValid = false
             status.errors.push
             (
-                'Bin Width can not be less than 1'
+                'Bin Size can not be less than 1'
+            )
+        }
+
+        if (this.params.binSize.value < 1) 
+        {
+            status.isValid = false
+            status.errors.push
+            (
+                'Bin Size can not be less than 1'
+            )
+        }
+
+        if (this.params.firstIndex.value < 1) 
+        {
+            status.isValid = false
+            status.errors.push
+            (
+                'First index can not be less than 1'
             )
         }
 
         return status
     }
-
-    //creating the backdrop
+    
     setup(): void {
-        this.sketch.createCanvas(400, 400)
+        this.sketch.frameRate(1)
     }
-    /*
-    //drawing the picture
-    draw(): void {
-        this.sketch.line(20,10,20,400)       //axes
-        this.sketch.line(0,380,390,380)
-        let factorArray = Array<number> = [];
-        for (let i = 0; i <= Math.log2(this.terms); i++)         //creating the array of values(index is x value, amount is y value)
-        {
-            factorArray.push(0)
-        }
-        for (let i = 0; i < this.terms; i++)
-        {
-            const sequenceElement = this.seq.getElement(i)
-            console.log('sequenceElement = ${sequenceElement}')
-            var numberFactors:number = getFactors(sequenceElement)
-            factorArray[numberFactors] = factorArray[numberFactors] + 1
-        }
-        for (let i = 0; i < factorArray.length(); i++) 
-        {
-            this.sketch.fill(51)
-            this.sketch.rect(20+this.binWidth*i,380 - (20 * factorArray[i]),this.binWidth,factorArray[i])
-            this.sketch.text(i+1,(20+((this.binWidth/2)-4*((Math.ceil((Math.log10(i+2))))*0.85)))+(this.binWidth*i),395)
-        } 
 
-        // Tell P5 not to loop
-        this.sketch.noLoop()
+    largestValue(): BigInt
+    {
+        let largest_value: BigInt = 0n;
+        for(let i = 0; i < this.terms; i++)
+        {
+            const value = this.seq.getElement(i)
+            if(i === 0)
+            {
+                largest_value = value
+            }
+            else if( value > largest_value)
+            {
+                largest_value = value
+            }
+        }
+        return largest_value
+    }
+
+    binFactorArray(): number[]
+    {
+        var factorArray = []
+        for(let i = 0; i < this.terms; i++)
+        {
+            const element = this.seq.getElement(i)
+            factorArray[i] = this.seq.getFactors(6)!.length
+        }
+
+        var binFactorArray = [];
+        for(let i = 0n; i < this.largestValue().toString.length-1; i++)
+        {
+            binFactorArray.push(0)
+        }
+
+        let index = 0
+        for(let i = 0; i < factorArray.length; i += this.binSize)
+        {
+            for(let j = 0; j < this.binSize; j++)
+            {
+                binFactorArray[index] += factorArray[i+j]
+            }
+            index++
+        }
+
+        return binFactorArray
+    }
+
+    binWidth(): number
+    {
+        var binWidth = Number(this.largestValue().toString.length-1)
+        for(let i = Number(this.largestValue().toString.length-1); this.binFactorArray()[i] == 0; i--)
+        {
+            binWidth = 750/i
+        }
+        return binWidth
+    }
+
+    height(): number
+    {
+        var height = this.binFactorArray()[0]
+        for(let i = 0; i < this.binFactorArray().length; i++)
+        {
+            if(this.binFactorArray()[i] > height)
+            {
+                height = this.binFactorArray()[i]
+            }
+        }
+        return (700/height)
+    }
+    
+    //drawing the picture
+    draw() 
+    {
+        this.sketch.line(40,10,40,800)       //axes
+        this.sketch.line(0,760,790,760)
+        this.sketch.rect(760, -1, 41, 41)
+                
+        for (let i = 0; i < (this.binFactorArray().length); i++) 
+        {
+            this.sketch.rect((40+this.binWidth()*i),Number(760 - (this.height() * this.binFactorArray()[i])),this.binWidth(),Number(this.height() * this.binFactorArray()[i]))
+            this.sketch.text(0,20,785)
+            if(this.binSize != 1)
+            {
+                this.sketch.text((i + 1 + (this.binSize * (i)) - i) + " - "  + ((i + 1 + (this.binSize * (i)) - i) + this.binSize - 1),40 + (((this.binWidth()) * (i+1))-(this.binWidth()/2)),785)   //make based on the highest bin with factors
+            }
+            else
+            {
+                this.sketch.text((i + 1 + (this.binSize * (i)) - i),40 + (((this.binWidth()) * (i+1))-(this.binWidth()/2)),785)
+            }
+        }
+        this.sketch.noLoop() 
+
     }
 }
 
@@ -98,4 +236,3 @@ export const exportModule = new VisualizerExportModule(
     HistogramVisualizer,
     'Displays a Histogram of the number of prime factors of the elements of a sequence.'
 )
-*/
