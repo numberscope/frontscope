@@ -77,10 +77,18 @@ describe('natlog', () => {
     })
     it('handles bigints', () => {
         expect(math.natlog(-10n)).toBe(NaN)
+        expect(math.natlog(10000n)).toBeCloseTo(9.210340371976184, 15)
         // Check log of 10^20:
         expect(math.natlog(100000000000000000000n)).toBeCloseTo(
             46.051701859880914,
             15
         )
+        // Check log of 10^lot:
+        expect(
+            math.natlog(
+                10000000000000000000000000000000000000000000n
+                    * 10000000000000000000000000000000000000000000000n
+            )
+        ).toBeCloseTo(204.93007327647007, 15)
     })
 })

@@ -28,7 +28,7 @@ try {
 try {
   const myNumber = safeNumber(9007n)
 } catch (err: unknown) {
-  console.log('This never will be and myNumber will be 9007')
+  console.log('This will never be logged and myNumber will be 9007')
 }
 
 const five: bigint = floorSqrt(30n)
