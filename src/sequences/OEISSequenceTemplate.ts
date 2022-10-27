@@ -1,4 +1,5 @@
 import type {ValidationStatus} from '../shared/ValidationStatus'
+import {modulo} from '../shared/math'
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {SequenceCached} from './SequenceCached'
 
@@ -18,7 +19,7 @@ export default class OEISSequenceTemplate extends SequenceCached {
     cacheBlock = 1000
     oeisId = ''
     givenName = ''
-    modulo = 0n
+    modulus = 0n
     params = {
         oeisId: {value: '', displayName: 'OEIS ID', required: true},
         givenName: {value: '', displayName: 'Name', required: false},
@@ -29,9 +30,9 @@ export default class OEISSequenceTemplate extends SequenceCached {
             description:
                 'How many elements to try to fetch from the database.',
         },
-        modulo: {
-            value: this.modulo,
-            displayName: 'Modulo',
+        modulus: {
+            value: this.modulus,
+            displayName: 'Modulus',
             required: false,
             description:
                 'If nonzero, take the residue of each element to this modulus.',
@@ -57,7 +58,9 @@ export default class OEISSequenceTemplate extends SequenceCached {
             if (index < this.first) this.first = index
             if (index > this.last) this.last = index
             this.cache[index] = BigInt(response.data.values[k])
-            if (this.modulo) this.cache[index] %= this.modulo
+            if (this.modulus) {
+                this.cache[index] = modulo(this.cache[index], this.modulus)
+            }
         }
         if (this.first === Infinity) {
             /* An empty sequence; perhaps a mistaken OEIS ID. Is there

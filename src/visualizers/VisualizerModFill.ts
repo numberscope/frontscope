@@ -1,3 +1,4 @@
+import {modulo} from '../shared/math'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {VisualizerDefault} from '../visualizers/VisualizerDefault'
 import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
@@ -25,6 +26,7 @@ class VizModFill extends VisualizerDefault implements VisualizerInterface {
 - modDimension: The number of rows to display, which corresponds to the largest
     modulus to consider.
          **/
+        // note will be small enough to fit in a `number` when we need it to.
         modDimension: {
             value: this.modDimension,
             displayName: 'Mod dimension',
@@ -55,7 +57,8 @@ class VizModFill extends VisualizerDefault implements VisualizerInterface {
             const s = seq.getElement(num)
             const x = Number(mod - 1n) * this.rectWidth
             const y =
-                this.sketch.height - Number((s % mod) + 1n) * this.rectHeight
+                this.sketch.height
+                - Number(modulo(s, mod) + 1n) * this.rectHeight
             this.sketch.rect(x, y, this.rectWidth, this.rectHeight)
         }
     }

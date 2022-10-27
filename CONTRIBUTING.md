@@ -20,10 +20,16 @@ applies to other repos as well.)
 1. [Create a fork of the numberscope/frontscope repo](./doc/working-with-git-and-github.md#create-a-fork).
 2. [Clone your fork of numberscope/frontscope](./doc/working-with-git-and-github.md#clone-a-repo).
 3. [Create a branch for your contribution](./doc/working-with-git-and-github.md#create-a-branch).
-4. [Read about basic Git operations](./doc/working-with-git-and-github.md#basic-git-operations).
+4. If you are unfamilar with them or would like a refresher,
+   [read about basic Git operations](./doc/working-with-git-and-github.md#basic-git-operations).
 5. [Push your branch to GitHub](./doc/working-with-git-and-github.md#push-a-branch).
 6. [Read Numberscope's coding principles guide](./doc/code-principles.md).
-7. [Read Numberscope's style guide](./doc/code-style.md).
+7. [Read Numberscope's style guide](./doc/code-style.md). You should also
+   familiarize yourself with frontscope's internal code structure and APIs.
+   Documentation on these topics is generally incorporated into the relevant
+   source files (see [this example](src/shared/math.ts)). However, it is all
+   gathered in the "Internal code and APIs" section of the navigation bar in
+   the [online docs](https://numberscope.colorado.edu/doc).
 8. [Work through Numberscope's pull request checklist](./doc/pull-request-checklist.md).
 9. [Submit a pull request](./doc/working-with-git-and-github.md#submit-a-pull-request).
 

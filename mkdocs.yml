@@ -19,6 +19,9 @@ nav:
           - doc/code-style.md
           - doc/pull-request-checklist.md
           - doc/visual-studio-code-setup.md
+    - Internal code and APIs:
+          - doc/working-with-bigints.md
+          - src/shared/math.md
     - Other Information:
           - ... | flat | doc/*.md
 docs_dir: doc
@@ -41,7 +44,8 @@ plugins:
               - '.spec.ts'
               - 'LICENSE.md'
           ignore_folders: [node_modules, dist, coverage]
-          include_extensions: ['.png']
+          include_extensions: ['.png', 'math.ts']
+          extract_on_copy: true
           merge_docs_dir: false
           semiliterate:
               - pattern: '\.ts' # Standard in-code markup

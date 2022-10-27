@@ -75,6 +75,8 @@
         "postinstall": "python3 -m venv .venv && cd tools && node pyrun.mjs pip install -U pip && node pyrun.mjs pip install -r requirements.txt"
     },
     "dependencies": {
+        "bigint-isqrt": "^0.3.2",
+        "bigint-mod-arith": "^3.1.2",
         "p5": "^1.4.1",
         "vue": "^3.2.37",
         "vue-router": "^4.1.2"
@@ -102,7 +104,7 @@
         "prettier-eslint": "^15.0.1",
         "prettier-eslint-cli": "^6.0.1",
         "typescript": "~4.5.5",
-        "vite": "^3.0.0",
+        "vite": "^3.1.8",
         "vitest": "^0.18.1",
         "vue-tsc": "^0.38.8",
         "vue-unique-id": "^3.2.1"

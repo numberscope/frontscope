@@ -43,6 +43,7 @@ export default function simpleFactor(v: bigint): [bigint, bigint][] | null {
     }
     for (const p of smallPrimes) {
         let power = 0n
+        // OK to use % since all we care about is divisibility:
         while (v % p === 0n) {
             power += 1n
             v /= p
