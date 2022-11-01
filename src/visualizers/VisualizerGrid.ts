@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {VisualizerDefault} from '@/visualizers/VisualizerDefault'
 import {Color} from 'p5'
@@ -2106,6 +2105,7 @@ class VisualizerGrid extends VisualizerDefault {
         currentSequenceIndex: number,
         augmentForRow: number
     ) {
+<<<<<<< HEAD
         let sequenceElementAsNumber = Number(
             this.seq.getElement(currentSequenceIndex)
         )
@@ -2119,11 +2119,26 @@ class VisualizerGrid extends VisualizerDefault {
             sequenceElementAsNumber =
                 sequenceElementAsNumber * sequenceElementAsNumber
                 + sequenceElementAsNumber
+=======
+        let sequenceElement = this.seq.getElement(
+            Number(currentSequenceIndex)
+        )
+
+        if (this.formula === Formula.N) {
+            sequenceElement = sequenceElement + augmentForRow
+        } else if (this.formula === Formula.N_SQUARED) {
+            sequenceElement =
+                sequenceElement * sequenceElement + augmentForRow
+        } else if (this.formula === Formula.N_SQUARED_MINUS_N_PLUS_1) {
+            sequenceElement =
+                sequenceElement * sequenceElement
+                + sequenceElement
+>>>>>>> 2d1ed44 (Modified the UI to be more intuitive. Switched to big int implementation. Added more properties.)
                 + augmentForRow
                 + 1
         }
 
-        return sequenceElementAsNumber
+        return sequenceElement
     }
 
     setPathVariables(
@@ -2247,17 +2262,32 @@ class VisualizerGrid extends VisualizerDefault {
         }
     }
 
+<<<<<<< HEAD
     setColorForSquare(sequenceElementAsNumber: number) {
+=======
+    setColorForSquare(sequenceElement: bigint) {
+>>>>>>> 2d1ed44 (Modified the UI to be more intuitive. Switched to big int implementation. Added more properties.)
         //Color number
-        this.colorGradientPresets(sequenceElementAsNumber)
-        this.colorMainColorProperties(sequenceElementAsNumber)
+        this.colorGradientPresets(sequenceElement)
+        this.colorMainColorProperties(sequenceElement)
     }
 
+<<<<<<< HEAD
     colorGradientPresets(sequenceElementAsNumber: number) {
         const preset = this.preset
 
         if (preset == Preset.Factors) {
             const numberOfFactors = sequenceElementAsNumber
+=======
+    colorGradientPresets(sequenceElement: bigint) {
+        const preset = this.preset
+
+        if (
+            preset === Preset.Factors
+            || preset === Preset.Factors_and_Primes
+        ) {
+            const numberOfFactors = getNumberOfFactors(sequenceElement)
+>>>>>>> 2d1ed44 (Modified the UI to be more intuitive. Switched to big int implementation. Added more properties.)
 
             if (
                 numberOfFactors == 0
@@ -2265,7 +2295,17 @@ class VisualizerGrid extends VisualizerDefault {
                 || numberOfFactors == 2
             ) {
                 this.sketch.fill(SHADE0)
+<<<<<<< HEAD
             } else if (numberOfFactors == 3) {
+=======
+
+                if (preset === Preset.Factors_and_Primes) {
+                    if (isPrime(sequenceElement)) {
+                        this.sketch.fill(HIGHLIGHT)
+                    }
+                }
+            } else if (numberOfFactors === 3n) {
+>>>>>>> 2d1ed44 (Modified the UI to be more intuitive. Switched to big int implementation. Added more properties.)
                 this.sketch.fill(SHADE1)
             } else if (numberOfFactors == 4) {
                 this.sketch.fill(SHADE2)
@@ -2294,6 +2334,7 @@ class VisualizerGrid extends VisualizerDefault {
             } else {
                 this.sketch.fill(SHADE13)
             }
+<<<<<<< HEAD
         } else if (preset == Preset.Factors_and_Primes) {
             const numberOfFactors = getNumberOfFactors(
                 sequenceElementAsNumber
@@ -2367,8 +2408,38 @@ class VisualizerGrid extends VisualizerDefault {
             } else if (sequenceElementAsNumber % 37 == 0) {
                 this.sketch.fill(SHADE11)
             } else if (sequenceElementAsNumber % 41 == 0) {
+=======
+        } else if (preset === Preset.Divisibility) {
+            if (sequenceElement === 0n || sequenceElement === 1n) {
+                this.sketch.fill(SHADE0)
+            } else if (sequenceElement % 2n === 0n) {
+                this.sketch.fill(SHADE0)
+            } else if (sequenceElement % 3n === 0n) {
+                this.sketch.fill(SHADE1)
+            } else if (sequenceElement % 5n === 0n) {
+                this.sketch.fill(SHADE2)
+            } else if (sequenceElement % 7n === 0n) {
+                this.sketch.fill(SHADE3)
+            } else if (sequenceElement % 11n === 0n) {
+                this.sketch.fill(SHADE4)
+            } else if (sequenceElement % 13n === 0n) {
+                this.sketch.fill(SHADE5)
+            } else if (sequenceElement % 17n === 0n) {
+                this.sketch.fill(SHADE6)
+            } else if (sequenceElement % 19n === 0n) {
+                this.sketch.fill(SHADE7)
+            } else if (sequenceElement % 23n === 0n) {
+                this.sketch.fill(SHADE8)
+            } else if (sequenceElement % 29n === 0n) {
+                this.sketch.fill(SHADE9)
+            } else if (sequenceElement % 31n === 0n) {
+                this.sketch.fill(SHADE10)
+            } else if (sequenceElement % 37n === 0n) {
+                this.sketch.fill(SHADE11)
+            } else if (sequenceElement % 41n === 0n) {
+>>>>>>> 2d1ed44 (Modified the UI to be more intuitive. Switched to big int implementation. Added more properties.)
                 this.sketch.fill(SHADE12)
-            } else if (isPrime(sequenceElementAsNumber)) {
+            } else if (isPrime(sequenceElement)) {
                 this.sketch.fill(SHADE13)
             } else {
                 this.sketch.fill(SHADE13)
@@ -2389,12 +2460,16 @@ class VisualizerGrid extends VisualizerDefault {
         }
     }
 
+<<<<<<< HEAD
     colorMainColorProperties(sequenceElementAsNumber: number) {
+=======
+    colorMainColorProperties(sequenceElement: bigint) {
+>>>>>>> 2d1ed44 (Modified the UI to be more intuitive. Switched to big int implementation. Added more properties.)
         if (
             this.property1 != Property.None
             && this.property1Visualization == PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElementAsNumber, this.property1)) {
+            if (hasProperty(sequenceElement, this.property1)) {
                 this.sketch.fill(this.property1MainColor)
             }
         }
@@ -2402,7 +2477,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property2 != Property.None
             && this.property2Visualization == PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElementAsNumber, this.property2)) {
+            if (hasProperty(sequenceElement, this.property2)) {
                 this.sketch.fill(this.property2MainColor)
             }
         }
@@ -2410,7 +2485,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property3 != Property.None
             && this.property3Visualization == PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElementAsNumber, this.property3)) {
+            if (hasProperty(sequenceElement, this.property3)) {
                 this.sketch.fill(this.property3MainColor)
             }
         }
@@ -2418,7 +2493,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property4 != Property.None
             && this.property4Visualization == PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElementAsNumber, this.property4)) {
+            if (hasProperty(sequenceElement, this.property4)) {
                 this.sketch.fill(this.property4MainColor)
             }
         }
@@ -2426,7 +2501,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property5 != Property.None
             && this.property5Visualization == PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElementAsNumber, this.property5)) {
+            if (hasProperty(sequenceElement, this.property5)) {
                 this.sketch.fill(this.property5MainColor)
             }
         }
@@ -2434,7 +2509,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property6 != Property.None
             && this.property6Visualization == PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElementAsNumber, this.property6)) {
+            if (hasProperty(sequenceElement, this.property6)) {
                 this.sketch.fill(this.property6MainColor)
             }
         }
@@ -2442,7 +2517,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property7 != Property.None
             && this.property7Visualization == PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElementAsNumber, this.property7)) {
+            if (hasProperty(sequenceElement, this.property7)) {
                 this.sketch.fill(this.property7MainColor)
             }
         }
@@ -2450,7 +2525,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property8 != Property.None
             && this.property8Visualization == PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElementAsNumber, this.property8)) {
+            if (hasProperty(sequenceElement, this.property8)) {
                 this.sketch.fill(this.property8MainColor)
             }
         }
@@ -2458,7 +2533,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property9 != Property.None
             && this.property9Visualization == PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElementAsNumber, this.property9)) {
+            if (hasProperty(sequenceElement, this.property9)) {
                 this.sketch.fill(this.property9MainColor)
             }
         }
@@ -2466,7 +2541,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property10 != Property.None
             && this.property10Visualization == PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElementAsNumber, this.property10)) {
+            if (hasProperty(sequenceElement, this.property10)) {
                 this.sketch.fill(this.property10MainColor)
             }
         }
@@ -2474,7 +2549,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property11 != Property.None
             && this.property11Visualization == PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElementAsNumber, this.property11)) {
+            if (hasProperty(sequenceElement, this.property11)) {
                 this.sketch.fill(this.property11MainColor)
             }
         }
@@ -2482,7 +2557,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property12 != Property.None
             && this.property12Visualization == PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElementAsNumber, this.property12)) {
+            if (hasProperty(sequenceElement, this.property12)) {
                 this.sketch.fill(this.property12MainColor)
             }
         }
@@ -2561,7 +2636,6 @@ function isPrime(num: number) {
 
     return num > 1
 }
-
 //Taken from Stack Overflow :
 //https://stackoverflow.com/
 //questions/22130043/trying-to-find-factors-of-a-number-in-js
