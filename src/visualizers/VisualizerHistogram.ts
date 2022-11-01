@@ -3,14 +3,8 @@ import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type p5 from 'p5'
 import {VisualizerDefault} from './VisualizerDefault'
-
-enum CurveMatch {
-    None,
-    Linear,
-    Quadratic,
-    Normal
-}
-
+import { setBlockTracking } from 'vue'
+import {natlog} from 'c:/Users/devli/Desktop/Numberscope/frontscope/src/shared/math'
 
 class HistogramVisualizer extends VisualizerDefault {
     name = 'Histogram'
@@ -18,11 +12,7 @@ class HistogramVisualizer extends VisualizerDefault {
     binSize = 1
     terms = 10
     firstIndex = 1
-    curveMatch = CurveMatch.None
     linear = false
-    quadratic = false
-    normal = false
-    bezier = false
     
     params = 
     {
@@ -48,41 +38,7 @@ class HistogramVisualizer extends VisualizerDefault {
             forceType: 'integer',
             displayName: 'How many terms of the series',
             required: true,
-        },
-
-        curveMatch: {
-            value: this.curveMatch,
-            from: CurveMatch,
-            displayName: 'Match the Histogram to a Curve?',
-            required: true,
-        },
-
-        linear: 
-        {
-            value: this.linear,
-            displayName: 'Linear',
-            required: false,
-            visibleDependency: 'curveMatch',
-            visibleValue: CurveMatch.Linear,
-        },
-
-        quadratic: 
-        {
-            value: this.quadratic,
-            displayName: 'Quadratic',
-            required: false,
-            visibleDependency: 'curveMatch',
-            visibleValue: CurveMatch.Quadratic,
-        },
-
-        normal: 
-        {
-            value: this.normal,
-            displayName: 'Normal Curve',
-            required: false,
-            visibleDependency: 'curveMatch',
-            visibleValue: CurveMatch.Normal,
-        },
+        }
 
     }
     
@@ -119,12 +75,12 @@ class HistogramVisualizer extends VisualizerDefault {
         return status
     }
 
-    largestValue(): number
+    largestValue(): bigint
     {
-        let largest_value: number = 0;
+        let largest_value: bigint = 0n;
         for(let i = 0; i < this.terms; i++)
         {
-            const value = Number(this.seq.getElement(i))
+            const value = this.seq.getElement(i)
             if(i == 0)
             {
                 largest_value = value
@@ -142,26 +98,25 @@ class HistogramVisualizer extends VisualizerDefault {
         var factorArray = []
         for(let i = 0; i < this.terms; i++)
         {
-            const element = Number(this.seq.getElement(i))
-            let tempArray = this.seq.getFactors(element)!
-            let counter = 0
-            for(const [base, power] of tempArray)
+            let counter = 0n
+            for(const [base, power] of this.seq.getFactors(i)!)
             {
-                counter += Number(power)
+                counter += power
+                //this.sketch.text(Number(power), 500, 300 + 25 *i)
             }
-            
+
             factorArray[i] = counter
         }
 
         let orderedFactorArray =[]
-        for(let i = 0; i < Math.floor(Math.log2(this.largestValue())) + 1; i++)
+        for(let i = 0; i < (natlog(this.largestValue())/natlog(2)) + 1; i++)
         {
             orderedFactorArray.push(0)
         }
 
         for(let i = 0; i < factorArray.length; i++)
         {
-            orderedFactorArray[factorArray[i]]++
+            orderedFactorArray[Number(factorArray[i])]++
         }
 
         var binFactorArray = [];
@@ -213,17 +168,16 @@ class HistogramVisualizer extends VisualizerDefault {
         }
         return 750/height
     }
-    
+
     //drawing the picture
     draw() 
     {
-    
+        this.sketch.background(176,227,255)
         let height = this.height()
         let binWidth = this.binWidth()
         let binFactorArray = this.binFactorArray()
         this.sketch.line(40,10,40,800)       //axes
         this.sketch.line(0,760,790,760)
-        this.sketch.rect(760, -1, 41, 41)
         
         for (let i = 0; i < (binFactorArray.length); i++) 
         {
