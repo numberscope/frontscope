@@ -54,6 +54,7 @@ class HistogramVisualizer extends VisualizerDefault {
         return status
     }
 
+    //finding the largest value of the sequence asked for
     largestValue(): bigint {
         let largest_value = 0n
         for (
@@ -71,7 +72,10 @@ class HistogramVisualizer extends VisualizerDefault {
         return largest_value
     }
 
+    //creating an array for the height of each bin of the histogram
     binFactorArray(): number[] {
+        //creating an array with the number of factor of
+        //each element at the corresponding index of the array
         const factorArray = []
         for (
             let i = Math.max(this.firstIndex, this.seq.first);
@@ -89,6 +93,8 @@ class HistogramVisualizer extends VisualizerDefault {
             factorArray[i] = counter
         }
 
+        //creating an array with the frequency of each number
+        //of factors in the corresponding index
         const orderedFactorArray = []
         for (
             let i = 0;
@@ -102,6 +108,7 @@ class HistogramVisualizer extends VisualizerDefault {
             orderedFactorArray[Number(factorArray[i])]++
         }
 
+        //changing the bin size of the histogram to what the user asked for
         const binFactorArray = []
         for (
             let i = 0;
@@ -124,6 +131,7 @@ class HistogramVisualizer extends VisualizerDefault {
         return binFactorArray
     }
 
+    //creating a number that represents how many pixels wide each bin should be
     binWidth(): number {
         const binFactorArray = this.binFactorArray()
         let binWidth = 0
@@ -135,6 +143,8 @@ class HistogramVisualizer extends VisualizerDefault {
         return 750 / (binWidth + 1)
     }
 
+    //creating a number that represents how many pixels high
+    //each increase of one in the bin array should be
     height(): number {
         const binFactorArray = this.binFactorArray()
         let height = binFactorArray[0]
@@ -152,7 +162,7 @@ class HistogramVisualizer extends VisualizerDefault {
         const height = this.height()
         const binWidth = this.binWidth()
         const binFactorArray = this.binFactorArray()
-        this.sketch.line(40, 10, 40, 800) //axes
+        this.sketch.line(40, 10, 40, 800)
         this.sketch.line(0, 760, 790, 760)
 
         for (let i = 0; i < binFactorArray.length; i++) {
@@ -171,7 +181,7 @@ class HistogramVisualizer extends VisualizerDefault {
                         + (i + this.binSize * i - i + this.binSize - 1),
                     40 + (binWidth * (i + 1) - binWidth / 2),
                     785
-                ) //make based on the highest bin with factors
+                )
             } else {
                 this.sketch.text(
                     i,
