@@ -10,10 +10,11 @@
  * @param {string|unknown} error - the error you want to display to the user
  */
 export const alertError = (error: string | unknown) => {
-    // prettier-ignore
-    const sendEmailMessage = 'If this issue persists, please send an email to numberscope@colorado.edu with steps to reproduce the error and the error message.' // eslint-disable-line
+    const sendEmailMessage =
+        'If this issue persists, please send an '
+        + 'email to numberscope@colorado.edu with steps to reproduce '
+        + 'the error and the error message.'
     try {
-        // prettier-ignore
         window.alert(`Numberscope experienced an error.
 
 Error Message:
