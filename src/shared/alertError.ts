@@ -10,12 +10,14 @@
  * @param {string|unknown} error - the error you want to display to the user
  */
 export const alertError = (error: string | unknown) => {
+    if (typeof error !== 'string') {
+        throw new TypeError('error not string')
+    }
     const sendEmailMessage =
         'If this issue persists, please send an '
         + 'email to numberscope@colorado.edu with steps to reproduce '
         + 'the error and the error message.'
-    try {
-        window.alert(`Numberscope experienced an error.
+    window.alert(`Numberscope experienced an error.
 
 Error Message:
 ${error}
@@ -23,7 +25,4 @@ ${error}
 You might need to reload the page.
 
 ${sendEmailMessage}`)
-    } catch (e) {
-        window.alert(`alertError error: ${e}`)
-    }
 }
