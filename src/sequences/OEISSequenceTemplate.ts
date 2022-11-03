@@ -110,7 +110,7 @@ export default class OEISSequenceTemplate extends SequenceCached {
             this.lastCached = this.last
             this.cachingTo = this.last
         } catch (e) {
-            window.alert(e)
+            window.alert(`Numberscope experienced an error: ${e}`)
         }
     }
 
