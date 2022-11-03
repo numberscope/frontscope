@@ -72,30 +72,33 @@ class HistogramVisualizer extends VisualizerDefault {
         return largest_value
     }
 
-    //create an array for the height of each bin of the histogram
-    binFactorArray(): number[] {
-        //create an array with the number of factor of
-        //each element at the corresponding index of the array
+    //create an array with the number of factor of
+    //each element at the corresponding index of the array
+    factorArray(): number[] {
         const factorArray = []
         for (
             let i = Math.max(this.firstIndex, this.seq.first);
             i < Math.min(this.terms, this.seq.last);
             i++
         ) {
-            let counter = 0n
+            let counter = 0
             const factors = this.seq.getFactors(i)
             if (factors) {
                 for (const [, power] of factors) {
-                    counter += power
+                    counter += Number(power)
                 }
             }
 
             factorArray[i] = counter
         }
+        return factorArray
+    }
 
-        //create an array with the frequency of each number
-        //of factors in the corresponding index
+    //create an array with the frequency of each number
+    //of factors in the corresponding index
+    orderedFactorArray(): number[] {
         const orderedFactorArray = []
+        const factorArray = this.factorArray()
         for (
             let i = 0;
             i < natlog(this.largestValue()) / natlog(2) + 1;
@@ -105,12 +108,17 @@ class HistogramVisualizer extends VisualizerDefault {
         }
 
         for (let i = 0; i < factorArray.length; i++) {
-            orderedFactorArray[Number(factorArray[i])]++
+            orderedFactorArray[factorArray[i]]++
         }
 
-        //change the bin size of the
-        //histogram to what the user asked for
+        return orderedFactorArray
+    }
+
+    //create an array tp change the bin size of the
+    //histogram to what the user asked for
+    binFactorArray(): number[] {
         const binFactorArray = []
+        const orderedFactorArray = this.orderedFactorArray()
         for (
             let i = 0;
             i < Math.ceil(orderedFactorArray.length / this.binSize);
