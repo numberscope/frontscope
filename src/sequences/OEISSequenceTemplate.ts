@@ -2,6 +2,7 @@ import type {ValidationStatus} from '../shared/ValidationStatus'
 import {modulo} from '../shared/math'
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {SequenceCached} from './SequenceCached'
+import {alertError} from '../shared/alertError.js'
 
 import axios from 'axios'
 
@@ -110,7 +111,7 @@ export default class OEISSequenceTemplate extends SequenceCached {
             this.lastCached = this.last
             this.cachingTo = this.last
         } catch (e) {
-            window.alert(`Numberscope experienced an error: ${e}`)
+            alertError(e)
         }
     }
 
