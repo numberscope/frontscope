@@ -1,6 +1,6 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {VisualizerDefault} from './VisualizerDefault'
-import {natlog} from 'c:/Users/devli/Desktop/Numberscope/frontscope/src/shared/math'
+import {natlog} from '../shared/math'
 
 class HistogramVisualizer extends VisualizerDefault {
     name = 'Histogram'
@@ -54,7 +54,7 @@ class HistogramVisualizer extends VisualizerDefault {
         return status
     }
 
-    //finding the largest value of the sequence asked for
+    //find the largest value of the sequence asked for
     largestValue(): bigint {
         let largest_value = 0n
         for (
@@ -72,9 +72,9 @@ class HistogramVisualizer extends VisualizerDefault {
         return largest_value
     }
 
-    //creating an array for the height of each bin of the histogram
+    //create an array for the height of each bin of the histogram
     binFactorArray(): number[] {
-        //creating an array with the number of factor of
+        //create an array with the number of factor of
         //each element at the corresponding index of the array
         const factorArray = []
         for (
@@ -93,7 +93,7 @@ class HistogramVisualizer extends VisualizerDefault {
             factorArray[i] = counter
         }
 
-        //creating an array with the frequency of each number
+        //create an array with the frequency of each number
         //of factors in the corresponding index
         const orderedFactorArray = []
         for (
@@ -108,7 +108,8 @@ class HistogramVisualizer extends VisualizerDefault {
             orderedFactorArray[Number(factorArray[i])]++
         }
 
-        //changing the bin size of the histogram to what the user asked for
+        //change the bin size of the
+        //histogram to what the user asked for
         const binFactorArray = []
         for (
             let i = 0;
@@ -131,7 +132,8 @@ class HistogramVisualizer extends VisualizerDefault {
         return binFactorArray
     }
 
-    //creating a number that represents how many pixels wide each bin should be
+    //create a number that represents how
+    //many pixels wide each bin should be
     binWidth(): number {
         const binFactorArray = this.binFactorArray()
         let binWidth = 0
@@ -143,7 +145,7 @@ class HistogramVisualizer extends VisualizerDefault {
         return 750 / (binWidth + 1)
     }
 
-    //creating a number that represents how many pixels high
+    //create a number that represents how many pixels high
     //each increase of one in the bin array should be
     height(): number {
         const binFactorArray = this.binFactorArray()
@@ -156,7 +158,6 @@ class HistogramVisualizer extends VisualizerDefault {
         return 750 / height
     }
 
-    //drawing the picture
     draw() {
         this.sketch.background(176, 227, 255)
         const height = this.height()
@@ -195,7 +196,6 @@ class HistogramVisualizer extends VisualizerDefault {
     }
 }
 
-//exporting the visualizer
 export const exportModule = new VisualizerExportModule(
     'Histogram',
     HistogramVisualizer,
