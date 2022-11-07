@@ -1,11 +1,11 @@
 import {createApp} from 'vue'
 import App from './App.vue'
 import router from './router'
-import {alertError} from './shared/alertError'
+import {alertMessage} from './shared/alertMessage.js'
 
 const app = createApp(App)
 app.config.errorHandler = e => {
-    alertError(e)
+    window.alert(alertMessage(e))
 }
 
 app.use(router)
