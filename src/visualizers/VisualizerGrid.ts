@@ -4147,37 +4147,13 @@ const GRAY = 'rgb(128, 128, 128)'
 
 const HIGHLIGHT = RED
 
-const SHADE0 = 'rgb(000, 000, 000)'
-const SHADE1 = 'rgb(020, 020, 020)'
-const SHADE2 = 'rgb(040, 040, 040)'
-const SHADE3 = 'rgb(060, 060, 060)'
-const SHADE4 = 'rgb(080, 080, 080)'
-const SHADE5 = 'rgb(100, 100, 100)'
-const SHADE6 = 'rgb(120, 120, 120)'
-const SHADE7 = 'rgb(140, 140, 140)'
-const SHADE8 = 'rgb(160, 160, 160)'
-const SHADE9 = 'rgb(180, 180, 180)'
-const SHADE10 = 'rgb(200, 200, 200)'
-const SHADE11 = 'rgb(220, 220, 220)'
-const SHADE12 = 'rgb(240, 240, 240)'
-const SHADE13 = 'rgb(255, 255, 255)'
-
-const SHADES = {
-    SHADE0,
-    SHADE1,
-    SHADE2,
-    SHADE3,
-    SHADE4,
-    SHADE5,
-    SHADE6,
-    SHADE7,
-    SHADE8,
-    SHADE9,
-    SHADE10,
-    SHADE11,
-    SHADE12,
-    SHADE13,
+const SHADES: string[] = []
+let value = 0
+for (let i = 0; i < 13; i++) {
+    SHADES[i] = `rgb(${value}, ${value}, ${value})`
+    value += 20
 }
+SHADES[13] = 'rgb(255, 255, 255)'
 
 enum Preset {
     Custom,
@@ -4918,7 +4894,7 @@ class VisualizerGrid extends VisualizerDefault {
                 || numberOfFactors === 1n
                 || numberOfFactors === 2n
             ) {
-                this.sketch.fill(SHADE0)
+                this.sketch.fill(SHADES[0])
 
                 if (preset === Preset.Factors_and_Primes) {
                     if (isPrime(sequenceElement)) {
@@ -4926,67 +4902,67 @@ class VisualizerGrid extends VisualizerDefault {
                     }
                 }
             } else if (numberOfFactors === 3n) {
-                this.sketch.fill(SHADE1)
+                this.sketch.fill(SHADES[1])
             } else if (numberOfFactors === 4n) {
-                this.sketch.fill(SHADE2)
+                this.sketch.fill(SHADES[2])
             } else if (numberOfFactors === 5n) {
-                this.sketch.fill(SHADE3)
+                this.sketch.fill(SHADES[3])
             } else if (numberOfFactors === 6n) {
-                this.sketch.fill(SHADE4)
+                this.sketch.fill(SHADES[4])
             } else if (numberOfFactors === 7n) {
-                this.sketch.fill(SHADE5)
+                this.sketch.fill(SHADES[5])
             } else if (numberOfFactors === 8n) {
-                this.sketch.fill(SHADE6)
+                this.sketch.fill(SHADES[6])
             } else if (numberOfFactors === 9n) {
-                this.sketch.fill(SHADE7)
+                this.sketch.fill(SHADES[7])
             } else if (numberOfFactors === 10n) {
-                this.sketch.fill(SHADE8)
+                this.sketch.fill(SHADES[8])
             } else if (numberOfFactors === 11n) {
-                this.sketch.fill(SHADE9)
+                this.sketch.fill(SHADES[9])
             } else if (numberOfFactors === 12n) {
-                this.sketch.fill(SHADE10)
+                this.sketch.fill(SHADES[10])
             } else if (numberOfFactors === 13n) {
-                this.sketch.fill(SHADE11)
+                this.sketch.fill(SHADES[11])
             } else if (numberOfFactors === 14n) {
-                this.sketch.fill(SHADE12)
+                this.sketch.fill(SHADES[12])
             } else if (numberOfFactors === 15n) {
-                this.sketch.fill(SHADE13)
+                this.sketch.fill(SHADES[13])
             } else {
-                this.sketch.fill(SHADE13)
+                this.sketch.fill(SHADES[13])
             }
         } else if (preset === Preset.Divisibility) {
             if (sequenceElement === 0n || sequenceElement === 1n) {
-                this.sketch.fill(SHADE0)
+                this.sketch.fill(SHADES[0])
             } else if (sequenceElement % 2n === 0n) {
-                this.sketch.fill(SHADE0)
+                this.sketch.fill(SHADES[0])
             } else if (sequenceElement % 3n === 0n) {
-                this.sketch.fill(SHADE1)
+                this.sketch.fill(SHADES[1])
             } else if (sequenceElement % 5n === 0n) {
-                this.sketch.fill(SHADE2)
+                this.sketch.fill(SHADES[2])
             } else if (sequenceElement % 7n === 0n) {
-                this.sketch.fill(SHADE3)
+                this.sketch.fill(SHADES[3])
             } else if (sequenceElement % 11n === 0n) {
-                this.sketch.fill(SHADE4)
+                this.sketch.fill(SHADES[4])
             } else if (sequenceElement % 13n === 0n) {
-                this.sketch.fill(SHADE5)
+                this.sketch.fill(SHADES[5])
             } else if (sequenceElement % 17n === 0n) {
-                this.sketch.fill(SHADE6)
+                this.sketch.fill(SHADES[6])
             } else if (sequenceElement % 19n === 0n) {
-                this.sketch.fill(SHADE7)
+                this.sketch.fill(SHADES[7])
             } else if (sequenceElement % 23n === 0n) {
-                this.sketch.fill(SHADE8)
+                this.sketch.fill(SHADES[8])
             } else if (sequenceElement % 29n === 0n) {
-                this.sketch.fill(SHADE9)
+                this.sketch.fill(SHADES[9])
             } else if (sequenceElement % 31n === 0n) {
-                this.sketch.fill(SHADE10)
+                this.sketch.fill(SHADES[10])
             } else if (sequenceElement % 37n === 0n) {
-                this.sketch.fill(SHADE11)
+                this.sketch.fill(SHADES[11])
             } else if (sequenceElement % 41n === 0n) {
-                this.sketch.fill(SHADE12)
+                this.sketch.fill(SHADES[12])
             } else if (isPrime(sequenceElement)) {
-                this.sketch.fill(SHADE13)
+                this.sketch.fill(SHADES[13])
             } else {
-                this.sketch.fill(SHADE13)
+                this.sketch.fill(SHADES[13])
             }
         } else {
             this.sketch.fill(this.backgroundColor)
