@@ -4129,37 +4129,55 @@ const LUCAS_NUMBERS = [
     6643838879n, 10749957122n,
 ]
 
-const BLACK = '#000000'
-const WHITE = '#ffffff'
+const BLACK = 'rgb(0, 0, 0)'
+const WHITE = 'rgb(255, 255, 255)'
 
-const RED = '#ff5733'
-const ORANGE = '#ff9d33'
-const YELLOW = '#e6ff33'
-const GREEN = '#14cd33'
-const BLUE = '#3388ff'
-const PURPLE = '#8814cd'
-const CYAN = '#00ffff'
-const MAGENTA = '#ff00ff'
-const VERDANT = '#9BBF30'
-const VIOLET = '#7f00ff'
-const MUSTARD = '#ffdb58'
-const GRAY = '#808080'
+const RED = 'rgb(255, 87, 51)'
+const ORANGE = 'rgb(255, 157, 51)'
+const YELLOW = 'rgb(230, 255, 51)'
+const GREEN = 'rgb(20, 205, 51)'
+const BLUE = 'rgb(51, 136, 255)'
+const PURPLE = 'rgb(136, 20, 205)'
+const CYAN = 'rgb(0, 255, 255)'
+const MAGENTA = 'rgb(255, 0, 255)'
+const VERDANT = 'rgb(155, 191, 48)'
+const VIOLET = 'rgb(127, 0, 255)'
+const MUSTARD = 'rgb(255, 219, 88)'
+const GRAY = 'rgb(128, 128, 128)'
 
 const HIGHLIGHT = RED
-const SHADE13 = 'rgb(255, 255, 255)'
-const SHADE12 = 'rgb(240, 240, 240)'
-const SHADE11 = 'rgb(220, 220, 220)'
-const SHADE10 = 'rgb(200, 200, 200)'
-const SHADE9 = 'rgb(180, 180, 180)'
-const SHADE8 = 'rgb(160, 160, 160)'
-const SHADE7 = 'rgb(140, 140, 140)'
-const SHADE6 = 'rgb(120, 120, 120)'
-const SHADE5 = 'rgb(100, 100, 100)'
-const SHADE4 = 'rgb(080, 080, 080)'
-const SHADE3 = 'rgb(060, 060, 060)'
-const SHADE2 = 'rgb(040, 040, 040)'
-const SHADE1 = 'rgb(020, 020, 020)'
+
 const SHADE0 = 'rgb(000, 000, 000)'
+const SHADE1 = 'rgb(020, 020, 020)'
+const SHADE2 = 'rgb(040, 040, 040)'
+const SHADE3 = 'rgb(060, 060, 060)'
+const SHADE4 = 'rgb(080, 080, 080)'
+const SHADE5 = 'rgb(100, 100, 100)'
+const SHADE6 = 'rgb(120, 120, 120)'
+const SHADE7 = 'rgb(140, 140, 140)'
+const SHADE8 = 'rgb(160, 160, 160)'
+const SHADE9 = 'rgb(180, 180, 180)'
+const SHADE10 = 'rgb(200, 200, 200)'
+const SHADE11 = 'rgb(220, 220, 220)'
+const SHADE12 = 'rgb(240, 240, 240)'
+const SHADE13 = 'rgb(255, 255, 255)'
+
+const SHADES = {
+    SHADE0,
+    SHADE1,
+    SHADE2,
+    SHADE3,
+    SHADE4,
+    SHADE5,
+    SHADE6,
+    SHADE7,
+    SHADE8,
+    SHADE9,
+    SHADE10,
+    SHADE11,
+    SHADE12,
+    SHADE13,
+}
 
 enum Preset {
     Custom,
@@ -4228,25 +4246,23 @@ enum Property {
 enum PropertyVisualization {
     None,
     Color,
-    Circle,
-}
-
-enum Formula {
-    N,
-    N_SQUARED,
 }
 
 class VisualizerGrid extends VisualizerDefault {
     name = 'Grid'
-    description = 'This puts numbers in a grid!'
+    description =
+        'This visualizer puts any number sequence in a spiral or in '
+        + 'rows and allows you to highlight numbers based on various properties.'
+        + ' One use of this tool is to put the natural numbers in a spiral'
+        + " and to highlight the Primes, which is known as Ulam's spiral. "
+        + 'Another use of this tool is highlighting properties such as'
+        + ' whether a number is abundant or polygonal.'
     amountOfNumbers = 40000
     startingIndex = 0
     showNumbers = false
-    message = ''
     preset = Preset.Custom
     pathType = PathType.Spiral
     resetAndAugmentByOne = false
-    formula = Formula.N
     backgroundColor = BLACK
     numberColor = WHITE
 
@@ -4659,10 +4675,6 @@ class VisualizerGrid extends VisualizerDefault {
 
     checkParameters() {
         const status = super.checkParameters()
-        if (typeof this.message !== 'string') {
-            status.isValid = false
-            status.errors.push('message must be a string')
-        }
 
         return status
     }
@@ -4684,11 +4696,9 @@ class VisualizerGrid extends VisualizerDefault {
         this.amountOfNumbers =
             squareRootOfAmountOfNumbers * squareRootOfAmountOfNumbers
 
-        //Calculate scaling factor
         const scalingFactor = 400 / squareRootOfAmountOfNumbers
         //This is because 20 x 20 is 1:1 scaling.
 
-        //Set path variables
         this.setPathVariables(squareRootOfAmountOfNumbers, scalingFactor)
 
         let currentSequenceIndex = this.startingIndex - 1
@@ -4708,8 +4718,13 @@ class VisualizerGrid extends VisualizerDefault {
                 }
             }
 
-            const sequenceElement =
-                this.seq.getElement(currentSequenceIndex) + augmentForRow
+            let sequenceElement = 0n
+            if (this.usesNumberSequence()) {
+                sequenceElement = BigInt(currentSequenceIndex) + augmentForRow
+            } else {
+                sequenceElement =
+                    this.seq.getElement(currentSequenceIndex) + augmentForRow
+            }
             const sequenceElementAsString = sequenceElement.toString()
 
             this.setColorForSquare(sequenceElement)
@@ -4796,7 +4811,6 @@ class VisualizerGrid extends VisualizerDefault {
             this.pathType
             === PathType.Rows_Have_Values_Squared_And_Reset_Augmented_By_One
         ) {
-            this.formula = Formula.N_SQUARED
             this.pathType = PathType.Rows
             this.resetAndAugmentByOne = true
         }
@@ -4998,7 +5012,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property1 != Property.None
             && this.property1Visualization === PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElement, this.property1)) {
+            if (this.hasProperty(sequenceElement, this.property1)) {
                 this.sketch.fill(this.property1MainColor)
             }
         }
@@ -5006,7 +5020,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property2 != Property.None
             && this.property2Visualization === PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElement, this.property2)) {
+            if (this.hasProperty(sequenceElement, this.property2)) {
                 this.sketch.fill(this.property2MainColor)
             }
         }
@@ -5014,7 +5028,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property3 != Property.None
             && this.property3Visualization === PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElement, this.property3)) {
+            if (this.hasProperty(sequenceElement, this.property3)) {
                 this.sketch.fill(this.property3MainColor)
             }
         }
@@ -5022,7 +5036,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property4 != Property.None
             && this.property4Visualization === PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElement, this.property4)) {
+            if (this.hasProperty(sequenceElement, this.property4)) {
                 this.sketch.fill(this.property4MainColor)
             }
         }
@@ -5030,7 +5044,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property5 != Property.None
             && this.property5Visualization === PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElement, this.property5)) {
+            if (this.hasProperty(sequenceElement, this.property5)) {
                 this.sketch.fill(this.property5MainColor)
             }
         }
@@ -5038,7 +5052,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property6 != Property.None
             && this.property6Visualization === PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElement, this.property6)) {
+            if (this.hasProperty(sequenceElement, this.property6)) {
                 this.sketch.fill(this.property6MainColor)
             }
         }
@@ -5046,7 +5060,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property7 != Property.None
             && this.property7Visualization === PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElement, this.property7)) {
+            if (this.hasProperty(sequenceElement, this.property7)) {
                 this.sketch.fill(this.property7MainColor)
             }
         }
@@ -5054,7 +5068,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property8 != Property.None
             && this.property8Visualization === PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElement, this.property8)) {
+            if (this.hasProperty(sequenceElement, this.property8)) {
                 this.sketch.fill(this.property8MainColor)
             }
         }
@@ -5062,7 +5076,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property9 != Property.None
             && this.property9Visualization === PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElement, this.property9)) {
+            if (this.hasProperty(sequenceElement, this.property9)) {
                 this.sketch.fill(this.property9MainColor)
             }
         }
@@ -5070,7 +5084,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property10 != Property.None
             && this.property10Visualization === PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElement, this.property10)) {
+            if (this.hasProperty(sequenceElement, this.property10)) {
                 this.sketch.fill(this.property10MainColor)
             }
         }
@@ -5078,7 +5092,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property11 != Property.None
             && this.property11Visualization === PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElement, this.property11)) {
+            if (this.hasProperty(sequenceElement, this.property11)) {
                 this.sketch.fill(this.property11MainColor)
             }
         }
@@ -5086,10 +5100,116 @@ class VisualizerGrid extends VisualizerDefault {
             this.property12 != Property.None
             && this.property12Visualization === PropertyVisualization.Color
         ) {
-            if (hasProperty(sequenceElement, this.property12)) {
+            if (this.hasProperty(sequenceElement, this.property12)) {
                 this.sketch.fill(this.property12MainColor)
             }
         }
+    }
+
+    usesNumberSequence() {
+        if (this.property1 == Property.Number_Sequence) {
+            return true
+        } else if (this.property2 == Property.Number_Sequence) {
+            return true
+        } else if (this.property3 == Property.Number_Sequence) {
+            return true
+        } else if (this.property4 == Property.Number_Sequence) {
+            return true
+        } else if (this.property5 == Property.Number_Sequence) {
+            return true
+        } else if (this.property6 == Property.Number_Sequence) {
+            return true
+        } else if (this.property7 == Property.Number_Sequence) {
+            return true
+        } else if (this.property8 == Property.Number_Sequence) {
+            return true
+        } else if (this.property9 == Property.Number_Sequence) {
+            return true
+        } else if (this.property10 == Property.Number_Sequence) {
+            return true
+        } else if (this.property11 == Property.Number_Sequence) {
+            return true
+        } else if (this.property12 == Property.Number_Sequence) {
+            return true
+        }
+
+        return false
+    }
+
+    hasProperty(num: bigint, property: Property) {
+        if (property === Property.Prime) {
+            return isPrime(num)
+        } else if (property === Property.Number_Sequence) {
+            for (let a = 0; a < 100; a++) {
+                if (this.seq.getElement(a) == num) {
+                    return true
+                }
+            }
+            return false
+        } else if (property === Property.Negative) {
+            return num < 0n
+        } else if (property === Property.Even) {
+            return num % 2n === 0n
+        } else if (property === Property.Divisible_By_Three) {
+            return num % 3n === 0n
+        } else if (property === Property.Divisible_By_Four) {
+            return num % 4n === 0n
+        } else if (property === Property.Divisible_By_Five) {
+            return num % 5n === 0n
+        } else if (property === Property.Divisible_By_Six) {
+            return num % 6n === 0n
+        } else if (property === Property.Divisible_By_Seven) {
+            return num % 7n === 0n
+        } else if (property === Property.Divisible_By_Eight) {
+            return num % 8n === 0n
+        } else if (property === Property.Ends_With_One) {
+            return num % 10n === 1n
+        } else if (property === Property.Ends_With_Two) {
+            return num % 10n === 2n
+        } else if (property === Property.Ends_With_Three) {
+            return num % 10n === 3n
+        } else if (property === Property.Ends_With_Four) {
+            return num % 10n === 4n
+        } else if (property === Property.Ends_With_Five) {
+            return num % 10n === 5n
+        } else if (property === Property.Ends_With_Six) {
+            return num % 10n === 6n
+        } else if (property === Property.Ends_With_Seven) {
+            return num % 10n === 7n
+        } else if (property === Property.Ends_With_Eight) {
+            return num % 10n === 8n
+        } else if (property === Property.Ends_With_Nine) {
+            return num % 10n === 9n
+        } else if (property === Property.Ends_With_Zero) {
+            return num % 10n === 1n
+        } else if (property === Property.Sum_Of_Two_Squares) {
+            return isSumOfTwoSquares(num)
+        } else if (property === Property.Fibonacci_Number) {
+            return isPartOfSequence(num, FIBONACCI_NUMBERS)
+        } else if (property === Property.Lucas_Number) {
+            return isPartOfSequence(num, LUCAS_NUMBERS)
+        } else if (property === Property.Triangular_Number) {
+            return isPolygonal(num, 3n)
+        } else if (property === Property.Square_Number) {
+            return isPolygonal(num, 4n)
+        } else if (property === Property.Pentagonal_Number) {
+            return isPolygonal(num, 5n)
+        } else if (property === Property.Hexagonal_Number) {
+            return isPolygonal(num, 6n)
+        } else if (property === Property.Heptagonal_Number) {
+            return isPolygonal(num, 7n)
+        } else if (property === Property.Octagonal_Number) {
+            return isPolygonal(num, 8n)
+        } else if (property === Property.Abundant) {
+            return isAbundant(num)
+        } else if (property === Property.Perfect) {
+            return isPerfect(num)
+        } else if (property === Property.Deficient) {
+            return !isPerfect(num) && !isAbundant(num)
+        } else if (property === Property.Semi_Prime) {
+            return isSemiPrime(num)
+        }
+        return false
     }
 }
 export const exportModule = new VisualizerExportModule(
@@ -5097,75 +5217,6 @@ export const exportModule = new VisualizerExportModule(
     VisualizerGrid,
     'Puts numbers in a grid.'
 )
-
-function hasProperty(num: bigint, property: Property) {
-    if (property === Property.Prime) {
-        return isPrime(num)
-    } else if (property === Property.Negative) {
-        return num < 0n
-    } else if (property === Property.Even) {
-        return num % 2n === 0n
-    } else if (property === Property.Divisible_By_Three) {
-        return num % 3n === 0n
-    } else if (property === Property.Divisible_By_Four) {
-        return num % 4n === 0n
-    } else if (property === Property.Divisible_By_Five) {
-        return num % 5n === 0n
-    } else if (property === Property.Divisible_By_Six) {
-        return num % 6n === 0n
-    } else if (property === Property.Divisible_By_Seven) {
-        return num % 7n === 0n
-    } else if (property === Property.Divisible_By_Eight) {
-        return num % 8n === 0n
-    } else if (property === Property.Ends_With_One) {
-        return num % 10n === 1n
-    } else if (property === Property.Ends_With_Two) {
-        return num % 10n === 2n
-    } else if (property === Property.Ends_With_Three) {
-        return num % 10n === 3n
-    } else if (property === Property.Ends_With_Four) {
-        return num % 10n === 4n
-    } else if (property === Property.Ends_With_Five) {
-        return num % 10n === 5n
-    } else if (property === Property.Ends_With_Six) {
-        return num % 10n === 6n
-    } else if (property === Property.Ends_With_Seven) {
-        return num % 10n === 7n
-    } else if (property === Property.Ends_With_Eight) {
-        return num % 10n === 8n
-    } else if (property === Property.Ends_With_Nine) {
-        return num % 10n === 9n
-    } else if (property === Property.Ends_With_Zero) {
-        return num % 10n === 1n
-    } else if (property === Property.Sum_Of_Two_Squares) {
-        return isSumOfTwoSquares(num)
-    } else if (property === Property.Fibonacci_Number) {
-        return isPartOfSequence(num, FIBONACCI_NUMBERS)
-    } else if (property === Property.Lucas_Number) {
-        return isPartOfSequence(num, LUCAS_NUMBERS)
-    } else if (property === Property.Triangular_Number) {
-        return isPolygonal(num, 3n)
-    } else if (property === Property.Square_Number) {
-        return isPolygonal(num, 4n)
-    } else if (property === Property.Pentagonal_Number) {
-        return isPolygonal(num, 5n)
-    } else if (property === Property.Hexagonal_Number) {
-        return isPolygonal(num, 6n)
-    } else if (property === Property.Heptagonal_Number) {
-        return isPolygonal(num, 7n)
-    } else if (property === Property.Octagonal_Number) {
-        return isPolygonal(num, 8n)
-    } else if (property === Property.Abundant) {
-        return isAbundant(num)
-    } else if (property === Property.Perfect) {
-        return isPerfect(num)
-    } else if (property === Property.Deficient) {
-        return !isPerfect(num) && !isAbundant(num)
-    } else if (property === Property.Semi_Prime) {
-        return isSemiPrime(num)
-    }
-    return false
-}
 
 /*
  *   FUNCTIONS TO CHECK FOR PROPERTIES
