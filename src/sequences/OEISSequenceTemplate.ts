@@ -2,7 +2,7 @@ import type {ValidationStatus} from '../shared/ValidationStatus'
 import {modulo} from '../shared/math'
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {SequenceCached} from './SequenceCached'
-import {alertMessage} from '../shared/alertMessage.js'
+import {alertMessage} from '../shared/alertMessage'
 
 import axios from 'axios'
 

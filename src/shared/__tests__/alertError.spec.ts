@@ -1,4 +1,4 @@
-import {alertMessage} from '../alertMessage.js'
+import {alertMessage} from '../alertMessage'
 import {describe, it, expect} from 'vitest'
 
 describe('alertMessage', () => {
