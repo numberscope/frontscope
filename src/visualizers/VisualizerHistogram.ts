@@ -48,7 +48,7 @@ class HistogramVisualizer extends VisualizerDefault {
 
         if (this.params.firstIndex.value < 1) {
             status.isValid = false
-            status.errors.push('First index can not be less than 1')
+            status.errors.push('First Index can not be less than 1')
         }
 
         return status
