@@ -54,7 +54,7 @@ class HistogramVisualizer extends VisualizerDefault {
         return status
     }
 
-    //find the largest value of the sequence asked for
+    // Find the largest value of the sequence asked for.
     largestValue(): bigint {
         let largest_value = 0n
         for (
@@ -72,8 +72,8 @@ class HistogramVisualizer extends VisualizerDefault {
         return largest_value
     }
 
-    //create an array with the number of factor of
-    //each element at the corresponding index of the array
+    // Create an array with the number of factors of
+    // each element at the corresponding index of the array.
     factorArray(): number[] {
         const factorArray = []
         for (
@@ -94,8 +94,8 @@ class HistogramVisualizer extends VisualizerDefault {
         return factorArray
     }
 
-    //create an array with the frequency of each number
-    //of factors in the corresponding index
+    // Create an array with the frequency of each number
+    // of factors in the corresponding index.
     orderedFactorArray(): number[] {
         const orderedFactorArray = []
         const factorArray = this.factorArray()
@@ -114,8 +114,8 @@ class HistogramVisualizer extends VisualizerDefault {
         return orderedFactorArray
     }
 
-    //create an array to change the bin size of the
-    //histogram to what the user asked for
+    // Create an array to change the bin size of the
+    // histogram to what the user asked for.
     binFactorArray(): number[] {
         const binFactorArray = []
         const orderedFactorArray = this.orderedFactorArray()
@@ -140,8 +140,8 @@ class HistogramVisualizer extends VisualizerDefault {
         return binFactorArray
     }
 
-    //create a number that represents how
-    //many pixels wide each bin should be
+    // Create a number that represents how
+    // many pixels wide each bin should be.
     binWidth(): number {
         const binFactorArray = this.binFactorArray()
         let binWidth = 0
@@ -153,8 +153,8 @@ class HistogramVisualizer extends VisualizerDefault {
         return 750 / (binWidth + 1)
     }
 
-    //create a number that represents how many pixels high
-    //each increase of one in the bin array should be
+    // Create a number that represents how many pixels high
+    // each increase of one in the bin array should be.
     height(): number {
         const binFactorArray = this.binFactorArray()
         let height = binFactorArray[0]
