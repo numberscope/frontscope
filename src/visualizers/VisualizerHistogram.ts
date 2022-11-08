@@ -114,7 +114,7 @@ class HistogramVisualizer extends VisualizerDefault {
         return orderedFactorArray
     }
 
-    //create an array tp change the bin size of the
+    //create an array to change the bin size of the
     //histogram to what the user asked for
     binFactorArray(): number[] {
         const binFactorArray = []
