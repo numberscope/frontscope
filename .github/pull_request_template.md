@@ -6,4 +6,4 @@ the instructions therein.
 
 <hr/>
 
-/<Please provide a high-level description of your PR./>
+\<Please provide a high-level description of your PR.\>
