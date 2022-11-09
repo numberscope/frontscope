@@ -153,3 +153,14 @@ package it up and include it in the list of available visualizers.
 
 There is no compiling needed. Simply place your file in the appropriate folder
 and run the app. JavaScript is compiled at runtime.
+
+## Handling errors
+
+Use the `alertMessage` utility (in `src/shared/`) to create an error message
+to display to the user. You can display the message to the user by using
+[window.alert](https://developer.mozilla.org/en-US/docs/Web/API/Window/alert).
+For example:
+
+```typescript
+window.alert(alertMessage(someError))
+```
