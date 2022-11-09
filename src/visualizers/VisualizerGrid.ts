@@ -4129,21 +4129,21 @@ const LUCAS_NUMBERS = [
     6643838879n, 10749957122n,
 ]
 
-const BLACK = 'rgb(0, 0, 0)'
-const WHITE = 'rgb(255, 255, 255)'
+const BLACK = '#000000'
+const WHITE = '#ffffff'
 
-const RED = 'rgb(255, 87, 51)'
-const ORANGE = 'rgb(255, 157, 51)'
-const YELLOW = 'rgb(230, 255, 51)'
-const GREEN = 'rgb(20, 205, 51)'
-const BLUE = 'rgb(51, 136, 255)'
-const PURPLE = 'rgb(136, 20, 205)'
-const CYAN = 'rgb(0, 255, 255)'
-const MAGENTA = 'rgb(255, 0, 255)'
-const VERDANT = 'rgb(155, 191, 48)'
-const VIOLET = 'rgb(127, 0, 255)'
-const MUSTARD = 'rgb(255, 219, 88)'
-const GRAY = 'rgb(128, 128, 128)'
+const RED = '#ff5733'
+const ORANGE = '#ff9d33'
+const YELLOW = '#e6ff33'
+const GREEN = '#14cd33'
+const BLUE = '#3388ff'
+const PURPLE = '#8814cd'
+const CYAN = '#00ffff'
+const MAGENTA = '#ff00ff'
+const VERDANT = '#9BBF30'
+const VIOLET = '#7f00ff'
+const MUSTARD = '#ffdb58'
+const GRAY = '#808080'
 
 const HIGHLIGHT = RED
 
@@ -4224,11 +4224,65 @@ enum PropertyVisualization {
     Color,
 }
 
+function getProperty(
+    value: Property,
+    index: number,
+    hasVisibleDependencyAndPredicate: boolean
+) {
+    const property = {
+        value: value,
+        from: Property,
+        displayName: `Property ${index}`,
+        required: false,
+        visibleDependency: '',
+        visiblePredicate: (dependentValue: Property) => true,
+    }
+
+    if (hasVisibleDependencyAndPredicate) {
+        property.visibleDependency = `property${index - 1}`
+        property.visiblePredicate = (dependentValue: Property) =>
+            dependentValue !== Property.None
+    }
+
+    return property
+}
+
+function getPropertyVisualization(
+    value: PropertyVisualization,
+    index: number
+) {
+    const propertyVisualization = {
+        value: value,
+        from: PropertyVisualization,
+        displayName: `Property ${index} Visualization`,
+        required: false,
+        visibleDependency: `property${index}`,
+        visiblePredicate: (dependentValue: Property) =>
+            dependentValue !== Property.None,
+    }
+
+    return propertyVisualization
+}
+
+function getPropertyColor(value: string, index: number) {
+    const propertyColor = {
+        value: value,
+        forceType: 'color',
+        displayName: `Property ${index} color:`,
+        required: false,
+        visibleDependency: `property${index}Visualization`,
+        visibleValue: PropertyVisualization.Color,
+    }
+
+    return propertyColor
+}
+
 class VisualizerGrid extends VisualizerDefault {
     name = 'Grid'
     description =
         'This visualizer puts any number sequence in a spiral or in '
-        + 'rows and allows you to highlight numbers based on various properties.'
+        + 'rows and allows you to highlight numbers based on various'
+        + ' properties.'
         + ' One use of this tool is to put the natural numbers in a spiral'
         + " and to highlight the Primes, which is known as Ulam's spiral. "
         + 'Another use of this tool is highlighting properties such as'
@@ -4338,315 +4392,78 @@ class VisualizerGrid extends VisualizerDefault {
             displayName: 'Background color:',
             required: false,
         },
-        property1: {
-            value: this.property1,
-            from: Property,
-            displayName: 'Property 1',
-            required: false,
-        },
-        property1Visualization: {
-            value: this.property1Visualization,
-            from: PropertyVisualization,
-            displayName: 'Property 1 Visualization',
-            required: false,
-            visibleDependency: 'property1',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property1MainColor: {
-            value: this.property1MainColor,
-            forceType: 'color',
-            displayName: 'Property 1 color:',
-            required: false,
-            visibleDependency: 'property1Visualization',
-            visibleValue: PropertyVisualization.Color,
-        },
-        property2: {
-            value: this.property2,
-            from: Property,
-            displayName: 'Property 2',
-            required: false,
-            visibleDependency: 'property1',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property2Visualization: {
-            value: this.property2Visualization,
-            from: PropertyVisualization,
-            displayName: 'Property 2 Visualization',
-            required: false,
-            visibleDependency: 'property2',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property2MainColor: {
-            value: this.property2MainColor,
-            forceType: 'color',
-            displayName: 'Property 2 color:',
-            required: false,
-            visibleDependency: 'property2Visualization',
-            visibleValue: PropertyVisualization.Color,
-        },
-        property3: {
-            value: this.property3,
-            from: Property,
-            displayName: 'Property 3',
-            required: false,
-            visibleDependency: 'property2',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property3Visualization: {
-            value: this.property3Visualization,
-            from: PropertyVisualization,
-            displayName: 'Property 3 Visualization',
-            required: false,
-            visibleDependency: 'property3',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property3MainColor: {
-            value: this.property3MainColor,
-            forceType: 'color',
-            displayName: 'Property 3 color:',
-            required: false,
-            visibleDependency: 'property3Visualization',
-            visibleValue: PropertyVisualization.Color,
-        },
-        property4: {
-            value: this.property4,
-            from: Property,
-            displayName: 'Property 4',
-            required: false,
-            visibleDependency: 'property3',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property4Visualization: {
-            value: this.property4Visualization,
-            from: PropertyVisualization,
-            displayName: 'Property 4 Visualization',
-            required: false,
-            visibleDependency: 'property4',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property4MainColor: {
-            value: this.property4MainColor,
-            forceType: 'color',
-            displayName: 'Property 4 color:',
-            required: false,
-            visibleDependency: 'property4Visualization',
-            visibleValue: PropertyVisualization.Color,
-        },
-        property5: {
-            value: this.property5,
-            from: Property,
-            displayName: 'Property 5',
-            required: false,
-            visibleDependency: 'property4',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property5Visualization: {
-            value: this.property5Visualization,
-            from: PropertyVisualization,
-            displayName: 'Property 5 Visualization',
-            required: false,
-            visibleDependency: 'property5',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property5MainColor: {
-            value: this.property5MainColor,
-            forceType: 'color',
-            displayName: 'Property 5 color:',
-            required: false,
-            visibleDependency: 'property5Visualization',
-            visibleValue: PropertyVisualization.Color,
-        },
-        property6: {
-            value: this.property6,
-            from: Property,
-            displayName: 'Property 6',
-            required: false,
-            visibleDependency: 'property5',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property6Visualization: {
-            value: this.property6Visualization,
-            from: PropertyVisualization,
-            displayName: 'Property 6 Visualization',
-            required: false,
-            visibleDependency: 'property6',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property6MainColor: {
-            value: this.property6MainColor,
-            forceType: 'color',
-            displayName: 'Property 6 color:',
-            required: false,
-            visibleDependency: 'property6Visualization',
-            visibleValue: PropertyVisualization.Color,
-        },
-        property7: {
-            value: this.property7,
-            from: Property,
-            displayName: 'Property 7',
-            required: false,
-            visibleDependency: 'property6',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property7Visualization: {
-            value: this.property7Visualization,
-            from: PropertyVisualization,
-            displayName: 'Property 7 Visualization',
-            required: false,
-            visibleDependency: 'property7',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property7MainColor: {
-            value: this.property7MainColor,
-            forceType: 'color',
-            displayName: 'Property 7 color:',
-            required: false,
-            visibleDependency: 'property7Visualization',
-            visibleValue: PropertyVisualization.Color,
-        },
-        property8: {
-            value: this.property8,
-            from: Property,
-            displayName: 'Property 8',
-            required: false,
-            visibleDependency: 'property7',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property8Visualization: {
-            value: this.property8Visualization,
-            from: PropertyVisualization,
-            displayName: 'Property 8 Visualization',
-            required: false,
-            visibleDependency: 'property8',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property8MainColor: {
-            value: this.property8MainColor,
-            forceType: 'color',
-            displayName: 'Property 8 color:',
-            required: false,
-            visibleDependency: 'property8Visualization',
-            visibleValue: PropertyVisualization.Color,
-        },
-        property9: {
-            value: this.property9,
-            from: Property,
-            displayName: 'Property 9',
-            required: false,
-            visibleDependency: 'property8',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property9Visualization: {
-            value: this.property9Visualization,
-            from: PropertyVisualization,
-            displayName: 'Property 9 Visualization',
-            required: false,
-            visibleDependency: 'property9',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property9MainColor: {
-            value: this.property9MainColor,
-            forceType: 'color',
-            displayName: 'Property 9 color:',
-            required: false,
-            visibleDependency: 'property9Visualization',
-            visibleValue: PropertyVisualization.Color,
-        },
-        property10: {
-            value: this.property10,
-            from: Property,
-            displayName: 'Property 10',
-            required: false,
-            visibleDependency: 'property9',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property10Visualization: {
-            value: this.property10Visualization,
-            from: PropertyVisualization,
-            displayName: 'Property 10 Visualization',
-            required: false,
-            visibleDependency: 'property10',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property10MainColor: {
-            value: this.property10MainColor,
-            forceType: 'color',
-            displayName: 'Property 10 color:',
-            required: false,
-            visibleDependency: 'property10Visualization',
-            visibleValue: PropertyVisualization.Color,
-        },
-        property11: {
-            value: this.property11,
-            from: Property,
-            displayName: 'Property 11',
-            required: false,
-            visibleDependency: 'property10',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property11Visualization: {
-            value: this.property11Visualization,
-            from: PropertyVisualization,
-            displayName: 'Property 11 Visualization',
-            required: false,
-            visibleDependency: 'property11',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property11MainColor: {
-            value: this.property11MainColor,
-            forceType: 'color',
-            displayName: 'Property 11 color:',
-            required: false,
-            visibleDependency: 'property11Visualization',
-            visibleValue: PropertyVisualization.Color,
-        },
-        property12: {
-            value: this.property12,
-            from: Property,
-            displayName: 'Property 12',
-            required: false,
-            visibleDependency: 'property11',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property12Visualization: {
-            value: this.property12Visualization,
-            from: PropertyVisualization,
-            displayName: 'Property 12 Visualization',
-            required: false,
-            visibleDependency: 'property12',
-            visiblePredicate: (dependentValue: Property) =>
-                dependentValue !== Property.None,
-        },
-        property12MainColor: {
-            value: this.property12MainColor,
-            forceType: 'color',
-            displayName: 'Property 12 color:',
-            required: false,
-            visibleDependency: 'property12Visualization',
-            visibleValue: PropertyVisualization.Color,
-        },
+        property1: getProperty(this.property1, 1, false),
+        property1Visualization: getPropertyVisualization(
+            this.property1Visualization,
+            1
+        ),
+        property1MainColor: getPropertyColor(this.property1MainColor, 1),
+        property2: getProperty(this.property2, 2, true),
+        property2Visualization: getPropertyVisualization(
+            this.property2Visualization,
+            2
+        ),
+        property2MainColor: getPropertyColor(this.property2MainColor, 2),
+        property3: getProperty(this.property3, 3, true),
+        property3Visualization: getPropertyVisualization(
+            this.property3Visualization,
+            3
+        ),
+        property3MainColor: getPropertyColor(this.property3MainColor, 3),
+        property4: getProperty(this.property4, 4, true),
+        property4Visualization: getPropertyVisualization(
+            this.property4Visualization,
+            4
+        ),
+        property4MainColor: getPropertyColor(this.property4MainColor, 4),
+        property5: getProperty(this.property5, 5, true),
+        property5Visualization: getPropertyVisualization(
+            this.property5Visualization,
+            5
+        ),
+        property5MainColor: getPropertyColor(this.property5MainColor, 5),
+        property6: getProperty(this.property6, 6, true),
+        property6Visualization: getPropertyVisualization(
+            this.property6Visualization,
+            6
+        ),
+        property6MainColor: getPropertyColor(this.property6MainColor, 6),
+        property7: getProperty(this.property7, 7, true),
+        property7Visualization: getPropertyVisualization(
+            this.property7Visualization,
+            7
+        ),
+        property7MainColor: getPropertyColor(this.property7MainColor, 7),
+        property8: getProperty(this.property8, 8, true),
+        property8Visualization: getPropertyVisualization(
+            this.property8Visualization,
+            8
+        ),
+        property8MainColor: getPropertyColor(this.property8MainColor, 8),
+        property9: getProperty(this.property9, 9, true),
+        property9Visualization: getPropertyVisualization(
+            this.property9Visualization,
+            9
+        ),
+        property9MainColor: getPropertyColor(this.property9MainColor, 9),
+        property10: getProperty(this.property10, 10, true),
+        property10Visualization: getPropertyVisualization(
+            this.property10Visualization,
+            10
+        ),
+        property10MainColor: getPropertyColor(this.property10MainColor, 10),
+        property11: getProperty(this.property11, 11, true),
+        property11Visualization: getPropertyVisualization(
+            this.property11Visualization,
+            11
+        ),
+        property11MainColor: getPropertyColor(this.property11MainColor, 11),
+        property12: getProperty(this.property12, 12, true),
+        property12Visualization: getPropertyVisualization(
+            this.property12Visualization,
+            12
+        ),
+        property12MainColor: getPropertyColor(this.property12MainColor, 12),
     }
 
     checkParameters() {
