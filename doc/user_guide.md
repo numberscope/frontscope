@@ -10,5 +10,5 @@ That will bring you to:
 ## Errors
 
 If Numberscope experiences an error, you might see an alert with the error
-message. If you see one, please email numberscope@colorado.edu with the error
-message.
+message. If you see one that does not resolve upon reloading the page and
+trying again, please email the address shown with the error message.
