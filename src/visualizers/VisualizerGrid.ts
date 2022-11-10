@@ -4107,28 +4107,6 @@ import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {VisualizerDefault} from '@/visualizers/VisualizerDefault'
 import {floorSqrt} from '@/shared/math'
 
-// prettier-ignore
-const FIBONACCI_NUMBERS = [
-    0n, 1n, 1n, 2n, 3n, 5n, 8n, 13n, 21n, 34n, 55n, 89n, 144n, 233n,
-    377n, 610n, 987n, 1597n, 2584n, 4181n, 6765n, 10946n, 17711n,
-    28657n, 46368n, 75025n, 121393n, 196418n, 317811n, 514229n, 832040n,
-    1346269n, 2178309n, 3524578n, 5702887n, 9227465n, 14930352n,
-    24157817n, 39088169n, 63245986n, 102334155n, 165580141n, 267914296n,
-    433494437n, 701408733n, 1134903170n, 1836311903n, 2971215073n,
-    4807526976n, 7778742049n, 12586269025n,
-]
-
-// prettier-ignore
-const LUCAS_NUMBERS = [
-    2n, 1n, 3n, 4n, 7n, 11n, 18n, 29n, 47n, 76n, 123n, 199n, 322n, 521n,
-    843n, 1346n, 2207n, 3571n, 5778n, 9349n, 15127n, 24476n, 39603n,
-    64079n, 103682n, 167761n, 271443n, 439204n, 710647n, 1149851n,
-    1860498n, 3010349n, 4870847n, 7881196n, 12752043n, 20633239n,
-    33385282n, 54018521n, 87403803n, 141422324n, 228826127n, 370248451n,
-    599074578n, 969323029n, 1568397607n, 2537720636n, 4106118243n,
-    6643838879n, 10749957122n,
-]
-
 const BLACK = '#000000'
 const WHITE = '#ffffff'
 
@@ -4170,7 +4148,7 @@ enum PathType {
     Spiral,
     Rows,
     Rows_Reset_Augmented_By_One,
-    Rows_Have_Values_Squared_And_Reset_Augmented_By_One,
+    Rows_Reset_Augmented_By_One_And_Values_Are_Squared,
 }
 
 enum Direction {
@@ -4211,8 +4189,6 @@ enum Property {
     Heptagonal_Number,
     Octagonal_Number,
     Sum_Of_Two_Squares,
-    Fibonacci_Number,
-    Lucas_Number,
     Abundant,
     Perfect,
     Deficient,
@@ -4232,10 +4208,11 @@ function getProperty(
     const property = {
         value: value,
         from: Property,
-        displayName: `Property ${index}`,
+        displayName: `Property ${index + 1}`,
         required: false,
         visibleDependency: '',
-        visiblePredicate: (dependentValue: Property) => true,
+        visiblePredicate: (dependentValue: Property) =>
+            dependentValue !== Property.None,
     }
 
     if (hasVisibleDependencyAndPredicate) {
@@ -4254,7 +4231,7 @@ function getPropertyVisualization(
     const propertyVisualization = {
         value: value,
         from: PropertyVisualization,
-        displayName: `Property ${index} Visualization`,
+        displayName: `Property ${index + 1} Visualization`,
         required: false,
         visibleDependency: `property${index}`,
         visiblePredicate: (dependentValue: Property) =>
@@ -4268,7 +4245,7 @@ function getPropertyColor(value: string, index: number) {
     const propertyColor = {
         value: value,
         forceType: 'color',
-        displayName: `Property ${index} color:`,
+        displayName: `Property ${index + 1} color:`,
         required: false,
         visibleDependency: `property${index}Visualization`,
         visibleValue: PropertyVisualization.Color,
@@ -4287,7 +4264,10 @@ class VisualizerGrid extends VisualizerDefault {
         + " and to highlight the Primes, which is known as Ulam's spiral. "
         + 'Another use of this tool is highlighting properties such as'
         + ' whether a number is abundant or polygonal.'
+
+    //Grid variables
     amountOfNumbers = 40000
+    currentSequenceIndex = 0
     startingIndex = 0
     showNumbers = false
     preset = Preset.Custom
@@ -4300,46 +4280,47 @@ class VisualizerGrid extends VisualizerDefault {
     x = 0
     y = 0
     currentDirection = Direction.Right
-    numberToTurnAt = 0
+    numberToTurnAtForSpiral = 0
     incrementForNumberToTurnAt = 1
-    whetherIncrementShouldIncrementForSpiral = true
+    whetherIncrementShouldIncrement = true
 
-    property1 = Property.Prime
-    property1Visualization = PropertyVisualization.Color
-    property1MainColor = RED
+    //Properties
+    property0 = Property.Prime
+    property0Visualization = PropertyVisualization.Color
+    property0MainColor = RED
+    property1 = Property.None
+    property1Visualization = PropertyVisualization.None
+    property1MainColor = BLUE
     property2 = Property.None
     property2Visualization = PropertyVisualization.None
-    property2MainColor = BLUE
+    property2MainColor = GREEN
     property3 = Property.None
     property3Visualization = PropertyVisualization.None
-    property3MainColor = GREEN
+    property3MainColor = YELLOW
     property4 = Property.None
     property4Visualization = PropertyVisualization.None
-    property4MainColor = YELLOW
+    property4MainColor = ORANGE
     property5 = Property.None
     property5Visualization = PropertyVisualization.None
-    property5MainColor = ORANGE
+    property5MainColor = PURPLE
     property6 = Property.None
     property6Visualization = PropertyVisualization.None
-    property6MainColor = PURPLE
+    property6MainColor = CYAN
     property7 = Property.None
     property7Visualization = PropertyVisualization.None
-    property7MainColor = CYAN
+    property7MainColor = MAGENTA
     property8 = Property.None
     property8Visualization = PropertyVisualization.None
-    property8MainColor = MAGENTA
+    property8MainColor = VERDANT
     property9 = Property.None
     property9Visualization = PropertyVisualization.None
-    property9MainColor = VERDANT
+    property9MainColor = VIOLET
     property10 = Property.None
     property10Visualization = PropertyVisualization.None
-    property10MainColor = VIOLET
+    property10MainColor = MUSTARD
     property11 = Property.None
     property11Visualization = PropertyVisualization.None
     property11MainColor = MUSTARD
-    property12 = Property.None
-    property12Visualization = PropertyVisualization.None
-    property12MainColor = GRAY
 
     params = {
         preset: {
@@ -4392,7 +4373,13 @@ class VisualizerGrid extends VisualizerDefault {
             displayName: 'Background color:',
             required: false,
         },
-        property1: getProperty(this.property1, 1, false),
+        property0: getProperty(this.property0, 0, false),
+        property0Visualization: getPropertyVisualization(
+            this.property0Visualization,
+            0
+        ),
+        property0MainColor: getPropertyColor(this.property0MainColor, 0),
+        property1: getProperty(this.property1, 1, true),
         property1Visualization: getPropertyVisualization(
             this.property1Visualization,
             1
@@ -4458,12 +4445,6 @@ class VisualizerGrid extends VisualizerDefault {
             11
         ),
         property11MainColor: getPropertyColor(this.property11MainColor, 11),
-        property12: getProperty(this.property12, 12, true),
-        property12Visualization: getPropertyVisualization(
-            this.property12Visualization,
-            12
-        ),
-        property12MainColor: getPropertyColor(this.property12MainColor, 12),
     }
 
     checkParameters() {
@@ -4486,59 +4467,52 @@ class VisualizerGrid extends VisualizerDefault {
         const squareRootOfAmountOfNumbers = Number(
             floorSqrt(this.amountOfNumbers)
         )
+
         this.amountOfNumbers =
             squareRootOfAmountOfNumbers * squareRootOfAmountOfNumbers
 
-        const scalingFactor = 400 / squareRootOfAmountOfNumbers
         //This is because 20 x 20 is 1:1 scaling.
+        const scalingFactor = 400 / squareRootOfAmountOfNumbers
 
         this.setPathVariables(squareRootOfAmountOfNumbers, scalingFactor)
 
-        let currentSequenceIndex = this.startingIndex - 1
-        let augmentForRow = 0n
+        this.currentSequenceIndex = this.startingIndex - 1
+        let augmentForRowReset = 0n
 
         for (
             let iteration = 0;
             iteration < this.amountOfNumbers;
             iteration++
         ) {
-            currentSequenceIndex++
-
+            //Reset current sequence for row reset and increase augmentForRowReset.
             if (this.currentDirection === Direction.StartNewRow) {
                 if (this.resetAndAugmentByOne) {
-                    currentSequenceIndex = this.startingIndex
-                    augmentForRow++
+                    this.currentSequenceIndex = this.startingIndex - 1
+                    augmentForRowReset++
                 }
             }
 
-            let sequenceElement = 0n
-            if (this.usesNumberSequence()) {
-                sequenceElement = BigInt(currentSequenceIndex) + augmentForRow
-            } else {
-                sequenceElement =
-                    this.seq.getElement(currentSequenceIndex) + augmentForRow
-            }
-            const sequenceElementAsString = sequenceElement.toString()
+            this.currentSequenceIndex++
 
-            this.setColorForSquare(sequenceElement)
-
-            //Draw square
-            this.sketch.rect(this.x, this.y, scalingFactor, scalingFactor)
-
-            this.showNumbersOnGrid(sequenceElementAsString, scalingFactor)
-
-            this.changeDirectionBasedOnPathType(
-                squareRootOfAmountOfNumbers,
-                iteration
+            const currentNumber = this.getCurrentNumber(
+                this.currentSequenceIndex,
+                augmentForRowReset
             )
 
-            this.moveCoordinatesBasedOnCurrentDirection(scalingFactor)
+            this.fillGridCell(currentNumber, scalingFactor)
+
+            this.moveCoordinatesUsingPath(
+                squareRootOfAmountOfNumbers,
+                iteration,
+                scalingFactor
+            )
         }
         this.sketch.noLoop()
     }
 
     setPresets() {
         if (this.preset != Preset.Custom) {
+            this.property0 = Property.None
             this.property1 = Property.None
             this.property2 = Property.None
             this.property3 = Property.None
@@ -4550,7 +4524,6 @@ class VisualizerGrid extends VisualizerDefault {
             this.property9 = Property.None
             this.property10 = Property.None
             this.property11 = Property.None
-            this.property12 = Property.None
         }
 
         if (this.preset === Preset.Primes) {
@@ -4602,7 +4575,7 @@ class VisualizerGrid extends VisualizerDefault {
 
         if (
             this.pathType
-            === PathType.Rows_Have_Values_Squared_And_Reset_Augmented_By_One
+            === PathType.Rows_Reset_Augmented_By_One_And_Values_Are_Squared
         ) {
             this.pathType = PathType.Rows
             this.resetAndAugmentByOne = true
@@ -4613,10 +4586,60 @@ class VisualizerGrid extends VisualizerDefault {
         }
     }
 
+    getCurrentNumber(currentSequenceIndex: number, augmentForRow: bigint) {
+        let currentNumber = 0n
+
+        if (this.somePropertyUsesNumberSequence()) {
+            currentNumber = BigInt(currentSequenceIndex) + augmentForRow
+        } else {
+            currentNumber =
+                this.seq.getElement(currentSequenceIndex) + augmentForRow
+        }
+
+        return currentNumber
+    }
+
+    somePropertyUsesNumberSequence() {
+        if (this.property0 == Property.Number_Sequence) {
+            return true
+        }
+        if (this.property1 == Property.Number_Sequence) {
+            return true
+        } else if (this.property2 == Property.Number_Sequence) {
+            return true
+        } else if (this.property3 == Property.Number_Sequence) {
+            return true
+        } else if (this.property4 == Property.Number_Sequence) {
+            return true
+        } else if (this.property5 == Property.Number_Sequence) {
+            return true
+        } else if (this.property6 == Property.Number_Sequence) {
+            return true
+        } else if (this.property7 == Property.Number_Sequence) {
+            return true
+        } else if (this.property8 == Property.Number_Sequence) {
+            return true
+        } else if (this.property9 == Property.Number_Sequence) {
+            return true
+        } else if (this.property10 == Property.Number_Sequence) {
+            return true
+        } else if (this.property11 == Property.Number_Sequence) {
+            return true
+        }
+
+        return false
+    }
+
     setPathVariables(gridSize: number, scalingFactor: number) {
-        //Declare initial movement variables
+        //The default starting point is the top left.
+        this.x = 0
+        this.y = 0
+
+        //The default starting direction is right.
+        this.currentDirection = Direction.Right
+
         if (this.pathType === PathType.Spiral) {
-            //The starting point is placed so that the whole spiral is centered
+            //The starting point for spiral is placed so that the whole spiral is centered
             if (gridSize % 2 === 1) {
                 this.x = (gridSize / 2 - 1) * scalingFactor
                 this.y = (gridSize / 2) * scalingFactor
@@ -4624,87 +4647,35 @@ class VisualizerGrid extends VisualizerDefault {
                 this.x = (gridSize / 2 - 1) * scalingFactor
                 this.y = (gridSize / 2) * scalingFactor
             }
-        }
 
-        if (this.pathType === PathType.Spiral) {
-            //This uses an increment that decreases every other turn
-            this.numberToTurnAt = 1
+            //The amount of numbers to the next turn increases every other turn.
+            this.numberToTurnAtForSpiral = 1
             this.incrementForNumberToTurnAt = 1
-            this.currentDirection = Direction.Right
-            this.whetherIncrementShouldIncrementForSpiral = true
-        } else if (this.pathType === PathType.Rows) {
-            this.currentDirection = Direction.Right
+            this.whetherIncrementShouldIncrement = true
         }
     }
 
-    changeDirectionBasedOnPathType(
-        squareRootOfAmountOfNumbers: number,
-        iteration: number
-    ) {
-        //Choose direction for next number
-        if (this.pathType === PathType.Spiral) {
-            //Turn at the numberToTurn at which increases every other turn
-            if (iteration === this.numberToTurnAt) {
-                this.numberToTurnAt += this.incrementForNumberToTurnAt
-                if (this.whetherIncrementShouldIncrementForSpiral) {
-                    this.incrementForNumberToTurnAt += 1
-                    this.whetherIncrementShouldIncrementForSpiral = false
-                } else {
-                    this.whetherIncrementShouldIncrementForSpiral = true
-                }
+    fillGridCell(currentNumber: bigint, scalingFactor: number) {
+        this.setColorForSquare(currentNumber)
 
-                if (this.currentDirection === Direction.Right) {
-                    this.currentDirection = Direction.Up
-                } else if (this.currentDirection === Direction.Up) {
-                    this.currentDirection = Direction.Left
-                } else if (this.currentDirection === Direction.Left) {
-                    this.currentDirection = Direction.Down
-                } else if (this.currentDirection === Direction.Down) {
-                    this.currentDirection = Direction.Right
-                }
-            }
-        } else if (this.pathType === PathType.Rows) {
-            //Go to new row when the row is complete
-            if ((iteration + 1) % squareRootOfAmountOfNumbers === 0) {
-                this.currentDirection = Direction.StartNewRow
-            } else if (iteration === this.amountOfNumbers) {
-                this.currentDirection = Direction.None
-            } else {
-                this.currentDirection = Direction.Right
-            }
-        }
+        this.sketch.rect(this.x, this.y, scalingFactor, scalingFactor)
+
+        this.showNumber(currentNumber, scalingFactor)
     }
 
-    moveCoordinatesBasedOnCurrentDirection(scalingFactor: number) {
-        //Move coordinates to direction they're going to
-        if (this.currentDirection === Direction.Right) {
-            this.x += scalingFactor
-        } else if (this.currentDirection === Direction.Up) {
-            this.y -= scalingFactor
-        } else if (this.currentDirection === Direction.Left) {
-            this.x -= scalingFactor
-        } else if (this.currentDirection === Direction.Down) {
-            this.y += scalingFactor
-        } else if (this.currentDirection === Direction.StartNewRow) {
-            this.x = 0
-            this.y += scalingFactor
-        }
+    setColorForSquare(currentNumber: bigint) {
+        this.colorGradientPresets(currentNumber)
+        this.colorMainColorProperties(currentNumber)
     }
 
-    setColorForSquare(sequenceElement: bigint) {
-        //Color number
-        this.colorGradientPresets(sequenceElement)
-        this.colorMainColorProperties(sequenceElement)
-    }
-
-    colorGradientPresets(sequenceElement: bigint) {
+    colorGradientPresets(currentNumber: bigint) {
         const preset = this.preset
 
         if (
             preset === Preset.Factors
             || preset === Preset.Factors_and_Primes
         ) {
-            const numberOfFactors = getNumberOfFactors(sequenceElement)
+            const numberOfFactors = getNumberOfFactors(currentNumber)
 
             if (
                 numberOfFactors === 0n
@@ -4714,7 +4685,7 @@ class VisualizerGrid extends VisualizerDefault {
                 this.sketch.fill(SHADES[0])
 
                 if (preset === Preset.Factors_and_Primes) {
-                    if (isPrime(sequenceElement)) {
+                    if (isPrime(currentNumber)) {
                         this.sketch.fill(HIGHLIGHT)
                     }
                 }
@@ -4748,35 +4719,35 @@ class VisualizerGrid extends VisualizerDefault {
                 this.sketch.fill(SHADES[13])
             }
         } else if (preset === Preset.Divisibility) {
-            if (sequenceElement === 0n || sequenceElement === 1n) {
+            if (currentNumber === 0n || currentNumber === 1n) {
                 this.sketch.fill(SHADES[0])
-            } else if (sequenceElement % 2n === 0n) {
+            } else if (currentNumber % 2n === 0n) {
                 this.sketch.fill(SHADES[0])
-            } else if (sequenceElement % 3n === 0n) {
+            } else if (currentNumber % 3n === 0n) {
                 this.sketch.fill(SHADES[1])
-            } else if (sequenceElement % 5n === 0n) {
+            } else if (currentNumber % 5n === 0n) {
                 this.sketch.fill(SHADES[2])
-            } else if (sequenceElement % 7n === 0n) {
+            } else if (currentNumber % 7n === 0n) {
                 this.sketch.fill(SHADES[3])
-            } else if (sequenceElement % 11n === 0n) {
+            } else if (currentNumber % 11n === 0n) {
                 this.sketch.fill(SHADES[4])
-            } else if (sequenceElement % 13n === 0n) {
+            } else if (currentNumber % 13n === 0n) {
                 this.sketch.fill(SHADES[5])
-            } else if (sequenceElement % 17n === 0n) {
+            } else if (currentNumber % 17n === 0n) {
                 this.sketch.fill(SHADES[6])
-            } else if (sequenceElement % 19n === 0n) {
+            } else if (currentNumber % 19n === 0n) {
                 this.sketch.fill(SHADES[7])
-            } else if (sequenceElement % 23n === 0n) {
+            } else if (currentNumber % 23n === 0n) {
                 this.sketch.fill(SHADES[8])
-            } else if (sequenceElement % 29n === 0n) {
+            } else if (currentNumber % 29n === 0n) {
                 this.sketch.fill(SHADES[9])
-            } else if (sequenceElement % 31n === 0n) {
+            } else if (currentNumber % 31n === 0n) {
                 this.sketch.fill(SHADES[10])
-            } else if (sequenceElement % 37n === 0n) {
+            } else if (currentNumber % 37n === 0n) {
                 this.sketch.fill(SHADES[11])
-            } else if (sequenceElement % 41n === 0n) {
+            } else if (currentNumber % 41n === 0n) {
                 this.sketch.fill(SHADES[12])
-            } else if (isPrime(sequenceElement)) {
+            } else if (isPrime(currentNumber)) {
                 this.sketch.fill(SHADES[13])
             } else {
                 this.sketch.fill(SHADES[13])
@@ -4786,26 +4757,20 @@ class VisualizerGrid extends VisualizerDefault {
         }
     }
 
-    showNumbersOnGrid(
-        sequenceElementAsString: string,
-        scalingFactor: number
-    ) {
-        if (this.showNumbers) {
-            this.sketch.fill(this.numberColor)
-            this.sketch.text(
-                sequenceElementAsString,
-                this.x + 0 * scalingFactor,
-                this.y + (15 * scalingFactor) / 20
-            )
+    colorMainColorProperties(currentNumber: bigint) {
+        if (
+            this.property0 != Property.None
+            && this.property0Visualization === PropertyVisualization.Color
+        ) {
+            if (this.hasProperty(currentNumber, this.property0)) {
+                this.sketch.fill(this.property0MainColor)
+            }
         }
-    }
-
-    colorMainColorProperties(sequenceElement: bigint) {
         if (
             this.property1 != Property.None
             && this.property1Visualization === PropertyVisualization.Color
         ) {
-            if (this.hasProperty(sequenceElement, this.property1)) {
+            if (this.hasProperty(currentNumber, this.property1)) {
                 this.sketch.fill(this.property1MainColor)
             }
         }
@@ -4813,7 +4778,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property2 != Property.None
             && this.property2Visualization === PropertyVisualization.Color
         ) {
-            if (this.hasProperty(sequenceElement, this.property2)) {
+            if (this.hasProperty(currentNumber, this.property2)) {
                 this.sketch.fill(this.property2MainColor)
             }
         }
@@ -4821,7 +4786,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property3 != Property.None
             && this.property3Visualization === PropertyVisualization.Color
         ) {
-            if (this.hasProperty(sequenceElement, this.property3)) {
+            if (this.hasProperty(currentNumber, this.property3)) {
                 this.sketch.fill(this.property3MainColor)
             }
         }
@@ -4829,7 +4794,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property4 != Property.None
             && this.property4Visualization === PropertyVisualization.Color
         ) {
-            if (this.hasProperty(sequenceElement, this.property4)) {
+            if (this.hasProperty(currentNumber, this.property4)) {
                 this.sketch.fill(this.property4MainColor)
             }
         }
@@ -4837,7 +4802,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property5 != Property.None
             && this.property5Visualization === PropertyVisualization.Color
         ) {
-            if (this.hasProperty(sequenceElement, this.property5)) {
+            if (this.hasProperty(currentNumber, this.property5)) {
                 this.sketch.fill(this.property5MainColor)
             }
         }
@@ -4845,7 +4810,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property6 != Property.None
             && this.property6Visualization === PropertyVisualization.Color
         ) {
-            if (this.hasProperty(sequenceElement, this.property6)) {
+            if (this.hasProperty(currentNumber, this.property6)) {
                 this.sketch.fill(this.property6MainColor)
             }
         }
@@ -4853,7 +4818,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property7 != Property.None
             && this.property7Visualization === PropertyVisualization.Color
         ) {
-            if (this.hasProperty(sequenceElement, this.property7)) {
+            if (this.hasProperty(currentNumber, this.property7)) {
                 this.sketch.fill(this.property7MainColor)
             }
         }
@@ -4861,7 +4826,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property8 != Property.None
             && this.property8Visualization === PropertyVisualization.Color
         ) {
-            if (this.hasProperty(sequenceElement, this.property8)) {
+            if (this.hasProperty(currentNumber, this.property8)) {
                 this.sketch.fill(this.property8MainColor)
             }
         }
@@ -4869,7 +4834,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property9 != Property.None
             && this.property9Visualization === PropertyVisualization.Color
         ) {
-            if (this.hasProperty(sequenceElement, this.property9)) {
+            if (this.hasProperty(currentNumber, this.property9)) {
                 this.sketch.fill(this.property9MainColor)
             }
         }
@@ -4877,7 +4842,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property10 != Property.None
             && this.property10Visualization === PropertyVisualization.Color
         ) {
-            if (this.hasProperty(sequenceElement, this.property10)) {
+            if (this.hasProperty(currentNumber, this.property10)) {
                 this.sketch.fill(this.property10MainColor)
             }
         }
@@ -4885,60 +4850,22 @@ class VisualizerGrid extends VisualizerDefault {
             this.property11 != Property.None
             && this.property11Visualization === PropertyVisualization.Color
         ) {
-            if (this.hasProperty(sequenceElement, this.property11)) {
+            if (this.hasProperty(currentNumber, this.property11)) {
                 this.sketch.fill(this.property11MainColor)
             }
         }
-        if (
-            this.property12 != Property.None
-            && this.property12Visualization === PropertyVisualization.Color
-        ) {
-            if (this.hasProperty(sequenceElement, this.property12)) {
-                this.sketch.fill(this.property12MainColor)
-            }
-        }
-    }
-
-    usesNumberSequence() {
-        if (this.property1 == Property.Number_Sequence) {
-            return true
-        } else if (this.property2 == Property.Number_Sequence) {
-            return true
-        } else if (this.property3 == Property.Number_Sequence) {
-            return true
-        } else if (this.property4 == Property.Number_Sequence) {
-            return true
-        } else if (this.property5 == Property.Number_Sequence) {
-            return true
-        } else if (this.property6 == Property.Number_Sequence) {
-            return true
-        } else if (this.property7 == Property.Number_Sequence) {
-            return true
-        } else if (this.property8 == Property.Number_Sequence) {
-            return true
-        } else if (this.property9 == Property.Number_Sequence) {
-            return true
-        } else if (this.property10 == Property.Number_Sequence) {
-            return true
-        } else if (this.property11 == Property.Number_Sequence) {
-            return true
-        } else if (this.property12 == Property.Number_Sequence) {
-            return true
-        }
-
-        return false
     }
 
     hasProperty(num: bigint, property: Property) {
-        if (property === Property.Prime) {
-            return isPrime(num)
-        } else if (property === Property.Number_Sequence) {
+        if (property === Property.Number_Sequence) {
             for (let a = 0; a < 100; a++) {
                 if (this.seq.getElement(a) == num) {
                     return true
                 }
             }
             return false
+        } else if (property === Property.Prime) {
+            return isPrime(num)
         } else if (property === Property.Negative) {
             return num < 0n
         } else if (property === Property.Even) {
@@ -4977,10 +4904,6 @@ class VisualizerGrid extends VisualizerDefault {
             return num % 10n === 1n
         } else if (property === Property.Sum_Of_Two_Squares) {
             return isSumOfTwoSquares(num)
-        } else if (property === Property.Fibonacci_Number) {
-            return isPartOfSequence(num, FIBONACCI_NUMBERS)
-        } else if (property === Property.Lucas_Number) {
-            return isPartOfSequence(num, LUCAS_NUMBERS)
         } else if (property === Property.Triangular_Number) {
             return isPolygonal(num, 3n)
         } else if (property === Property.Square_Number) {
@@ -5004,6 +4927,87 @@ class VisualizerGrid extends VisualizerDefault {
         }
         return false
     }
+
+    showNumber(currentNumber: bigint, scalingFactor: number) {
+        const currentNumberAsString = currentNumber.toString()
+
+        if (this.showNumbers) {
+            this.sketch.fill(this.numberColor)
+            this.sketch.text(
+                currentNumberAsString,
+                this.x + 0 * scalingFactor,
+                this.y + (15 * scalingFactor) / 20
+            )
+        }
+    }
+
+    moveCoordinatesUsingPath(
+        squareRootOfAmountOfNumbers: number,
+        iteration: number,
+        scalingFactor: number
+    ) {
+        this.changeDirectionUsingPathType(
+            squareRootOfAmountOfNumbers,
+            iteration
+        )
+
+        this.moveCoordinatesUsingCurrentDirection(scalingFactor)
+    }
+
+    changeDirectionUsingPathType(
+        squareRootOfAmountOfNumbers: number,
+        iteration: number
+    ) {
+        //Choose direction for next number
+        if (this.pathType === PathType.Spiral) {
+            //Turn at the numberToTurn at which increases every other turn
+            if (iteration === this.numberToTurnAtForSpiral) {
+                this.numberToTurnAtForSpiral
+                    += this.incrementForNumberToTurnAt
+                if (this.whetherIncrementShouldIncrement) {
+                    this.incrementForNumberToTurnAt += 1
+                    this.whetherIncrementShouldIncrement = false
+                } else {
+                    this.whetherIncrementShouldIncrement = true
+                }
+
+                if (this.currentDirection === Direction.Right) {
+                    this.currentDirection = Direction.Up
+                } else if (this.currentDirection === Direction.Up) {
+                    this.currentDirection = Direction.Left
+                } else if (this.currentDirection === Direction.Left) {
+                    this.currentDirection = Direction.Down
+                } else if (this.currentDirection === Direction.Down) {
+                    this.currentDirection = Direction.Right
+                }
+            }
+        } else if (this.pathType === PathType.Rows) {
+            //Go to new row when the row is complete
+            if ((iteration + 1) % squareRootOfAmountOfNumbers === 0) {
+                this.currentDirection = Direction.StartNewRow
+            } else if (iteration === this.amountOfNumbers) {
+                this.currentDirection = Direction.None
+            } else {
+                this.currentDirection = Direction.Right
+            }
+        }
+    }
+
+    moveCoordinatesUsingCurrentDirection(scalingFactor: number) {
+        //Move coordinates to direction they're going to
+        if (this.currentDirection === Direction.Right) {
+            this.x += scalingFactor
+        } else if (this.currentDirection === Direction.Up) {
+            this.y -= scalingFactor
+        } else if (this.currentDirection === Direction.Left) {
+            this.x -= scalingFactor
+        } else if (this.currentDirection === Direction.Down) {
+            this.y += scalingFactor
+        } else if (this.currentDirection === Direction.StartNewRow) {
+            this.x = 0
+            this.y += scalingFactor
+        }
+    }
 }
 export const exportModule = new VisualizerExportModule(
     'Grid',
@@ -5014,15 +5018,6 @@ export const exportModule = new VisualizerExportModule(
 /*
  *   FUNCTIONS TO CHECK FOR PROPERTIES
  */
-
-function isPartOfSequence(num: bigint, sequence: bigint[]) {
-    for (let x = 0; x < sequence.length; x++) {
-        if (num === sequence[x]) {
-            return true
-        }
-    }
-}
-
 //Taken from Stack Overflow :
 //https://stackoverflow.com/questions/40200089/number-prime-test-in-javascript
 //TODO This should be replaced with the getFactors from Numberscope.
