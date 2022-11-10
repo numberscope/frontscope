@@ -43,7 +43,8 @@ plugins:
               - '.ico'
               - '.spec.ts'
               - 'LICENSE.md'
-          ignore_folders: [node_modules, dist, coverage]
+          ignore_folders: [node_modules, dist, coverage, '.venv', '.git']
+          ignore_hidden: false
           include_extensions: ['.png', 'math.ts']
           extract_on_copy: true
           merge_docs_dir: false
