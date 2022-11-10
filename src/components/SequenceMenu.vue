@@ -94,7 +94,6 @@
                 isInstance: boolean,
                 activeSeq: SequenceExportModule
             ) {
-                console.log(activeSeq)
                 if (isInstance) {
                     // instances are already constructed
                     this.liveSequence =
