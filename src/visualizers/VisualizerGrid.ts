@@ -4482,7 +4482,7 @@ class VisualizerGrid extends VisualizerDefault {
 
         this.currentSequenceIndex = Math.max(
             this.startingIndex,
-            this.seq.first
+            this.seq.first - 1
         )
         let augmentForRowReset = 0n
 
@@ -4868,7 +4868,11 @@ class VisualizerGrid extends VisualizerDefault {
 
     hasProperty(num: bigint, property: Property) {
         if (property === Property.Number_Sequence) {
-            for (let a = 0; a < 100; a++) {
+            for (
+                let a = this.seq.first + 1;
+                a < Math.min(this.seq.last - this.seq.first + 1, 10000);
+                a++
+            ) {
                 if (this.seq.getElement(a) == num) {
                     return true
                 }
