@@ -4121,7 +4121,6 @@ const MAGENTA = '#ff00ff'
 const VERDANT = '#9BBF30'
 const VIOLET = '#7f00ff'
 const MUSTARD = '#ffdb58'
-const GRAY = '#808080'
 
 const HIGHLIGHT = RED
 
@@ -4463,6 +4462,11 @@ class VisualizerGrid extends VisualizerDefault {
 
         this.setOverridingSettings()
 
+        this.amountOfNumbers = Math.min(
+            this.amountOfNumbers,
+            this.seq.last - this.seq.first + 1
+        )
+
         //Round up amount of numbers so that it is a square number.
         const squareRootOfAmountOfNumbers = Number(
             floorSqrt(this.amountOfNumbers)
@@ -4476,7 +4480,10 @@ class VisualizerGrid extends VisualizerDefault {
 
         this.setPathVariables(squareRootOfAmountOfNumbers, scalingFactor)
 
-        this.currentSequenceIndex = this.startingIndex - 1
+        this.currentSequenceIndex = Math.max(
+            this.startingIndex,
+            this.seq.first
+        )
         let augmentForRowReset = 0n
 
         for (
@@ -4484,10 +4491,13 @@ class VisualizerGrid extends VisualizerDefault {
             iteration < this.amountOfNumbers;
             iteration++
         ) {
-            //Reset current sequence for row reset and increase augmentForRowReset.
+            //Reset current sequence for row reset and augment by one.
             if (this.currentDirection === Direction.StartNewRow) {
                 if (this.resetAndAugmentByOne) {
-                    this.currentSequenceIndex = this.startingIndex - 1
+                    this.currentSequenceIndex = Math.max(
+                        this.startingIndex,
+                        this.seq.first
+                    )
                     augmentForRowReset++
                 }
             }
@@ -4639,7 +4649,7 @@ class VisualizerGrid extends VisualizerDefault {
         this.currentDirection = Direction.Right
 
         if (this.pathType === PathType.Spiral) {
-            //The starting point for spiral is placed so that the whole spiral is centered
+            //The starting point placed so that the whole spiral is centered
             if (gridSize % 2 === 1) {
                 this.x = (gridSize / 2 - 1) * scalingFactor
                 this.y = (gridSize / 2) * scalingFactor
