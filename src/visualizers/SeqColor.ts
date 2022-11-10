@@ -7,7 +7,8 @@ import type {SequenceInterface} from '../sequences/SequenceInterface'
 const primeNum: number[] = []
 let count_prime = 0
 const colorMap = new Map()
-let pg
+//let pg
+
 class SeqColor extends VisualizerDefault implements VisualizerInterface {
     name = 'Sequence Color'
     n = 40
@@ -36,9 +37,10 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         count_prime = 0
 
         for (let i = this.seq.first; i < this.n; i++) {
-            if (this.isPrime(Number(this.seq.getElement(i)))) {
+            if (this.isPrime(Number(this.seq.getElement(i))) == true) {
                 count_prime += 1
                 primeNum.push(Number(this.seq.getElement(i)))
+                console.log(this.seq.getElement(i))
             }
         }
 
@@ -54,7 +56,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
         this.X = 800 / this.n + 30
         this.Y = 800 / this.n + 50
-        pg = this.sketch.createGraphics(400, 250)
+        //pg = this.sketch.createGraphics(400, 250)
     }
 
     draw() {
@@ -95,16 +97,31 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         }
 
         if (this.current_num >= this.n) {
-            this.sketch.noLoop()
+            this.afterLoop()
         }
         this.sketch.noStroke()
+    }
 
-        //not working
-        console.log(this.sketch.SHIFT)
-        if (this.sketch.keyIsDown(this.sketch.SHIFT)) {
-            // show menu
-            // todo
+    afterLoop() {
+        this.sketch.fill(0, 0, 100)
+        this.sketch.rect(0, 700, 800, 90)
+        let tmpX = 0
+        let tmpY = 0
+
+        //Bug: primeNum has repeat values -> "draw" twice so record the numbers twice
+        for (let i = 0; i < primeNum.length / 2; i += 1) {
+            this.sketch.fill('black')
+            this.sketch.text(String(primeNum[i]), 0 + tmpX, 730 + tmpY)
+            this.sketch.fill(colorMap.get(primeNum[i]), 100, 100)
+            this.sketch.ellipse(25 + tmpX, 730 + tmpY, 10, 10)
+            tmpX += 50
+            if (tmpX >= 800) {
+                tmpX = 0
+                tmpY += 30
+            }
         }
+
+        this.sketch.noLoop()
     }
 
     changeColor(difference: number, now: number) {
@@ -116,21 +133,19 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     }
 
     isPrime(n: number) {
-        if (n <= 1) {
-            return 0
-        }
-        for (let i = 2; i <= Math.sqrt(2); i++) {
-            if (n % i == 0) {
-                return 0
+        for (let i = 2; i <= Math.sqrt(n); i++) {
+            if (n % i === 0) {
+                return false
             }
         }
-        return 1
+        return n > 1
     }
 
     primeFactors(n: number, total_prime: number) {
         const factors = []
         let factor_check = 2
-        const colorNum = 360 / Number(total_prime) //assign color to each prime number
+        //assign color to each prime number
+        const colorNum = 360 / Number(total_prime)
 
         // console.log("total_prime: ", total_prime)
         //const colorCombine = []
@@ -149,11 +164,11 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         }
 
         for (let i = 0; i < primeNum.length; i++) {
-            console.log('PrimeNum: ', primeNum.length)
+            //console.log('PrimeNum: ', primeNum.length)
             if (colorMap.has(primeNum[i]) == false) {
                 tmp += colorNum
                 colorMap.set(primeNum[i], tmp)
-                console.log('           COLOR       TMP     :', tmp)
+                //console.log('           COLOR       TMP     :', tmp)
             }
         }
 
@@ -170,14 +185,13 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
                         colorAll = colorMap.get(factors[i])
                     } else {
                         colorAll = (colorAll + colorMap.get(factors[i])) / 2
-                        //console.log("HAVE MULTIPLE PRIME FACTOR", colorCombine[j])
                     }
                 }
             }
         }
-        console.log('colorAll: ', colorAll)
+        //console.log('colorAll: ', colorAll)
         for (const value of colorMap.values()) {
-            console.log('       MAPMAPMAP           ', value)
+            //console.log('       MAPMAPMAP           ', value)
         }
         return colorAll
     }
