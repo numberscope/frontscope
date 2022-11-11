@@ -4122,7 +4122,20 @@ const VERDANT = '#9BBF30'
 const VIOLET = '#7f00ff'
 const MUSTARD = '#ffdb58'
 
-const HIGHLIGHT = RED
+const RAINBOW = [
+    '#FF0000',
+    '#FF6700',
+    '#FFE000',
+    '#51FF00',
+    '#00F4E8',
+    '#00B1FF',
+    '#0055FF',
+    '#C000FF',
+    '#FF00F9',
+    '#FF0080',
+]
+
+//const SMALL_RAINBOW = ['#FF001F', '#FFDA00', '#0CF22D', '#0F65EF', '#EF18EF']
 
 const SHADES: string[] = []
 let value = 0
@@ -4141,6 +4154,8 @@ enum Preset {
     Abundant_Numbers,
     Abundant_Numbers_And_Primes,
     Polygonal_Numbers,
+    Rainbow_Colored_By_Last_Digit,
+    Rainbow_Colored_By_Last_Digit_Expanded,
 }
 
 enum PathType {
@@ -4171,6 +4186,7 @@ enum Property {
     Divisible_By_Six,
     Divisible_By_Seven,
     Divisible_By_Eight,
+    Ends_With_Zero,
     Ends_With_One,
     Ends_With_Two,
     Ends_With_Three,
@@ -4180,7 +4196,6 @@ enum Property {
     Ends_With_Seven,
     Ends_With_Eight,
     Ends_With_Nine,
-    Ends_With_Zero,
     Triangular_Number,
     Square_Number,
     Pentagonal_Number,
@@ -4196,7 +4211,8 @@ enum Property {
 
 enum PropertyVisualization {
     None,
-    Color,
+    Primary_Color,
+    Secondary_Color,
 }
 
 function getProperty(
@@ -4247,7 +4263,9 @@ function getPropertyColor(value: string, index: number) {
         displayName: `Property ${index + 1} color:`,
         required: false,
         visibleDependency: `property${index}Visualization`,
-        visibleValue: PropertyVisualization.Color,
+        visiblePredicate: (dependentValue: PropertyVisualization) =>
+            dependentValue === PropertyVisualization.Primary_Color
+            || dependentValue === PropertyVisualization.Secondary_Color,
     }
 
     return propertyColor
@@ -4260,14 +4278,17 @@ class VisualizerGrid extends VisualizerDefault {
         + 'rows and allows you to highlight numbers based on various'
         + ' properties.'
         + ' One use of this tool is to put the natural numbers in a spiral'
-        + " and to highlight the Primes, which is known as Ulam's spiral. "
+        + " and to highlight the prime ones, which is known as Ulam's "
+        + 'spiral. '
         + 'Another use of this tool is highlighting properties such as'
-        + ' whether a number is abundant or polygonal.'
+        + ' whether a number is abundant, polygonal, '
+        + 'or in some other sequence.'
 
     //Grid variables
     amountOfNumbers = 40000
     currentSequenceIndex = 0
     startingIndex = 0
+    currentNumber = 0n
     showNumbers = false
     preset = Preset.Custom
     pathType = PathType.Spiral
@@ -4278,6 +4299,7 @@ class VisualizerGrid extends VisualizerDefault {
     //Path variables
     x = 0
     y = 0
+    scalingFactor = 0
     currentDirection = Direction.Right
     numberToTurnAtForSpiral = 0
     incrementForNumberToTurnAt = 1
@@ -4285,7 +4307,7 @@ class VisualizerGrid extends VisualizerDefault {
 
     //Properties
     property0 = Property.Prime
-    property0Visualization = PropertyVisualization.Color
+    property0Visualization = PropertyVisualization.Primary_Color
     property0MainColor = RED
     property1 = Property.None
     property1Visualization = PropertyVisualization.None
@@ -4467,6 +4489,13 @@ class VisualizerGrid extends VisualizerDefault {
             this.seq.last - this.seq.first + 1
         )
 
+        if (this.usesNumberSequenceAsProperty()) {
+            this.amountOfNumbers = Math.min(
+                this.amountOfNumbers,
+                Number(this.seq.getElement(this.seq.last))
+            )
+        }
+
         //Round up amount of numbers so that it is a square number.
         const squareRootOfAmountOfNumbers = Number(
             floorSqrt(this.amountOfNumbers)
@@ -4476,13 +4505,13 @@ class VisualizerGrid extends VisualizerDefault {
             squareRootOfAmountOfNumbers * squareRootOfAmountOfNumbers
 
         //This is because 20 x 20 is 1:1 scaling.
-        const scalingFactor = 400 / squareRootOfAmountOfNumbers
+        this.scalingFactor = 400 / squareRootOfAmountOfNumbers
 
-        this.setPathVariables(squareRootOfAmountOfNumbers, scalingFactor)
+        this.setPathVariables(squareRootOfAmountOfNumbers)
 
         this.currentSequenceIndex = Math.max(
             this.startingIndex,
-            this.seq.first - 1
+            this.seq.first
         )
         let augmentForRowReset = 0n
 
@@ -4504,17 +4533,16 @@ class VisualizerGrid extends VisualizerDefault {
 
             this.currentSequenceIndex++
 
-            const currentNumber = this.getCurrentNumber(
+            this.setCurrentNumber(
                 this.currentSequenceIndex,
                 augmentForRowReset
             )
 
-            this.fillGridCell(currentNumber, scalingFactor)
+            this.fillGridCell()
 
             this.moveCoordinatesUsingPath(
                 squareRootOfAmountOfNumbers,
-                iteration,
-                scalingFactor
+                iteration
             )
         }
         this.sketch.noLoop()
@@ -4539,41 +4567,112 @@ class VisualizerGrid extends VisualizerDefault {
         if (this.preset === Preset.Primes) {
             this.backgroundColor = BLACK
             this.property1 = Property.Prime
-            this.property1Visualization = PropertyVisualization.Color
+            this.property1Visualization = PropertyVisualization.Primary_Color
             this.property1MainColor = RED
         } else if (this.preset === Preset.Abundant_Numbers) {
             this.backgroundColor = WHITE
             this.property1 = Property.Abundant
-            this.property1Visualization = PropertyVisualization.Color
+            this.property1Visualization = PropertyVisualization.Primary_Color
             this.property1MainColor = BLACK
         } else if (this.preset === Preset.Abundant_Numbers_And_Primes) {
             this.backgroundColor = WHITE
             this.property1 = Property.Abundant
-            this.property1Visualization = PropertyVisualization.Color
+            this.property1Visualization = PropertyVisualization.Primary_Color
             this.property1MainColor = BLACK
             this.property2 = Property.Prime
-            this.property2Visualization = PropertyVisualization.Color
+            this.property2Visualization = PropertyVisualization.Primary_Color
             this.property2MainColor = RED
         } else if (this.preset === Preset.Polygonal_Numbers) {
             this.backgroundColor = BLACK
             this.property1 = Property.Triangular_Number
-            this.property1Visualization = PropertyVisualization.Color
+            this.property1Visualization = PropertyVisualization.Primary_Color
             this.property1MainColor = RED
             this.property2 = Property.Square_Number
-            this.property2Visualization = PropertyVisualization.Color
+            this.property2Visualization = PropertyVisualization.Primary_Color
             this.property2MainColor = ORANGE
             this.property3 = Property.Pentagonal_Number
-            this.property3Visualization = PropertyVisualization.Color
+            this.property3Visualization = PropertyVisualization.Primary_Color
             this.property3MainColor = YELLOW
             this.property4 = Property.Hexagonal_Number
-            this.property4Visualization = PropertyVisualization.Color
+            this.property4Visualization = PropertyVisualization.Primary_Color
             this.property4MainColor = GREEN
             this.property5 = Property.Heptagonal_Number
-            this.property5Visualization = PropertyVisualization.Color
+            this.property5Visualization = PropertyVisualization.Primary_Color
             this.property5MainColor = BLUE
             this.property6 = Property.Octagonal_Number
-            this.property6Visualization = PropertyVisualization.Color
+            this.property6Visualization = PropertyVisualization.Primary_Color
             this.property6MainColor = PURPLE
+        } else if (this.preset === Preset.Rainbow_Colored_By_Last_Digit) {
+            this.backgroundColor = BLACK
+            this.property1 = Property.Ends_With_Zero
+            this.property1Visualization = PropertyVisualization.Primary_Color
+            this.property1MainColor = RAINBOW[0]
+            this.property2 = Property.Ends_With_One
+            this.property2Visualization = PropertyVisualization.Primary_Color
+            this.property2MainColor = RAINBOW[1]
+            this.property3 = Property.Ends_With_Two
+            this.property3Visualization = PropertyVisualization.Primary_Color
+            this.property3MainColor = RAINBOW[2]
+            this.property4 = Property.Ends_With_Three
+            this.property4Visualization = PropertyVisualization.Primary_Color
+            this.property4MainColor = RAINBOW[3]
+            this.property5 = Property.Ends_With_Four
+            this.property5Visualization = PropertyVisualization.Primary_Color
+            this.property5MainColor = RAINBOW[4]
+            this.property6 = Property.Ends_With_Five
+            this.property6Visualization = PropertyVisualization.Primary_Color
+            this.property6MainColor = RAINBOW[5]
+            this.property7 = Property.Ends_With_Six
+            this.property7Visualization = PropertyVisualization.Primary_Color
+            this.property7MainColor = RAINBOW[6]
+            this.property8 = Property.Ends_With_Seven
+            this.property8Visualization = PropertyVisualization.Primary_Color
+            this.property8MainColor = RAINBOW[7]
+            this.property9 = Property.Ends_With_Eight
+            this.property9Visualization = PropertyVisualization.Primary_Color
+            this.property9MainColor = RAINBOW[8]
+            this.property10 = Property.Ends_With_Nine
+            this.property10Visualization = PropertyVisualization.Primary_Color
+            this.property10MainColor = RAINBOW[9]
+        } else if (
+            this.preset === Preset.Rainbow_Colored_By_Last_Digit_Expanded
+        ) {
+            this.backgroundColor = BLACK
+            this.property1 = Property.Ends_With_Zero
+            this.property1Visualization = PropertyVisualization.Primary_Color
+            this.property1MainColor = RAINBOW[0]
+            this.property2 = Property.Ends_With_One
+            this.property2Visualization =
+                PropertyVisualization.Secondary_Color
+            this.property2MainColor = RAINBOW[1]
+            this.property3 = Property.Ends_With_Two
+            this.property3Visualization = PropertyVisualization.Primary_Color
+            this.property3MainColor = RAINBOW[2]
+            this.property4 = Property.Ends_With_Three
+            this.property4Visualization =
+                PropertyVisualization.Secondary_Color
+            this.property4MainColor = RAINBOW[3]
+            this.property5 = Property.Ends_With_Four
+            this.property5Visualization = PropertyVisualization.Primary_Color
+            this.property5MainColor = RAINBOW[4]
+            this.property6 = Property.Ends_With_Five
+            this.property6Visualization =
+                PropertyVisualization.Secondary_Color
+            this.property6MainColor = RAINBOW[5]
+            this.property7 = Property.Ends_With_Six
+            this.property7Visualization = PropertyVisualization.Primary_Color
+            this.property7MainColor = RAINBOW[6]
+            this.property8 = Property.Ends_With_Seven
+            this.property8Visualization =
+                PropertyVisualization.Secondary_Color
+            this.property8MainColor = RAINBOW[7]
+            this.property9 = Property.Ends_With_Eight
+            this.property9Visualization = PropertyVisualization.Primary_Color
+            this.property9MainColor = RAINBOW[8]
+            this.property10 = Property.Ends_With_Nine
+            this.property10Visualization =
+                PropertyVisualization.Secondary_Color
+            this.property10MainColor = RAINBOW[9]
         }
     }
 
@@ -4596,20 +4695,18 @@ class VisualizerGrid extends VisualizerDefault {
         }
     }
 
-    getCurrentNumber(currentSequenceIndex: number, augmentForRow: bigint) {
-        let currentNumber = 0n
+    setCurrentNumber(currentSequenceIndex: number, augmentForRow: bigint) {
+        this.currentNumber = 0n
 
-        if (this.somePropertyUsesNumberSequence()) {
-            currentNumber = BigInt(currentSequenceIndex) + augmentForRow
+        if (this.usesNumberSequenceAsProperty()) {
+            this.currentNumber = BigInt(currentSequenceIndex) + augmentForRow
         } else {
-            currentNumber =
+            this.currentNumber =
                 this.seq.getElement(currentSequenceIndex) + augmentForRow
         }
-
-        return currentNumber
     }
 
-    somePropertyUsesNumberSequence() {
+    usesNumberSequenceAsProperty() {
         if (this.property0 == Property.Number_Sequence) {
             return true
         }
@@ -4640,7 +4737,7 @@ class VisualizerGrid extends VisualizerDefault {
         return false
     }
 
-    setPathVariables(gridSize: number, scalingFactor: number) {
+    setPathVariables(gridSize: number) {
         //The default starting point is the top left.
         this.x = 0
         this.y = 0
@@ -4651,11 +4748,11 @@ class VisualizerGrid extends VisualizerDefault {
         if (this.pathType === PathType.Spiral) {
             //The starting point placed so that the whole spiral is centered
             if (gridSize % 2 === 1) {
-                this.x = (gridSize / 2 - 1) * scalingFactor
-                this.y = (gridSize / 2) * scalingFactor
+                this.x = (gridSize / 2 - 1 / 2) * this.scalingFactor
+                this.y = (gridSize / 2 - 1 / 2) * this.scalingFactor
             } else {
-                this.x = (gridSize / 2 - 1) * scalingFactor
-                this.y = (gridSize / 2) * scalingFactor
+                this.x = (gridSize / 2 - 1) * this.scalingFactor
+                this.y = (gridSize / 2) * this.scalingFactor
             }
 
             //The amount of numbers to the next turn increases every other turn.
@@ -4665,212 +4762,276 @@ class VisualizerGrid extends VisualizerDefault {
         }
     }
 
-    fillGridCell(currentNumber: bigint, scalingFactor: number) {
-        this.setColorForSquare(currentNumber)
+    fillGridCell() {
+        this.drawBackgroundSquare()
 
-        this.sketch.rect(this.x, this.y, scalingFactor, scalingFactor)
+        this.drawPrimaryColorSquare()
 
-        this.showNumber(currentNumber, scalingFactor)
+        this.drawSecondaryColorSquare()
+
+        this.showNumber()
     }
 
-    setColorForSquare(currentNumber: bigint) {
-        this.colorGradientPresets(currentNumber)
-        this.colorMainColorProperties(currentNumber)
+    drawBackgroundSquare() {
+        this.sketch.fill(this.backgroundColor)
+        this.drawBigSquare()
     }
 
-    colorGradientPresets(currentNumber: bigint) {
-        const preset = this.preset
-
-        if (
-            preset === Preset.Factors
-            || preset === Preset.Factors_and_Primes
-        ) {
-            const numberOfFactors = getNumberOfFactors(currentNumber)
-
-            if (
-                numberOfFactors === 0n
-                || numberOfFactors === 1n
-                || numberOfFactors === 2n
-            ) {
-                this.sketch.fill(SHADES[0])
-
-                if (preset === Preset.Factors_and_Primes) {
-                    if (isPrime(currentNumber)) {
-                        this.sketch.fill(HIGHLIGHT)
-                    }
-                }
-            } else if (numberOfFactors === 3n) {
-                this.sketch.fill(SHADES[1])
-            } else if (numberOfFactors === 4n) {
-                this.sketch.fill(SHADES[2])
-            } else if (numberOfFactors === 5n) {
-                this.sketch.fill(SHADES[3])
-            } else if (numberOfFactors === 6n) {
-                this.sketch.fill(SHADES[4])
-            } else if (numberOfFactors === 7n) {
-                this.sketch.fill(SHADES[5])
-            } else if (numberOfFactors === 8n) {
-                this.sketch.fill(SHADES[6])
-            } else if (numberOfFactors === 9n) {
-                this.sketch.fill(SHADES[7])
-            } else if (numberOfFactors === 10n) {
-                this.sketch.fill(SHADES[8])
-            } else if (numberOfFactors === 11n) {
-                this.sketch.fill(SHADES[9])
-            } else if (numberOfFactors === 12n) {
-                this.sketch.fill(SHADES[10])
-            } else if (numberOfFactors === 13n) {
-                this.sketch.fill(SHADES[11])
-            } else if (numberOfFactors === 14n) {
-                this.sketch.fill(SHADES[12])
-            } else if (numberOfFactors === 15n) {
-                this.sketch.fill(SHADES[13])
-            } else {
-                this.sketch.fill(SHADES[13])
-            }
-        } else if (preset === Preset.Divisibility) {
-            if (currentNumber === 0n || currentNumber === 1n) {
-                this.sketch.fill(SHADES[0])
-            } else if (currentNumber % 2n === 0n) {
-                this.sketch.fill(SHADES[0])
-            } else if (currentNumber % 3n === 0n) {
-                this.sketch.fill(SHADES[1])
-            } else if (currentNumber % 5n === 0n) {
-                this.sketch.fill(SHADES[2])
-            } else if (currentNumber % 7n === 0n) {
-                this.sketch.fill(SHADES[3])
-            } else if (currentNumber % 11n === 0n) {
-                this.sketch.fill(SHADES[4])
-            } else if (currentNumber % 13n === 0n) {
-                this.sketch.fill(SHADES[5])
-            } else if (currentNumber % 17n === 0n) {
-                this.sketch.fill(SHADES[6])
-            } else if (currentNumber % 19n === 0n) {
-                this.sketch.fill(SHADES[7])
-            } else if (currentNumber % 23n === 0n) {
-                this.sketch.fill(SHADES[8])
-            } else if (currentNumber % 29n === 0n) {
-                this.sketch.fill(SHADES[9])
-            } else if (currentNumber % 31n === 0n) {
-                this.sketch.fill(SHADES[10])
-            } else if (currentNumber % 37n === 0n) {
-                this.sketch.fill(SHADES[11])
-            } else if (currentNumber % 41n === 0n) {
-                this.sketch.fill(SHADES[12])
-            } else if (isPrime(currentNumber)) {
-                this.sketch.fill(SHADES[13])
-            } else {
-                this.sketch.fill(SHADES[13])
-            }
-        } else {
-            this.sketch.fill(this.backgroundColor)
-        }
+    drawPrimaryColorSquare() {
+        this.colorMainColorProperties()
+        this.drawBigSquare()
     }
 
-    colorMainColorProperties(currentNumber: bigint) {
+    drawSecondaryColorSquare() {
+        this.colorMainColorProperties()
+        this.drawBigSquare()
+    }
+
+    colorMainColorProperties() {
         if (
             this.property0 != Property.None
-            && this.property0Visualization === PropertyVisualization.Color
+            && this.property0Visualization
+                === PropertyVisualization.Primary_Color
         ) {
-            if (this.hasProperty(currentNumber, this.property0)) {
+            if (this.hasProperty(this.currentNumber, this.property0)) {
                 this.sketch.fill(this.property0MainColor)
             }
         }
         if (
             this.property1 != Property.None
-            && this.property1Visualization === PropertyVisualization.Color
+            && this.property1Visualization
+                === PropertyVisualization.Primary_Color
         ) {
-            if (this.hasProperty(currentNumber, this.property1)) {
+            if (this.hasProperty(this.currentNumber, this.property1)) {
                 this.sketch.fill(this.property1MainColor)
             }
         }
         if (
             this.property2 != Property.None
-            && this.property2Visualization === PropertyVisualization.Color
+            && this.property2Visualization
+                === PropertyVisualization.Primary_Color
         ) {
-            if (this.hasProperty(currentNumber, this.property2)) {
+            if (this.hasProperty(this.currentNumber, this.property2)) {
                 this.sketch.fill(this.property2MainColor)
             }
         }
         if (
             this.property3 != Property.None
-            && this.property3Visualization === PropertyVisualization.Color
+            && this.property3Visualization
+                === PropertyVisualization.Primary_Color
         ) {
-            if (this.hasProperty(currentNumber, this.property3)) {
+            if (this.hasProperty(this.currentNumber, this.property3)) {
                 this.sketch.fill(this.property3MainColor)
             }
         }
         if (
             this.property4 != Property.None
-            && this.property4Visualization === PropertyVisualization.Color
+            && this.property4Visualization
+                === PropertyVisualization.Primary_Color
         ) {
-            if (this.hasProperty(currentNumber, this.property4)) {
+            if (this.hasProperty(this.currentNumber, this.property4)) {
                 this.sketch.fill(this.property4MainColor)
             }
         }
         if (
             this.property5 != Property.None
-            && this.property5Visualization === PropertyVisualization.Color
+            && this.property5Visualization
+                === PropertyVisualization.Primary_Color
         ) {
-            if (this.hasProperty(currentNumber, this.property5)) {
+            if (this.hasProperty(this.currentNumber, this.property5)) {
                 this.sketch.fill(this.property5MainColor)
             }
         }
         if (
             this.property6 != Property.None
-            && this.property6Visualization === PropertyVisualization.Color
+            && this.property6Visualization
+                === PropertyVisualization.Primary_Color
         ) {
-            if (this.hasProperty(currentNumber, this.property6)) {
+            if (this.hasProperty(this.currentNumber, this.property6)) {
                 this.sketch.fill(this.property6MainColor)
             }
         }
         if (
             this.property7 != Property.None
-            && this.property7Visualization === PropertyVisualization.Color
+            && this.property7Visualization
+                === PropertyVisualization.Primary_Color
         ) {
-            if (this.hasProperty(currentNumber, this.property7)) {
+            if (this.hasProperty(this.currentNumber, this.property7)) {
                 this.sketch.fill(this.property7MainColor)
             }
         }
         if (
             this.property8 != Property.None
-            && this.property8Visualization === PropertyVisualization.Color
+            && this.property8Visualization
+                === PropertyVisualization.Primary_Color
         ) {
-            if (this.hasProperty(currentNumber, this.property8)) {
+            if (this.hasProperty(this.currentNumber, this.property8)) {
                 this.sketch.fill(this.property8MainColor)
             }
         }
         if (
             this.property9 != Property.None
-            && this.property9Visualization === PropertyVisualization.Color
+            && this.property9Visualization
+                === PropertyVisualization.Primary_Color
         ) {
-            if (this.hasProperty(currentNumber, this.property9)) {
+            if (this.hasProperty(this.currentNumber, this.property9)) {
                 this.sketch.fill(this.property9MainColor)
             }
         }
         if (
             this.property10 != Property.None
-            && this.property10Visualization === PropertyVisualization.Color
+            && this.property10Visualization
+                === PropertyVisualization.Primary_Color
         ) {
-            if (this.hasProperty(currentNumber, this.property10)) {
+            if (this.hasProperty(this.currentNumber, this.property10)) {
                 this.sketch.fill(this.property10MainColor)
             }
         }
         if (
             this.property11 != Property.None
-            && this.property11Visualization === PropertyVisualization.Color
+            && this.property11Visualization
+                === PropertyVisualization.Primary_Color
         ) {
-            if (this.hasProperty(currentNumber, this.property11)) {
+            if (this.hasProperty(this.currentNumber, this.property11)) {
                 this.sketch.fill(this.property11MainColor)
             }
         }
     }
 
+    colorSecondaryColorProperties() {
+        if (
+            this.property0 != Property.None
+            && this.property0Visualization
+                === PropertyVisualization.Secondary_Color
+        ) {
+            if (this.hasProperty(this.currentNumber, this.property0)) {
+                this.sketch.fill(this.property0MainColor)
+            }
+        }
+        if (
+            this.property1 != Property.None
+            && this.property1Visualization
+                === PropertyVisualization.Secondary_Color
+        ) {
+            if (this.hasProperty(this.currentNumber, this.property1)) {
+                this.sketch.fill(this.property1MainColor)
+            }
+        }
+        if (
+            this.property2 != Property.None
+            && this.property2Visualization
+                === PropertyVisualization.Secondary_Color
+        ) {
+            if (this.hasProperty(this.currentNumber, this.property2)) {
+                this.sketch.fill(this.property2MainColor)
+            }
+        }
+        if (
+            this.property3 != Property.None
+            && this.property3Visualization
+                === PropertyVisualization.Secondary_Color
+        ) {
+            if (this.hasProperty(this.currentNumber, this.property3)) {
+                this.sketch.fill(this.property3MainColor)
+            }
+        }
+        if (
+            this.property4 != Property.None
+            && this.property4Visualization
+                === PropertyVisualization.Secondary_Color
+        ) {
+            if (this.hasProperty(this.currentNumber, this.property4)) {
+                this.sketch.fill(this.property4MainColor)
+            }
+        }
+        if (
+            this.property5 != Property.None
+            && this.property5Visualization
+                === PropertyVisualization.Secondary_Color
+        ) {
+            if (this.hasProperty(this.currentNumber, this.property5)) {
+                this.sketch.fill(this.property5MainColor)
+            }
+        }
+        if (
+            this.property6 != Property.None
+            && this.property6Visualization
+                === PropertyVisualization.Secondary_Color
+        ) {
+            if (this.hasProperty(this.currentNumber, this.property6)) {
+                this.sketch.fill(this.property6MainColor)
+            }
+        }
+        if (
+            this.property7 != Property.None
+            && this.property7Visualization
+                === PropertyVisualization.Secondary_Color
+        ) {
+            if (this.hasProperty(this.currentNumber, this.property7)) {
+                this.sketch.fill(this.property7MainColor)
+            }
+        }
+        if (
+            this.property8 != Property.None
+            && this.property8Visualization
+                === PropertyVisualization.Secondary_Color
+        ) {
+            if (this.hasProperty(this.currentNumber, this.property8)) {
+                this.sketch.fill(this.property8MainColor)
+            }
+        }
+        if (
+            this.property9 != Property.None
+            && this.property9Visualization
+                === PropertyVisualization.Secondary_Color
+        ) {
+            if (this.hasProperty(this.currentNumber, this.property9)) {
+                this.sketch.fill(this.property9MainColor)
+            }
+        }
+        if (
+            this.property10 != Property.None
+            && this.property10Visualization
+                === PropertyVisualization.Secondary_Color
+        ) {
+            if (this.hasProperty(this.currentNumber, this.property10)) {
+                this.sketch.fill(this.property10MainColor)
+            }
+        }
+        if (
+            this.property11 != Property.None
+            && this.property11Visualization
+                === PropertyVisualization.Secondary_Color
+        ) {
+            if (this.hasProperty(this.currentNumber, this.property11)) {
+                this.sketch.fill(this.property11MainColor)
+            }
+        }
+    }
+
+    drawBigSquare() {
+        this.sketch.rect(
+            this.x,
+            this.y,
+            this.scalingFactor,
+            this.scalingFactor
+        )
+    }
+
+    drawSmallSquare() {
+        this.sketch.rect(
+            this.x + this.scalingFactor / 4,
+            this.y + this.scalingFactor / 4,
+            this.scalingFactor / 2,
+            this.scalingFactor / 2
+        )
+    }
+
     hasProperty(num: bigint, property: Property) {
         if (property === Property.Number_Sequence) {
             for (
-                let a = this.seq.first + 1;
-                a < Math.min(this.seq.last - this.seq.first + 1, 10000);
+                let a = this.seq.first;
+                a < Math.min(this.seq.last - this.seq.first + 1, 200);
                 a++
             ) {
                 if (this.seq.getElement(a) == num) {
@@ -4915,7 +5076,7 @@ class VisualizerGrid extends VisualizerDefault {
         } else if (property === Property.Ends_With_Nine) {
             return num % 10n === 9n
         } else if (property === Property.Ends_With_Zero) {
-            return num % 10n === 1n
+            return num % 10n === 0n
         } else if (property === Property.Sum_Of_Two_Squares) {
             return isSumOfTwoSquares(num)
         } else if (property === Property.Triangular_Number) {
@@ -4942,30 +5103,29 @@ class VisualizerGrid extends VisualizerDefault {
         return false
     }
 
-    showNumber(currentNumber: bigint, scalingFactor: number) {
-        const currentNumberAsString = currentNumber.toString()
+    showNumber() {
+        const currentNumberAsString = this.currentNumber.toString()
 
         if (this.showNumbers) {
             this.sketch.fill(this.numberColor)
             this.sketch.text(
                 currentNumberAsString,
-                this.x + 0 * scalingFactor,
-                this.y + (15 * scalingFactor) / 20
+                this.x + 0 * this.scalingFactor,
+                this.y + (15 * this.scalingFactor) / 20
             )
         }
     }
 
     moveCoordinatesUsingPath(
         squareRootOfAmountOfNumbers: number,
-        iteration: number,
-        scalingFactor: number
+        iteration: number
     ) {
         this.changeDirectionUsingPathType(
             squareRootOfAmountOfNumbers,
             iteration
         )
 
-        this.moveCoordinatesUsingCurrentDirection(scalingFactor)
+        this.moveCoordinatesUsingCurrentDirection()
     }
 
     changeDirectionUsingPathType(
@@ -5007,22 +5167,23 @@ class VisualizerGrid extends VisualizerDefault {
         }
     }
 
-    moveCoordinatesUsingCurrentDirection(scalingFactor: number) {
+    moveCoordinatesUsingCurrentDirection() {
         //Move coordinates to direction they're going to
         if (this.currentDirection === Direction.Right) {
-            this.x += scalingFactor
+            this.x += this.scalingFactor
         } else if (this.currentDirection === Direction.Up) {
-            this.y -= scalingFactor
+            this.y -= this.scalingFactor
         } else if (this.currentDirection === Direction.Left) {
-            this.x -= scalingFactor
+            this.x -= this.scalingFactor
         } else if (this.currentDirection === Direction.Down) {
-            this.y += scalingFactor
+            this.y += this.scalingFactor
         } else if (this.currentDirection === Direction.StartNewRow) {
             this.x = 0
-            this.y += scalingFactor
+            this.y += this.scalingFactor
         }
     }
 }
+
 export const exportModule = new VisualizerExportModule(
     'Grid',
     VisualizerGrid,
@@ -5047,37 +5208,6 @@ function isPrime(num: bigint) {
     }
 
     return num > 1n
-}
-
-//Taken from Stack Overflow :
-//https://stackoverflow.com/
-//questions/22130043/trying-to-find-factors-of-a-number-in-js
-//TODO This should be replaced with the getFactors from Numberscope.
-function getNumberOfFactors(num: bigint) {
-    if (num === 0n) {
-        return 0n
-    }
-    if (num === 1n) {
-        return 1n
-    }
-
-    const isEven = num % 2n === 0n
-    const max = floorSqrt(num)
-    const inc = isEven ? 1n : 2n
-    const factors = [1n, num]
-
-    for (
-        let curFactor = isEven ? 2n : 3n;
-        curFactor <= max;
-        curFactor += inc
-    ) {
-        if (num % curFactor !== 0n) continue
-        factors.push(curFactor)
-        const compliment = num / curFactor
-        if (compliment !== curFactor) factors.push(compliment)
-    }
-
-    return BigInt(factors.length)
 }
 
 //Taken from Geeks For Geeks :
