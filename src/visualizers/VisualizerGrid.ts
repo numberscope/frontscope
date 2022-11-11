@@ -4121,6 +4121,7 @@ const MAGENTA = '#ff00ff'
 const VERDANT = '#9BBF30'
 const VIOLET = '#7f00ff'
 const MUSTARD = '#ffdb58'
+const GRAY = '#808080'
 
 const RAINBOW = [
     '#FF0000',
@@ -4135,27 +4136,14 @@ const RAINBOW = [
     '#FF0080',
 ]
 
-//const SMALL_RAINBOW = ['#FF001F', '#FFDA00', '#0CF22D', '#0F65EF', '#EF18EF']
-
-const SHADES: string[] = []
-let value = 0
-for (let i = 0; i < 13; i++) {
-    SHADES[i] = `rgb(${value}, ${value}, ${value})`
-    value += 20
-}
-SHADES[13] = 'rgb(255, 255, 255)'
-
 enum Preset {
     Custom,
     Primes,
-    Factors,
-    Factors_and_Primes,
-    Divisibility,
     Abundant_Numbers,
     Abundant_Numbers_And_Primes,
     Polygonal_Numbers,
     Rainbow_Colored_By_Last_Digit,
-    Rainbow_Colored_By_Last_Digit_Expanded,
+    Rainbow_Colored_By_Last_Digit_Alternative,
 }
 
 enum PathType {
@@ -4341,7 +4329,7 @@ class VisualizerGrid extends VisualizerDefault {
     property10MainColor = MUSTARD
     property11 = Property.None
     property11Visualization = PropertyVisualization.None
-    property11MainColor = MUSTARD
+    property11MainColor = GRAY
 
     params = {
         preset: {
@@ -4635,7 +4623,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.property10Visualization = PropertyVisualization.Primary_Color
             this.property10MainColor = RAINBOW[9]
         } else if (
-            this.preset === Preset.Rainbow_Colored_By_Last_Digit_Expanded
+            this.preset === Preset.Rainbow_Colored_By_Last_Digit_Alternative
         ) {
             this.backgroundColor = BLACK
             this.property1 = Property.Ends_With_Zero
