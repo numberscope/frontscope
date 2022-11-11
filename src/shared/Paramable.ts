@@ -78,7 +78,7 @@ export interface ParamInterface {
      * in Vue.
      */
     // visibleValue: any
-    // visiblePredicate: boolean expression
+    visiblePredicate?: (dependency: any) => boolean
 
     // Additional explanation text to display:
     description?: string
