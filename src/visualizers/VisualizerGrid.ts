@@ -360,10 +360,6 @@ class VisualizerGrid extends VisualizerDefault {
         )
         let augmentForRowReset = 0n
 
-        console.log('AA', this.currentSequenceIndex)
-        console.log('BB', this.startingIndex)
-        console.log('CC', this.seq.first)
-
         for (
             let iteration = 0;
             iteration < this.amountOfNumbers;
@@ -577,14 +573,11 @@ class VisualizerGrid extends VisualizerDefault {
     }
 
     usesNumberSequenceAsProperty() {
-        if (this.preset != Preset.Custom) {
-            for (let i = 0; i < this.propertyObjects.length; i++) {
-                if (
-                    (this.propertyObjects[i].property =
-                        Property.Number_Sequence)
-                ) {
-                    return true
-                }
+        for (let i = 0; i < this.propertyObjects.length; i++) {
+            if (
+                this.propertyObjects[i].property == Property.Number_Sequence
+            ) {
+                return true
             }
         }
 
