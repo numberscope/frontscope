@@ -630,8 +630,8 @@ class VisualizerGrid extends VisualizerDefault {
     }
 
     drawSecondaryColorSquare() {
-        this.colorMainColorProperties()
-        this.drawBigSquare()
+        this.colorSecondaryColorProperties()
+        this.drawSmallSquare()
     }
 
     colorMainColorProperties() {
