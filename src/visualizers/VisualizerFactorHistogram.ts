@@ -1,6 +1,5 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {VisualizerDefault} from './VisualizerDefault'
-import {natlog} from '../shared/math'
 
 /** md
 # Factor Histogram
