@@ -194,6 +194,7 @@ class VisualizerGrid extends VisualizerDefault {
     preset = Preset.Custom
     pathType = PathType.Spiral
     resetAndAugmentByOne = false
+    squareValues = false
     backgroundColor = BLACK
     numberColor = WHITE
 
@@ -294,8 +295,6 @@ class VisualizerGrid extends VisualizerDefault {
                     i
                 ))
         }
-
-        console.log('Hello: ', this.params)
     }
 
     checkParameters() {
@@ -361,6 +360,10 @@ class VisualizerGrid extends VisualizerDefault {
         )
         let augmentForRowReset = 0n
 
+        console.log('AA', this.currentSequenceIndex)
+        console.log('BB', this.startingIndex)
+        console.log('CC', this.seq.first)
+
         for (
             let iteration = 0;
             iteration < this.amountOfNumbers;
@@ -377,12 +380,12 @@ class VisualizerGrid extends VisualizerDefault {
                 }
             }
 
-            this.currentSequenceIndex++
-
             this.setCurrentNumber(
                 this.currentSequenceIndex,
                 augmentForRowReset
             )
+
+            this.currentSequenceIndex++
 
             this.fillGridCell()
 
@@ -549,6 +552,7 @@ class VisualizerGrid extends VisualizerDefault {
         ) {
             this.pathType = PathType.Rows
             this.resetAndAugmentByOne = true
+            this.squareValues = true
         }
 
         if (this.showNumbers && this.amountOfNumbers > 400) {
@@ -560,11 +564,16 @@ class VisualizerGrid extends VisualizerDefault {
         this.currentNumber = 0n
 
         if (this.usesNumberSequenceAsProperty()) {
-            this.currentNumber = BigInt(currentSequenceIndex) + augmentForRow
+            this.currentNumber = BigInt(currentSequenceIndex)
         } else {
-            this.currentNumber =
-                this.seq.getElement(currentSequenceIndex) + augmentForRow
+            this.currentNumber = this.seq.getElement(currentSequenceIndex)
         }
+
+        if (this.squareValues) {
+            this.currentNumber = this.currentNumber * this.currentNumber
+        }
+
+        this.currentNumber = this.currentNumber + augmentForRow
     }
 
     usesNumberSequenceAsProperty() {
