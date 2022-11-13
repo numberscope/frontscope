@@ -4,7 +4,9 @@ import {VisualizerDefault} from './VisualizerDefault'
 /** md
 # Factor Histogram
 
-""
+[<img src="../../assets/img/FactorHistogram/ExampleImage.png"
+width="320" style="float: right; margin-left: 1em;" />](
+../assets/img/FactorHistogram/ExampleImage.png)
 
 This visualizer takes the prime factorization of each element in the sequence
 and then creates a histogram of the number of elements of the sequence
@@ -148,23 +150,23 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         // These numbers provide the rgb values for the background color
         // This is light blue
         this.sketch.background(176, 227, 255)
-        this.sketch.textSize(0.02 * this.sketch.height) //set the text to the correct size
+        this.sketch.textSize(0.02 * this.sketch.height)
         const height = this.height()
         const binWidth = this.binWidth()
         const binFactorArray = this.binFactorArray()
         this.sketch.line(
             // Draws the y-axis
-            0.025 * this.sketch.width, // Creates a slight offset from the side of the canvas
+            0.025 * this.sketch.width, // Slightly right of the left edge
             0,
-            0.025 * this.sketch.width, // Creates a slight offset from the side of the canvas
+            0.025 * this.sketch.width,
             this.sketch.height
         )
         this.sketch.line(
             // Draws the x-axis
             0,
-            0.975 * this.sketch.height, // Creates a slight offset from the side of the canvas
+            0.975 * this.sketch.height, // Slightly above the canvas bottom
             this.sketch.width,
-            0.975 * this.sketch.height // Creates a slight offset from the side of the canvas
+            0.975 * this.sketch.height
         )
 
         for (let i = 0; i < binFactorArray.length; i++) {
