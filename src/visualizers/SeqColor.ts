@@ -4,11 +4,10 @@ import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 
-const primeNum: number[] = []
-let count_prime = 0
 const colorMap = new Map()
 let firstDraw = true
 let countClick = 0
+
 //Show description box by pressing left arrow key
 class SeqColor extends VisualizerDefault implements VisualizerInterface {
     name = 'Sequence Color'
@@ -28,25 +27,16 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     private Y = 0
     private subG = this.sketch.createGraphics(800, 90)
     private boxIsShow = false
+    private primeNum: number[] = []
+    private count_prime = 0
 
     initialize(sketch: p5, seq: SequenceInterface) {
         super.initialize(sketch, seq)
         this.sketch = sketch
         this.seq = seq
-
         this.current_num = seq.first
         this.X = 0
         this.Y = 0
-        count_prime = 0
-
-        for (let i = this.seq.first; i < this.n; i++) {
-            if (this.isPrime(Number(this.seq.getElement(i))) == true) {
-                count_prime += 1
-                primeNum.push(Number(this.seq.getElement(i)))
-                console.log(this.seq.getElement(i))
-            }
-        }
-
         this.ready = true
     }
 
@@ -59,6 +49,19 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
         this.X = 800 / this.n + 30
         this.Y = 800 / this.n + 50
+
+        for (let i = this.seq.first; i < this.n; i++) {
+            if (
+                this.isPrime(Number(this.seq.getElement(i))) == true
+                && this.valueDoesNotRepeat(
+                    Number(this.seq.getElement(i)),
+                    this.primeNum
+                ) == true
+            ) {
+                this.primeNum.push(Number(this.seq.getElement(i)))
+                this.count_prime += 1
+            }
+        }
     }
 
     //bug: plot disappear after clicking "Back" -- firstDraw = false
@@ -77,7 +80,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
                 )
                 const h = this.primeFactors(
                     Number(number_now),
-                    Number(count_prime)
+                    Number(this.count_prime)
                 )
 
                 this.sketch.colorMode(this.sketch.HSB)
@@ -129,11 +132,10 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         let tmpX = 0
         let tmpY = 0
 
-        //Bug: primeNum list the same values twice
-        for (let i = 0; i < primeNum.length / 2; i += 1) {
+        for (let i = 0; i < this.primeNum.length; i += 1) {
             this.subG.fill('black')
-            this.subG.text(String(primeNum[i]), 10 + tmpX, 15 + tmpY)
-            this.subG.fill(colorMap.get(primeNum[i]), 100, 100)
+            this.subG.text(String(this.primeNum[i]), 10 + tmpX, 15 + tmpY)
+            this.subG.fill(colorMap.get(this.primeNum[i]), 100, 100)
 
             this.subG.ellipse(35 + tmpX, 15 + tmpY, 10, 10)
             tmpX += 50
@@ -194,10 +196,10 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             }
         }
 
-        for (let i = 0; i < primeNum.length; i++) {
-            if (colorMap.has(primeNum[i]) == false) {
+        for (let i = 0; i < this.primeNum.length; i++) {
+            if (colorMap.has(this.primeNum[i]) == false) {
                 tmp += colorNum
-                colorMap.set(primeNum[i], tmp)
+                colorMap.set(this.primeNum[i], tmp)
             }
         }
 
@@ -206,8 +208,8 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         }*/
         let colorAll = -1
         for (let i = 0; i < factors.length; i++) {
-            for (let j = 0; j < primeNum.length; j++) {
-                if (factors[i] == primeNum[j]) {
+            for (let j = 0; j < this.primeNum.length; j++) {
+                if (factors[i] == this.primeNum[j]) {
                     if (colorAll == -1) {
                         colorAll = colorMap.get(factors[i])
                     } else {
@@ -218,6 +220,16 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         }
 
         return colorAll
+    }
+
+    valueDoesNotRepeat(n: number, arr: number[]) {
+        for (let i = 0; i < arr.length; i++) {
+            if (n == arr[i]) {
+                return false
+            }
+        }
+
+        return true
     }
 }
 
