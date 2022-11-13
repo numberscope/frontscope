@@ -319,7 +319,7 @@ class VisualizerGrid extends VisualizerDefault {
     }
 
     setup(): void {
-        this.sketch.createCanvas(400, 400)
+        this.sketch.createCanvas(this.sketch.width, this.sketch.height)
     }
 
     draw(): void {
@@ -350,7 +350,7 @@ class VisualizerGrid extends VisualizerDefault {
             squareRootOfAmountOfNumbers * squareRootOfAmountOfNumbers
 
         //This is because 20 x 20 is 1:1 scaling.
-        this.scalingFactor = 400 / squareRootOfAmountOfNumbers
+        this.scalingFactor = this.sketch.width / squareRootOfAmountOfNumbers
 
         this.setPathVariables(squareRootOfAmountOfNumbers)
 
