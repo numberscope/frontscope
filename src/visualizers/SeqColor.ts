@@ -7,8 +7,9 @@ import type {SequenceInterface} from '../sequences/SequenceInterface'
 const primeNum: number[] = []
 let count_prime = 0
 const colorMap = new Map()
-//let pg
-
+let firstDraw = true
+let countClick = 0
+//Show description box by pressing left arrow key
 class SeqColor extends VisualizerDefault implements VisualizerInterface {
     name = 'Sequence Color'
     n = 40
@@ -25,6 +26,8 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     private current_num = 0
     private X = 0
     private Y = 0
+    private subG = this.sketch.createGraphics(800, 90)
+    private boxIsShow = false
 
     initialize(sketch: p5, seq: SequenceInterface) {
         super.initialize(sketch, seq)
@@ -56,64 +59,83 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
         this.X = 800 / this.n + 30
         this.Y = 800 / this.n + 50
-        //pg = this.sketch.createGraphics(400, 250)
     }
 
+    //bug: plot disappear after clicking "Back" -- firstDraw = false
     draw() {
-        this.sketch.ellipseMode(this.sketch.RADIUS)
-        const number_now = this.seq.getElement(this.current_num++)
-        let radius = 50
-        let bright = 0
-        for (let x = this.n; x >= 2; x -= 1) {
-            const diff = Math.abs(
-                Math.log(
-                    1 / Math.pow(Number(number_now), x - 1)
-                        - Math.log(1 / Math.pow(Number(number_now), x))
+        if (firstDraw == true) {
+            this.sketch.ellipseMode(this.sketch.RADIUS)
+            const number_now = this.seq.getElement(this.current_num++)
+            let radius = 50
+            let bright = 0
+            for (let x = this.n; x >= 2; x -= 1) {
+                const diff = Math.abs(
+                    Math.log(
+                        1 / Math.pow(Number(number_now), x - 1)
+                            - Math.log(1 / Math.pow(Number(number_now), x))
+                    )
                 )
+                const h = this.primeFactors(
+                    Number(number_now),
+                    Number(count_prime)
+                )
+
+                this.sketch.colorMode(this.sketch.HSB)
+                this.sketch.fill(h, 100, bright)
+                this.sketch.ellipse(this.X, this.Y, radius, radius)
+                bright = this.changeColor(diff, bright)
+
+                radius -= 1
+            }
+
+            this.sketch.fill('white')
+            this.sketch.text(
+                '1/'.concat(String(number_now)).concat('^n'),
+                this.X,
+                this.Y
             )
-            const h = this.primeFactors(
-                Number(number_now),
-                Number(count_prime)
-            )
+            this.X += 100
+            if (this.X >= 800) {
+                this.X = 800 / this.n + 30
+                this.Y += 100
+            }
 
-            this.sketch.colorMode(this.sketch.HSB)
-            this.sketch.fill(h, 100, bright)
-            this.sketch.ellipse(this.X, this.Y, radius, radius)
-            bright = this.changeColor(diff, bright)
-
-            radius -= 1
+            if (this.current_num >= this.n) {
+                firstDraw = false
+            }
+            this.sketch.noStroke()
+        } else {
+            //Bug(?): multiple clicks detected when only one click happened
+            if (this.sketch.keyIsDown(this.sketch.LEFT_ARROW)) {
+                console.log(countClick++)
+                if (this.boxIsShow == true && this.subG != null) {
+                    this.boxIsShow = false
+                    this.undrawBox()
+                } else {
+                    this.boxIsShow = true
+                    this.drawBox()
+                }
+            }
         }
-
-        this.sketch.fill('white')
-        this.sketch.text(
-            '1/'.concat(String(number_now)).concat('^n'),
-            this.X,
-            this.Y
-        )
-        this.X += 100
-        if (this.X >= 800) {
-            this.X = 800 / this.n + 30
-            this.Y += 100
-        }
-
-        if (this.current_num >= this.n) {
-            this.afterLoop()
-        }
-        this.sketch.noStroke()
     }
 
-    afterLoop() {
-        this.sketch.fill(0, 0, 100)
-        this.sketch.rect(0, 700, 800, 90)
+    drawBox() {
+        this.subG = this.sketch.createGraphics(800, 90)
+        this.subG.colorMode(this.sketch.HSB)
+        this.subG.noStroke()
+        this.subG.fill(0, 0, 100)
+        this.subG.rect(0, 0, 800, 90)
+        this.subG.fill('black')
         let tmpX = 0
         let tmpY = 0
 
-        //Bug: primeNum has repeat values -> "draw" twice so record the numbers twice
+        //Bug: primeNum list the same values twice
         for (let i = 0; i < primeNum.length / 2; i += 1) {
-            this.sketch.fill('black')
-            this.sketch.text(String(primeNum[i]), 0 + tmpX, 730 + tmpY)
-            this.sketch.fill(colorMap.get(primeNum[i]), 100, 100)
-            this.sketch.ellipse(25 + tmpX, 730 + tmpY, 10, 10)
+            this.subG.fill('black')
+            this.subG.text(String(primeNum[i]), 10 + tmpX, 15 + tmpY)
+            this.subG.fill(colorMap.get(primeNum[i]), 100, 100)
+
+            this.subG.ellipse(35 + tmpX, 15 + tmpY, 10, 10)
             tmpX += 50
             if (tmpX >= 800) {
                 tmpX = 0
@@ -121,9 +143,21 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             }
         }
 
-        this.sketch.noLoop()
+        this.sketch.image(this.subG, 0, 700)
+
+        //this.sketch.noLoop()
     }
 
+    undrawBox() {
+        if (this.subG) {
+            console.log('undraw')
+            this.subG.fill('black')
+            this.subG.rect(0, 0, 800, 90)
+            this.sketch.image(this.subG, 0, 700)
+        }
+    }
+
+    //change the brightness of the circle
     changeColor(difference: number, now: number) {
         if ((now + difference) % 100 < now) {
             return 100
@@ -141,14 +175,12 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         return n > 1
     }
 
+    //return a number which represents the color
     primeFactors(n: number, total_prime: number) {
         const factors = []
         let factor_check = 2
         //assign color to each prime number
         const colorNum = 360 / Number(total_prime)
-
-        // console.log("total_prime: ", total_prime)
-        //const colorCombine = []
 
         colorMap.set(1, 0)
         let tmp = 0
@@ -156,7 +188,6 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         while (n >= 2) {
             if (n % factor_check == 0) {
                 factors.push(factor_check)
-                // console.log("factor_check: ", factor_check)
                 n = n / factor_check
             } else {
                 factor_check++
@@ -164,11 +195,9 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         }
 
         for (let i = 0; i < primeNum.length; i++) {
-            //console.log('PrimeNum: ', primeNum.length)
             if (colorMap.has(primeNum[i]) == false) {
                 tmp += colorNum
                 colorMap.set(primeNum[i], tmp)
-                //console.log('           COLOR       TMP     :', tmp)
             }
         }
 
@@ -180,8 +209,6 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             for (let j = 0; j < primeNum.length; j++) {
                 if (factors[i] == primeNum[j]) {
                     if (colorAll == -1) {
-                        //colorAll = colorCombine[j]
-                        //console.log("1ST PRIME FACTOR: ", colorCombine[j])
                         colorAll = colorMap.get(factors[i])
                     } else {
                         colorAll = (colorAll + colorMap.get(factors[i])) / 2
@@ -189,10 +216,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
                 }
             }
         }
-        //console.log('colorAll: ', colorAll)
-        for (const value of colorMap.values()) {
-            //console.log('       MAPMAPMAP           ', value)
-        }
+
         return colorAll
     }
 }
