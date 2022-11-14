@@ -87,6 +87,11 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         return Math.min(this.terms + this.startIndex(), this.seq.last)
     }
 
+    // Obtain the binned difference of an input
+    binOf(input: number): number {
+        return Math.trunc(input / this.binSize)
+    }
+
     // Create an array with the number of factor of
     // each element at the corresponding index of the array
     factorArray(): number[] {
@@ -118,12 +123,12 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             (a, b) => Math.max(a, b),
             -Infinity
         )
-        for (let i = 0; i < largestValue + 1; i++) {
+        for (let i = 0; i < this.binOf(largestValue) + 1; i++) {
             binFactorArray.push(0)
         }
 
         for (let i = 0; i < factorArray.length; i++) {
-            binFactorArray[Math.trunc(factorArray[i] / this.binSize)]++
+            binFactorArray[this.binOf(factorArray[i])]++
         }
 
         return binFactorArray
@@ -132,6 +137,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
     // Create a number that represents how
     // many pixels wide each bin should be
     binWidth(): number {
+        // 0.95 Creates a small offset from the side of the screen
         return (0.95 * this.sketch.width) / this.binFactorArray().length
     }
 
@@ -139,11 +145,12 @@ class FactorHistogramVisualizer extends VisualizerDefault {
     // each increase of one in the bin array should be
     height(): number {
         const binFactorArray = this.binFactorArray()
-        const greatest_value = binFactorArray.reduce(
+        const greatestValue = binFactorArray.reduce(
             (a, b) => Math.max(a, b),
             -Infinity
         )
-        return (0.95 * this.sketch.width) / greatest_value
+        // 0.95 Creates a small offset from the side of the screen
+        return (0.95 * this.sketch.width) / greatestValue
     }
 
     draw() {
@@ -154,26 +161,29 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         const height = this.height()
         const binWidth = this.binWidth()
         const binFactorArray = this.binFactorArray()
+        const offsetScalar = 0.975
+        const textOffsetScalar = 0.995
         this.sketch.line(
             // Draws the y-axis
-            0.025 * this.sketch.width, // Slightly right of the left edge
+            (1 - offsetScalar) * this.sketch.width, // Slightly right of the left edge
             0,
-            0.025 * this.sketch.width,
+            (1 - offsetScalar) * this.sketch.width,
             this.sketch.height
         )
         this.sketch.line(
             // Draws the x-axis
             0,
-            0.975 * this.sketch.height, // Slightly above the canvas bottom
+            offsetScalar * this.sketch.height, // Slightly above the canvas bottom
             this.sketch.width,
-            0.975 * this.sketch.height
+            offsetScalar * this.sketch.height
         )
 
         for (let i = 0; i < binFactorArray.length; i++) {
             this.sketch.rect(
                 // Draws the rectangles for the Histogram
-                0.025 * this.sketch.width + binWidth * i,
-                0.975 * this.sketch.height - height * binFactorArray[i],
+                (1 - offsetScalar) * this.sketch.width + binWidth * i,
+                offsetScalar * this.sketch.height
+                    - height * binFactorArray[i],
                 binWidth,
                 height * binFactorArray[i]
             )
@@ -181,16 +191,16 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                 // Draws text for if the bin size is not 1
                 this.sketch.text(
                     this.binSize * i + ' - ' + (this.binSize * (i + 1) - 1),
-                    0.025 + binWidth * (i + 1 / 2),
-                    0.995 * this.sketch.width
+                    1 - offsetScalar + binWidth * (i + 1 / 2),
+                    textOffsetScalar * this.sketch.width
                 )
             } else {
                 // Draws text for if the bin size is 1
                 this.sketch.text(
                     i,
-                    0.025 * this.sketch.width
+                    (1 - offsetScalar) * this.sketch.width
                         + (binWidth * (i + 1) - binWidth / 2),
-                    0.995 * this.sketch.width
+                    textOffsetScalar * this.sketch.width
                 )
             }
         }
