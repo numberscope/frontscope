@@ -22,8 +22,9 @@ Boulder Experimental Mathematics Lab.)
 
 1. If you don't have one, install a good text editor. Use whatever you want!
    [Visual Studio Code](https://code.visualstudio.com/) is popular, and it
-   works well with our code base. If you want to use Visual Studio Code,
-   install the following extensions:
+   works well with Vue, our front-end framework. However, there isn't a
+   specific text editor or IDE we recommend. If you want to use Visual Studio
+   Code, install the following extensions:
 
     - Code Spell Checker
     - TypeScript Vue Plugin (Volar)
