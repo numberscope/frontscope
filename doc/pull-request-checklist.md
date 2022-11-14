@@ -6,6 +6,11 @@ The PR submitter should:
 
 -   Please use a `snake_case` name for the branch in the PR.
 -   Please limit your PR's focus to one thing.
+-   Ideally, submit a small PR with limited functionality that can be built
+    upon instead of submitting one huge, monolithic PR. Typically, the smaller
+    the PR, the better, with the obvious caveat that the code in your PR needs
+    to work and actually do something. A small PR for a visualizer might be in
+    the ballpark of 200 lines of code.
 -   Write or supplement test(s) for the file(s) you touch in your PR.
 -   Make sure Numberscope runs properly, including former supposedly
     unmodified behaviors and newly implemented ones. In particular, run it via
