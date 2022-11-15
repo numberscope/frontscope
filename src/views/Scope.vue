@@ -109,7 +109,6 @@ implemented visualizers.
                 seq: SequenceInterface
                 viz: VisualizerInterface
             }) {
-                console.log(seqVizBundle)
                 this.activeSeq = seqVizBundle.seq
                 this.activeViz = seqVizBundle.viz
                 this.drawingActive = true
