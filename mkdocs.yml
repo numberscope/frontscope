@@ -55,5 +55,7 @@ plugins:
                     stop: '^\s*\*\*/\s*$' # closing **/ by itself on a line
               - pattern: '[.](.*).generator$'
                 destination: '\1'
+              - pattern: 'pre-commit$'
+                destination: '../doc/husky/pre-commit.txt'
 markdown_extensions:
     - pymdownx.superfences
