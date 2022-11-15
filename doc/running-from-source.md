@@ -32,10 +32,10 @@
     (This command also installs Git hooks using
     [Husky](https://github.com/typicode/husky). For a comprehensive list of
     what commands are run when you `git commit` -- typically linting and
-    testing -- see [this file](../husky/pre-commit.txt).)
-    <!-- If you are reading this in GitHub, here's the
-        [relevant file](../.husky/pre-commit).
-    -->
+    testing -- see
+    <!-- repository -->
+    [this file](../.husky/pre-commit).)
+    <!-- docsite: [this file](../husky/pre-commit.txt).) -->
 5.  Compile and start a server running frontscope, with hot-reloading for
     development:
     ```sh
