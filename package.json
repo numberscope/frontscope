@@ -78,7 +78,7 @@
         "bigint-isqrt": "^0.3.2",
         "bigint-mod-arith": "^3.1.2",
         "p5": "^1.4.1",
-        "vue": "^3.2.37",
+        "vue": "^3.2.45",
         "vue-router": "^4.1.2"
     },
     "devDependencies": {
