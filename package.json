@@ -79,7 +79,7 @@
         "bigint-mod-arith": "^3.1.2",
         "p5": "^1.4.1",
         "vue": "^3.2.37",
-        "vue-router": "^4.1.2"
+        "vue-router": "^4.1.6"
     },
     "devDependencies": {
         "@rushstack/eslint-patch": "^1.1.0",
