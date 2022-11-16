@@ -72,16 +72,6 @@ class VizShiftCompare
         // Ensure mouse coordinates are sane.
         // Mouse coordinates look they're floats by default.
         const d = this.sketch.pixelDensity()
-        const mx = this.clip(
-            Math.round(this.sketch.mouseX),
-            0,
-            this.sketch.width
-        )
-        const my = this.clip(
-            Math.round(this.sketch.mouseY),
-            0,
-            this.sketch.height
-        )
         if (this.sketch.key == 'ArrowUp') {
             this.mod += 1n
             this.sketch.key = ''
@@ -90,8 +80,6 @@ class VizShiftCompare
             this.mod -= 1n
             this.sketch.key = ''
             this.refreshParams()
-        } else if (this.sketch.key == 'ArrowRight') {
-            console.log(console.log('MX: ' + mx + ' MY: ' + my))
         }
         // since settings.mod can be any of string | number | bool,
         // assign it here explictly to a number, to avoid type errors

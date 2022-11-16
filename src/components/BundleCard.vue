@@ -45,7 +45,6 @@
                 }
                 sketch.draw = function () {
                     viz.draw()
-                    console.log(sketch.frameCount)
                     if (sketch.frameCount >= 50) {
                         sketch.noLoop()
                     }
