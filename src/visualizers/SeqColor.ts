@@ -4,10 +4,20 @@ import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 
-const colorMap = new Map()
-let countClick = 0
+/** md
+# Sequence Color Visualizer
+In this visualizer, the brightness of each circle represents how fast $1/a^n$, where a is a number in the sequence, approaches zero as n increases.
+Each prime number is assigned a color, and the color of each circle represents the color combination of its prime factors. 
 
-//Show description box by pressing left arrow key
+Press the "Left arrow key" to show/hide the color of each prime factor.
+Press the "Right arrow key" to refresh.
+ 
+ **/
+
+const colorMap = new Map()
+const countClick = 0
+
+// Show description box by pressing left arrow key
 class SeqColor extends VisualizerDefault implements VisualizerInterface {
     name = 'Sequence Color'
     n = 40
@@ -21,20 +31,23 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         },
     }
 
-    private current_num = 0
+    private currentNum = 0
     private X = 0
     private Y = 0
-    private subG = this.sketch.createGraphics(800, 90)
+    private boxSizeX = 800
+    private boxSizeY = 90
+    private canvasSizeX = 800
+    private subG = this.sketch.createGraphics(this.boxSizeX, this.boxSizeY)
     private boxIsShow = false
     private primeNum: number[] = []
-    private count_prime = 0
+    private countPrime = 0
     private firstDraw = true
 
     initialize(sketch: p5, seq: SequenceInterface) {
         super.initialize(sketch, seq)
         this.sketch = sketch
         this.seq = seq
-        this.current_num = seq.first
+        this.currentNum = seq.first
         this.X = 0
         this.Y = 0
         this.ready = true
@@ -45,135 +58,142 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         this.sketch.colorMode(this.sketch.HSB, 360, 100, 100)
         this.sketch.frameRate(30)
 
-        //Set position of the circle
-        this.X = 800 / this.n + 30
-        this.Y = 800 / this.n + 50
+        // Set position of the circle
+        this.X = this.canvasSizeX / this.n + 30
+        this.Y = this.canvasSizeX / this.n + 50
 
-        //Obtain all prime numbers from the sequence
+        // Obtain all prime numbers from the sequence
         for (let i = this.seq.first; i < this.n; i++) {
+            const checkCurrentPrime = Number(this.seq.getElement(i))
             if (
-                this.isPrime(Number(this.seq.getElement(i))) == true
-                && this.valueDoesNotRepeat(
-                    Number(this.seq.getElement(i)),
-                    this.primeNum
-                ) == true
+                this.isPrime(checkCurrentPrime)
+                && !this.primeNum.includes(checkCurrentPrime)
             ) {
-                this.primeNum.push(Number(this.seq.getElement(i)))
-                this.count_prime += 1
+                this.primeNum.push(checkCurrentPrime)
+                this.countPrime += 1
             }
         }
     }
 
     draw() {
-        if (this.firstDraw == true && this.current_num < this.n) {
-            this.sketch.ellipseMode(this.sketch.RADIUS)
-            const number_now = this.seq.getElement(this.current_num++)
-            let radius = 50
-            let bright = 0
-
-            for (let x = this.n; x >= 2; x -= 1) {
-                // Calculate the difference
-                //  between 1/(number)^n and 1/(number)^(n-1)
-                const diff = Math.abs(
-                    Math.log(
-                        1 / Math.pow(Number(number_now), x - 1)
-                            - Math.log(1 / Math.pow(Number(number_now), x))
-                    )
-                )
-
-                // Obtain the color of the circle
-                const combinedColor = this.primeFactors(
-                    Number(number_now),
-                    Number(this.count_prime)
-                )
-
-                this.sketch.colorMode(this.sketch.HSB)
-                this.sketch.fill(combinedColor, 100, bright)
-                this.sketch.ellipse(this.X, this.Y, radius, radius)
-
-                // Change brightness regarding
-                //  the difference between 1/(number)^n and 1/(number)^(n-1)
-                bright = this.changeColor(diff, bright)
-
-                radius -= 1
-            }
-
-            this.sketch.fill('white')
-            this.sketch.text(
-                '1/'.concat(String(number_now)).concat('^n'),
-                this.X,
-                this.Y
+        if (this.firstDraw == true && this.currentNum < this.n) {
+            const currentElement = Number(
+                this.seq.getElement(this.currentNum++)
             )
-            this.X += 100
-            if (this.X >= 800) {
-                this.X = 800 / this.n + 30
-                this.Y += 100
-            }
+            this.drawCircle(currentElement)
+            this.showCircleLabel(currentElement)
 
-            if (this.current_num >= this.n) {
+            // Check if drawing finished
+            if (this.currentNum >= this.n) {
                 this.firstDraw = false
             }
             this.sketch.noStroke()
         } else {
-            //Bug: multiple clicks detected when only one click happened
-            //Show description box when the lft arrow key is pressed
-            if (this.sketch.keyIsDown(this.sketch.LEFT_ARROW)) {
-                console.log(countClick++)
-                if (this.boxIsShow == true && this.subG != null) {
-                    this.boxIsShow = false
-                    this.undrawBox()
-                } else {
-                    this.boxIsShow = true
-                    this.drawBox()
-                }
+            // Monitor keyboard events after finishing drawing
+            // Bug: multiple clicks detected when only one click happened
+            this.keyboardEvents()
+        }
+    }
+
+    keyboardEvents() {
+        // Show description box when the lft arrow key is pressed
+        if (this.sketch.keyIsDown(this.sketch.LEFT_ARROW)) {
+            if (this.boxIsShow == true && this.subG != null) {
+                this.boxIsShow = false
+                this.undrawBox()
+            } else {
+                this.boxIsShow = true
+                this.drawBox()
             }
-            // Refresh
-            if (
-                this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
-                && this.firstDraw == false
-            ) {
-                this.firstDraw = true
-            }
+        }
+        // Refresh
+        if (
+            this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
+            && this.firstDraw == false
+        ) {
+            this.firstDraw = true
+        }
+    }
+
+    drawCircle(numberNow: number) {
+        this.sketch.ellipseMode(this.sketch.RADIUS)
+        let radius = 50
+        let bright = 0
+
+        for (let x = this.n; x >= 2; x--) {
+            // Calculate the difference
+            //  between 1/(number)^n and 1/(number)^(n-1)
+            const diff = Math.abs(
+                Math.log(
+                    1 / Math.pow(Number(numberNow), x - 1)
+                        - Math.log(1 / Math.pow(Number(numberNow), x))
+                )
+            )
+
+            // Obtain the color of the circle
+            const combinedColor = this.primeFactors(
+                Number(numberNow),
+                Number(this.countPrime)
+            )
+
+            this.sketch.colorMode(this.sketch.HSB)
+            this.sketch.fill(combinedColor, 100, bright)
+            this.sketch.ellipse(this.X, this.Y, radius, radius)
+
+            // Change brightness regarding
+            //  the difference between 1/(number)^n and 1/(number)^(n-1)
+            bright = this.changeColor(diff, bright)
+
+            radius -= 1
+        }
+    }
+
+    showCircleLabel(numberNow: number) {
+        this.sketch.fill('white')
+        this.sketch.text(
+            '1/'.concat(String(numberNow)).concat('^n'),
+            this.X,
+            this.Y
+        )
+        this.X += 100
+        if (this.X >= this.canvasSizeX) {
+            this.X = this.canvasSizeX / this.n + 30
+            this.Y += 100
         }
     }
 
     drawBox() {
         //Create a white background for the description box
-        this.subG = this.sketch.createGraphics(800, 90)
+        this.subG = this.sketch.createGraphics(this.boxSizeX, this.boxSizeY)
         this.subG.colorMode(this.sketch.HSB)
         this.subG.noStroke()
         this.subG.fill(0, 0, 100)
-        this.subG.rect(0, 0, 800, 90)
+        this.subG.rect(0, 0, this.boxSizeX, this.boxSizeY)
         this.subG.fill('black')
         let tmpX = 0
         let tmpY = 0
 
         //Show the color of every prime number
-        for (let i = 0; i < this.primeNum.length; i += 1) {
+        for (let i = 0; i < this.primeNum.length; i++) {
             this.subG.fill('black')
             this.subG.text(String(this.primeNum[i]), 10 + tmpX, 15 + tmpY)
             this.subG.fill(colorMap.get(this.primeNum[i]), 100, 100)
 
             this.subG.ellipse(35 + tmpX, 15 + tmpY, 10, 10)
             tmpX += 50
-            if (tmpX >= 800) {
+            if (tmpX >= this.canvasSizeX) {
                 tmpX = 0
                 tmpY += 30
             }
         }
-
         this.sketch.image(this.subG, 0, 700)
-
-        //this.sketch.noLoop()
     }
 
     undrawBox() {
         if (this.subG) {
-            console.log('undraw')
-
             //Draw a new black background to cover the description box
             this.subG.fill('black')
-            this.subG.rect(0, 0, 800, 90)
+            this.subG.rect(0, 0, this.boxSizeX, this.boxSizeY)
             this.sketch.image(this.subG, 0, 700)
         }
     }
@@ -182,9 +202,8 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     changeColor(difference: number, now: number) {
         if ((now + difference) % 100 < now) {
             return 100
-        } else {
-            return (now + difference) % 100
         }
+        return (now + difference) % 100
     }
 
     isPrime(n: number) {
@@ -197,21 +216,21 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     }
 
     //return a number which represents the color
-    primeFactors(n: number, total_prime: number) {
+    primeFactors(n: number, totalPrime: number) {
         const factors = []
-        let factor_check = 2
+        let factorCheck = 2
         //assign color to each prime number
-        const colorNum = 360 / Number(total_prime)
+        const colorNum = 360 / Number(totalPrime)
 
         colorMap.set(1, 0)
         let tmp = 0
 
         while (n >= 2) {
-            if (n % factor_check == 0) {
-                factors.push(factor_check)
-                n = n / factor_check
+            if (n % factorCheck == 0) {
+                factors.push(factorCheck)
+                n = n / factorCheck
             } else {
-                factor_check++
+                factorCheck++
             }
         }
 
@@ -237,17 +256,6 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         }
 
         return colorAll
-    }
-
-    //Make sure every value is unique in an array
-    valueDoesNotRepeat(n: number, arr: number[]) {
-        for (let i = 0; i < arr.length; i++) {
-            if (n == arr[i]) {
-                return false
-            }
-        }
-
-        return true
     }
 }
 
