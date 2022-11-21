@@ -47,11 +47,6 @@ plugins:
           ignore_hidden: false
           include_extensions: ['.png', 'math.ts']
           extract_on_copy: true
-          extract_standard_markdown:
-              extract:
-                  - stop: '<!-- repository -->'
-                  - start: '<!-- docsite:(.*?)-->'
-                    stop: '<!-- repository -->'
           merge_docs_dir: false
           semiliterate:
               - pattern: '\.ts' # Standard in-code markup
@@ -60,7 +55,5 @@ plugins:
                     stop: '^\s*\*\*/\s*$' # closing **/ by itself on a line
               - pattern: '[.](.*).generator$'
                 destination: '\1'
-              - pattern: 'pre-commit$'
-                destination: '../doc/husky/pre-commit.txt'
 markdown_extensions:
     - pymdownx.superfences
