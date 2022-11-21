@@ -8,3 +8,7 @@ actions prior to every call to `git commit`:
 ```sh
 {! ../.husky/pre-commit extract: { start: list } !}
 ```
+
+<!-- CUT HERE -->
+
+([Direct link](../.husky/pre-commit) to the Husky pre-commit script.)
