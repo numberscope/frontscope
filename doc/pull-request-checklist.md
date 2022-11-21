@@ -38,4 +38,4 @@ The PR submitter should:
 -   At the end of the review process, before merging, add a commit to update
     the
     ["Contributors" section of the "About" document](../about.md#contributors)
-    to include the submitter's name.
+    to include the submitter's name, if it is not already present.
