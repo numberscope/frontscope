@@ -18,9 +18,6 @@ The PR submitter should:
     log messages from Numberscope code, warnings, or errors.
 -   Read over the reviewer checklist and try to make sure in advance that your
     code is going to proceed as smoothly through the review as possible.
--   Optinally, update the
-    ["Contributors" section of the "About" document](../about.md#contributors)
-    to include your name if your PR is going to be merged.
 
 ## For PR reviewers
 
@@ -38,6 +35,7 @@ The PR submitter should:
     have time for, definitely including but not limited to the ones nominally
     affected by the PR. This should be done in `npm run preview` mode after a
     successful build.
--   Remind the submitter that they can update the
+-   At the end of the review process, before merging, add a commit to update
+    the
     ["Contributors" section of the "About" document](../about.md#contributors)
-    to include their name if the PR is going to be merged.
+    to include the submitter's name.
