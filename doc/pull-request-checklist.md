@@ -35,3 +35,7 @@ The PR submitter should:
     have time for, definitely including but not limited to the ones nominally
     affected by the PR. This should be done in `npm run preview` mode after a
     successful build.
+-   At the end of the review process, before merging, add a commit to update
+    the
+    ["Contributors" section of the "About" document](../about.md#contributors)
+    to include the submitter's name, if it is not already present.
