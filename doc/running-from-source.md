@@ -27,7 +27,7 @@
     remember to delete your `.env.local` or move it out of the way.)
 4.  Install dependencies:
     ```sh
-    npm install
+    pnpm install
     ```
     (This command also installs Git hooks using
     [Husky](https://github.com/typicode/husky). For a comprehensive list of
@@ -36,7 +36,7 @@
 5.  Compile and start a server running frontscope, with hot-reloading for
     development:
     ```sh
-    npm run dev
+    pnpm dev
     ```
     The output of this command will provide instructions for connecting to the
     new running instance of frontscope with your browser.

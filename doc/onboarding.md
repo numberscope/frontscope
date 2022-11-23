@@ -81,13 +81,13 @@ Boulder Experimental Mathematics Lab.)
 8. Go to the newly cloned `frontscope` directory and install the dependencies:
     ```sh
     cd frontscope
-    npm install
+    pnpm install
     ```
     You need NodeJS installed to do this.
 9. Run the development server (this runs a local copy of Numberscope on your
    computer so you can interact with the webpage):
     ```sh
-    npm run dev
+    pnpm dev
     ```
     This should print a link that you can open in the browser. Open it and see
     if Numberscope seems to be working.
