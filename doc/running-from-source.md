@@ -1,7 +1,8 @@
 # Setting up to run from source
 
 1.  Prerequisites: To install and run properly, `frontscope` needs
-    [Git](https://git-scm.com/), [Node.js](https://nodejs.org/en/), and
+    [Git](https://git-scm.com/), [Node.js](https://nodejs.org/en/), the
+    [pnpm](https://pnpm.io/) package manager (version 7.17.1 or later), and
     [Python](https://www.python.org/) (version 3.5 or later) with a working
     "[venv](https://docs.python.org/3/library/venv.html)" module. If any of
     these are not present on your system, install them. It's very likely you
