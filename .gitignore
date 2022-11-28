@@ -15,4 +15,6 @@ site
 
 # Emacs backup files
 *~
+
+# Ignore the test report
 test-report.xml
