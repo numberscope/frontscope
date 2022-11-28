@@ -16,3 +16,4 @@ node_modules
 package-lock.json
 site
 .env
+test-report.xml
