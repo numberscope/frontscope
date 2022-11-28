@@ -1,7 +1,7 @@
 name: 'CI'
 on: pull_request
 jobs:
-    ci:
+    lint:
         runs-on: ubuntu-22.04
         steps:
             - uses: actions/checkout@v3
@@ -17,10 +17,19 @@ jobs:
               run: npm install
             - name: Lint
               run: npm run lint:check
-            - name: Run tests
-              run: npm run test:ci:unit
-            - name: Summarize test results
-              uses: test-summary/action@v2
+    test:
+        runs-on: ubuntu-22.04
+        steps:
+            - uses: actions/checkout@v3
+            - name: Set up Python
+              uses: actions/setup-python@v4
               with:
-                  paths: 'test-report.xml'
-              if: always()
+                  python-version: '3.x'
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '18.x'
+            - name: Install dependencies
+              run: npm install
+            - name: Test
+              run: npm run test
