@@ -18,19 +18,21 @@
     ```
 3.  If you will be connecting to an instance of `backscope` (for obtaining
     information about OEIS sequences) running locally on your machine, then
-    modify your `.env` file:
+    create a `.env.local` file to override the `.env` from the distribution:
     ```sh
-    echo "VITE_BACKSCOPE_URL=http://127.0.0.1:5000" > .env
+    # Execute this in the top-level directory of the distribution!
+    echo "VITE_BACKSCOPE_URL=http://127.0.0.1:5000" > .env.local
     ```
+    (When you want to go back to connecting to the standard backend server,
+    remember to delete your `.env.local` or move it out of the way.)
 4.  Install dependencies:
     ```sh
     npm install
     ```
-    (This command should also install Git hooks using
-    [Husky](https://github.com/typicode/husky). If it doesn't, run
-    `npm prepare`. For a comprehensive list of what commands are run when you
-    `git commit` -- typically linting and testing -- see
-    [this file](./.husky/pre-commit).)
+    (This command also installs Git hooks using
+    [Husky](https://github.com/typicode/husky). For a comprehensive list of
+    what commands are run when you `git commit` -- typically linting and
+    testing -- see [Husky actions](husky-pre-commit.md).)
 5.  Compile and start a server running frontscope, with hot-reloading for
     development:
     ```sh

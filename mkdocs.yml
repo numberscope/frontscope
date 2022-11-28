@@ -47,6 +47,8 @@ plugins:
           ignore_hidden: false
           include_extensions: ['.png', 'math.ts']
           extract_on_copy: true
+          extract_standard_markdown:
+              terminate: '<!-- CUT HERE -->'
           merge_docs_dir: false
           semiliterate:
               - pattern: '\.ts' # Standard in-code markup
