@@ -5,7 +5,7 @@ import {describe} from 'vitest'
 describe.todo('BundleManager', () => {
     /*
     If we try to import BundleManager, we get an error when we do
-    `npm run test:unit`:
+    `pnpm test:unit`:
 
     TypeError: document.hasFocus is not a function
     ❯ Object.254../constants node_modules/p5/lib/p5.min.js:3:401058

@@ -5,7 +5,7 @@ import {describe} from 'vitest'
 describe.todo('BundleCard', () => {
     /*
     If we try to import BundleCard, we get an error when we do
-    `npm run test:unit`:
+    `pnpm test:unit`:
 
     TypeError: document.hasFocus is not a function
     ❯ Object.254../constants node_modules/p5/lib/p5.min.js:3:401058

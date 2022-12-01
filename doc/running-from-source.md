@@ -1,7 +1,8 @@
 # Setting up to run from source
 
 1.  Prerequisites: To install and run properly, `frontscope` needs
-    [Git](https://git-scm.com/), [Node.js](https://nodejs.org/en/), and
+    [Git](https://git-scm.com/), [Node.js](https://nodejs.org/en/), the
+    [pnpm](https://pnpm.io/) package manager (version 7.17.1 or later), and
     [Python](https://www.python.org/) (version 3.5 or later) with a working
     "[venv](https://docs.python.org/3/library/venv.html)" module. If any of
     these are not present on your system, install them. It's very likely you
@@ -27,7 +28,7 @@
     remember to delete your `.env.local` or move it out of the way.)
 4.  Install dependencies:
     ```sh
-    npm install
+    pnpm install
     ```
     (This command also installs Git hooks using
     [Husky](https://github.com/typicode/husky). For a comprehensive list of
@@ -36,7 +37,7 @@
 5.  Compile and start a server running frontscope, with hot-reloading for
     development:
     ```sh
-    npm run dev
+    pnpm dev
     ```
     The output of this command will provide instructions for connecting to the
     new running instance of frontscope with your browser.

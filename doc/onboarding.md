@@ -38,9 +38,20 @@ Boulder Experimental Mathematics Lab.)
 3. If you don't have [NodeJS](https://nodejs.org/en/) installed, install it.
    NodeJS allows you to run JavaScript outside of a web browser. We use it in
    our front end code base.
-4. If you don't have [Python 3](https://www.python.org/) installed, install
+4. You need to make sure that you have the [pnpm](https://pnpm.io/) package
+   manager installed and that it is at least version 7.17.1. Try executing the
+   command `pnpm --version` in your shell. If it tells you that pnpm is not
+   found, you need to [install it](https://pnpm.io/installation). If it finds
+   the command and reports a version earlier than 7.17.1, you need to update
+   it. (How you do this depends on how you installed pnpm. See the
+   [installation page](https://pnpm.io/installation) for guidance. If you used
+   `corepack` to install pnpm, there are explicit update instructions on that
+   page. If you installed via the `curl` command listed there, you can simply
+   reinstall the same way. If you installed pnpm by some other means, you will
+   need to find the proper way to update your installation.)
+5. If you don't have [Python 3](https://www.python.org/) installed, install
    it. We use Python in frontscope for our documentation site.
-5. Make sure you have a `venv` module by running the following command:
+6. Make sure you have a `venv` module by running the following command:
     ```sh
     python3 -m venv -h
     ```
@@ -55,10 +66,10 @@ Boulder Experimental Mathematics Lab.)
     commands you run are run using the dependencies in the virutal
     environment, and not the dependencies you installed elsewhere on your
     computer.
-6. Somewhere on your computer, make a directory where you can keep Numberscope
+7. Somewhere on your computer, make a directory where you can keep Numberscope
    code. I like to put a directory called `Code` in my home directory. You can
    call this whatever you want.
-7. If you plan to submit new code to become part of Numberscope at some time
+8. If you plan to submit new code to become part of Numberscope at some time
    in the future, _you must_ "fork" (make your own copy of) the repository:
     - Go to https://github.com/numberscope/frontscope.
     - Click the "Fork" button (in the upper right as of this writing) and then
@@ -78,23 +89,23 @@ Boulder Experimental Mathematics Lab.)
     If you have trouble, read
     [this doc](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
     or ping someone for help.
-8. Go to the newly cloned `frontscope` directory and install the dependencies:
+9. Go to the newly cloned `frontscope` directory and install the dependencies:
     ```sh
     cd frontscope
-    npm install
+    pnpm install
     ```
     You need NodeJS installed to do this.
-9. Run the development server (this runs a local copy of Numberscope on your
-   computer so you can interact with the webpage):
+10. Run the development server (this runs a local copy of Numberscope on your
+    computer so you can interact with the webpage):
     ```sh
-    npm run dev
+    pnpm dev
     ```
     This should print a link that you can open in the browser. Open it and see
     if Numberscope seems to be working.
-10. If you plan on contributing code to Numberscope, _you must_ work in your
+11. If you plan on contributing code to Numberscope, _you must_ work in your
     fork on a dedicated feature branch. To learn how to create a branch, see
     [this doc](./working-with-git-and-github.md#create-a-branch).
-11. Finally, before you start changing code, please read
+12. Finally, before you start changing code, please read
     [our docs on submitting a pull request](../CONTRIBUTING.md#submit-a-pull-request).
 
 See [the doc on running from source](./running-from-source.md) for more

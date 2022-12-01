@@ -1,0 +1,137 @@
+/** md
+# Using package manager scripts
+
+This repository is designed to work with the [pnpm](https://pnpm.io/) package
+manager, and so precludes installation of packages with other package managers.
+It also sets up a number of utility "scripts" that you can run via the package
+manager to manipulate and execute the project's code. This page documents all
+of the available scripts.
+ **/
+{
+    name: 'frontscope',
+    version: '0.3.0', // Under what circumstances do we update this?
+    scripts: {
+        /** md
+### pnpm dev
+
+Compiles frontscope and starts a server running it. Note the server will
+hot-reload the code from any source files as they change, to ease development.
+The documentation pages are not available in this server.
+         **/
+        dev: 'pnpm typecheck && vite',
+        /** md
+### pnpm doc:serve
+
+This is like the 'dev' script, but for the embedded documentation rather
+than the Numberscope interface itself. So Numberscope visualizers will not
+be available, but the documentation pages will hot-reload as doc files are
+changed.
+         **/
+        'doc:serve': 'cd tools && node pyrun.mjs mkdocs serve',
+        /** md
+### pnpm build
+
+Compiles frontscope and minifies the result, producing a bundle ready for
+preview or installation on a server.
+         **/
+        build: 'pnpm typecheck && vite build && cd tools && node pyrun.mjs mkdocs build',
+        /** md
+### pnpm preview
+
+Serves the most recently built files (i.e., the contents of the `dist/`
+directory) for you to preview. This script differs from 'dev' in that there
+isn't any hot module reload. On the other hand, it is closer to what you will
+run in production, and both the Numberscope interface and the documentation
+pages are available.
+         **/
+        preview: 'vite preview',
+        /** md
+### pnpm test:unit
+
+Runs unit tests.
+         **/
+        'test:unit': 'vitest run',
+        /** md
+### pnpm typecheck
+
+Checks for TypeScript errors in both .vue and .ts files.
+         **/
+        typecheck: 'vue-tsc --noEmit -p tsconfig.vitest.json --composite false',
+        /** md
+### pnpm lint
+
+If you would like to format your code before you make a commit with git (which
+has hooks to do automatic formatting), you can call this script at any time.
+It runs [prettier](https://prettier.io/) and `eslint --fix`
+(see https://eslint.org/) on the project files. Note that this operation does
+not simply _check_ the formatting of your files, it automatically _reformats_
+them when it finds problems!
+
+At least, if possible -- there are some formatting/code errors that it does
+not know how to fix. These will simply be reported as errors. If any such
+issues are present at the time of a commit, presuming the standard git hooks
+this project sets up are in place, the commit will be rejected.
+         **/
+        lint: 'prettier-eslint --write "**/*.*" && pnpm lint:check',
+        /** md
+### pnpm lint:check
+
+This is like the 'lint' script but only reports problems; it does not modify
+any of your source files. Note that this script might not report any errors
+but then a run of the 'lint' script might modify files. That behavior can
+occur because 'prettier' does not have a 'diagnostic' mode in which it
+reports discrepancies with its preferred formatting, while some formatting
+_not_ preferred by prettier is nevertheless acceptable to eslint.
+         **/
+        'lint:check': 'eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore',
+        /** md
+### pnpm lint:list
+
+This is like the 'lint' script but only _lists_ the files that would be
+changed. It does not modify any source files or report what the problems
+were or report any problems that the tools do not know how to fix.
+         **/
+        'lint:list': 'prettier-eslint --list-different "**/*.*"',
+        // Nothing below here is "advertised" for command-line use
+        // The following is only for internal use in the pre-commit hook:
+        'lint:staged': 'lint-staged',
+        // And the remainder are life-cycle scripts:
+        prepare: 'husky install',
+        preinstall: 'npx only-allow pnpm',
+        postinstall: 'python3 -m venv .venv && cd tools && node pyrun.mjs python -m pip install -U pip && node pyrun.mjs pip install -r requirements.txt',
+    },
+    dependencies: {
+        'bigint-isqrt': '^0.3.2',
+        'bigint-mod-arith': '^3.1.2',
+        p5: '^1.4.1',
+        vue: '^3.2.37',
+        'vue-router': '^4.1.2',
+    },
+    devDependencies: {
+        '@rushstack/eslint-patch': '^1.1.0',
+        '@types/jsdom': '^16.2.14',
+        '@types/node': '^16.11.22',
+        '@types/p5': '^1.4.2',
+        '@vitejs/plugin-vue': '^3.0.0',
+        '@vue/eslint-config-prettier': '^7.0.0',
+        '@vue/eslint-config-typescript': '^10.0.0',
+        '@vue/test-utils': '^2.0.2',
+        '@vue/tsconfig': '^0.1.3',
+        axios: '^0.27.2',
+        eslint: '^8.19.0',
+        'eslint-plugin-vue': '^8.2.0',
+        'happy-dom': '^2.39.1',
+        husky: '^7.0.4',
+        jsdom: '^19.0.0',
+        'lint-staged': '^13.0.3',
+        mathjs: '^10.5.3',
+        prettier: '^2.7.1',
+        'prettier-eslint': '^15.0.1',
+        'prettier-eslint-cli': '^6.0.1',
+        typescript: '~4.5.5',
+        vite: '^3.1.8',
+        vitest: '^0.18.1',
+        'vue-tsc': '^0.38.8',
+        'vue-unique-id': '^3.2.1',
+    },
+}
