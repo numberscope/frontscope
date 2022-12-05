@@ -37,7 +37,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         /** md
 - First Index: The first index to start getting the factors and forming the 
                histogram from. If the first index is before the first term
-               of the series then the first term of the series will be used
+               of the series then the first term of the series will be used.
          **/
         firstIndex: {
             value: '' as string | number,
@@ -138,7 +138,11 @@ class FactorHistogramVisualizer extends VisualizerDefault {
     // many pixels wide each bin should be
     binWidth(): number {
         // 0.95 Creates a small offset from the side of the screen
-        return (0.95 * this.sketch.width) / this.binFactorArray().length
+        if (this.binFactorArray().length <= 30) {
+            return (0.95 * this.sketch.width) / this.binFactorArray().length
+        } else {
+            return (0.95 * this.sketch.width) / 30
+        }
     }
 
     // Create a number that represents how many pixels high
@@ -165,7 +169,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         const textOffsetScalar = 0.995
         this.sketch.line(
             // Draws the y-axis
-            (1 - offsetScalar) * this.sketch.width, // Slightly right of the left edge
+            (1 - offsetScalar) * this.sketch.width,
             0,
             (1 - offsetScalar) * this.sketch.width,
             this.sketch.height
@@ -173,12 +177,12 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         this.sketch.line(
             // Draws the x-axis
             0,
-            offsetScalar * this.sketch.height, // Slightly above the canvas bottom
+            offsetScalar * this.sketch.height,
             this.sketch.width,
             offsetScalar * this.sketch.height
         )
 
-        for (let i = 0; i < binFactorArray.length; i++) {
+        for (let i = 0; i < 30; i++) {
             this.sketch.rect(
                 // Draws the rectangles for the Histogram
                 (1 - offsetScalar) * this.sketch.width + binWidth * i,
@@ -187,6 +191,18 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                 binWidth,
                 height * binFactorArray[i]
             )
+            if (binFactorArray.length > 30) {
+                this.sketch.text(
+                    'Too many unique factors.',
+                    this.sketch.width * 0.75,
+                    this.sketch.height * 0.03
+                )
+                this.sketch.text(
+                    'Displaying the first 30',
+                    this.sketch.width * 0.75,
+                    this.sketch.height * 0.05
+                )
+            }
             if (this.binSize != 1) {
                 // Draws text for if the bin size is not 1
                 this.sketch.text(
