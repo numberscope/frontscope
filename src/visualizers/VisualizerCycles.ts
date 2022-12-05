@@ -1,5 +1,3 @@
-import type p5 from 'p5'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {VisualizerDefault} from './VisualizerDefault'
 
@@ -14,8 +12,6 @@ class VisualizerCycles extends VisualizerDefault {
     numberOfTerms = 1000
     width = 50
     cycleFormula = cycleFormula.Collatz
-    displayCycleValues = false
-    displayStartingValues = false
     displayBoxLines = false
 
     params = {
@@ -37,23 +33,12 @@ class VisualizerCycles extends VisualizerDefault {
             displayName: 'Cycle Formula',
             required: true,
         },
-        displayCycleValues: {
-            value: this.displayCycleValues,
-            displayName: 'Overlay cycle values',
-            required: false,
-        },
-        displayStartingValues: {
-            value: this.displayStartingValues,
-            displayName: 'Overlay starting values',
-            required: false,
-        },
         displayBoxLines: {
             value: this.displayBoxLines,
             displayName: 'Overlay Box Lines',
             required: false,
         },
     }
-    private mouseOn = false
 
     checkParameters() {
         const status = super.checkParameters()
@@ -64,15 +49,6 @@ class VisualizerCycles extends VisualizerDefault {
         if (this.params.width.value <= 0) {
             status.isValid = false
             status.errors.push('Width must be positive')
-        }
-        if (
-            (this.displayCycleValues = true)
-            && (this.displayStartingValues = true)
-        ) {
-            status.isValid = true
-            status.errors.push(
-                'Cannot display Cycle and Starting Values at the same time'
-            )
         }
         return status
     }
@@ -96,10 +72,10 @@ class VisualizerCycles extends VisualizerDefault {
     }
 
     //Find the number of steps 'n' takes to reach 1 under the collatz formula
-    collatzCycle(n: bigint): number {
+    collatzStepsTo1(n: bigint): number {
         let steps = 0n
         if (n <= 1n) {
-            steps = 1n
+            return 1
         }
         while (n !== 1n) {
             if (n % 2n == 0n) {
@@ -116,23 +92,24 @@ class VisualizerCycles extends VisualizerDefault {
     }
 
     //Find the number of steps 'm' takes to reach 1 under the juggler formula
-    jugglerCycle(m: bigint): number {
+    jugglerStepsTo1(m: bigint): number {
         // Juggler will NOT work well with bigints because we need to
         // take a square root of a bigint, currently don't have a good fix
         let steps = 0n
         // steps stop when the sequence reaches 1
         if (m <= 1n) {
-            steps = 1n
-        } else {
-            while (m !== 1n) {
-                if (m % 2n == 0n) {
-                    m = this.bigIntSqrt(m)
-                    steps++
-                } else if (m % 2n !== 0n) {
-                    // WARNING The function will fail after too many iterations
-                    m = this.bigIntSqrt(m ** 3n)
-                    steps++
-                }
+            return 1
+        }
+        while (m !== 1n) {
+            // if m is even, take the floor of it's square root
+            if (m % 2n == 0n) {
+                m = this.bigIntSqrt(m)
+                steps++
+            } else if (m % 2n !== 0n) {
+                // WARNING The function will fail after too many iterations
+                // if m is odd, take the floor of it's square root cubed
+                m = this.bigIntSqrt(m ** 3n)
+                steps++
             }
         }
         // casting 'steps' to a number will not create
@@ -144,17 +121,20 @@ class VisualizerCycles extends VisualizerDefault {
         return n.toString().length
     }
 
-    setup() {}
+    setup() {
+        console.log('Success')
 
-    drawCycles(numberOfTerms: number, width: number, seq: SequenceInterface) {
-        //Define the background canvas
+        //assorted settings
         this.sketch.colorMode(this.sketch.HSB)
-        this.sketch.background(227, 100, 56)
+        this.sketch.background(0, 0, 0)
         this.sketch.textSize(13)
 
         // Convert the input sequence to an array
-        const workingSequence: BigInt[] = []
-        const end = Math.min(seq.first + numberOfTerms - 1, seq.last)
+        const workingSequence: bigint[] = []
+        const end = Math.min(
+            this.seq.first + this.numberOfTerms - 1,
+            this.seq.last
+        )
 
         // maxCycle will be the largest number of steps that
         // any of the starting values takes to reach 1
@@ -164,27 +144,39 @@ class VisualizerCycles extends VisualizerDefault {
         switch (this.cycleFormula) {
             //collatz
             case cycleFormula.Collatz:
-                for (let i = seq.first; i <= end; i++) {
+                for (let i = this.seq.first; i <= end; i++) {
                     workingSequence.push(
-                        BigInt(this.collatzCycle(seq.getElement(i)))
+                        BigInt(this.collatzStepsTo1(this.seq.getElement(i)))
                     )
                 }
+                //Find the maxCycle under collatz
                 for (let i = 0; i < workingSequence.length; i++) {
-                    if (this.collatzCycle(seq.getElement(i)) > maxCycle) {
-                        maxCycle = this.collatzCycle(seq.getElement(i))
+                    if (
+                        this.collatzStepsTo1(this.seq.getElement(i))
+                        > maxCycle
+                    ) {
+                        maxCycle = this.collatzStepsTo1(
+                            this.seq.getElement(i)
+                        )
                     }
                 }
                 break
             //juggler
             case cycleFormula.Juggler:
-                for (let i = seq.first; i <= end; i++) {
+                for (let i = this.seq.first; i <= end; i++) {
                     workingSequence.push(
-                        BigInt(this.jugglerCycle(seq.getElement(i)))
+                        BigInt(this.jugglerStepsTo1(this.seq.getElement(i)))
                     )
                 }
+                //Find the maxCycle under juggler
                 for (let i = 0; i < workingSequence.length; i++) {
-                    if (this.jugglerCycle(seq.getElement(i)) > maxCycle) {
-                        maxCycle = this.jugglerCycle(seq.getElement(i))
+                    if (
+                        this.jugglerStepsTo1(this.seq.getElement(i))
+                        > maxCycle
+                    ) {
+                        maxCycle = this.jugglerStepsTo1(
+                            this.seq.getElement(i)
+                        )
                     }
                 }
                 break
@@ -200,15 +192,10 @@ class VisualizerCycles extends VisualizerDefault {
             const y = (800 / this.width) * Math.floor(i / this.width)
             this.sketch.fill(100, 100, 0)
 
-            // Uncomment these lines for troubleshooting
-            // this.sketch.text("scaler:" + scaler, 100, 100)
-            // this.sketch.text("maxCycle" + maxCycle, 100, 120)
-            // this.sketch.text(Number(this.bigIntSqrt(4907n)), 100, 120)
-
             // display collatz cycle colors
             if (this.cycleFormula === cycleFormula.Collatz) {
                 this.sketch.fill(
-                    this.collatzCycle(seq.getElement(i)) * scaler,
+                    this.collatzStepsTo1(this.seq.getElement(i)) * scaler,
                     100,
                     100
                 )
@@ -216,7 +203,7 @@ class VisualizerCycles extends VisualizerDefault {
             // display juggler cycle colors
             if (this.cycleFormula === cycleFormula.Juggler) {
                 this.sketch.fill(
-                    this.jugglerCycle(seq.getElement(i)) * scaler,
+                    this.jugglerStepsTo1(this.seq.getElement(i)) * scaler,
                     100,
                     100
                 )
@@ -232,94 +219,94 @@ class VisualizerCycles extends VisualizerDefault {
                 this.sketch.square(x, y, 800 / this.width)
             }
             this.sketch.noStroke()
-
-            if (this.displayCycleValues) {
-                if (this.getlength(i) == 1) {
-                    this.sketch.textSize(12)
-                }
-                if (this.getlength(i) == 2) {
-                    this.sketch.textSize(11)
-                }
-                if (this.getlength(i) == 3) {
-                    this.sketch.textSize(9)
-                }
-                if (this.getlength(i) >= 4) {
-                    this.sketch.textSize(8)
-                }
-                if (
-                    this.collatzCycle(seq.getElement(i))
-                    > (5 * maxCycle) / 6
-                ) {
-                    this.sketch.fill(0, 0, 100)
-                } else {
-                    this.sketch.fill(0, 100, 0)
-                }
-                if (this.cycleFormula === cycleFormula.Collatz) {
-                    this.sketch.text(
-                        this.collatzCycle(seq.getElement(i)),
-                        x,
-                        y + 12
-                    )
-                }
-                if (this.cycleFormula === cycleFormula.Juggler) {
-                    this.sketch.text(
-                        this.jugglerCycle(seq.getElement(i)),
-                        x,
-                        y + 12
-                    )
-                }
-            }
-
-            if (this.displayStartingValues) {
-                if (
-                    this.collatzCycle(seq.getElement(i))
-                    > (5 * maxCycle) / 6
-                ) {
-                    this.sketch.fill(0, 0, 100)
-                } else {
-                    this.sketch.fill(0, 100, 0)
-                }
-                this.sketch.text(Number(seq.getElement(i)), x + 1, y + 12)
-            }
         }
     }
 
+    // draw() contains all of the mouseOver functions
     draw() {
         super.draw()
 
-        this.drawCycles(this.numberOfTerms, this.width, this.seq)
-
         this.sketch.colorMode(this.sketch.HSB)
+        this.sketch.textFont('Helvetica')
 
-        //variables for mouseover function
+        //x and y-coordinate of mouse
         const x = this.sketch.mouseX
         const y = this.sketch.mouseY
+
+        // find the y-coordinate to set the mouseOver info
+        const tempY =
+            (800 / this.width) * Math.floor(this.numberOfTerms / this.width)
+        let lastY = 0
+        if (tempY < 720) {
+            lastY = tempY
+        }
+        if (tempY >= 720) {
+            lastY = 720
+        }
         const squareWidth = 800 / this.width
         const indexOfSquareMouseOver =
             Math.floor(x / squareWidth)
             + this.width * Math.floor(y / squareWidth)
 
-        //background for text
-        this.sketch.fill(0, 0, 0)
-        this.sketch.rect(0, 450, 700, 100)
-        this.sketch.textSize(25)
-        this.sketch.fill(100, 100, 100)
+        //background large rectangle
+        this.sketch.fill(225, 50, 100)
+        this.sketch.rect(0, lastY, 800, 80)
 
-        this.sketch.fill(0, 0, 0)
-        this.sketch.rect(0, 450, 700, 100)
-        this.sketch.fill(100, 100, 100)
+        // text settings for top of mouseOver info
+        this.sketch.fill(0, 0, 100)
+        this.sketch.textSize(25)
 
         let m = Number(this.seq.getElement(indexOfSquareMouseOver))
-        this.sketch.text(m, 50, 500)
-        for (let i = 1; i <= 6; i++) {
+        this.sketch.text('Starting value: ' + m, 15, lastY + 27)
+        this.sketch.text(
+            'Cycle value: ' + this.collatzStepsTo1(BigInt(m)),
+            260,
+            lastY + 27
+        )
+        this.sketch.text('Sequence:', 550, lastY + 27)
+
+        //smaller background rect for sequence
+        this.sketch.fill(225, 75, 100)
+        this.sketch.rect(18, lastY + 40, 765, 30, 10)
+
+        // text settings for the sequence list
+        this.sketch.textStyle('bold')
+        this.sketch.textSize(15)
+        this.sketch.fill(0, 0, 0)
+        this.sketch.text(m, 25, lastY + 60)
+
+        if (this.sketch.mouseIsPressed) {
+            // white outline on the square that the mouse is over
+            this.sketch.strokeWeight(3)
+            this.sketch.noFill()
+            this.sketch.stroke(0, 0, 100)
+            // draw the outline
+            this.sketch.square(
+                squareWidth * Math.floor(x / squareWidth) + 2,
+                squareWidth * Math.floor(y / squareWidth) + 2,
+                800 / this.width - 4
+            )
+            this.sketch.strokeWeight(0)
+            this.sketch.fill(0, 0, 0)
+        }
+
+        // hDist tracks the horizontal distance at which the next number
+        // is placed and is dependent on the length of the previous number
+        let hDist = 12 + this.getlength(m) * 5
+        for (let i = 0; hDist <= 700; i++) {
+            const j = this.getlength(m)
             if (m % 2 == 0) {
                 m = m / 2
-                this.sketch.fill(200, 100, 100)
-                this.sketch.text(m, 100 + 60 * i, 500)
+                hDist += j * 5 + 22
+                // red means the previous number was even
+                this.sketch.fill(0, 100, 100)
+                this.sketch.text(m, hDist, lastY + 60)
             } else if (m % 2 == 1) {
                 m = 3 * m + 1
-                this.sketch.fill(150, 100, 100)
-                this.sketch.text(m, 100 + 60 * i, 500)
+                hDist += j * 5 + 22
+                // blue means the previous number was odd
+                this.sketch.fill(240, 100, 100)
+                this.sketch.text(m, hDist, lastY + 60)
             }
         }
     }
