@@ -8,10 +8,11 @@ import {VisualizerDefault} from './VisualizerDefault'
 width="320" style="float: right; margin-left: 1em;" />](
 ../assets/img/FactorHistogram/ExampleImage.png)
 
-This visualizer takes the prime factorization of each element in the sequence
-and then creates a histogram of the number of elements of the sequence
-with X prime factors. the number of elements with X prime factors is along
-the x-axis. And the height is how many elements are in each bin of X.
+This visualizer counts the number of prime factors of each entry in the 
+sequence and creates a histogram of the results. The horizontal axis 
+represents X, the number of prime factors. The height of each bar shows 
+how many entries in the sequence have a corresponding value of X.
+Designed by Devlin Costello.
 
 ## Parameters
 **/
