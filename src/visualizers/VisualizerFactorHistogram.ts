@@ -35,7 +35,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             required: true,
         },
         /** md
-- First Index: The first index to start getting the factors and forming the 
+- First Index: The first index to start getting the factors and forming the
                histogram from. If the first index is before the first term
                of the series then the first term of the series will be used.
          **/
