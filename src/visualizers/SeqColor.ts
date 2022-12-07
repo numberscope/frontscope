@@ -10,8 +10,9 @@ In this visualizer, the brightness of each circle represents how fast $1/a^n$, w
 Each prime number is assigned a color, and the color of each circle represents the color combination of its prime factors. 
 
 Press the "Left arrow key" to show/hide the color of each prime factor.
-Press the "Right arrow key" to refresh.
- 
+Press the "Right arrow key" to show/hide labels.
+Press "[" to turn up brightness.
+Press "]" to turn down brightness. 
  **/
 
 const colorMap = new Map()
@@ -36,12 +37,20 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     private Y = 0
     private boxSizeX = 800
     private boxSizeY = 90
+    //private boxSize = this.sketch.createVector(800, 90)
     private canvasSizeX = 800
+    private canvasSizeY = 800
     private subG = this.sketch.createGraphics(this.boxSizeX, this.boxSizeY)
+    private subL = this.sketch.createGraphics(
+        this.canvasSizeX,
+        this.canvasSizeY
+    )
     private boxIsShow = false
     private primeNum: number[] = []
     private countPrime = 0
     private firstDraw = true
+    private showLabel = false
+    private brightAdjust = 100
 
     initialize(sketch: p5, seq: SequenceInterface) {
         super.initialize(sketch, seq)
@@ -57,6 +66,8 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         this.sketch.background('black')
         this.sketch.colorMode(this.sketch.HSB, 360, 100, 100)
         this.sketch.frameRate(30)
+
+        this.firstDraw = true
 
         // Set position of the circle
         this.X = this.canvasSizeX / this.n + 30
@@ -81,7 +92,8 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
                 this.seq.getElement(this.currentNum++)
             )
             this.drawCircle(currentElement)
-            this.showCircleLabel(currentElement)
+
+            this.changePosition()
 
             // Check if drawing finished
             if (this.currentNum >= this.n) {
@@ -96,7 +108,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     }
 
     keyboardEvents() {
-        // Show description box when the lft arrow key is pressed
+        // Show description box when the left arrow key is pressed
         if (this.sketch.keyIsDown(this.sketch.LEFT_ARROW)) {
             if (this.boxIsShow == true && this.subG != null) {
                 this.boxIsShow = false
@@ -106,13 +118,69 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
                 this.drawBox()
             }
         }
-        // Refresh
+
+        // Show label when right arrow key is pressed
         if (
             this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
             && this.firstDraw == false
         ) {
-            this.firstDraw = true
+            if (this.showLabel == false) {
+                this.showLabel = true
+                this.drawLabel()
+            } else {
+                this.showLabel = false
+                this.undrawLabel()
+            }
         }
+
+        // Increase brightness "[" key is pressed
+        if (this.sketch.keyIsDown(219) && this.firstDraw == false) {
+            this.brightnessUp()
+        }
+
+        // Decrease brightness "]" key is pressed
+        if (this.sketch.keyIsDown(221) && this.firstDraw == false) {
+            this.brightnessDown()
+        }
+    }
+
+    brightnessUp() {
+        this.brightAdjust += 1
+        this.redrawCircle()
+    }
+
+    brightnessDown() {
+        this.brightAdjust -= 1
+        this.redrawCircle()
+    }
+
+    // Draw labels for each circle
+    drawLabel() {
+        this.X = this.canvasSizeX / this.n + 30
+        this.Y = this.canvasSizeX / this.n + 50
+        this.subL = this.sketch.createGraphics(
+            this.canvasSizeX,
+            this.canvasSizeY
+        )
+        this.subG.colorMode(this.sketch.HSB)
+        this.subG.noStroke()
+        for (let i = this.seq.first; i < this.n; i++) {
+            this.showCircleLabel(i)
+            this.changePosition()
+        }
+    }
+
+    // Remove all labels by drawing circles again
+    undrawLabel() {
+        this.redrawCircle()
+    }
+
+    redrawCircle() {
+        this.X = this.canvasSizeX / this.n + 30
+        this.Y = this.canvasSizeX / this.n + 50
+        this.firstDraw = true
+        this.currentNum = this.seq.first
+        this.sketch.redraw(1)
     }
 
     drawCircle(numberNow: number) {
@@ -125,8 +193,10 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             //  between 1/(number)^n and 1/(number)^(n-1)
             const diff = Math.abs(
                 Math.log(
-                    1 / Math.pow(Number(numberNow), x - 1)
-                        - Math.log(1 / Math.pow(Number(numberNow), x))
+                    Math.abs(
+                        1 / Math.pow(Number(numberNow), x - 1)
+                            - Math.log(1 / Math.pow(Number(numberNow), x))
+                    )
                 )
             )
 
@@ -142,7 +212,8 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
             // Change brightness regarding
             //  the difference between 1/(number)^n and 1/(number)^(n-1)
-            bright = this.changeColor(diff, bright)
+            bright =
+                (this.changeColor(diff, bright) * this.brightAdjust) / 100
 
             radius -= 1
         }
@@ -155,6 +226,9 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             this.X,
             this.Y
         )
+    }
+
+    changePosition() {
         this.X += 100
         if (this.X >= this.canvasSizeX) {
             this.X = this.canvasSizeX / this.n + 30
@@ -264,3 +338,4 @@ export const exportModule = new VisualizerExportModule(
     SeqColor,
     ''
 )
+// Bug: First circle for n+2, n+3, etc. is not shown properly
