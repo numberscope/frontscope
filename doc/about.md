@@ -12,6 +12,10 @@ source projects.
 You can find [Numberscope on GitHub](https://github.com/numberscope) or
 [contact the organizers](mailto:numberscope@colorado.edu).
 
+## Current Technical Lead
+
+-   Liam Mulhall
+
 ## Contributors
 
 -   Abdullatif Khalid Abduljaleel
@@ -19,6 +23,7 @@ You can find [Numberscope on GitHub](https://github.com/numberscope) or
 -   Khaled Allen
 -   Isabel Anaya
 -   Sebastian Bozlee
+-   Devlin Costello
 -   Brendan Heaney
 -   Steven Hristopoulos
 -   Ang Li
