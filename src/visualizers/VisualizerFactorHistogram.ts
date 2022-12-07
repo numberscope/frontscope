@@ -10,8 +10,8 @@ width="320" style="float: right; margin-left: 1em;" />](
 
 This visualizer counts the number of prime factors of each entry in the
 sequence and creates a histogram of the results. The horizontal axis
-represents X, the number of prime factors. The height of each bar shows
-how many entries in the sequence have a corresponding value of X.
+represents _X_, the number of prime factors. The height of each bar shows
+how many entries in the sequence have a corresponding value of _X_.
 Designed by Devlin Costello.
 
 ## Parameters
@@ -26,7 +26,8 @@ class FactorHistogramVisualizer extends VisualizerDefault {
 
     params = {
         /** md
-- Bin Size: The size of each bin of the histogram.
+- Bin Size: The size (number of _X_ values included) for each bin
+  of the histogram.
          **/
         binSize: {
             value: this.binSize,
@@ -224,6 +225,11 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         this.sketch.noLoop()
     }
 }
+
+/** md
+
+_Originally contributed by Devlin Costello._
+ **/
 
 export const exportModule = new VisualizerExportModule(
     'Factor Histogram',
