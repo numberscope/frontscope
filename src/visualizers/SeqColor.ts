@@ -6,17 +6,20 @@ import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
 # Sequence Color Visualizer
-In this visualizer, the brightness of each circle represents how fast $1/a^n$, where a is a number in the sequence, approaches zero as n increases.
-Each prime number is assigned a color, and the color of each circle represents the color combination of its prime factors. 
+In this visualizer, the brightness of each circle represents how fast $1/a^n$, 
+where a is a number in the sequence, 
+approaches zero as n increases.
+Each prime number is assigned a color, 
+and the color of each circle represents 
+the color combination of its prime factors. \s
 
-Press the "Left arrow key" to show/hide the color of each prime factor.
-Press the "Right arrow key" to show/hide labels.
-Press "[" to turn up brightness.
-Press "]" to turn down brightness. 
+Press the "Left arrow key" to show/hide the color of each prime factor.\s
+Press the "Right arrow key" to show/hide labels.\s
+Press "[" to turn up brightness.\s
+Press "]" to turn down brightness. \s
  **/
 
 const colorMap = new Map()
-const countClick = 0
 
 // Show description box by pressing left arrow key
 class SeqColor extends VisualizerDefault implements VisualizerInterface {
