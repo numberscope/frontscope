@@ -102,7 +102,7 @@
                                 v-on:input="
                                     setArray(
                                         $event,
-                                        param.value as [number | BigInt]
+                                        param.value as [number | bigint]
                                     )
                                 " />
                             <input
