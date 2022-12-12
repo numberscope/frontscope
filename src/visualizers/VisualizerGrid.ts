@@ -318,10 +318,6 @@ class VisualizerGrid extends VisualizerDefault {
         }
     }
 
-    setup(): void {
-        this.sketch.createCanvas(this.sketch.width, this.sketch.height)
-    }
-
     draw(): void {
         this.setPresets()
 
