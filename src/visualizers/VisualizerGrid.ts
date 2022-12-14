@@ -111,7 +111,6 @@ enum Property {
 }
 
 enum PropertyVisualization {
-    None,
     Primary_Color,
     Secondary_Color,
 }
@@ -163,10 +162,9 @@ function getPropertyColor(value: string, index: number) {
         forceType: 'color',
         displayName: `Property ${index + 1} color:`,
         required: false,
-        visibleDependency: `property${index}Visualization`,
-        visiblePredicate: (dependentValue: PropertyVisualization) =>
-            dependentValue === PropertyVisualization.Primary_Color
-            || dependentValue === PropertyVisualization.Secondary_Color,
+        visibleDependency: `property${index}`,
+        visiblePredicate: (dependentValue: Property) =>
+            dependentValue !== Property.None,
     }
 
     return propertyColor
@@ -274,7 +272,7 @@ class VisualizerGrid extends VisualizerDefault {
         for (let i = 1; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
             this.propertyObjects.push({
                 property: Property.None,
-                visualization: PropertyVisualization.None,
+                visualization: PropertyVisualization.Primary_Color,
                 color: DEFAULT_COLORS[i],
             })
         }
