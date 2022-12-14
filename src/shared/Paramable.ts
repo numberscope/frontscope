@@ -78,7 +78,9 @@ export interface ParamInterface {
      * in Vue.
      */
     // visibleValue: any
-    visiblePredicate?: (dependency: any) => boolean
+    // Since functions are contravariant in their argument types,
+    // `never` below allows the predicate to take any argument type.
+    visiblePredicate?: (dependency: never) => boolean
 
     // Additional explanation text to display:
     description?: string
