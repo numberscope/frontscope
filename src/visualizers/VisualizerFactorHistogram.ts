@@ -238,13 +238,12 @@ class FactorHistogramVisualizer extends VisualizerDefault {
 
         const mouseX = this.sketch.mouseX
         const mouseY = this.sketch.mouseY
-        let binIndex: number
+        const binIndex = Math.floor((mouseX - largeOffsetNumber) / binWidth)
         let inBin = false
         const boxHeight = this.sketch.width * 0.06
         const boxWidth = this.sketch.width * 0.15
 
         // Checks to see whether the mouse is in the bin drawn on the screen
-        binIndex = Math.floor((mouseX - largeOffsetNumber) / binWidth)
         if (
             mouseY
                 > largeOffsetScalar * this.sketch.height
@@ -267,7 +266,8 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                 0
             )
 
-            // Draws the text for the number of prime factors that bin represents
+            // Draws the text for the number of prime factors
+            // that bin represents
             this.sketch.text(
                 'Factors:',
                 mouseX + smallOffsetNumber,
@@ -281,7 +281,8 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                 mouseY - boxHeight + largeOffsetNumber
             )
 
-            // Draws the text for the number of elements of the sequence in the bin
+            // Draws the text for the number of elements of the sequence
+            // in the bin
             this.sketch.text(
                 'Height:',
                 mouseX + smallOffsetNumber,
