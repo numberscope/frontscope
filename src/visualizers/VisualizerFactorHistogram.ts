@@ -168,7 +168,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             -Infinity
         )
         // 0.95 Creates a small offset from the side of the screen
-        return (0.95 * this.sketch.width) / greatestValue
+        return (0.95 * this.sketch.height) / greatestValue
     }
 
     draw() {
@@ -236,6 +236,51 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             }
         }
 
+        let tickHeight = Math.floor(
+            (0.95 * this.sketch.height) / (height * 5)
+        )
+
+        // Sets the tickHeight to 1 if the calculated value is less than 1
+        if (tickHeight === 0) {
+            tickHeight = 1
+        }
+        // Draws the markings on the Y-axis
+        for (let i = 0; i < 9; i++) {
+            // Draws the tick marks
+            this.sketch.line(
+                largeOffsetNumber / 2,
+                this.sketch.height
+                    - largeOffsetNumber
+                    - tickHeight * height * (i + 1),
+                (3 * largeOffsetNumber) / 2,
+                this.sketch.height
+                    - largeOffsetNumber
+                    - tickHeight * height * (i + 1)
+            )
+
+            // Places the numbers on the right side of the axis if
+            // they are too big or the left side if they are small enough
+            if (tickHeight > binFactorArray[0]) {
+                this.sketch.text(
+                    tickHeight * (i + 1),
+                    (3 * largeOffsetNumber) / 2,
+                    this.sketch.height
+                        - largeOffsetNumber
+                        - tickHeight * height * (i + 1)
+                        + (3 * smallOffsetNumber) / 2
+                )
+            } else {
+                this.sketch.text(
+                    tickHeight * (i + 1),
+                    0,
+                    this.sketch.height
+                        - largeOffsetNumber
+                        - tickHeight * height * (i + 1)
+                        + (3 * smallOffsetNumber) / 2
+                )
+            }
+        }
+
         const mouseX = this.sketch.mouseX
         const mouseY = this.sketch.mouseY
         const binIndex = Math.floor((mouseX - largeOffsetNumber) / binWidth)
@@ -277,7 +322,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                 binIndex,
                 mouseX
                     + boxWidth
-                    - largeOffsetNumber * binIndex.toString().length,
+                    - 3 * smallOffsetNumber * binIndex.toString().length,
                 mouseY - boxHeight + largeOffsetNumber
             )
 
@@ -292,7 +337,9 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                 binFactorArray[binIndex],
                 mouseX
                     + boxWidth
-                    - largeOffsetNumber * binIndex.toString().length,
+                    - 3
+                        * smallOffsetNumber
+                        * binFactorArray[binIndex].toString().length,
                 mouseY - boxHeight + largeOffsetNumber * 2
             )
         }
