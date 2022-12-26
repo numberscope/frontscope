@@ -380,6 +380,9 @@
     .form-label {
         margin-right: 0.5em;
     }
+    .form-select {
+        width: auto;
+    }
     .left-input {
         margin-right: 0.5em;
     }

@@ -55,15 +55,14 @@ enum Preset {
     Abundant_Numbers,
     Abundant_Numbers_And_Primes,
     Polygonal_Numbers,
-    Rainbow_Colored_By_Last_Digit,
-    Rainbow_Colored_By_Last_Digit_Alternative,
+    Color_By_Last_Digit_1,
+    Color_By_Last_Digit_2,
 }
 
 enum PathType {
     Spiral,
     Rows,
     Rows_Reset_Augmented_By_One,
-    Rows_Reset_Augmented_By_One_And_Values_Are_Squared,
 }
 
 enum Direction {
@@ -160,7 +159,7 @@ function getPropertyColor(value: string, index: number) {
     const propertyColor = {
         value: value,
         forceType: 'color',
-        displayName: `Property ${index + 1} color:`,
+        displayName: `Property ${index + 1} color`,
         required: false,
         visibleDependency: `property${index}`,
         visiblePredicate: (dependentValue: Property) =>
@@ -192,7 +191,6 @@ class VisualizerGrid extends VisualizerDefault {
     preset = Preset.Custom
     pathType = PathType.Spiral
     resetAndAugmentByOne = false
-    squareValues = false
     backgroundColor = BLACK
     numberColor = WHITE
 
@@ -221,25 +219,24 @@ class VisualizerGrid extends VisualizerDefault {
             displayName: 'Presets',
             required: false,
             description:
-                'Note: If a preset is selected, properties no longer function.',
+                'If a preset is selected, properties no longer function.',
         },
         amountOfNumbers: {
             value: this.amountOfNumbers,
             displayName: 'Amount of Numbers',
             required: false,
-            description:
-                'Note: There is an increased lag time over 10,000 numbers',
+            description: 'Warning: display lags over 10,000 numbers',
         },
         startingIndex: {
             value: this.startingIndex,
             displayName: 'Starting Index',
             required: false,
-            description: 'Note: This does not accept negative numbers.',
+            description: 'This does not accept negative numbers.',
         },
         pathType: {
             value: this.pathType,
             from: PathType,
-            displayName: 'How path moves about grid',
+            displayName: 'Shape of grid path',
             required: false,
         },
         showNumbers: {
@@ -247,13 +244,12 @@ class VisualizerGrid extends VisualizerDefault {
             forceType: 'boolean',
             displayName: 'Show numbers',
             required: false,
-            description:
-                'Note: Show_Path and Show_Numbers default to 400 numbers',
+            description: 'When true, grid is limited to 400 cells',
         },
         numberColor: {
             value: this.numberColor,
             forceType: 'color',
-            displayName: 'Number color:',
+            displayName: 'Number color',
             required: false,
             visibleDependency: 'showNumbers',
             visiblePredicate: (dependentValue: boolean) =>
@@ -262,7 +258,7 @@ class VisualizerGrid extends VisualizerDefault {
         backgroundColor: {
             value: this.backgroundColor,
             forceType: 'color',
-            displayName: 'Background color:',
+            displayName: 'Background color',
             required: false,
         },
     }
@@ -441,7 +437,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.propertyObjects[5].visualization =
                 PropertyVisualization.Primary_Color
             this.propertyObjects[5].color = PURPLE
-        } else if (this.preset === Preset.Rainbow_Colored_By_Last_Digit) {
+        } else if (this.preset === Preset.Color_By_Last_Digit_1) {
             this.backgroundColor = BLACK
             this.propertyObjects[0].property = Property.Ends_With_Zero
             this.propertyObjects[0].visualization =
@@ -483,9 +479,7 @@ class VisualizerGrid extends VisualizerDefault {
             this.propertyObjects[9].visualization =
                 PropertyVisualization.Primary_Color
             this.propertyObjects[9].color = RAINBOW[9]
-        } else if (
-            this.preset === Preset.Rainbow_Colored_By_Last_Digit_Alternative
-        ) {
+        } else if (this.preset === Preset.Color_By_Last_Digit_2) {
             this.backgroundColor = BLACK
             this.propertyObjects[0].property = Property.Ends_With_Zero
             this.propertyObjects[0].visualization =
@@ -536,15 +530,6 @@ class VisualizerGrid extends VisualizerDefault {
             this.resetAndAugmentByOne = true
         }
 
-        if (
-            this.pathType
-            === PathType.Rows_Reset_Augmented_By_One_And_Values_Are_Squared
-        ) {
-            this.pathType = PathType.Rows
-            this.resetAndAugmentByOne = true
-            this.squareValues = true
-        }
-
         if (this.showNumbers && this.amountOfNumbers > 400) {
             this.amountOfNumbers = 400
         }
@@ -557,10 +542,6 @@ class VisualizerGrid extends VisualizerDefault {
             this.currentNumber = BigInt(currentSequenceIndex)
         } else {
             this.currentNumber = this.seq.getElement(currentSequenceIndex)
-        }
-
-        if (this.squareValues) {
-            this.currentNumber = this.currentNumber * this.currentNumber
         }
 
         this.currentNumber = this.currentNumber + augmentForRow
