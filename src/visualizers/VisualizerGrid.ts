@@ -183,7 +183,7 @@ class VisualizerGrid extends VisualizerDefault {
         + 'or in some other sequence.'
 
     //Grid variables
-    amountOfNumbers = 40000
+    amountOfNumbers = 4096
     currentSequenceIndex = 0
     startingIndex = 0
     currentNumber = 0n
@@ -223,7 +223,7 @@ class VisualizerGrid extends VisualizerDefault {
         },
         amountOfNumbers: {
             value: this.amountOfNumbers,
-            displayName: 'Amount of Numbers',
+            displayName: 'Boxes',
             required: false,
             description: 'Warning: display lags over 10,000 numbers',
         },
