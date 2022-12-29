@@ -174,11 +174,10 @@ class VisualizerGrid extends VisualizerDefault {
     description =
         'This visualizer puts any number sequence in a spiral or in '
         + 'rows and allows you to highlight numbers based on various'
-        + ' properties.'
-        + ' One use of this tool is to put the natural numbers in a spiral'
-        + " and to highlight the prime ones, which is known as Ulam's "
-        + 'spiral. '
-        + 'Another use of this tool is highlighting properties such as'
+        + ' properties (later properties overcolor earlier ones).'
+        + '  One use of this tool is to put the natural numbers in a spiral'
+        + " and to highlight the primes, which is known as Ulam's spiral."
+        + '  Another use of this tool is highlighting properties such as'
         + ' whether a number is abundant, polygonal, '
         + 'or in some other sequence.'
 
@@ -838,6 +837,9 @@ function isPrime(num: bigint) {
     if (num === 0n || num === 1n) {
         return false
     }
+    if (num < 0n) {
+        return isPrime(-num)
+    }
 
     for (let x = 2n, s = floorSqrt(num); x <= s; x++) {
         if (num % x === 0n) {
@@ -851,6 +853,10 @@ function isPrime(num: bigint) {
 //Taken from Geeks For Geeks :
 //https://www.geeksforgeeks.org/deficient-number/
 function getSumOfDivisors(num: bigint) {
+    // returns the sum of divisors of the absolute value
+    if (num < 0n) {
+        return getSumOfDivisors(-num)
+    }
     let sumOfDivisors = 0n // Initialize sum of prime factors
 
     // Note that this loop runs till square root of n
@@ -875,6 +881,10 @@ function getSumOfDivisors(num: bigint) {
 //https://www.geeksforgeeks.org/
 //check-whether-number-can-represented-sum-two-squares/
 function isSumOfTwoSquares(num: bigint) {
+    // negative inputs are never sums of two squares
+    if (num < 0n) {
+        return false
+    }
     for (let i = 1n; i * i <= num; i++) {
         for (let j = 1n; j * j <= num; j++)
             if (i * i + j * j === num) {
@@ -886,6 +896,10 @@ function isSumOfTwoSquares(num: bigint) {
 //Modification of Geeks for Geeks :
 //https://www.geeksforgeeks.org/program-check-n-pentagonal-number/
 function isPolygonal(num: bigint, order: bigint) {
+    // negative inputs are never polygonal
+    if (num < 0n) {
+        return false
+    }
     let i = 1n,
         M
     do {
@@ -904,16 +918,7 @@ function isAbundant(num: bigint) {
 //Taken from Geeks For Geeks :
 //https://www.geeksforgeeks.org/perfect-number/
 function isPerfect(num: bigint) {
-    // To store sum of divisors
-    let sum = 1n
-
-    // Find all divisors and add them
-    for (let i = 2n; i * i <= num; i++) {
-        if (num % i === 0n) {
-            if (i * i != num) sum = sum + i + num / i
-            else sum = sum + i
-        }
-    }
+    const sum = getSumOfDivisors(num) - num
     // If sum of divisors is equal to
     // n, then n is a perfect number
     if (sum === num && num != 1n) return true
@@ -924,6 +929,11 @@ function isPerfect(num: bigint) {
 //Taken from Geeks for Geeks:
 //https://www.geeksforgeeks.org/check-whether-number-semiprime-not/
 function isSemiPrime(num: bigint) {
+    // checks whether absolute value is semiprime
+    if (num < 0n) {
+        return isSemiPrime(-num)
+    }
+
     let cnt = 0n
     for (let i = 2n; cnt < 2n && i * i <= num; ++i)
         while (num % i === 0n) {
