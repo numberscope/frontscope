@@ -833,7 +833,7 @@ export const exportModule = new VisualizerExportModule(
 //Taken from Stack Overflow :
 //https://stackoverflow.com/questions/40200089/number-prime-test-in-javascript
 //TODO This should be replaced with the getFactors from Numberscope.
-function isPrime(num: bigint) {
+function isPrime(num: bigint): boolean {
     if (num === 0n || num === 1n) {
         return false
     }
@@ -852,7 +852,7 @@ function isPrime(num: bigint) {
 
 //Taken from Geeks For Geeks :
 //https://www.geeksforgeeks.org/deficient-number/
-function getSumOfDivisors(num: bigint) {
+function getSumOfDivisors(num: bigint): bigint {
     // returns the sum of divisors of the absolute value
     if (num < 0n) {
         return getSumOfDivisors(-num)
@@ -880,7 +880,7 @@ function getSumOfDivisors(num: bigint) {
 //Taken from Geeks For Geeks :
 //https://www.geeksforgeeks.org/
 //check-whether-number-can-represented-sum-two-squares/
-function isSumOfTwoSquares(num: bigint) {
+function isSumOfTwoSquares(num: bigint): boolean {
     // negative inputs are never sums of two squares
     if (num < 0n) {
         return false
@@ -891,11 +891,12 @@ function isSumOfTwoSquares(num: bigint) {
                 return true
             }
     }
+    return false
 }
 
 //Modification of Geeks for Geeks :
 //https://www.geeksforgeeks.org/program-check-n-pentagonal-number/
-function isPolygonal(num: bigint, order: bigint) {
+function isPolygonal(num: bigint, order: bigint): boolean {
     // negative inputs are never polygonal
     if (num < 0n) {
         return false
@@ -911,13 +912,13 @@ function isPolygonal(num: bigint, order: bigint) {
 
 //Taken from Geeks For Geeks :
 //https://www.geeksforgeeks.org/deficient-number/
-function isAbundant(num: bigint) {
+function isAbundant(num: bigint): boolean {
     return getSumOfDivisors(num) > 2n * num
 }
 
 //Taken from Geeks For Geeks :
 //https://www.geeksforgeeks.org/perfect-number/
-function isPerfect(num: bigint) {
+function isPerfect(num: bigint): boolean {
     const sum = getSumOfDivisors(num) - num
     // If sum of divisors is equal to
     // n, then n is a perfect number
@@ -928,23 +929,23 @@ function isPerfect(num: bigint) {
 
 //Taken from Geeks for Geeks:
 //https://www.geeksforgeeks.org/check-whether-number-semiprime-not/
-function isSemiPrime(num: bigint) {
+function isSemiPrime(num: bigint): boolean {
     // checks whether absolute value is semiprime
     if (num < 0n) {
         return isSemiPrime(-num)
     }
 
-    let cnt = 0n
-    for (let i = 2n; cnt < 2n && i * i <= num; ++i)
+    // cnt counts prime divisors; it is correct for
+    // primes and semiprimes and a lowerbound otherwise
+    let cnt = 0
+    // loop through integers below num
+    for (let i = 2n; cnt < 2 && i * i <= num; ++i)
         while (num % i === 0n) {
-            num /= i // Increment count // of prime numbers
-            ++cnt
+            num /= i // if a divisor, divide out
+            ++cnt // at least one prime was divided out
         }
-    // If number is greater than 1,
-    // add it to the count variable
-    // as it indicates the number
-    // remain is prime number
+    // If remaining number is greater than 1,
+    // it is divisible by a prime number
     if (num > 1n) ++cnt
-    return cnt === 2n ? 1n : 0n
-    // Return '1' if count is equal // to '2' else return '0'
+    return cnt === 2 ? true : false
 }
