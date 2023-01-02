@@ -62,7 +62,7 @@ enum Preset {
 enum PathType {
     Spiral,
     Rows,
-    Rows_Reset_Augmented_By_One,
+    Rows_Offset,
 }
 
 enum Direction {
@@ -76,7 +76,6 @@ enum Direction {
 
 enum Property {
     None,
-    Number_Sequence,
     Prime,
     Negative,
     Even,
@@ -222,7 +221,7 @@ class VisualizerGrid extends VisualizerDefault {
         },
         amountOfNumbers: {
             value: this.amountOfNumbers,
-            displayName: 'Boxes',
+            displayName: 'Grid cells',
             required: false,
             description: 'Warning: display lags over 10,000 numbers',
         },
@@ -230,12 +229,12 @@ class VisualizerGrid extends VisualizerDefault {
             value: this.startingIndex,
             displayName: 'Starting Index',
             required: false,
-            description: 'This does not accept negative numbers.',
+            description: '',
         },
         pathType: {
             value: this.pathType,
             from: PathType,
-            displayName: 'Shape of grid path',
+            displayName: 'Path in grid',
             required: false,
         },
         showNumbers: {
@@ -322,13 +321,6 @@ class VisualizerGrid extends VisualizerDefault {
             this.amountOfNumbers,
             this.seq.last - this.seq.first + 1
         )
-
-        if (this.usesNumberSequenceAsProperty()) {
-            this.amountOfNumbers = Math.min(
-                this.amountOfNumbers,
-                Number(this.seq.getElement(this.seq.last))
-            )
-        }
 
         //Round up amount of numbers so that it is a square number.
         const squareRootOfAmountOfNumbers = Number(
@@ -524,7 +516,7 @@ class VisualizerGrid extends VisualizerDefault {
     }
 
     setOverridingSettings() {
-        if (this.pathType === PathType.Rows_Reset_Augmented_By_One) {
+        if (this.pathType === PathType.Rows_Offset) {
             this.pathType = PathType.Rows
             this.resetAndAugmentByOne = true
         }
@@ -535,27 +527,8 @@ class VisualizerGrid extends VisualizerDefault {
     }
 
     setCurrentNumber(currentSequenceIndex: number, augmentForRow: bigint) {
-        this.currentNumber = 0n
-
-        if (this.usesNumberSequenceAsProperty()) {
-            this.currentNumber = BigInt(currentSequenceIndex)
-        } else {
-            this.currentNumber = this.seq.getElement(currentSequenceIndex)
-        }
-
+        this.currentNumber = this.seq.getElement(currentSequenceIndex)
         this.currentNumber = this.currentNumber + augmentForRow
-    }
-
-    usesNumberSequenceAsProperty() {
-        for (let i = 0; i < this.propertyObjects.length; i++) {
-            if (
-                this.propertyObjects[i].property == Property.Number_Sequence
-            ) {
-                return true
-            }
-        }
-
-        return false
     }
 
     setPathVariables(gridSize: number) {
@@ -665,18 +638,7 @@ class VisualizerGrid extends VisualizerDefault {
     }
 
     hasProperty(num: bigint, property: Property) {
-        if (property === Property.Number_Sequence) {
-            for (
-                let a = this.seq.first;
-                a < Math.min(this.seq.last - this.seq.first + 1, 200);
-                a++
-            ) {
-                if (this.seq.getElement(a) == num) {
-                    return true
-                }
-            }
-            return false
-        } else if (property === Property.Prime) {
+        if (property === Property.Prime) {
             return isPrime(num)
         } else if (property === Property.Negative) {
             return num < 0n
