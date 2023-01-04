@@ -6,7 +6,9 @@ import type {ParamInterface} from '@/shared/Paramable'
 /** md
 # Grid Visualizer
 
-(example image should go here)
+[<img src="../../assets/img/Grid/example-grid.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/example-grid.png)
 
 This visualizer puts a sequence in a square spiral or in
 rows and allows you to highlight numbers based on various
@@ -19,131 +21,6 @@ also highlight properties such a whether a number is abundant or
 polygonal. Several properties can be highlighted at once, in which case
 later properties overcolor earlier ones.
 
-The original version of this visualizer was created by Olivia Brobin, as part
-of the [Experimental Mathematics
-Lab](https://www.colorado.edu/math/content/experimental-mathematics-lab) at
-[CU Boulder](https://www.colorado.edu/math/).
-
-## Examples
-
-###### 1 Natural numbers – Primes in a spiral with numbers
-
-[<img src="../assets/img/specimens/grid-ex/1.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../assets/img/specimens/grid-ex/1.png)
-
-These are the natural numbers in a square spiral, with each of the prime
-numbers highlighted; this is the classic [Ulam
-spiral](https://en.wikipedia.org/wiki/Ulam_spiral).  In this preset, the value
-of each term of the sequence is shown over the corresponding cell, in order to
-demonstrate the spiral.
-
-###### 2 Natural numbers – Primes in a spiral
-
-This shows many more terms; it becomes evident that the primes form long
-diagonal lines. These diagonal lines are quadratic equations, namely \( x^2 +
-c, \) \( x^2 + 2x + c, \) \( x^2 -2x + c, \) and \( x^2 + 4x + c. \)
-
-###### 3 Natural numbers – Primes in rows with numbers
-
-The natural numbers are put in rows, with each of the prime numbers
-highlighted.
-
-###### 4 Primes in rows
-
-Explanation?
-
-###### 5 Natural numbers – Primes in rows that reset and augment with numbers
-
-These are the natural numbers put in rows, but each row the sequence resets
-with each number one more than the number above it.
-
-###### 6 Natural numbers – Primes in rows that reset and augment
-
-###### 7 Natural numbers – N^2 Primes in rows that reset and augment with
-numbers
-
-These are the square numbers put in rows, but each row the sequence resets
-with each number one more than the number above it.
-
-###### 8 Natural numbers – N^2 Primes in rows that reset and augment
-
-When there are lots of numbers, long diagonal lines become apparent. The
-diagonal lines that go up and to the right each have a corresponding diagonal
-line that goes down and to the right because numbers repeat when they are
-arranged this way. The quadratic equation for which each of these diagonals
-corresponds is x^2 – x + C.
-
-###### 9 Natural numbers – Abundant numbers in spiral
-
-These are the natural numbers in a spiral. The abundant numbers are the black
-squares, and the non-abundant numbers are the white squares. Abundant numbers
-are numbers for which the sum of the factors is greater than the As you can
-see, the abundant numbers have a lot more structure than the abundant numbers.
-
-###### 10 Natural numbers – Abundant numbers in rows
-
-The structure of the abundant numbers becomes even more evident when they are
-put in rows.
-
-###### 11 Natural numbers – Abundant numbers and primes in spiral
-
-The abundant numbers are black, and the primes are red. When they are show
-together, primes apear less sporadic as they seems to fit around the abundant
-numbers.
-
-###### 12 Natural numbers – Polygonal Numbers in spiral
-
-This is the natural numbers in a spiral. The polygonal number are highlighted.
-The triangle numbers are red, the square number are orange, the pentagonal
-numbesr are yellow, the hexagonal numbers are green, the heptagonal numbers
-are blue, and the octagonal numbers are purple. Polygonal numbers are the
-number of dots that can be arranged in the shape of that polygon. For example,
-6 is a triangle number because one can form a triangle with three dots at the
-bottom, two dots in the middle, and one dot at the top.
-
-###### 13 Natural numbers – Polyongal Number in rows
-
-These are the polygonal numbers highlighted in rows.
-
-###### 14 Natural numbers – N^2 Polygonal Numbers in rows that reset and
-augment
-
-These are the polygonal numbers highlighted in rows with the top row being x^2
-and each of the squares being one more than the number above it.
-
-###### 15 Natural numbers, Rainbow Colored in rows with numbers
-
-These are the natural numbers in rows wiht each digit colored a different
-color.
-
-###### 16 Natural numbers, Rainbow Colored in spiral
-
-These are the natural numbers in a spiral with each digit colored a different
-color.
-
-###### 17 Pi ([A000796](https://oeis.org/A000796)) – Rainbow Colored in rows
-(With 1000 numbers)
-
-These are the digits of pi in rows, with each digit colored a different color.
-
-###### 18 Pi ([A000796](https://oeis.org/A000796)) – Rainbow Colored in rows
-(With 40000 numbers)
-
-These are the digits of pi in rows, with each digit colored a different color.
-
-###### 19 Abundant Numbers ([A005101](https://oeis.org/A005101)) Colored By
-Last Digit Alternative in a spiral
-
-When the abundant numbers are put in a spiral and highlighted by their last
-digit, the scarcit of odd abundant numbers becomes visually apparent. (With
-1000 numbers)
-
-###### 20 Abundant Numbers ([A005101](https://oeis.org/A005101)) Colored By
-Last Digit Alternative in a spiral (With 40000 numbers)
-
-When the abundant numbers are put in a spiral and highlighted by their last
-digit, their structure clearly becomes not random.
 
 ## Parameters
 **/
@@ -253,8 +130,8 @@ enum Property {
 }
 
 enum PropertyVisualization {
-    Primary_Color,
-    Secondary_Color,
+    Fill_Box,
+    Small_Box,
 }
 
 function getProperty(
@@ -288,7 +165,7 @@ function getPropertyVisualization(
     const propertyVisualization = {
         value: value,
         from: PropertyVisualization,
-        displayName: `Property ${index + 1} Visualization`,
+        displayName: `Property ${index + 1} Style`,
         required: false,
         visibleDependency: `property${index}`,
         visiblePredicate: (dependentValue: Property) =>
@@ -340,20 +217,22 @@ class VisualizerGrid extends VisualizerDefault {
     propertyObjects = [
         {
             property: Property.Prime,
-            visualization: PropertyVisualization.Primary_Color,
+            visualization: PropertyVisualization.Fill_Box,
             color: RED,
         },
     ]
 
     params: {[key: string]: ParamInterface} = {
         /** md
-### preset: Which preset to display
+### Presets: Which preset to display
 
 If a preset other than `Custom` is selected, then the `Properties`
 portion of the dialog is overriden.  For details on the meanings of the terms
-below, see the [properties section](#property-id) of the documentation.
+below, see the 
+[Properties](#property-1-2-etc-properties-to-display-by-colouring-cells) 
+section of the documentation.
 
-- Custom:  the remaining properties can be set by the user
+- Custom:  the remaining properties can be set by you
 - Primes:  primes are shown in red
 - Abundant_Numbers:  the abundant numbers are shown in black
 - Abundant_Numbers_And_Primes:  the primes are shown in red and the abundant
@@ -362,8 +241,8 @@ below, see the [properties section](#property-id) of the documentation.
   different colours (one for each type of polygon)
 - Color_By_Last_Digit_1:  the last digit is shown (one colour for each digit
   in a rainbow style)
-- Color_By_Last_Digit_2:  a variation on the last, where some digits are
-  'secondary' so the boxes are smaller
+- Color_By_Last_Digit_2:  a variation on the last, where odd digits are
+  are indicated by smaller boxes
 
          **/
         preset: {
@@ -376,10 +255,11 @@ below, see the [properties section](#property-id) of the documentation.
         },
 
         /** md
-### amountOfNumbers: The number of cells to display in the grid
+### Grid cells: The number of cells to display in the grid
 
+This will be rounded down to the nearest square integer.
 This may get laggy when it is in the thousands or higher, depending on the
-property being testing.
+property being testing.  
 
          **/
         amountOfNumbers: {
@@ -390,7 +270,7 @@ property being testing.
         },
 
         /** md
-### startingIndex: The sequence index at which to begin
+### Starting Index: The sequence index at which to begin
          **/
         startingIndex: {
             value: this.startingIndex,
@@ -400,7 +280,7 @@ property being testing.
         },
 
         /** md
-### pathType: The path to follow while filling numbers into the grid.
+### Path in grid: The path to follow while filling numbers into the grid.
 
 - Spiral:  An Ulam-type square spiral out from the origin.
 - Rows:  Left-to-right, top-to-bottom in rows.
@@ -415,10 +295,10 @@ property being testing.
         },
 
         /** md
-### showNumbers: Whether to show sequence values overtop of grid boxes
+### Show numbers: Whether to show sequence values overtop of grid boxes
 
 When this is selected, the number of cells in the grid will be limited to 400
-even if the user chooses more.
+even if you choose more.
          **/
         showNumbers: {
             value: this.showNumbers,
@@ -429,7 +309,9 @@ even if the user chooses more.
         },
 
         /** md
-### numberColor: The font color of displayed numbers
+### Number color: The font color of displayed numbers
+
+This is only relevant when the ```Show Numbers``` parameter is checked.
          **/
         numberColor: {
             value: this.numberColor,
@@ -441,8 +323,7 @@ even if the user chooses more.
                 dependentValue === true,
         },
         /** md
-### backgroundColor: The color of the background of the grid (non-highlighted
-boxes)
+### Background Color: Background color of the grid
          **/
         backgroundColor: {
             value: this.backgroundColor,
@@ -456,16 +337,15 @@ boxes)
         super()
         /** md
 ### Property 1, 2, etc.:  Properties to display by colouring cells
-{#property-id}
 
-The user can add multiple properties.  For each, they must choosen a property
-to highlight, and a colour with which to display it.  For each, the user can
-select ```Primary_Color``` or ```Secondary_Color```.  Primary colours fill the
-complete cell, while secondary colours fill a smaller box centered in the
-cell; this allows for visualizing two properties at once without overcoloring.
-Otherwise, later properties overcolor earlier ones.
+You can add multiple properties.  For each, there are some parameters
+to set.
 
-- None:  No effect
+##### Property:  the property to highlight
+
+- None:  This is simply a placeholder to indicate that no further properties
+will be used.  Choosing anything other than none will add a new property
+and reveal parameters for it.
 - Prime:  Whether the absolute value of an integer is prime
 - Negative:  Whether an integer is negative
 - Even:  Whether an integer is even
@@ -489,12 +369,22 @@ exceeding the sum of its divisors (excluding itself)
 - Semi_Prime:  Whether the absolute value of an integer is a
   [semi-prime](https://en.wikipedia.org/wiki/Semiprime), that is, a product of
   exactly two primes (possibly equal)
+
+##### Property Style:  Highlight style for cells with the property  
+
+This allows for visualizing two properties at once without overcoloring.
+Otherwise, later properties overcolor earlier ones.
+
+- Fill_Box:  Fill the complete cell
+- Small_Box:  Fill only a smaller central box in the cell
+
+##### Property Color:  Highlight color for cells with the property
          **/
 
         for (let i = 1; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
             this.propertyObjects.push({
                 property: Property.None,
-                visualization: PropertyVisualization.Primary_Color,
+                visualization: PropertyVisualization.Fill_Box,
                 color: DEFAULT_COLORS[i],
             })
         }
@@ -612,133 +502,133 @@ exceeding the sum of its divisors (excluding itself)
             this.backgroundColor = BLACK
             this.propertyObjects[0].property = Property.Prime
             this.propertyObjects[0].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[0].color = RED
         } else if (this.preset === Preset.Abundant_Numbers) {
             this.backgroundColor = WHITE
             this.propertyObjects[0].property = Property.Abundant
             this.propertyObjects[0].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[0].color = BLACK
         } else if (this.preset === Preset.Abundant_Numbers_And_Primes) {
             this.backgroundColor = WHITE
             this.propertyObjects[0].property = Property.Prime
             this.propertyObjects[0].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[0].color = RED
             this.propertyObjects[1].property = Property.Abundant
             this.propertyObjects[1].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[1].color = BLACK
         } else if (this.preset === Preset.Polygonal_Numbers) {
             this.backgroundColor = BLACK
             this.propertyObjects[0].property = Property.Triangular_Number
             this.propertyObjects[0].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[0].color = RED
             this.propertyObjects[1].property = Property.Square_Number
             this.propertyObjects[1].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[1].color = ORANGE
             this.propertyObjects[2].property = Property.Pentagonal_Number
             this.propertyObjects[2].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[2].color = YELLOW
             this.propertyObjects[3].property = Property.Hexagonal_Number
             this.propertyObjects[3].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[3].color = GREEN
             this.propertyObjects[4].property = Property.Heptagonal_Number
             this.propertyObjects[4].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[4].color = BLUE
             this.propertyObjects[5].property = Property.Octagonal_Number
             this.propertyObjects[5].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[5].color = PURPLE
         } else if (this.preset === Preset.Color_By_Last_Digit_1) {
             this.backgroundColor = BLACK
             this.propertyObjects[0].property = Property.Ends_With_Zero
             this.propertyObjects[0].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[0].color = RAINBOW[0]
             this.propertyObjects[1].property = Property.Ends_With_One
             this.propertyObjects[1].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[1].color = RAINBOW[1]
             this.propertyObjects[2].property = Property.Ends_With_Two
             this.propertyObjects[2].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[2].color = RAINBOW[2]
             this.propertyObjects[3].property = Property.Ends_With_Three
             this.propertyObjects[3].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[3].color = RAINBOW[3]
             this.propertyObjects[4].property = Property.Ends_With_Four
             this.propertyObjects[4].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[4].color = RAINBOW[4]
             this.propertyObjects[5].property = Property.Ends_With_Five
             this.propertyObjects[5].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[5].color = RAINBOW[5]
             this.propertyObjects[6].property = Property.Ends_With_Six
             this.propertyObjects[6].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[6].color = RAINBOW[6]
             this.propertyObjects[7].property = Property.Ends_With_Seven
             this.propertyObjects[7].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[7].color = RAINBOW[7]
             this.propertyObjects[8].property = Property.Ends_With_Eight
             this.propertyObjects[8].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[8].color = RAINBOW[8]
             this.propertyObjects[9].property = Property.Ends_With_Nine
             this.propertyObjects[9].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[9].color = RAINBOW[9]
         } else if (this.preset === Preset.Color_By_Last_Digit_2) {
             this.backgroundColor = BLACK
             this.propertyObjects[0].property = Property.Ends_With_Zero
             this.propertyObjects[0].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[0].color = RAINBOW[0]
             this.propertyObjects[1].property = Property.Ends_With_One
             this.propertyObjects[1].visualization =
-                PropertyVisualization.Secondary_Color
+                PropertyVisualization.Small_Box
             this.propertyObjects[1].color = RAINBOW[1]
             this.propertyObjects[2].property = Property.Ends_With_Two
             this.propertyObjects[2].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[2].color = RAINBOW[2]
             this.propertyObjects[3].property = Property.Ends_With_Three
             this.propertyObjects[3].visualization =
-                PropertyVisualization.Secondary_Color
+                PropertyVisualization.Small_Box
             this.propertyObjects[3].color = RAINBOW[3]
             this.propertyObjects[4].property = Property.Ends_With_Four
             this.propertyObjects[4].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[4].color = RAINBOW[4]
             this.propertyObjects[5].property = Property.Ends_With_Five
             this.propertyObjects[5].visualization =
-                PropertyVisualization.Secondary_Color
+                PropertyVisualization.Small_Box
             this.propertyObjects[5].color = RAINBOW[5]
             this.propertyObjects[6].property = Property.Ends_With_Six
             this.propertyObjects[6].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[6].color = RAINBOW[6]
             this.propertyObjects[7].property = Property.Ends_With_Seven
             this.propertyObjects[7].visualization =
-                PropertyVisualization.Secondary_Color
+                PropertyVisualization.Small_Box
             this.propertyObjects[7].color = RAINBOW[7]
             this.propertyObjects[8].property = Property.Ends_With_Eight
             this.propertyObjects[8].visualization =
-                PropertyVisualization.Primary_Color
+                PropertyVisualization.Fill_Box
             this.propertyObjects[8].color = RAINBOW[8]
             this.propertyObjects[9].property = Property.Ends_With_Nine
             this.propertyObjects[9].visualization =
-                PropertyVisualization.Secondary_Color
+                PropertyVisualization.Small_Box
             this.propertyObjects[9].color = RAINBOW[9]
         }
     }
@@ -814,7 +704,7 @@ exceeding the sum of its divisors (excluding itself)
             if (
                 this.propertyObjects[i].property != Property.None
                 && this.propertyObjects[i].visualization
-                    === PropertyVisualization.Primary_Color
+                    === PropertyVisualization.Fill_Box
             ) {
                 if (
                     this.hasProperty(
@@ -833,7 +723,7 @@ exceeding the sum of its divisors (excluding itself)
             if (
                 this.propertyObjects[i].property != Property.None
                 && this.propertyObjects[i].visualization
-                    === PropertyVisualization.Secondary_Color
+                    === PropertyVisualization.Small_Box
             ) {
                 if (
                     this.hasProperty(
@@ -1139,3 +1029,163 @@ function isSemiPrime(num: bigint): boolean {
     if (num > 1n) ++cnt
     return cnt === 2 ? true : false
 }
+/** md
+
+
+## Examples
+
+Click on any image to expand it.
+
+###### The Ulam Spiral
+
+[<img src="../../assets/img/Grid/1.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/1.png)
+[<img src="../../assets/img/Grid/2.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/2.png)
+
+These are the natural numbers in a square spiral, with each of the prime
+numbers highlighted in red; this is the classic [Ulam
+spiral](https://en.wikipedia.org/wiki/Ulam_spiral).  In the first image, the 
+value of each term of the sequence is shown over the corresponding cell, 
+in order to
+demonstrate the spiral.  In the second, we see many more terms, whereupon
+it becomes evident that the primes form long
+diagonal lines. These diagonal lines are quadratic equations, namely 
+\( x^2 + c\), \( x^2 + 2x + c\), \( x^2 -2x + c\), and 
+\( x^2 + 4x + c \).
+
+###### Traversing the grid in rows
+
+[<img src="../../assets/img/Grid/3.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/3.png)
+[<img src="../../assets/img/Grid/4.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/4.png)
+
+The natural numbers are put in rows (left to right, top to bottom), 
+with each of the prime numbers
+highlighted in red.  Primes can only appear at positions 
+which are coprime to the
+rowlength, leading to the visual effect of black columns.
+
+###### The Rows_Offset capability
+
+[<img src="../../assets/img/Grid/5.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/5.png)
+[<img src="../../assets/img/Grid/6.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/6.png)
+[<img src="../../assets/img/Grid/7.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/7.png)
+[<img src="../../assets/img/Grid/8.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/8.png)
+
+When you choose ```Rows_Offset``` for the parameter ```Path in Grid```,
+the sequence starts over in each row, but its _values_ are incremented by one.
+In this example, primes are again highlighted in red.
+(1) and (2): natural numbers; (3) and (4): squares.
+In the second series of images, long diagonal lines become apparent. The
+diagonal lines that go up and to the right each have a corresponding diagonal
+line that goes down and to the right because numbers repeat when they are
+arranged this way. The quadratic equation for which each of these diagonals
+corresponds is \(x^2 – x + C\).
+
+###### Abundant numbers ([A005101](https://oeis.org/A005101)) and primes
+
+[<img src="../../assets/img/Grid/9.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/9.png)
+[<img src="../../assets/img/Grid/10.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/10.png)
+[<img src="../../assets/img/Grid/11.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/11.png)
+
+[Abundant numbers](https://en.wikipedia.org/wiki/Abundant_number) 
+([A005101](https://oeis.org/A005101)) are those whose sum of 
+divisors (excluding the number 
+itself) exceed the number.  The first two images show a spiral and row
+arrangement of the natural numbers, with abundant numbers in 
+black on a white background.
+The last image combines abundant and primes in a spiral arrangement of 
+the natural numbers.  The primes appear to fit "around" the abundant
+numbers (this effect is easiest to appreciate by clicking on the last
+image to expand it).
+
+###### Polygonal Numbers
+
+[<img src="../../assets/img/Grid/12.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/12.png)
+[<img src="../../assets/img/Grid/13.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/13.png)
+[<img src="../../assets/img/Grid/14.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/14.png)
+
+Putting the natural numbers in a spiral or in rows (first two images), 
+we can highlight the [polygonal
+numbers](https://en.wikipedia.org/wiki/Polygonal_number). Polygonal numbers
+are the
+number of dots that can be arranged in the shape of that polygon. For example,
+6 is a triangle number because one can form an equilateral triangle with 
+three dots at the bottom, two dots in the middle, and one dot at the top.
+The triangle numbers are red, the square number are orange, the 
+pentagonal
+numbers are yellow, the hexagonal numbers are green, the heptagonal numbers
+are blue, and the octagonal numbers are purple. 
+For the final image, we use the sequence of squares, and use the 
+```Rows_Offset``` mode.
+
+###### Digit colourings
+
+[<img src="../../assets/img/Grid/15.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/15.png)
+[<img src="../../assets/img/Grid/16.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/16.png)
+[<img src="../../assets/img/Grid/17.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/17.png)
+[<img src="../../assets/img/Grid/18.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/18.png)
+
+The first image shows the natural numbers in rows, coloured by final digit.
+The second image is the same, but in spiral format.  The final two images
+show the digits of pi ([A000796](https://oeis.org/A000796)) in rows, 
+at different magnifications.
+
+###### Digits of abundant numbers ([A005101](https://oeis.org/A005101))
+
+[<img src="../../assets/img/Grid/19.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/19.png)
+[<img src="../../assets/img/Grid/20.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../../assets/img/Grid/20.png)
+
+When the abundant numbers are put in a spiral and highlighted by their last
+digit, the scarcity of odd abundant numbers (indicated here by small squares)
+becomes visually apparent.  As we zoom out, we see they are clearly not 
+random.
+
+
+## Credit
+
+The original version of this visualizer was created by Olivia Brobin, as part
+of the [Experimental Mathematics
+Lab](https://www.colorado.edu/math/content/experimental-mathematics-lab) at
+[CU Boulder](https://www.colorado.edu/math/).
+
+
+**/
