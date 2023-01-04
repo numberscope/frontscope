@@ -83,7 +83,7 @@ enum Preset {
 enum PathType {
     Spiral,
     Rows,
-    Rows_Offset,
+    Rows_Augment,
 }
 
 enum Direction {
@@ -130,7 +130,7 @@ enum Property {
 }
 
 enum PropertyVisualization {
-    Fill_Box,
+    Fill_Cell,
     Small_Box,
 }
 
@@ -165,7 +165,7 @@ function getPropertyVisualization(
     const propertyVisualization = {
         value: value,
         from: PropertyVisualization,
-        displayName: `Property ${index + 1} Style`,
+        displayName: `Display`,
         required: false,
         visibleDependency: `property${index}`,
         visiblePredicate: (dependentValue: Property) =>
@@ -179,7 +179,7 @@ function getPropertyColor(value: string, index: number) {
     const propertyColor = {
         value: value,
         forceType: 'color',
-        displayName: `Property ${index + 1} color`,
+        displayName: `Color`,
         required: false,
         visibleDependency: `property${index}`,
         visiblePredicate: (dependentValue: Property) =>
@@ -217,7 +217,7 @@ class VisualizerGrid extends VisualizerDefault {
     propertyObjects = [
         {
             property: Property.Prime,
-            visualization: PropertyVisualization.Fill_Box,
+            visualization: PropertyVisualization.Fill_Cell,
             color: RED,
         },
     ]
@@ -266,7 +266,7 @@ property being testing.
             value: this.amountOfNumbers,
             displayName: 'Grid cells',
             required: false,
-            description: 'Warning: display lags over 10,000 numbers',
+            description: 'Warning: display lags over 10,000 cells',
         },
 
         /** md
@@ -284,7 +284,7 @@ property being testing.
 
 - Spiral:  An Ulam-type square spiral out from the origin.
 - Rows:  Left-to-right, top-to-bottom in rows.
-- Rows_Offset:  The n-th row contains the sequence beginning at term n, read
+- Rows_Augment:  The n-th row contains the sequence beginning at term n, read
   left-to-right.
          **/
         pathType: {
@@ -370,21 +370,21 @@ exceeding the sum of its divisors (excluding itself)
   [semi-prime](https://en.wikipedia.org/wiki/Semiprime), that is, a product of
   exactly two primes (possibly equal)
 
-##### Property Style:  Highlight style for cells with the property  
+##### Display:  Highlight style for cells with the property  
 
 This allows for visualizing two properties at once without overcoloring.
 Otherwise, later properties overcolor earlier ones.
 
-- Fill_Box:  Fill the complete cell
+- Fill_Cell:  Fill the complete cell
 - Small_Box:  Fill only a smaller central box in the cell
 
-##### Property Color:  Highlight color for cells with the property
+##### Color:  Highlight color for cells with the property
          **/
 
         for (let i = 1; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
             this.propertyObjects.push({
                 property: Property.None,
-                visualization: PropertyVisualization.Fill_Box,
+                visualization: PropertyVisualization.Fill_Cell,
                 color: DEFAULT_COLORS[i],
             })
         }
@@ -502,97 +502,97 @@ Otherwise, later properties overcolor earlier ones.
             this.backgroundColor = BLACK
             this.propertyObjects[0].property = Property.Prime
             this.propertyObjects[0].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[0].color = RED
         } else if (this.preset === Preset.Abundant_Numbers) {
             this.backgroundColor = WHITE
             this.propertyObjects[0].property = Property.Abundant
             this.propertyObjects[0].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[0].color = BLACK
         } else if (this.preset === Preset.Abundant_Numbers_And_Primes) {
             this.backgroundColor = WHITE
             this.propertyObjects[0].property = Property.Prime
             this.propertyObjects[0].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[0].color = RED
             this.propertyObjects[1].property = Property.Abundant
             this.propertyObjects[1].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[1].color = BLACK
         } else if (this.preset === Preset.Polygonal_Numbers) {
             this.backgroundColor = BLACK
             this.propertyObjects[0].property = Property.Triangular_Number
             this.propertyObjects[0].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[0].color = RED
             this.propertyObjects[1].property = Property.Square_Number
             this.propertyObjects[1].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[1].color = ORANGE
             this.propertyObjects[2].property = Property.Pentagonal_Number
             this.propertyObjects[2].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[2].color = YELLOW
             this.propertyObjects[3].property = Property.Hexagonal_Number
             this.propertyObjects[3].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[3].color = GREEN
             this.propertyObjects[4].property = Property.Heptagonal_Number
             this.propertyObjects[4].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[4].color = BLUE
             this.propertyObjects[5].property = Property.Octagonal_Number
             this.propertyObjects[5].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[5].color = PURPLE
         } else if (this.preset === Preset.Color_By_Last_Digit_1) {
             this.backgroundColor = BLACK
             this.propertyObjects[0].property = Property.Ends_With_Zero
             this.propertyObjects[0].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[0].color = RAINBOW[0]
             this.propertyObjects[1].property = Property.Ends_With_One
             this.propertyObjects[1].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[1].color = RAINBOW[1]
             this.propertyObjects[2].property = Property.Ends_With_Two
             this.propertyObjects[2].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[2].color = RAINBOW[2]
             this.propertyObjects[3].property = Property.Ends_With_Three
             this.propertyObjects[3].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[3].color = RAINBOW[3]
             this.propertyObjects[4].property = Property.Ends_With_Four
             this.propertyObjects[4].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[4].color = RAINBOW[4]
             this.propertyObjects[5].property = Property.Ends_With_Five
             this.propertyObjects[5].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[5].color = RAINBOW[5]
             this.propertyObjects[6].property = Property.Ends_With_Six
             this.propertyObjects[6].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[6].color = RAINBOW[6]
             this.propertyObjects[7].property = Property.Ends_With_Seven
             this.propertyObjects[7].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[7].color = RAINBOW[7]
             this.propertyObjects[8].property = Property.Ends_With_Eight
             this.propertyObjects[8].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[8].color = RAINBOW[8]
             this.propertyObjects[9].property = Property.Ends_With_Nine
             this.propertyObjects[9].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[9].color = RAINBOW[9]
         } else if (this.preset === Preset.Color_By_Last_Digit_2) {
             this.backgroundColor = BLACK
             this.propertyObjects[0].property = Property.Ends_With_Zero
             this.propertyObjects[0].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[0].color = RAINBOW[0]
             this.propertyObjects[1].property = Property.Ends_With_One
             this.propertyObjects[1].visualization =
@@ -600,7 +600,7 @@ Otherwise, later properties overcolor earlier ones.
             this.propertyObjects[1].color = RAINBOW[1]
             this.propertyObjects[2].property = Property.Ends_With_Two
             this.propertyObjects[2].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[2].color = RAINBOW[2]
             this.propertyObjects[3].property = Property.Ends_With_Three
             this.propertyObjects[3].visualization =
@@ -608,7 +608,7 @@ Otherwise, later properties overcolor earlier ones.
             this.propertyObjects[3].color = RAINBOW[3]
             this.propertyObjects[4].property = Property.Ends_With_Four
             this.propertyObjects[4].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[4].color = RAINBOW[4]
             this.propertyObjects[5].property = Property.Ends_With_Five
             this.propertyObjects[5].visualization =
@@ -616,7 +616,7 @@ Otherwise, later properties overcolor earlier ones.
             this.propertyObjects[5].color = RAINBOW[5]
             this.propertyObjects[6].property = Property.Ends_With_Six
             this.propertyObjects[6].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[6].color = RAINBOW[6]
             this.propertyObjects[7].property = Property.Ends_With_Seven
             this.propertyObjects[7].visualization =
@@ -624,7 +624,7 @@ Otherwise, later properties overcolor earlier ones.
             this.propertyObjects[7].color = RAINBOW[7]
             this.propertyObjects[8].property = Property.Ends_With_Eight
             this.propertyObjects[8].visualization =
-                PropertyVisualization.Fill_Box
+                PropertyVisualization.Fill_Cell
             this.propertyObjects[8].color = RAINBOW[8]
             this.propertyObjects[9].property = Property.Ends_With_Nine
             this.propertyObjects[9].visualization =
@@ -634,7 +634,7 @@ Otherwise, later properties overcolor earlier ones.
     }
 
     setOverridingSettings() {
-        if (this.pathType === PathType.Rows_Offset) {
+        if (this.pathType === PathType.Rows_Augment) {
             this.pathType = PathType.Rows
             this.resetAndAugmentByOne = true
         }
@@ -704,7 +704,7 @@ Otherwise, later properties overcolor earlier ones.
             if (
                 this.propertyObjects[i].property != Property.None
                 && this.propertyObjects[i].visualization
-                    === PropertyVisualization.Fill_Box
+                    === PropertyVisualization.Fill_Cell
             ) {
                 if (
                     this.hasProperty(
@@ -1071,7 +1071,7 @@ highlighted in red.  Primes can only appear at positions
 which are coprime to the
 rowlength, leading to the visual effect of black columns.
 
-###### The Rows_Offset capability
+###### The Rows_Augment capability
 
 [<img src="../../assets/img/Grid/5.png" width="320" 
 style="margin-left: 1em; margin-right: 1em" 
@@ -1086,7 +1086,7 @@ style="margin-left: 1em; margin-right: 1em"
 style="margin-left: 1em; margin-right: 1em" 
 />](../../assets/img/Grid/8.png)
 
-When you choose ```Rows_Offset``` for the parameter ```Path in Grid```,
+When you choose ```Rows_Augment``` for the parameter ```Path in Grid```,
 the sequence starts over in each row, but its _values_ are incremented by one.
 In this example, primes are again highlighted in red.
 (1) and (2): natural numbers; (3) and (4): squares.
@@ -1117,7 +1117,8 @@ black on a white background.
 The last image combines abundant and primes in a spiral arrangement of 
 the natural numbers.  The primes appear to fit "around" the abundant
 numbers (this effect is easiest to appreciate by clicking on the last
-image to expand it).
+image to expand it).  This is a tendency, not a rule, as most 
+(but not all) abundant numbers are divisible by 2 or 3.
 
 ###### Polygonal Numbers
 
@@ -1143,7 +1144,7 @@ pentagonal
 numbers are yellow, the hexagonal numbers are green, the heptagonal numbers
 are blue, and the octagonal numbers are purple. 
 For the final image, we use the sequence of squares, and use the 
-```Rows_Offset``` mode.
+```Rows_Augment``` mode.
 
 ###### Digit colourings
 
