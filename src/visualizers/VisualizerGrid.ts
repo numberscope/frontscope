@@ -8,10 +8,10 @@ import type {ParamInterface} from '@/shared/Paramable'
 
 [<img src="../../assets/img/Grid/example-grid.png" width="320" 
 style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/example-grid.png)
+/>](../assets/img/Grid/example-grid.png)
 
 This visualizer puts a sequence in a square spiral or in
-rows and allows you to highlight numbers based on various
+rows and allows you to highlight its values based on various
 properties.
 
 The inspiration for this visualizer is [Ulam's
@@ -229,7 +229,7 @@ class VisualizerGrid extends VisualizerDefault {
 If a preset other than `Custom` is selected, then the `Properties`
 portion of the dialog is overriden.  For details on the meanings of the terms
 below, see the 
-[Properties](#property-1-2-etc-properties-to-display-by-colouring-cells) 
+[Properties](#property-1-2-etc-properties-to-display-by-coloring-cells)
 section of the documentation.
 
 - Custom:  the remaining properties can be set by you
@@ -238,12 +238,11 @@ section of the documentation.
 - Abundant_Numbers_And_Primes:  the primes are shown in red and the abundant
   numbers in black
 - Polygonal_Numbers:  the polygonal numbers are shown in a variety of
-  different colours (one for each type of polygon)
-- Color_By_Last_Digit_1:  the last digit is shown (one colour for each digit
+  different colors (one for each type of polygon)
+- Color_By_Last_Digit_1:  the last digit is shown (one color for each digit
   in a rainbow style)
 - Color_By_Last_Digit_2:  a variation on the last, where odd digits are
   are indicated by smaller boxes
-
          **/
         preset: {
             value: this.preset,
@@ -259,8 +258,7 @@ section of the documentation.
 
 This will be rounded down to the nearest square integer.
 This may get laggy when it is in the thousands or higher, depending on the
-property being testing.  
-
+property being tested.
          **/
         amountOfNumbers: {
             value: this.amountOfNumbers,
@@ -282,10 +280,10 @@ property being testing.
         /** md
 ### Path in grid: The path to follow while filling numbers into the grid.
 
-- Spiral:  An Ulam-type square spiral out from the origin.
+- Spiral:  An Ulam-type square spiral starting at the center of grid.
 - Rows:  Left-to-right, top-to-bottom in rows.
-- Rows_Augment:  The n-th row contains the sequence beginning at term n, read
-  left-to-right.
+- Rows_Augment:  Each row restarts the sequence from the starting index,
+    but adds the row number to the sequence _values_.
          **/
         pathType: {
             value: this.pathType,
@@ -295,7 +293,7 @@ property being testing.
         },
 
         /** md
-### Show numbers: Whether to show sequence values overtop of grid boxes
+### Show numbers: Whether to show values overlaid on cells
 
 When this is selected, the number of cells in the grid will be limited to 400
 even if you choose more.
@@ -311,7 +309,7 @@ even if you choose more.
         /** md
 ### Number color: The font color of displayed numbers
 
-This is only relevant when the ```Show Numbers``` parameter is checked.
+This parameter is only available when the "Show Numbers" parameter is checked.
          **/
         numberColor: {
             value: this.numberColor,
@@ -336,7 +334,7 @@ This is only relevant when the ```Show Numbers``` parameter is checked.
     constructor() {
         super()
         /** md
-### Property 1, 2, etc.:  Properties to display by colouring cells
+### Property 1, 2, etc.:  Properties to display by coloring cells
 
 You can add multiple properties.  For each, there are some parameters
 to set.
@@ -372,8 +370,10 @@ exceeding the sum of its divisors (excluding itself)
 
 ##### Display:  Highlight style for cells with the property  
 
-This allows for visualizing two properties at once without overcoloring.
-Otherwise, later properties overcolor earlier ones.
+Using different display styles allows for visualizing two properties
+that are both true for the same value at once,
+without them overcoloring each other. (Note that later properties overcolor
+earlier ones that use the _same_ style.)
 
 - Fill_Cell:  Fill the complete cell
 - Small_Box:  Fill only a smaller central box in the cell
@@ -1039,11 +1039,11 @@ Click on any image to expand it.
 ###### The Ulam Spiral
 
 [<img src="../../assets/img/Grid/1.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/1.png)
+style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/Grid/1.png)
 [<img src="../../assets/img/Grid/2.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/2.png)
+style="margin-left: 0.5em; margin-right: 1em"
+/>](../assets/img/Grid/2.png)
 
 These are the natural numbers in a square spiral, with each of the prime
 numbers highlighted in red; this is the classic [Ulam
@@ -1059,11 +1059,11 @@ diagonal lines. These diagonal lines are quadratic equations, namely
 ###### Traversing the grid in rows
 
 [<img src="../../assets/img/Grid/3.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/3.png)
+style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/Grid/3.png)
 [<img src="../../assets/img/Grid/4.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/4.png)
+style="margin-left: 0.5em; margin-right: 1em"
+/>](../assets/img/Grid/4.png)
 
 The natural numbers are put in rows (left to right, top to bottom), 
 with each of the prime numbers
@@ -1074,17 +1074,13 @@ rowlength, leading to the visual effect of black columns.
 ###### The Rows_Augment capability
 
 [<img src="../../assets/img/Grid/5.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/5.png)
+style="margin: 0.5em" />](../assets/img/Grid/5.png)
 [<img src="../../assets/img/Grid/6.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/6.png)
+style="margin: 0.5em" />](../assets/img/Grid/6.png)
 [<img src="../../assets/img/Grid/7.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/7.png)
+style="margin: 0.5em" />](../assets/img/Grid/7.png)
 [<img src="../../assets/img/Grid/8.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/8.png)
+style="margin: 0.5em" />](../assets/img/Grid/8.png)
 
 When you choose ```Rows_Augment``` for the parameter ```Path in Grid```,
 the sequence starts over in each row, but its _values_ are incremented by one.
@@ -1099,21 +1095,18 @@ corresponds is \(x^2 – x + C\).
 ###### Abundant numbers ([A005101](https://oeis.org/A005101)) and primes
 
 [<img src="../../assets/img/Grid/9.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/9.png)
+style="margin: 0.5em" />](../assets/img/Grid/9.png)
 [<img src="../../assets/img/Grid/10.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/10.png)
+style="margin: 0.5em" />](../assets/img/Grid/10.png)
 [<img src="../../assets/img/Grid/11.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/11.png)
+style="margin: 0.5em" />](../assets/img/Grid/11.png)
 
 [Abundant numbers](https://en.wikipedia.org/wiki/Abundant_number) 
-([A005101](https://oeis.org/A005101)) are those whose sum of 
-divisors (excluding the number 
-itself) exceed the number.  The first two images show a spiral and row
+([A005101](https://oeis.org/A005101)) are those less than their sum of
+proper divisors.  The first two images show a spiral and row
 arrangement of the natural numbers, with abundant numbers in 
 black on a white background.
+
 The last image combines abundant and primes in a spiral arrangement of 
 the natural numbers.  The primes appear to fit "around" the abundant
 numbers (this effect is easiest to appreciate by clicking on the last
@@ -1123,45 +1116,35 @@ image to expand it).  This is a tendency, not a rule, as most
 ###### Polygonal Numbers
 
 [<img src="../../assets/img/Grid/12.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/12.png)
+style="margin: 0.5em" />](../assets/img/Grid/12.png)
 [<img src="../../assets/img/Grid/13.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/13.png)
+style="margin: 0.5em" />](../assets/img/Grid/13.png)
 [<img src="../../assets/img/Grid/14.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/14.png)
+style="margin: 0.5em" />](../assets/img/Grid/14.png)
 
 Putting the natural numbers in a spiral or in rows (first two images), 
 we can highlight the [polygonal
 numbers](https://en.wikipedia.org/wiki/Polygonal_number). Polygonal numbers
-are the
-number of dots that can be arranged in the shape of that polygon. For example,
-6 is a triangle number because one can form an equilateral triangle with 
+count dots that can be arranged in the shape of that polygon. For example,
+6 is a triangular number because one can form an equilateral triangle with
 three dots at the bottom, two dots in the middle, and one dot at the top.
-The triangle numbers are red, the square number are orange, the 
-pentagonal
-numbers are yellow, the hexagonal numbers are green, the heptagonal numbers
-are blue, and the octagonal numbers are purple. 
-For the final image, we use the sequence of squares, and use the 
+The triangular numbers are red, square numbers are orange, pentagonal
+yellow, hexagonal green, heptagonal blue, and the octagonal numbers
+are purple. For the final image, we use the sequence of squares, and use the
 ```Rows_Augment``` mode.
 
-###### Digit colourings
+###### Digit colorings
 
 [<img src="../../assets/img/Grid/15.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/15.png)
+style="margin: 0.5em" />](../assets/img/Grid/15.png)
 [<img src="../../assets/img/Grid/16.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/16.png)
+style="margin: 0.5em" />](../assets/img/Grid/16.png)
 [<img src="../../assets/img/Grid/17.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/17.png)
+style="margin: 0.5em" />](../assets/img/Grid/17.png)
 [<img src="../../assets/img/Grid/18.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/18.png)
+style="margin: 0.5em" />](../assets/img/Grid/18.png)
 
-The first image shows the natural numbers in rows, coloured by final digit.
+The first image shows the natural numbers in rows, colored by final digit.
 The second image is the same, but in spiral format.  The final two images
 show the digits of pi ([A000796](https://oeis.org/A000796)) in rows, 
 at different magnifications.
@@ -1169,16 +1152,16 @@ at different magnifications.
 ###### Digits of abundant numbers ([A005101](https://oeis.org/A005101))
 
 [<img src="../../assets/img/Grid/19.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/19.png)
+style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/Grid/19.png)
 [<img src="../../assets/img/Grid/20.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
-/>](../../assets/img/Grid/20.png)
+style="margin-left: 0.5em; margin-right: 1em"
+/>](../assets/img/Grid/20.png)
 
 When the abundant numbers are put in a spiral and highlighted by their last
-digit, the scarcity of odd abundant numbers (indicated here by small squares)
-becomes visually apparent.  As we zoom out, we see they are clearly not 
-random.
+digit, the scarcity of odd abundant numbers (indicated on the left by small
+squares) becomes visually apparent.  As we zoom out in the right image, we
+see they are clearly not random.
 
 
 ## Credit
