@@ -28,6 +28,10 @@ Lab](https://www.colorado.edu/math/content/experimental-mathematics-lab) at
 
 ###### 1 Natural numbers – Primes in a spiral with numbers
 
+[<img src="../assets/img/specimens/grid-ex/1.png" width="320" 
+style="margin-left: 1em; margin-right: 1em" 
+/>](../assets/img/specimens/grid-ex/1.png)
+
 These are the natural numbers in a square spiral, with each of the prime
 numbers highlighted; this is the classic [Ulam
 spiral](https://en.wikipedia.org/wiki/Ulam_spiral).  In this preset, the value
