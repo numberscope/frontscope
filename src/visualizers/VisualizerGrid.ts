@@ -808,7 +808,6 @@ earlier ones that use the _same_ style.)
     }
 
     hasProperty(ind: number, property: Property) {
-        console.log('bool:', this.propertyIndicatorFunction[property](ind))
         return this.propertyIndicatorFunction[property](ind)
     }
 
@@ -896,8 +895,6 @@ earlier ones that use the _same_ style.)
      */
     isPrime(ind: number): boolean {
         const factors = this.seq.getFactors(ind)
-        console.log(this.seq.getElement(ind))
-        console.log(factors)
         if (
             factors === null // if we can't factor, it isn't prime
             || factors.length === 0 // 1 is not prime
@@ -1010,8 +1007,6 @@ earlier ones that use the _same_ style.)
 
     isSemiPrime(ind: number): boolean {
         const factors = this.seq.getFactors(ind)
-        console.log(this.seq.getElement(ind))
-        console.log(factors)
         if (
             factors === null // if we can't factor, it isn't semi-prime
             || factors.length === 0 // 1 is not semi-prime
