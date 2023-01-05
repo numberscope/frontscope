@@ -194,6 +194,7 @@ class VisualizerGrid extends VisualizerDefault {
 
     //Grid variables
     amountOfNumbers = 4096
+    squareRootOfAmountOfNumbers = 64
     currentIndex = 0
     startingIndex = 0
     currentNumber = 0n
@@ -213,6 +214,9 @@ class VisualizerGrid extends VisualizerDefault {
     incrementForNumberToTurnAt = 1
     whetherIncrementShouldIncrement = true
 
+    hasPrimaryColorProperties = false
+    hasSecondaryColorProperties = false
+
     //Properties
     propertyObjects = [
         {
@@ -221,6 +225,19 @@ class VisualizerGrid extends VisualizerDefault {
             color: RED,
         },
     ]
+    propertyObjectsPrimary = [
+        {
+            property: Property.Prime,
+            color: RED,
+        },
+    ]
+    propertyObjectsSecondary = [
+        {
+            property: Property.Prime,
+            color: RED,
+        },
+    ]
+
     propertyIndicatorFunction: {
         [key in Property]: ((ind: number) => boolean) | (() => boolean)
     } = {
@@ -469,12 +486,19 @@ earlier ones that use the _same_ style.)
         }
     }
 
-    draw(): void {
+    setup(): void {
+        // fill background
+        this.sketch.background(this.backgroundColor)
+
         this.setPresets()
 
         this.sketch.strokeWeight(0)
 
         this.setOverridingSettings()
+
+        // determine whether to watch for primary or secondary fills
+        this.setHasPrimaryColorProperties()
+        this.setHasSecondaryColorProperties()
 
         this.amountOfNumbers = Math.min(
             this.amountOfNumbers,
@@ -482,18 +506,22 @@ earlier ones that use the _same_ style.)
         )
 
         //Round up amount of numbers so that it is a square number.
-        const squareRootOfAmountOfNumbers = Number(
+        this.squareRootOfAmountOfNumbers = Number(
             floorSqrt(this.amountOfNumbers)
         )
 
         this.amountOfNumbers =
-            squareRootOfAmountOfNumbers * squareRootOfAmountOfNumbers
+            this.squareRootOfAmountOfNumbers
+            * this.squareRootOfAmountOfNumbers
 
         //This is because 20 x 20 is 1:1 scaling.
-        this.scalingFactor = this.sketch.width / squareRootOfAmountOfNumbers
+        this.scalingFactor =
+            this.sketch.width / this.squareRootOfAmountOfNumbers
 
-        this.setPathVariables(squareRootOfAmountOfNumbers)
+        this.setPathVariables(this.squareRootOfAmountOfNumbers)
+    }
 
+    draw(): void {
         this.currentIndex = Math.max(this.startingIndex, this.seq.first)
         let augmentForRowReset = 0n
 
@@ -520,7 +548,7 @@ earlier ones that use the _same_ style.)
             this.currentIndex++
 
             this.moveCoordinatesUsingPath(
-                squareRootOfAmountOfNumbers,
+                this.squareRootOfAmountOfNumbers,
                 iteration
             )
         }
@@ -710,22 +738,23 @@ earlier ones that use the _same_ style.)
     }
 
     fillGridCell() {
-        this.drawBackgroundSquare()
-
-        this.drawPrimaryColorSquare()
-
-        this.drawSecondaryColorSquare()
-
-        this.showNumber()
-    }
-
-    drawBackgroundSquare() {
         this.sketch.fill(this.backgroundColor)
-        this.drawBigSquare()
+
+        if (this.hasPrimaryColorProperties) {
+            this.drawPrimaryColorSquare()
+        }
+
+        if (this.hasSecondaryColorProperties) {
+            this.drawSecondaryColorSquare()
+        }
+
+        if (this.showNumbers) {
+            this.showNumber()
+        }
     }
 
     drawPrimaryColorSquare() {
-        this.colorMainColorProperties()
+        this.colorPrimaryColorProperties()
         this.drawBigSquare()
     }
 
@@ -734,40 +763,66 @@ earlier ones that use the _same_ style.)
         this.drawSmallSquare()
     }
 
-    colorMainColorProperties() {
+    setHasPrimaryColorProperties() {
+        this.propertyObjectsPrimary.pop()
         for (let i = 0; i < this.propertyObjects.length; i++) {
             if (
                 this.propertyObjects[i].property != Property.None
                 && this.propertyObjects[i].visualization
                     === PropertyVisualization.Fill_Cell
             ) {
-                if (
-                    this.hasProperty(
-                        this.currentIndex,
-                        this.propertyObjects[i].property
-                    )
-                ) {
-                    this.sketch.fill(this.propertyObjects[i].color)
-                }
+                this.propertyObjectsPrimary.push({
+                    property: this.propertyObjects[i].property,
+                    color: this.propertyObjects[i].color,
+                })
+                this.hasPrimaryColorProperties = true
+                return
             }
         }
+        this.hasPrimaryColorProperties = false
     }
 
-    colorSecondaryColorProperties() {
+    setHasSecondaryColorProperties() {
+        this.propertyObjectsSecondary.pop()
         for (let i = 0; i < this.propertyObjects.length; i++) {
             if (
                 this.propertyObjects[i].property != Property.None
                 && this.propertyObjects[i].visualization
                     === PropertyVisualization.Box_In_Cell
             ) {
-                if (
-                    this.hasProperty(
-                        this.currentIndex,
-                        this.propertyObjects[i].property
-                    )
-                ) {
-                    this.sketch.fill(this.propertyObjects[i].color)
-                }
+                this.propertyObjectsSecondary.push({
+                    property: this.propertyObjects[i].property,
+                    color: this.propertyObjects[i].color,
+                })
+                this.hasSecondaryColorProperties = true
+                return
+            }
+        }
+        this.hasSecondaryColorProperties = false
+    }
+
+    colorPrimaryColorProperties() {
+        for (let i = 0; i < this.propertyObjectsPrimary.length; i++) {
+            if (
+                this.hasProperty(
+                    this.currentIndex,
+                    this.propertyObjects[i].property
+                )
+            ) {
+                this.sketch.fill(this.propertyObjects[i].color)
+            }
+        }
+    }
+
+    colorSecondaryColorProperties() {
+        for (let i = 0; i < this.propertyObjectsSecondary.length; i++) {
+            if (
+                this.hasProperty(
+                    this.currentIndex,
+                    this.propertyObjects[i].property
+                )
+            ) {
+                this.sketch.fill(this.propertyObjects[i].color)
             }
         }
     }
