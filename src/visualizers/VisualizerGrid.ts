@@ -129,43 +129,6 @@ enum Property {
     Semi_Prime,
 }
 
-const propertyIndicatorFunction: {
-    [key in Property]: ((num: bigint) => boolean) | (() => false)
-} = {
-    [Property.None]: () => false,
-    [Property.Prime]: (num: bigint) => isPrime(num),
-    [Property.Negative]: (num: bigint) => num < 0n,
-    [Property.Even]: (num: bigint) => num % 2n === 0n,
-    [Property.Divisible_By_Three]: (num: bigint) => num % 3n === 0n,
-    [Property.Divisible_By_Four]: (num: bigint) => num % 4n === 0n,
-    [Property.Divisible_By_Five]: (num: bigint) => num % 5n === 0n,
-    [Property.Divisible_By_Six]: (num: bigint) => num % 6n === 0n,
-    [Property.Divisible_By_Seven]: (num: bigint) => num % 7n === 0n,
-    [Property.Divisible_By_Eight]: (num: bigint) => num % 8n === 0n,
-    [Property.Ends_With_One]: (num: bigint) => num % 10n === 1n,
-    [Property.Ends_With_Two]: (num: bigint) => num % 10n === 2n,
-    [Property.Ends_With_Three]: (num: bigint) => num % 10n === 3n,
-    [Property.Ends_With_Four]: (num: bigint) => num % 10n === 4n,
-    [Property.Ends_With_Five]: (num: bigint) => num % 10n === 5n,
-    [Property.Ends_With_Six]: (num: bigint) => num % 10n === 6n,
-    [Property.Ends_With_Seven]: (num: bigint) => num % 10n === 7n,
-    [Property.Ends_With_Eight]: (num: bigint) => num % 10n === 8n,
-    [Property.Ends_With_Nine]: (num: bigint) => num % 10n === 9n,
-    [Property.Ends_With_Zero]: (num: bigint) => num % 10n === 0n,
-    [Property.Sum_Of_Two_Squares]: (num: bigint) => isSumOfTwoSquares(num),
-    [Property.Triangular_Number]: (num: bigint) => isPolygonal(num, 3n),
-    [Property.Square_Number]: (num: bigint) => isPolygonal(num, 4n),
-    [Property.Pentagonal_Number]: (num: bigint) => isPolygonal(num, 5n),
-    [Property.Hexagonal_Number]: (num: bigint) => isPolygonal(num, 6n),
-    [Property.Heptagonal_Number]: (num: bigint) => isPolygonal(num, 7n),
-    [Property.Octagonal_Number]: (num: bigint) => isPolygonal(num, 8n),
-    [Property.Abundant]: (num: bigint) => isAbundant(num),
-    [Property.Perfect]: (num: bigint) => isPerfect(num),
-    [Property.Deficient]: (num: bigint) =>
-        !isPerfect(num) && !isAbundant(num),
-    [Property.Semi_Prime]: (num: bigint) => isSemiPrime(num),
-}
-
 enum PropertyVisualization {
     Fill_Cell,
     Box_In_Cell,
@@ -231,7 +194,7 @@ class VisualizerGrid extends VisualizerDefault {
 
     //Grid variables
     amountOfNumbers = 4096
-    currentSequenceIndex = 0
+    currentIndex = 0
     startingIndex = 0
     currentNumber = 0n
     showNumbers = false
@@ -258,7 +221,65 @@ class VisualizerGrid extends VisualizerDefault {
             color: RED,
         },
     ]
-
+    propertyIndicatorFunction: {
+        [key in Property]: ((ind: number) => boolean) | (() => false)
+    } = {
+        [Property.None]: () => false,
+        [Property.Prime]: (ind: number) => this.isPrime(ind),
+        [Property.Negative]: (ind: number) => this.seq.getElement(ind) < 0n,
+        [Property.Even]: (ind: number) =>
+            this.seq.getElement(ind) % 2n === 0n,
+        [Property.Divisible_By_Three]: (ind: number) =>
+            this.seq.getElement(ind) % 3n === 0n,
+        [Property.Divisible_By_Four]: (ind: number) =>
+            this.seq.getElement(ind) % 4n === 0n,
+        [Property.Divisible_By_Five]: (ind: number) =>
+            this.seq.getElement(ind) % 5n === 0n,
+        [Property.Divisible_By_Six]: (ind: number) =>
+            this.seq.getElement(ind) % 6n === 0n,
+        [Property.Divisible_By_Seven]: (ind: number) =>
+            this.seq.getElement(ind) % 7n === 0n,
+        [Property.Divisible_By_Eight]: (ind: number) =>
+            this.seq.getElement(ind) % 8n === 0n,
+        [Property.Ends_With_One]: (ind: number) =>
+            this.seq.getElement(ind) % 10n === 1n,
+        [Property.Ends_With_Two]: (ind: number) =>
+            this.seq.getElement(ind) % 10n === 2n,
+        [Property.Ends_With_Three]: (ind: number) =>
+            this.seq.getElement(ind) % 10n === 3n,
+        [Property.Ends_With_Four]: (ind: number) =>
+            this.seq.getElement(ind) % 10n === 4n,
+        [Property.Ends_With_Five]: (ind: number) =>
+            this.seq.getElement(ind) % 10n === 5n,
+        [Property.Ends_With_Six]: (ind: number) =>
+            this.seq.getElement(ind) % 10n === 6n,
+        [Property.Ends_With_Seven]: (ind: number) =>
+            this.seq.getElement(ind) % 10n === 7n,
+        [Property.Ends_With_Eight]: (ind: number) =>
+            this.seq.getElement(ind) % 10n === 8n,
+        [Property.Ends_With_Nine]: (ind: number) =>
+            this.seq.getElement(ind) % 10n === 9n,
+        [Property.Ends_With_Zero]: (ind: number) =>
+            this.seq.getElement(ind) % 10n === 0n,
+        [Property.Sum_Of_Two_Squares]: (ind: number) =>
+            this.isSumOfTwoSquares(ind),
+        [Property.Triangular_Number]: (ind: number) =>
+            this.isPolygonal(ind, 3n),
+        [Property.Square_Number]: (ind: number) => this.isPolygonal(ind, 4n),
+        [Property.Pentagonal_Number]: (ind: number) =>
+            this.isPolygonal(ind, 5n),
+        [Property.Hexagonal_Number]: (ind: number) =>
+            this.isPolygonal(ind, 6n),
+        [Property.Heptagonal_Number]: (ind: number) =>
+            this.isPolygonal(ind, 7n),
+        [Property.Octagonal_Number]: (ind: number) =>
+            this.isPolygonal(ind, 8n),
+        [Property.Abundant]: (ind: number) => this.isAbundant(ind),
+        [Property.Perfect]: (ind: number) => this.isPerfect(ind),
+        [Property.Deficient]: (ind: number) =>
+            !this.isPerfect(ind) && !this.isAbundant(ind),
+        [Property.Semi_Prime]: (ind: number) => this.isSemiPrime(ind),
+    }
     params: {[key: string]: ParamInterface} = {
         /** md
 ### Presets: Which preset to display
@@ -490,10 +511,7 @@ earlier ones that use the _same_ style.)
 
         this.setPathVariables(squareRootOfAmountOfNumbers)
 
-        this.currentSequenceIndex = Math.max(
-            this.startingIndex,
-            this.seq.first
-        )
+        this.currentIndex = Math.max(this.startingIndex, this.seq.first)
         let augmentForRowReset = 0n
 
         for (
@@ -504,7 +522,7 @@ earlier ones that use the _same_ style.)
             //Reset current sequence for row reset and augment by one.
             if (this.currentDirection === Direction.StartNewRow) {
                 if (this.resetAndAugmentByOne) {
-                    this.currentSequenceIndex = Math.max(
+                    this.currentIndex = Math.max(
                         this.startingIndex,
                         this.seq.first
                     )
@@ -512,14 +530,11 @@ earlier ones that use the _same_ style.)
                 }
             }
 
-            this.setCurrentNumber(
-                this.currentSequenceIndex,
-                augmentForRowReset
-            )
-
-            this.currentSequenceIndex++
+            this.setCurrentNumber(this.currentIndex, augmentForRowReset)
 
             this.fillGridCell()
+
+            this.currentIndex++
 
             this.moveCoordinatesUsingPath(
                 squareRootOfAmountOfNumbers,
@@ -681,8 +696,8 @@ earlier ones that use the _same_ style.)
         }
     }
 
-    setCurrentNumber(currentSequenceIndex: number, augmentForRow: bigint) {
-        this.currentNumber = this.seq.getElement(currentSequenceIndex)
+    setCurrentNumber(currentIndex: number, augmentForRow: bigint) {
+        this.currentNumber = this.seq.getElement(currentIndex)
         this.currentNumber = this.currentNumber + augmentForRow
     }
 
@@ -745,7 +760,7 @@ earlier ones that use the _same_ style.)
             ) {
                 if (
                     this.hasProperty(
-                        this.currentNumber,
+                        this.currentIndex,
                         this.propertyObjects[i].property
                     )
                 ) {
@@ -764,7 +779,7 @@ earlier ones that use the _same_ style.)
             ) {
                 if (
                     this.hasProperty(
-                        this.currentNumber,
+                        this.currentIndex,
                         this.propertyObjects[i].property
                     )
                 ) {
@@ -792,8 +807,9 @@ earlier ones that use the _same_ style.)
         )
     }
 
-    hasProperty(num: bigint, property: Property) {
-        return propertyIndicatorFunction[property](num)
+    hasProperty(ind: number, property: Property) {
+        console.log('bool:', this.propertyIndicatorFunction[property](ind))
+        return this.propertyIndicatorFunction[property](ind)
     }
 
     showNumber() {
@@ -875,6 +891,153 @@ earlier ones that use the _same_ style.)
             this.y += this.scalingFactor
         }
     }
+    /*
+     *   FUNCTIONS TO CHECK FOR PROPERTIES
+     */
+    isPrime(ind: number): boolean {
+        const factors = this.seq.getFactors(ind)
+        console.log(this.seq.getElement(ind))
+        console.log(factors)
+        if (
+            factors === null // if we can't factor, it isn't prime
+            || factors.length === 0 // 1 is not prime
+            || factors[0][0] === 0n // 0 is not prime
+            || (factors.length === 1 && factors[0][0] === -1n) // -1 not prime
+        ) {
+            return false
+        }
+        if (
+            (factors.length === 1 && factors[0][1] === 1n) // prime
+            || (factors.length === 2
+                && factors[0][0] === -1n
+                && factors[1][1] == 1n) // negative of prime
+        ) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    //Taken from Geeks For Geeks :
+    //https://www.geeksforgeeks.org/deficient-number/
+    getSumOfDivisors(num: bigint): bigint {
+        //
+        // returns the sum of divisors of the absolute value
+        if (num < 0n) {
+            return this.getSumOfDivisors(-num)
+        }
+        let sumOfDivisors = 0n // Initialize sum of prime factors
+
+        // Note that this loop runs till square root of n
+        for (let i = 1n; i <= floorSqrt(num); i++) {
+            if (num % i === 0n) {
+                // If divisors are equal, take only one
+                // of them
+                if (num / i === i) {
+                    sumOfDivisors = sumOfDivisors + i
+                } // Otherwise take both
+                else {
+                    sumOfDivisors = sumOfDivisors + i
+                    sumOfDivisors = sumOfDivisors + num / i
+                }
+            }
+        }
+
+        return sumOfDivisors
+    }
+
+    isSumOfTwoSquares(ind: number): boolean {
+        const factors = this.seq.getFactors(ind)
+
+        if (factors === null) {
+            return false // we can't factor, so can't tell
+        }
+        let legendre = 1
+        for (let i = 0; i < factors.length; i++) {
+            const factor = factors[i]
+            const prime = factor[0]
+            const exponent = factor[1]
+            if (prime === -1n) {
+                // negative numbers are never sums of squares
+                return false
+            }
+            // otherwise update legendre for every prime 3 mod 4
+            if (prime % 4n === 3n && exponent % 2n === 1n) {
+                legendre = -1 * legendre
+            }
+        }
+        if (legendre === 1) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    //Modification of Geeks for Geeks :
+    //https://www.geeksforgeeks.org/program-check-n-pentagonal-number/
+    isPolygonal(ind: number, order: bigint): boolean {
+        const num = this.seq.getElement(ind)
+
+        // negative inputs are never polygonal
+        if (num < 0n) {
+            return false
+        }
+        let i = 1n,
+            M
+        do {
+            M = (order - 2n) * ((i * (i - 1n)) / 2n) + i
+            i += 1n
+        } while (M < num)
+        return M === num
+    }
+
+    isAbundant(ind: number): boolean {
+        const num = this.seq.getElement(ind)
+        return this.getSumOfDivisors(num) - num > num
+    }
+
+    isPerfect(ind: number): boolean {
+        const num = this.seq.getElement(ind)
+        const sum = this.getSumOfDivisors(num) - num
+        // If sum of divisors is equal to
+        // n, then n is a perfect number
+        if (sum === num && num != 1n) {
+            return true
+        }
+
+        return false
+    }
+
+    isSemiPrime(ind: number): boolean {
+        const factors = this.seq.getFactors(ind)
+        console.log(this.seq.getElement(ind))
+        console.log(factors)
+        if (
+            factors === null // if we can't factor, it isn't semi-prime
+            || factors.length === 0 // 1 is not semi-prime
+            || factors[0][0] === 0n // 0 is not semi-prime
+            || (factors.length === 1 && factors[0][0] === -1n) // -1 not s-prime
+        ) {
+            return false
+        }
+        if (
+            (factors.length === 1 && factors[0][1] === 2n) // square
+            || (factors.length === 2
+                && factors[0][0] === -1n
+                && factors[1][1] === 2n) // negative of square
+            || (factors.length === 2
+                && factors[0][1] === 1n
+                && factors[1][1] === 1n) // semi-prime
+            || (factors.length === 3
+                && factors[0][0] === -1n
+                && factors[1][1] == 1n
+                && factors[2][1] == 1n) // negative of semi-prime
+        ) {
+            return true
+        } else {
+            return false
+        }
+    }
 }
 
 export const exportModule = new VisualizerExportModule(
@@ -883,128 +1046,6 @@ export const exportModule = new VisualizerExportModule(
     'Puts numbers in a grid.'
 )
 
-/*
- *   FUNCTIONS TO CHECK FOR PROPERTIES
- */
-//Taken from Stack Overflow :
-//https://stackoverflow.com/questions/40200089/number-prime-test-in-javascript
-//TODO This should be replaced with the getFactors from Numberscope.
-function isPrime(num: bigint): boolean {
-    if (num === 0n || num === 1n) {
-        return false
-    }
-    if (num < 0n) {
-        return isPrime(-num)
-    }
-
-    for (let x = 2n, s = floorSqrt(num); x <= s; x++) {
-        if (num % x === 0n) {
-            return false
-        }
-    }
-
-    return num > 1n
-}
-
-//Taken from Geeks For Geeks :
-//https://www.geeksforgeeks.org/deficient-number/
-function getSumOfDivisors(num: bigint): bigint {
-    // returns the sum of divisors of the absolute value
-    if (num < 0n) {
-        return getSumOfDivisors(-num)
-    }
-    let sumOfDivisors = 0n // Initialize sum of prime factors
-
-    // Note that this loop runs till square root of n
-    for (let i = 1n; i <= floorSqrt(num); i++) {
-        if (num % i === 0n) {
-            // If divisors are equal, take only one
-            // of them
-            if (num / i === i) {
-                sumOfDivisors = sumOfDivisors + i
-            } // Otherwise take both
-            else {
-                sumOfDivisors = sumOfDivisors + i
-                sumOfDivisors = sumOfDivisors + num / i
-            }
-        }
-    }
-
-    return sumOfDivisors
-}
-
-//Taken from Geeks For Geeks :
-//https://www.geeksforgeeks.org/
-//check-whether-number-can-represented-sum-two-squares/
-function isSumOfTwoSquares(num: bigint): boolean {
-    // negative inputs are never sums of two squares
-    if (num < 0n) {
-        return false
-    }
-    for (let i = 1n; i * i <= num; i++) {
-        for (let j = 1n; j * j <= num; j++)
-            if (i * i + j * j === num) {
-                return true
-            }
-    }
-    return false
-}
-
-//Modification of Geeks for Geeks :
-//https://www.geeksforgeeks.org/program-check-n-pentagonal-number/
-function isPolygonal(num: bigint, order: bigint): boolean {
-    // negative inputs are never polygonal
-    if (num < 0n) {
-        return false
-    }
-    let i = 1n,
-        M
-    do {
-        M = (order - 2n) * ((i * (i - 1n)) / 2n) + i
-        i += 1n
-    } while (M < num)
-    return M === num
-}
-
-//Taken from Geeks For Geeks :
-//https://www.geeksforgeeks.org/deficient-number/
-function isAbundant(num: bigint): boolean {
-    return getSumOfDivisors(num) > 2n * num
-}
-
-//Taken from Geeks For Geeks :
-//https://www.geeksforgeeks.org/perfect-number/
-function isPerfect(num: bigint): boolean {
-    const sum = getSumOfDivisors(num) - num
-    // If sum of divisors is equal to
-    // n, then n is a perfect number
-    if (sum === num && num != 1n) return true
-
-    return false
-}
-
-//Taken from Geeks for Geeks:
-//https://www.geeksforgeeks.org/check-whether-number-semiprime-not/
-function isSemiPrime(num: bigint): boolean {
-    // checks whether absolute value is semiprime
-    if (num < 0n) {
-        return isSemiPrime(-num)
-    }
-
-    // cnt counts prime divisors; it is correct for
-    // primes and semiprimes and a lowerbound otherwise
-    let cnt = 0
-    // loop through integers below num
-    for (let i = 2n; cnt < 2 && i * i <= num; ++i)
-        while (num % i === 0n) {
-            num /= i // if a divisor, divide out
-            ++cnt // at least one prime was divided out
-        }
-    // If remaining number is greater than 1,
-    // it is divisible by a prime number
-    if (num > 1n) ++cnt
-    return cnt === 2 ? true : false
-}
 /** md
 
 
