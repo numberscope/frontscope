@@ -222,45 +222,28 @@ class VisualizerGrid extends VisualizerDefault {
         },
     ]
     propertyIndicatorFunction: {
-        [key in Property]: ((ind: number) => boolean) | (() => false)
+        [key in Property]: ((ind: number) => boolean) | (() => boolean)
     } = {
         [Property.None]: () => false,
         [Property.Prime]: (ind: number) => this.isPrime(ind),
-        [Property.Negative]: (ind: number) => this.seq.getElement(ind) < 0n,
-        [Property.Even]: (ind: number) =>
-            this.seq.getElement(ind) % 2n === 0n,
-        [Property.Divisible_By_Three]: (ind: number) =>
-            this.seq.getElement(ind) % 3n === 0n,
-        [Property.Divisible_By_Four]: (ind: number) =>
-            this.seq.getElement(ind) % 4n === 0n,
-        [Property.Divisible_By_Five]: (ind: number) =>
-            this.seq.getElement(ind) % 5n === 0n,
-        [Property.Divisible_By_Six]: (ind: number) =>
-            this.seq.getElement(ind) % 6n === 0n,
-        [Property.Divisible_By_Seven]: (ind: number) =>
-            this.seq.getElement(ind) % 7n === 0n,
-        [Property.Divisible_By_Eight]: (ind: number) =>
-            this.seq.getElement(ind) % 8n === 0n,
-        [Property.Ends_With_One]: (ind: number) =>
-            this.seq.getElement(ind) % 10n === 1n,
-        [Property.Ends_With_Two]: (ind: number) =>
-            this.seq.getElement(ind) % 10n === 2n,
-        [Property.Ends_With_Three]: (ind: number) =>
-            this.seq.getElement(ind) % 10n === 3n,
-        [Property.Ends_With_Four]: (ind: number) =>
-            this.seq.getElement(ind) % 10n === 4n,
-        [Property.Ends_With_Five]: (ind: number) =>
-            this.seq.getElement(ind) % 10n === 5n,
-        [Property.Ends_With_Six]: (ind: number) =>
-            this.seq.getElement(ind) % 10n === 6n,
-        [Property.Ends_With_Seven]: (ind: number) =>
-            this.seq.getElement(ind) % 10n === 7n,
-        [Property.Ends_With_Eight]: (ind: number) =>
-            this.seq.getElement(ind) % 10n === 8n,
-        [Property.Ends_With_Nine]: (ind: number) =>
-            this.seq.getElement(ind) % 10n === 9n,
-        [Property.Ends_With_Zero]: (ind: number) =>
-            this.seq.getElement(ind) % 10n === 0n,
+        [Property.Negative]: () => this.currentNumber < 0n,
+        [Property.Even]: () => this.currentNumber % 2n === 0n,
+        [Property.Divisible_By_Three]: () => this.currentNumber % 3n === 0n,
+        [Property.Divisible_By_Four]: () => this.currentNumber % 4n === 0n,
+        [Property.Divisible_By_Five]: () => this.currentNumber % 5n === 0n,
+        [Property.Divisible_By_Six]: () => this.currentNumber % 6n === 0n,
+        [Property.Divisible_By_Seven]: () => this.currentNumber % 7n === 0n,
+        [Property.Divisible_By_Eight]: () => this.currentNumber % 8n === 0n,
+        [Property.Ends_With_One]: () => this.currentNumber % 10n === 1n,
+        [Property.Ends_With_Two]: () => this.currentNumber % 10n === 2n,
+        [Property.Ends_With_Three]: () => this.currentNumber % 10n === 3n,
+        [Property.Ends_With_Four]: () => this.currentNumber % 10n === 4n,
+        [Property.Ends_With_Five]: () => this.currentNumber % 10n === 5n,
+        [Property.Ends_With_Six]: () => this.currentNumber % 10n === 6n,
+        [Property.Ends_With_Seven]: () => this.currentNumber % 10n === 7n,
+        [Property.Ends_With_Eight]: () => this.currentNumber % 10n === 8n,
+        [Property.Ends_With_Nine]: () => this.currentNumber % 10n === 9n,
+        [Property.Ends_With_Zero]: () => this.currentNumber % 10n === 0n,
         [Property.Sum_Of_Two_Squares]: (ind: number) =>
             this.isSumOfTwoSquares(ind),
         [Property.Triangular_Number]: (ind: number) =>
