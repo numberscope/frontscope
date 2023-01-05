@@ -129,9 +129,46 @@ enum Property {
     Semi_Prime,
 }
 
+const propertyIndicatorFunction: {
+    [key in Property]: (num: bigint) => boolean
+} = {
+    [Property.None]: (num: bigint) => false,
+    [Property.Prime]: (num: bigint) => isPrime(num),
+    [Property.Negative]: (num: bigint) => num < 0n,
+    [Property.Even]: (num: bigint) => num % 2n === 0n,
+    [Property.Divisible_By_Three]: (num: bigint) => num % 3n === 0n,
+    [Property.Divisible_By_Four]: (num: bigint) => num % 4n === 0n,
+    [Property.Divisible_By_Five]: (num: bigint) => num % 5n === 0n,
+    [Property.Divisible_By_Six]: (num: bigint) => num % 6n === 0n,
+    [Property.Divisible_By_Seven]: (num: bigint) => num % 7n === 0n,
+    [Property.Divisible_By_Eight]: (num: bigint) => num % 8n === 0n,
+    [Property.Ends_With_One]: (num: bigint) => num % 10n === 1n,
+    [Property.Ends_With_Two]: (num: bigint) => num % 10n === 2n,
+    [Property.Ends_With_Three]: (num: bigint) => num % 10n === 3n,
+    [Property.Ends_With_Four]: (num: bigint) => num % 10n === 4n,
+    [Property.Ends_With_Five]: (num: bigint) => num % 10n === 5n,
+    [Property.Ends_With_Six]: (num: bigint) => num % 10n === 6n,
+    [Property.Ends_With_Seven]: (num: bigint) => num % 10n === 7n,
+    [Property.Ends_With_Eight]: (num: bigint) => num % 10n === 8n,
+    [Property.Ends_With_Nine]: (num: bigint) => num % 10n === 9n,
+    [Property.Ends_With_Zero]: (num: bigint) => num % 10n === 0n,
+    [Property.Sum_Of_Two_Squares]: (num: bigint) => isSumOfTwoSquares(num),
+    [Property.Triangular_Number]: (num: bigint) => isPolygonal(num, 3n),
+    [Property.Square_Number]: (num: bigint) => isPolygonal(num, 4n),
+    [Property.Pentagonal_Number]: (num: bigint) => isPolygonal(num, 5n),
+    [Property.Hexagonal_Number]: (num: bigint) => isPolygonal(num, 6n),
+    [Property.Heptagonal_Number]: (num: bigint) => isPolygonal(num, 7n),
+    [Property.Octagonal_Number]: (num: bigint) => isPolygonal(num, 8n),
+    [Property.Abundant]: (num: bigint) => isAbundant(num),
+    [Property.Perfect]: (num: bigint) => isPerfect(num),
+    [Property.Deficient]: (num: bigint) =>
+        !isPerfect(num) && !isAbundant(num),
+    [Property.Semi_Prime]: (num: bigint) => isSemiPrime(num),
+}
+
 enum PropertyVisualization {
     Fill_Cell,
-    Small_Box,
+    Box_In_Cell,
 }
 
 function getProperty(
@@ -376,7 +413,7 @@ without them overcoloring each other. (Note that later properties overcolor
 earlier ones that use the _same_ style.)
 
 - Fill_Cell:  Fill the complete cell
-- Small_Box:  Fill only a smaller central box in the cell
+- Box_In_Cell:  Fill only a smaller central box in the cell
 
 ##### Color:  Highlight color for cells with the property
          **/
@@ -596,7 +633,7 @@ earlier ones that use the _same_ style.)
             this.propertyObjects[0].color = RAINBOW[0]
             this.propertyObjects[1].property = Property.Ends_With_One
             this.propertyObjects[1].visualization =
-                PropertyVisualization.Small_Box
+                PropertyVisualization.Box_In_Cell
             this.propertyObjects[1].color = RAINBOW[1]
             this.propertyObjects[2].property = Property.Ends_With_Two
             this.propertyObjects[2].visualization =
@@ -604,7 +641,7 @@ earlier ones that use the _same_ style.)
             this.propertyObjects[2].color = RAINBOW[2]
             this.propertyObjects[3].property = Property.Ends_With_Three
             this.propertyObjects[3].visualization =
-                PropertyVisualization.Small_Box
+                PropertyVisualization.Box_In_Cell
             this.propertyObjects[3].color = RAINBOW[3]
             this.propertyObjects[4].property = Property.Ends_With_Four
             this.propertyObjects[4].visualization =
@@ -612,7 +649,7 @@ earlier ones that use the _same_ style.)
             this.propertyObjects[4].color = RAINBOW[4]
             this.propertyObjects[5].property = Property.Ends_With_Five
             this.propertyObjects[5].visualization =
-                PropertyVisualization.Small_Box
+                PropertyVisualization.Box_In_Cell
             this.propertyObjects[5].color = RAINBOW[5]
             this.propertyObjects[6].property = Property.Ends_With_Six
             this.propertyObjects[6].visualization =
@@ -620,7 +657,7 @@ earlier ones that use the _same_ style.)
             this.propertyObjects[6].color = RAINBOW[6]
             this.propertyObjects[7].property = Property.Ends_With_Seven
             this.propertyObjects[7].visualization =
-                PropertyVisualization.Small_Box
+                PropertyVisualization.Box_In_Cell
             this.propertyObjects[7].color = RAINBOW[7]
             this.propertyObjects[8].property = Property.Ends_With_Eight
             this.propertyObjects[8].visualization =
@@ -628,7 +665,7 @@ earlier ones that use the _same_ style.)
             this.propertyObjects[8].color = RAINBOW[8]
             this.propertyObjects[9].property = Property.Ends_With_Nine
             this.propertyObjects[9].visualization =
-                PropertyVisualization.Small_Box
+                PropertyVisualization.Box_In_Cell
             this.propertyObjects[9].color = RAINBOW[9]
         }
     }
@@ -723,7 +760,7 @@ earlier ones that use the _same_ style.)
             if (
                 this.propertyObjects[i].property != Property.None
                 && this.propertyObjects[i].visualization
-                    === PropertyVisualization.Small_Box
+                    === PropertyVisualization.Box_In_Cell
             ) {
                 if (
                     this.hasProperty(
@@ -756,68 +793,7 @@ earlier ones that use the _same_ style.)
     }
 
     hasProperty(num: bigint, property: Property) {
-        if (property === Property.Prime) {
-            return isPrime(num)
-        } else if (property === Property.Negative) {
-            return num < 0n
-        } else if (property === Property.Even) {
-            return num % 2n === 0n
-        } else if (property === Property.Divisible_By_Three) {
-            return num % 3n === 0n
-        } else if (property === Property.Divisible_By_Four) {
-            return num % 4n === 0n
-        } else if (property === Property.Divisible_By_Five) {
-            return num % 5n === 0n
-        } else if (property === Property.Divisible_By_Six) {
-            return num % 6n === 0n
-        } else if (property === Property.Divisible_By_Seven) {
-            return num % 7n === 0n
-        } else if (property === Property.Divisible_By_Eight) {
-            return num % 8n === 0n
-        } else if (property === Property.Ends_With_One) {
-            return num % 10n === 1n
-        } else if (property === Property.Ends_With_Two) {
-            return num % 10n === 2n
-        } else if (property === Property.Ends_With_Three) {
-            return num % 10n === 3n
-        } else if (property === Property.Ends_With_Four) {
-            return num % 10n === 4n
-        } else if (property === Property.Ends_With_Five) {
-            return num % 10n === 5n
-        } else if (property === Property.Ends_With_Six) {
-            return num % 10n === 6n
-        } else if (property === Property.Ends_With_Seven) {
-            return num % 10n === 7n
-        } else if (property === Property.Ends_With_Eight) {
-            return num % 10n === 8n
-        } else if (property === Property.Ends_With_Nine) {
-            return num % 10n === 9n
-        } else if (property === Property.Ends_With_Zero) {
-            return num % 10n === 0n
-        } else if (property === Property.Sum_Of_Two_Squares) {
-            return isSumOfTwoSquares(num)
-        } else if (property === Property.Triangular_Number) {
-            return isPolygonal(num, 3n)
-        } else if (property === Property.Square_Number) {
-            return isPolygonal(num, 4n)
-        } else if (property === Property.Pentagonal_Number) {
-            return isPolygonal(num, 5n)
-        } else if (property === Property.Hexagonal_Number) {
-            return isPolygonal(num, 6n)
-        } else if (property === Property.Heptagonal_Number) {
-            return isPolygonal(num, 7n)
-        } else if (property === Property.Octagonal_Number) {
-            return isPolygonal(num, 8n)
-        } else if (property === Property.Abundant) {
-            return isAbundant(num)
-        } else if (property === Property.Perfect) {
-            return isPerfect(num)
-        } else if (property === Property.Deficient) {
-            return !isPerfect(num) && !isAbundant(num)
-        } else if (property === Property.Semi_Prime) {
-            return isSemiPrime(num)
-        }
-        return false
+        return propertyIndicatorFunction[property](num)
     }
 
     showNumber() {
@@ -1139,24 +1115,21 @@ are purple. For the final image, we use the sequence of squares, and use the
 style="margin: 0.5em" />](../assets/img/Grid/15.png)
 [<img src="../../assets/img/Grid/16.png" width="320" 
 style="margin: 0.5em" />](../assets/img/Grid/16.png)
-[<img src="../../assets/img/Grid/17.png" width="320" 
-style="margin: 0.5em" />](../assets/img/Grid/17.png)
-[<img src="../../assets/img/Grid/18.png" width="320" 
-style="margin: 0.5em" />](../assets/img/Grid/18.png)
+[<img src="../../assets/img/Grid/pi-digits-more.png" width="320" 
+style="margin: 0.5em" />](../assets/img/Grid/pi-digits-more.png)
 
 The first image shows the natural numbers in rows, colored by final digit.
-The second image is the same, but in spiral format.  The final two images
-show the digits of pi ([A000796](https://oeis.org/A000796)) in rows, 
-at different magnifications.
+The second image is the same, but in spiral format.  The final image
+shows the digits of pi ([A000796](https://oeis.org/A000796)) in rows.
 
 ###### Digits of abundant numbers ([A005101](https://oeis.org/A005101))
 
 [<img src="../../assets/img/Grid/19.png" width="320" 
 style="margin-left: 1em; margin-right: 0.5em"
 />](../assets/img/Grid/19.png)
-[<img src="../../assets/img/Grid/20.png" width="320" 
+[<img src="../../assets/img/Grid/abundant-more.png" width="320" 
 style="margin-left: 0.5em; margin-right: 1em"
-/>](../assets/img/Grid/20.png)
+/>](../assets/img/Grid/abundant-more.png)
 
 When the abundant numbers are put in a spiral and highlighted by their last
 digit, the scarcity of odd abundant numbers (indicated on the left by small
