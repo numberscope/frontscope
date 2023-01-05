@@ -130,10 +130,9 @@ enum Property {
 }
 
 const propertyIndicatorFunction: {
-    [key in Property]: (num: bigint) => boolean
+    [key in Property]: ((num: bigint) => boolean) | (() => false)
 } = {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    [Property.None]: (num: bigint) => false,
+    [Property.None]: () => false,
     [Property.Prime]: (num: bigint) => isPrime(num),
     [Property.Negative]: (num: bigint) => num < 0n,
     [Property.Even]: (num: bigint) => num % 2n === 0n,
