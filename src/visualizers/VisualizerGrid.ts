@@ -809,7 +809,7 @@ earlier ones that use the _same_ style.)
                     this.propertyObjects[i].property
                 )
             ) {
-                this.sketch.fill(this.propertyObjects[i].color)
+                this.sketch.fill(this.propertyObjectsPrimary[i].color)
             }
         }
     }
@@ -822,7 +822,7 @@ earlier ones that use the _same_ style.)
                     this.propertyObjects[i].property
                 )
             ) {
-                this.sketch.fill(this.propertyObjects[i].color)
+                this.sketch.fill(this.propertyObjectsSecondary[i].color)
             }
         }
     }
