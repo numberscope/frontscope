@@ -764,6 +764,7 @@ earlier ones that use the _same_ style.)
     }
 
     setHasPrimaryColorProperties() {
+        this.hasPrimaryColorProperties = false
         this.propertyObjectsPrimary.pop()
         for (let i = 0; i < this.propertyObjects.length; i++) {
             if (
@@ -776,13 +777,12 @@ earlier ones that use the _same_ style.)
                     color: this.propertyObjects[i].color,
                 })
                 this.hasPrimaryColorProperties = true
-                return
             }
         }
-        this.hasPrimaryColorProperties = false
     }
 
     setHasSecondaryColorProperties() {
+        this.hasSecondaryColorProperties = false
         this.propertyObjectsSecondary.pop()
         for (let i = 0; i < this.propertyObjects.length; i++) {
             if (
@@ -795,10 +795,8 @@ earlier ones that use the _same_ style.)
                     color: this.propertyObjects[i].color,
                 })
                 this.hasSecondaryColorProperties = true
-                return
             }
         }
-        this.hasSecondaryColorProperties = false
     }
 
     colorPrimaryColorProperties() {
@@ -806,7 +804,7 @@ earlier ones that use the _same_ style.)
             if (
                 this.hasProperty(
                     this.currentIndex,
-                    this.propertyObjects[i].property
+                    this.propertyObjectsPrimary[i].property
                 )
             ) {
                 this.sketch.fill(this.propertyObjectsPrimary[i].color)
@@ -819,7 +817,7 @@ earlier ones that use the _same_ style.)
             if (
                 this.hasProperty(
                     this.currentIndex,
-                    this.propertyObjects[i].property
+                    this.propertyObjectsSecondary[i].property
                 )
             ) {
                 this.sketch.fill(this.propertyObjectsSecondary[i].color)
