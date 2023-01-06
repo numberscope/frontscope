@@ -5,7 +5,9 @@ import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
-# Sequence Color Visualizer
+
+# Primes and Sizes Visualizer
+
 In this visualizer, the brightness of each circle represents how fast $1/a^n$, 
 where a is a number in the sequence, 
 approaches zero as n increases.
@@ -23,7 +25,7 @@ const colorMap = new Map()
 
 // Show description box by pressing left arrow key
 class SeqColor extends VisualizerDefault implements VisualizerInterface {
-    name = 'Sequence Color'
+    name = 'Primes and Sizes'
     n = 40
 
     params = {
@@ -35,21 +37,14 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         },
     }
 
-    private currentNum = 0
-    private X = 0
-    private Y = 0
-    private boxSizeX = 800
-    private boxSizeY = 90
-    //private boxSize = this.sketch.createVector(800, 90)
-    private canvasSizeX = 800
-    private canvasSizeY = 800
-    private subG = this.sketch.createGraphics(this.boxSizeX, this.boxSizeY)
-    private subL = this.sketch.createGraphics(
-        this.canvasSizeX,
-        this.canvasSizeY
-    )
+    private currentIndex = 0
+    private position = this.sketch.createVector(0, 0)
+    private boxSize = this.sketch.createVector(0, 0)
+    private canvasSize = this.sketch.createVector(0, 0)
+    private subG = this.sketch.createGraphics(0, 0)
+    private subL = this.sketch.createGraphics(0, 0)
     private boxIsShow = false
-    private primeNum: number[] = []
+    private primeNum: bigint[] = []
     private countPrime = 0
     private firstDraw = true
     private showLabel = false
@@ -59,10 +54,16 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         super.initialize(sketch, seq)
         this.sketch = sketch
         this.seq = seq
-        this.currentNum = seq.first
-        this.X = 0
-        this.Y = 0
+        this.currentIndex = seq.first
+        this.position = this.sketch.createVector(0, 0)
         this.ready = true
+        this.boxSize = this.sketch.createVector(800, 90)
+        this.subG = this.sketch.createGraphics(this.boxSize.x, this.boxSize.y)
+        this.canvasSize = this.sketch.createVector(800, 800)
+        this.subL = this.sketch.createGraphics(
+            this.canvasSize.x,
+            this.canvasSize.y
+        )
     }
 
     setup() {
@@ -73,14 +74,16 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         this.firstDraw = true
 
         // Set position of the circle
-        this.X = this.canvasSizeX / this.n + 30
-        this.Y = this.canvasSizeX / this.n + 50
+        this.position = this.sketch.createVector(
+            this.canvasSize.x / this.n + 30,
+            this.canvasSize.x / this.n + 50
+        )
 
         // Obtain all prime numbers from the sequence
         for (let i = this.seq.first; i < this.n; i++) {
-            const checkCurrentPrime = Number(this.seq.getElement(i))
+            const checkCurrentPrime = this.seq.getElement(i)
             if (
-                this.isPrime(checkCurrentPrime)
+                this.isPrime(i)
                 && !this.primeNum.includes(checkCurrentPrime)
             ) {
                 this.primeNum.push(checkCurrentPrime)
@@ -90,16 +93,13 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     }
 
     draw() {
-        if (this.firstDraw == true && this.currentNum < this.n) {
-            const currentElement = Number(
-                this.seq.getElement(this.currentNum++)
-            )
-            this.drawCircle(currentElement)
+        if (this.firstDraw == true && this.currentIndex < this.n) {
+            this.drawCircle(this.currentIndex++)
 
             this.changePosition()
 
             // Check if drawing finished
-            if (this.currentNum >= this.n) {
+            if (this.currentIndex >= this.n) {
                 this.firstDraw = false
             }
             this.sketch.noStroke()
@@ -109,7 +109,30 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             this.keyboardEvents()
         }
     }
-
+    /** The following code can be used to fix the keyboardEvents() bug
+     * once issue #120 is resolved
+	keyPressed() {
+  if (this.sketch.keyCode === this.sketch.LEFT_ARROW) {
+        // Show/hide description box when the left arrow key is pressed
+            if (this.boxIsShow == true && this.subG != null) {
+                this.boxIsShow = false
+                this.undrawBox()
+            } else {
+                this.boxIsShow = true
+                this.drawBox()
+            }
+	}  else if (this.sketch.keyCode === this.sketch.RIGHT_ARROW) {
+        // Show/hide label when right arrow key is pressed
+    if (this.showLabel == false) {
+                this.showLabel = true
+                this.drawLabel()
+            } else {
+                this.showLabel = false
+                this.undrawLabel()
+            }
+	}
+	}
+	**/
     keyboardEvents() {
         // Show description box when the left arrow key is pressed
         if (this.sketch.keyIsDown(this.sketch.LEFT_ARROW)) {
@@ -159,11 +182,13 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
     // Draw labels for each circle
     drawLabel() {
-        this.X = this.canvasSizeX / this.n + 30
-        this.Y = this.canvasSizeX / this.n + 50
+        this.position = this.sketch.createVector(
+            this.canvasSize.x / this.n + 30,
+            this.canvasSize.y / this.n + 50
+        )
         this.subL = this.sketch.createGraphics(
-            this.canvasSizeX,
-            this.canvasSizeY
+            this.canvasSize.x,
+            this.canvasSize.y
         )
         this.subG.colorMode(this.sketch.HSB)
         this.subG.noStroke()
@@ -179,14 +204,17 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     }
 
     redrawCircle() {
-        this.X = this.canvasSizeX / this.n + 30
-        this.Y = this.canvasSizeX / this.n + 50
+        this.position = this.sketch.createVector(
+            this.canvasSize.x / this.n + 30,
+            this.canvasSize.x / this.n + 50
+        )
         this.firstDraw = true
-        this.currentNum = this.seq.first
+        this.currentIndex = this.seq.first
         this.sketch.redraw(1)
     }
 
-    drawCircle(numberNow: number) {
+    drawCircle(ind: number) {
+        const numberNow = this.seq.getElement(ind)
         this.sketch.ellipseMode(this.sketch.RADIUS)
         let radius = 50
         let bright = 0
@@ -205,13 +233,18 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
             // Obtain the color of the circle
             const combinedColor = this.primeFactors(
-                Number(numberNow),
+                ind,
                 Number(this.countPrime)
             )
 
             this.sketch.colorMode(this.sketch.HSB)
             this.sketch.fill(combinedColor, 100, bright)
-            this.sketch.ellipse(this.X, this.Y, radius, radius)
+            this.sketch.ellipse(
+                this.position.x,
+                this.position.y,
+                radius,
+                radius
+            )
 
             // Change brightness regarding
             //  the difference between 1/(number)^n and 1/(number)^(n-1)
@@ -226,26 +259,27 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         this.sketch.fill('white')
         this.sketch.text(
             '1/'.concat(String(numberNow)).concat('^n'),
-            this.X,
-            this.Y
+            this.position.x,
+            this.position.y
         )
     }
 
     changePosition() {
-        this.X += 100
-        if (this.X >= this.canvasSizeX) {
-            this.X = this.canvasSizeX / this.n + 30
-            this.Y += 100
+        this.position.add(100, 0)
+        // if we need to go to next line
+        if (this.position.x >= this.canvasSize.x) {
+            this.position.x = this.canvasSize.x / this.n + 30
+            this.position.add(0, 100)
         }
     }
 
     drawBox() {
         //Create a white background for the description box
-        this.subG = this.sketch.createGraphics(this.boxSizeX, this.boxSizeY)
+        this.subG = this.sketch.createGraphics(this.boxSize.x, this.boxSize.y)
         this.subG.colorMode(this.sketch.HSB)
         this.subG.noStroke()
         this.subG.fill(0, 0, 100)
-        this.subG.rect(0, 0, this.boxSizeX, this.boxSizeY)
+        this.subG.rect(0, 0, this.boxSize.x, this.boxSize.y)
         this.subG.fill('black')
         let tmpX = 0
         let tmpY = 0
@@ -258,7 +292,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
             this.subG.ellipse(35 + tmpX, 15 + tmpY, 10, 10)
             tmpX += 50
-            if (tmpX >= this.canvasSizeX) {
+            if (tmpX >= this.canvasSize.x) {
                 tmpX = 0
                 tmpY += 30
             }
@@ -270,7 +304,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         if (this.subG) {
             //Draw a new black background to cover the description box
             this.subG.fill('black')
-            this.subG.rect(0, 0, this.boxSizeX, this.boxSizeY)
+            this.subG.rect(0, 0, this.boxSize.x, this.boxSize.y)
             this.sketch.image(this.subG, 0, 700)
         }
     }
@@ -283,33 +317,40 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         return (now + difference) % 100
     }
 
-    isPrime(n: number) {
-        for (let i = 2; i <= Math.sqrt(n); i++) {
-            if (n % i === 0) {
-                return false
-            }
+    isPrime(ind: number): boolean {
+        const factors = this.seq.getFactors(ind)
+        if (
+            factors === null // if we can't factor, it isn't prime
+            || factors.length === 0 // 1 is not prime
+            || factors[0][0] === 0n // 0 is not prime
+            || (factors.length === 1 && factors[0][0] === -1n) // -1 not prime
+        ) {
+            return false
         }
-        return n > 1
+        if (
+            (factors.length === 1 && factors[0][1] === 1n) // prime
+            || (factors.length === 2
+                && factors[0][0] === -1n
+                && factors[1][1] == 1n) // negative of prime
+        ) {
+            return true
+        } else {
+            return false
+        }
     }
 
     //return a number which represents the color
-    primeFactors(n: number, totalPrime: number) {
-        const factors = []
-        let factorCheck = 2
+    primeFactors(ind: number, totalPrime: number) {
+        const factors = this.seq.getFactors(ind)
+        if (factors === null) {
+            return -1
+        } // factoring failed
+
         //assign color to each prime number
         const colorNum = 360 / Number(totalPrime)
 
         colorMap.set(1, 0)
         let tmp = 0
-
-        while (n >= 2) {
-            if (n % factorCheck == 0) {
-                factors.push(factorCheck)
-                n = n / factorCheck
-            } else {
-                factorCheck++
-            }
-        }
 
         for (let i = 0; i < this.primeNum.length; i++) {
             if (colorMap.has(this.primeNum[i]) == false) {
@@ -321,12 +362,17 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         //Combine color for each prime factors
         let colorAll = -1
         for (let i = 0; i < factors.length; i++) {
+            const thisPrime = factors[i][0]
+            const thisExp = factors[i][1]
             for (let j = 0; j < this.primeNum.length; j++) {
-                if (factors[i] == this.primeNum[j]) {
-                    if (colorAll == -1) {
-                        colorAll = colorMap.get(factors[i])
-                    } else {
-                        colorAll = (colorAll + colorMap.get(factors[i])) / 2
+                if (thisPrime == this.primeNum[j]) {
+                    for (let k = 0; k < thisExp; k++) {
+                        if (colorAll == -1) {
+                            colorAll = colorMap.get(thisPrime)
+                        } else {
+                            colorAll =
+                                (colorAll + colorMap.get(thisPrime)) / 2
+                        }
                     }
                 }
             }
