@@ -3,6 +3,7 @@ import {VisualizerDefault} from './VisualizerDefault'
 import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
+import * as math from 'mathjs'
 
 /** md
 
@@ -27,6 +28,8 @@ const colorMap = new Map()
 class SeqColor extends VisualizerDefault implements VisualizerInterface {
     name = 'Primes and Sizes'
     n = 40
+    modulus = 100
+    formula = 'log(1/(n^x))'
 
     params = {
         n: {
@@ -35,7 +38,22 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             displayName: 'number of terms',
             required: true,
         },
+        modulus: {
+            value: this.modulus,
+            forceType: 'integer',
+            displayName: 'growth ring modulus',
+            description: 'Spacing of level sets',
+            required: true,
+        },
+        formula: {
+            value: this.formula,
+            displayName: 'growth function',
+            description: "A function in 'n' (term) and 'x' (growth variable)",
+            required: true,
+        },
     }
+
+    private evaluator: math.EvalFunction
 
     private currentIndex = 0
     private position = this.sketch.createVector(0, 0)
@@ -49,6 +67,13 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     private firstDraw = true
     private showLabel = false
     private brightAdjust = 100
+
+    constructor() {
+        super()
+        // It is mandatory to initialize the `evaluator` property here,
+        // so just use a simple dummy formula until the user provides one.
+        this.evaluator = math.compile(this.formula)
+    }
 
     initialize(sketch: p5, seq: SequenceInterface) {
         super.initialize(sketch, seq)
@@ -64,6 +89,43 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             this.canvasSize.x,
             this.canvasSize.y
         )
+    }
+
+    checkParameters() {
+        // code currently re-used from SequenceFormula.ts
+        const status = super.checkParameters()
+
+        let parsetree = undefined
+        try {
+            parsetree = math.parse(this.params.formula.value)
+        } catch (err: unknown) {
+            status.isValid = false
+            status.errors.push(
+                'Could not parse formula: ' + this.params.formula.value
+            )
+            status.errors.push((err as Error).message)
+            return status
+        }
+        const othersymbs = parsetree.filter(
+            (node, path, parent) =>
+                node.type === 'SymbolNode'
+                && parent?.type !== 'FunctionNode'
+                && node.name !== 'n'
+                && node.name !== 'x'
+        )
+        if (othersymbs.length > 0) {
+            status.isValid = false
+            status.errors.push(
+                "Only 'n' and 'x' may occur as a free variable in formula.",
+                `Please remove '${(othersymbs[0] as math.SymbolNode).name}'`
+            )
+        }
+        this.evaluator = parsetree.compile()
+        return status
+    }
+
+    growthFunction(n: number, x: number) {
+        return this.evaluator.evaluate({n: n, x: x})
     }
 
     setup() {
@@ -104,7 +166,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             }
             this.sketch.noStroke()
         } else {
-            // Monitor keyboard events after finishing drawing
+            // Moniitor keyboard events after finishing drawing
             // Bug: multiple clicks detected when only one click happened
             this.keyboardEvents()
         }
@@ -214,23 +276,13 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     }
 
     drawCircle(ind: number) {
-        const numberNow = this.seq.getElement(ind)
+        const numberNowBigint = this.seq.getElement(ind)
+        const numberNow = Number(numberNowBigint)
         this.sketch.ellipseMode(this.sketch.RADIUS)
         let radius = 50
         let bright = 0
 
         for (let x = this.n; x >= 2; x--) {
-            // Calculate the difference
-            //  between 1/(number)^n and 1/(number)^(n-1)
-            const diff = Math.abs(
-                Math.log(
-                    Math.abs(
-                        1 / Math.pow(Number(numberNow), x - 1)
-                            - Math.log(1 / Math.pow(Number(numberNow), x))
-                    )
-                )
-            )
-
             // Obtain the color of the circle
             const combinedColor = this.primeFactors(
                 ind,
@@ -246,12 +298,17 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
                 radius
             )
 
-            // Change brightness regarding
-            //  the difference between 1/(number)^n and 1/(number)^(n-1)
-            bright =
-                (this.changeColor(diff, bright) * this.brightAdjust) / 100
-
-            radius -= 1
+            // Calculate the difference to next step of growth function
+            const diff = Math.abs(
+                Math.abs(
+                    this.growthFunction(numberNow, x - 1)
+                        - this.growthFunction(numberNow, x)
+                )
+            )
+            // Change brightness in terms of the difference
+            const changeColor = (bright + diff) % this.modulus
+            bright = (changeColor * this.brightAdjust) / this.modulus
+            radius -= 50 / (this.n - 2)
         }
     }
 
@@ -307,14 +364,6 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             this.subG.rect(0, 0, this.boxSize.x, this.boxSize.y)
             this.sketch.image(this.subG, 0, 700)
         }
-    }
-
-    //change the brightness of the circle
-    changeColor(difference: number, now: number) {
-        if ((now + difference) % 100 < now) {
-            return 100
-        }
-        return (now + difference) % 100
     }
 
     isPrime(ind: number): boolean {
