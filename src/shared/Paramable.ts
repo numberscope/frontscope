@@ -42,8 +42,9 @@ export interface ParamInterface {
      * which the `value` comes.
      */
     from?: {[key: string]: number | string}
-    // The main label of the control for this param:
-    displayName: string
+    // The main label of the control for this param; can depend on
+    // visibleDependency:
+    displayName: string | ((dependency: never) => string)
     // whether the parameter must be specified
     required: boolean
     /* If you want the control for this parameter only to be visible when

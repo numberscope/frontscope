@@ -53,7 +53,7 @@
                                     "
                                     class="redtext"
                                     >*</span
-                                >{{ param.displayName
+                                >{{ displayNames[name]
                                 }}{{
                                     boxes.includes(paramType[name]) ? '' : ':'
                                 }}
@@ -342,6 +342,18 @@
                     viz[name] = this.params[name]
                 }
                 return viz
+            },
+            displayNames(): {[key: string]: string} {
+                const dispNames: {[key: string]: string} = {}
+                for (const name in this.params) {
+                    const param = this.params[name]
+                    const dn = param.displayName
+                    dispNames[name] =
+                        typeof dn === 'string'
+                            ? dn
+                            : dn(this.params[param.visibleDependency].value)
+                }
+                return dispNames
             },
         },
     })

@@ -81,6 +81,7 @@ enum Preset {
     Color_By_Last_Digit_1,
     Color_By_Last_Digit_2,
 }
+type PresetName = Exclude<keyof typeof Preset, number>
 
 enum PathType {
     Spiral,
@@ -103,29 +104,9 @@ enum Property {
     Negative,
     Even,
     Odd,
-    Divisible_By_Three,
-    Divisible_By_Four,
-    Divisible_By_Five,
-    Divisible_By_Six,
-    Divisible_By_Seven,
-    Divisible_By_Eight,
-    Divisible_By_Nine,
-    Ends_With_Zero,
-    Ends_With_One,
-    Ends_With_Two,
-    Ends_With_Three,
-    Ends_With_Four,
-    Ends_With_Five,
-    Ends_With_Six,
-    Ends_With_Seven,
-    Ends_With_Eight,
-    Ends_With_Nine,
-    Triangular_Number,
-    Square_Number,
-    Pentagonal_Number,
-    Hexagonal_Number,
-    Heptagonal_Number,
-    Octagonal_Number,
+    Divisible_By,
+    Last_Digit_Is,
+    Polygonal_Number,
     Sum_Of_Two_Squares,
     Abundant,
     Perfect,
@@ -138,13 +119,113 @@ enum PropertyVisualization {
     Box_In_Cell,
 }
 
-interface propertyObject {
+const propertyAuxName: Record<string, string> = {
+    Divisible_By: 'Divisor',
+    Last_Digit_Is: 'Digit',
+    Polygonal_Number: 'Sides',
+}
+
+interface PropertyObject {
     property: Property
     visualization: PropertyVisualization
     color: string // should this be a typedef?
+    aux?: bigint // auxiliary parameter for the property, meaning varies
 }
 
-function getPropertyParams(index: number, prop: propertyObject) {
+const presetBackgrounds: {[key in PresetName]: string} = {
+    Custom: BLACK,
+    Primes: BLACK,
+    Abundant_Numbers: WHITE,
+    Abundant_Numbers_And_Primes: WHITE,
+    Polygonal_Numbers: BLACK,
+    Color_By_Last_Digit_1: BLACK,
+    Color_By_Last_Digit_2: BLACK,
+}
+
+const presetProperties: {[key in PresetName]: PropertyObject[]} = {
+    Custom: [],
+    Primes: [
+        {
+            property: Property.Prime,
+            visualization: PropertyVisualization.Fill_Cell,
+            color: RED,
+        },
+    ],
+    Abundant_Numbers: [
+        {
+            property: Property.Abundant,
+            visualization: PropertyVisualization.Fill_Cell,
+            color: BLACK,
+        },
+    ],
+    Abundant_Numbers_And_Primes: [
+        {
+            property: Property.Prime,
+            visualization: PropertyVisualization.Fill_Cell,
+            color: RED,
+        },
+        {
+            property: Property.Abundant,
+            visualization: PropertyVisualization.Fill_Cell,
+            color: BLACK,
+        },
+    ],
+    Polygonal_Numbers: [
+        {
+            property: Property.Polygonal_Number,
+            visualization: PropertyVisualization.Fill_Cell,
+            color: RED,
+            aux: 3n,
+        },
+        {
+            property: Property.Polygonal_Number,
+            visualization: PropertyVisualization.Fill_Cell,
+            color: ORANGE,
+            aux: 4n,
+        },
+        {
+            property: Property.Polygonal_Number,
+            visualization: PropertyVisualization.Fill_Cell,
+            color: YELLOW,
+            aux: 5n,
+        },
+        {
+            property: Property.Polygonal_Number,
+            visualization: PropertyVisualization.Fill_Cell,
+            color: GREEN,
+            aux: 6n,
+        },
+        {
+            property: Property.Polygonal_Number,
+            visualization: PropertyVisualization.Fill_Cell,
+            color: BLUE,
+            aux: 7n,
+        },
+        {
+            property: Property.Polygonal_Number,
+            visualization: PropertyVisualization.Fill_Cell,
+            color: PURPLE,
+            aux: 8n,
+        },
+    ],
+    Color_By_Last_Digit_1: Array.from({length: 10}, (_item, index) => ({
+        property: Property.Last_Digit_Is,
+        visualization: PropertyVisualization.Fill_Cell,
+        color: RAINBOW[index],
+        aux: BigInt(index),
+    })),
+    Color_By_Last_Digit_2: Array.from({length: 10}, (_item, index) => ({
+        property: Property.Last_Digit_Is,
+        visualization:
+            index % 2
+                ? PropertyVisualization.Box_In_Cell
+                : PropertyVisualization.Fill_Cell,
+        color: RAINBOW[index],
+        aux: BigInt(index),
+    })),
+}
+
+function getPropertyParams(index: number, prop: PropertyObject) {
     return {
         [`property${index}`]: {
             value: prop.property,
@@ -169,6 +250,13 @@ function getPropertyParams(index: number, prop: propertyObject) {
             required: false,
             visibleDependency: `property${index}`,
             visiblePredicate: (d: Property) => d !== Property.None,
+        },
+        [`prop${index}Aux`]: {
+            value: prop.aux,
+            displayName: (d: Property) => propertyAuxName[Property[d]] || '',
+            required: false,
+            visibleDependency: `property${index}`,
+            visiblePredicate: (d: Property) => Property[d] in propertyAuxName,
         },
     }
 }
@@ -232,7 +320,7 @@ function isSumOfTwoSquares(factors: Factorization): boolean {
 
 //Modification of Geeks for Geeks :
 //https://www.geeksforgeeks.org/program-check-n-pentagonal-number/
-function isPolygonal(num: bigint, order: bigint): boolean {
+function isPolygonal(num: bigint, order = 3n): boolean {
     // negative inputs are never polygonal
     if (num < 0n) {
         return false
@@ -273,17 +361,16 @@ function isSemiPrime(factors: Factorization): boolean {
     return false // three or more prime factors
 }
 
-function congruenceIndicator(modulus: bigint, residue = 0n) {
+function divisibleBy(value: bigint, divisor = 3n) {
+    return value % divisor === 0n
+}
+
+function congruenceIndicator(modulus: bigint, residue: bigint) {
     return (value: bigint) => modulo(value, modulus) === residue
 }
 
-function polygonalIndicator(edges: bigint) {
-    return (value: bigint) => isPolygonal(value, edges)
-}
-
-function lastDigitIndicator(digit: bigint) {
-    return (value: bigint) =>
-        value < 0n ? value % 10n === -digit : value % 10n === digit
+function lastDigitIs(value: bigint, digit = 0n) {
+    return value < 0n ? value % 10n === -digit : value % 10n === digit
 }
 
 /* Define the semantics of the Property values */
@@ -303,38 +390,18 @@ const propertyIndicatorFunction: {
     [key in PropertyName]: key extends FactorPropertyName
         ? (factorization: Factorization) => boolean
         : key extends ValuePropertyName
-        ? (() => boolean) | ((value: bigint) => boolean)
+        ? (() => boolean) | ((value: bigint, aux?: bigint) => boolean)
         : never
 } = {
     None: () => false,
     Prime: isPrime,
     Negative: (v: bigint) => v < 0n,
-    Even: congruenceIndicator(2n),
+    Even: congruenceIndicator(2n, 0n),
     Odd: congruenceIndicator(2n, 1n),
-    Divisible_By_Three: congruenceIndicator(3n),
-    Divisible_By_Four: congruenceIndicator(4n),
-    Divisible_By_Five: congruenceIndicator(5n),
-    Divisible_By_Six: congruenceIndicator(6n),
-    Divisible_By_Seven: congruenceIndicator(7n),
-    Divisible_By_Eight: congruenceIndicator(8n),
-    Divisible_By_Nine: congruenceIndicator(9n),
-    Ends_With_Zero: congruenceIndicator(10n),
-    Ends_With_One: lastDigitIndicator(1n),
-    Ends_With_Two: lastDigitIndicator(2n),
-    Ends_With_Three: lastDigitIndicator(3n),
-    Ends_With_Four: lastDigitIndicator(4n),
-    Ends_With_Five: lastDigitIndicator(5n),
-    Ends_With_Six: lastDigitIndicator(6n),
-    Ends_With_Seven: lastDigitIndicator(7n),
-    Ends_With_Eight: lastDigitIndicator(8n),
-    Ends_With_Nine: lastDigitIndicator(9n),
+    Divisible_By: divisibleBy,
+    Last_Digit_Is: lastDigitIs,
     Sum_Of_Two_Squares: isSumOfTwoSquares,
-    Triangular_Number: polygonalIndicator(3n),
-    Square_Number: polygonalIndicator(4n),
-    Pentagonal_Number: polygonalIndicator(5n),
-    Hexagonal_Number: polygonalIndicator(6n),
-    Heptagonal_Number: polygonalIndicator(7n),
-    Octagonal_Number: polygonalIndicator(8n),
+    Polygonal_Number: isPolygonal,
     Abundant: isAbundant,
     Perfect: isPerfect,
     Deficient: isDeficient,
@@ -370,25 +437,9 @@ class VisualizerGrid extends VisualizerDefault {
     hasSecondaryColorProperties = false
 
     //Properties
-    propertyObjects = [
-        {
-            property: Property.Prime,
-            visualization: PropertyVisualization.Fill_Cell,
-            color: RED,
-        },
-    ]
-    propertyObjectsPrimary = [
-        {
-            property: Property.Prime,
-            color: RED,
-        },
-    ]
-    propertyObjectsSecondary = [
-        {
-            property: Property.Prime,
-            color: RED,
-        },
-    ]
+    propertyObjects: PropertyObject[] = []
+    primaryProperties: number[] = []
+    secondaryProperties: number[] = []
 
     params: {[key: string]: ParamInterface} = {
         /** md
@@ -509,30 +560,26 @@ to set.
 
 ##### Property:  the property to highlight
 
+The description for each property specifies the conditions under which
+that property holds for a given integer.
+
 - None:  This is simply a placeholder to indicate that no further properties
 will be used.  Choosing anything other than none will add a new property
 and reveal parameters for it.
-- Prime:  Whether the absolute value of an integer is prime
-- Negative:  Whether an integer is negative
-- Even:  Whether an integer is even
-- Divisible_By_Three, Divisible_By_Four etc.:  Whether an integer is divisible
-  by 3, 4, etc.
-- Ends_With_Zero, Ends_With_One etc.:  Whether an integer's final digit is 0,
-  1, 2, etc.
-- Triangular_Number, Square_Number etc.:  Whether an integer is triangular,
+- Prime:  Its absolute value is prime
+- Negative:  Less than zero
+- Even:  Divisible by two
+- Odd: Not even
+- Divisible_By:  Divisible by the specified divisor
+- Last_Digit_Is:  The final digit base 10 is the specified digit
+- Polygonal_Number:  Positive and that many dots can be arranged in a
+  polygonal arrangement with the specified number of sides.
   square, pentagonal etc.
-- Sum_Of_Two_Squares:  Whether an integer is a sum of two squares (always
-  False for negative numbers)
-- Abundant:  Whether an integer is
-  [abundant](https://en.wikipedia.org/wiki/Abundant_number), that is,
-exceeding the sum of its divisors (excluding itself)
-- Perfect:  Whether an integer is
-  [perfect](https://en.wikipedia.org/wiki/Perfect_number), that is, equal to
-  the sum of its divisors (excluding itself)
-- Deficient:  Whether an integer is
-  [deficient](https://en.wikipedia.org/wiki/Deficient_number), that is, less
-  than the sum of its divisors (excluding itself)
-- Semi_Prime:  Whether the absolute value of an integer is a
+- Sum_Of_Two_Squares:  Nonnegative and equal to the sum of two squares
+- Abundant:  Its absolute value exceeds the sum of its proper divisors
+- Perfect:  Equal to the sum of its proper divisors
+- Deficient:  Its absolute value is less than the sum of its proper divisors
+- Semi_Prime:  Its absolute value is a
   [semi-prime](https://en.wikipedia.org/wiki/Semiprime), that is, a product of
   exactly two primes (possibly equal)
 
@@ -548,15 +595,15 @@ earlier ones that use the _same_ style.)
 
 ##### Color:  Highlight color for cells with the property
          **/
-        Object.assign(
-            this.params,
-            getPropertyParams(0, this.propertyObjects[0])
-        )
-        for (let i = 1; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
+        for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
             const ithPropertyObject = {
-                property: Property.None,
-                visualization: PropertyVisualization.Fill_Cell,
+                property: i === 0 ? Property.Prime : Property.None,
+                visualization:
+                    i === 1
+                        ? PropertyVisualization.Box_In_Cell
+                        : PropertyVisualization.Fill_Cell,
                 color: DEFAULT_COLORS[i],
+                aux: 3n,
             }
             this.propertyObjects.push(ithPropertyObject)
             Object.assign(
@@ -582,6 +629,8 @@ earlier ones that use the _same_ style.)
                 .value as PropertyVisualization
             this.propertyObjects[i].color = this.params[`prop${i}Color`]
                 .value as string
+            this.propertyObjects[i].aux = this.params[`prop${i}Aux`]
+                .value as bigint
         }
     }
 
@@ -659,139 +708,12 @@ earlier ones that use the _same_ style.)
             for (let i = 0; i < this.propertyObjects.length; i++) {
                 this.propertyObjects[i].property = Property.None
             }
-        }
-        if (this.preset === Preset.Primes) {
-            this.backgroundColor = BLACK
-            this.propertyObjects[0].property = Property.Prime
-            this.propertyObjects[0].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[0].color = RED
-        } else if (this.preset === Preset.Abundant_Numbers) {
-            this.backgroundColor = WHITE
-            this.propertyObjects[0].property = Property.Abundant
-            this.propertyObjects[0].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[0].color = BLACK
-        } else if (this.preset === Preset.Abundant_Numbers_And_Primes) {
-            this.backgroundColor = WHITE
-            this.propertyObjects[0].property = Property.Prime
-            this.propertyObjects[0].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[0].color = RED
-            this.propertyObjects[1].property = Property.Abundant
-            this.propertyObjects[1].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[1].color = BLACK
-        } else if (this.preset === Preset.Polygonal_Numbers) {
-            this.backgroundColor = BLACK
-            this.propertyObjects[0].property = Property.Triangular_Number
-            this.propertyObjects[0].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[0].color = RED
-            this.propertyObjects[1].property = Property.Square_Number
-            this.propertyObjects[1].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[1].color = ORANGE
-            this.propertyObjects[2].property = Property.Pentagonal_Number
-            this.propertyObjects[2].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[2].color = YELLOW
-            this.propertyObjects[3].property = Property.Hexagonal_Number
-            this.propertyObjects[3].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[3].color = GREEN
-            this.propertyObjects[4].property = Property.Heptagonal_Number
-            this.propertyObjects[4].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[4].color = BLUE
-            this.propertyObjects[5].property = Property.Octagonal_Number
-            this.propertyObjects[5].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[5].color = PURPLE
-        } else if (this.preset === Preset.Color_By_Last_Digit_1) {
-            this.backgroundColor = BLACK
-            this.propertyObjects[0].property = Property.Ends_With_Zero
-            this.propertyObjects[0].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[0].color = RAINBOW[0]
-            this.propertyObjects[1].property = Property.Ends_With_One
-            this.propertyObjects[1].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[1].color = RAINBOW[1]
-            this.propertyObjects[2].property = Property.Ends_With_Two
-            this.propertyObjects[2].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[2].color = RAINBOW[2]
-            this.propertyObjects[3].property = Property.Ends_With_Three
-            this.propertyObjects[3].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[3].color = RAINBOW[3]
-            this.propertyObjects[4].property = Property.Ends_With_Four
-            this.propertyObjects[4].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[4].color = RAINBOW[4]
-            this.propertyObjects[5].property = Property.Ends_With_Five
-            this.propertyObjects[5].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[5].color = RAINBOW[5]
-            this.propertyObjects[6].property = Property.Ends_With_Six
-            this.propertyObjects[6].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[6].color = RAINBOW[6]
-            this.propertyObjects[7].property = Property.Ends_With_Seven
-            this.propertyObjects[7].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[7].color = RAINBOW[7]
-            this.propertyObjects[8].property = Property.Ends_With_Eight
-            this.propertyObjects[8].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[8].color = RAINBOW[8]
-            this.propertyObjects[9].property = Property.Ends_With_Nine
-            this.propertyObjects[9].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[9].color = RAINBOW[9]
-        } else if (this.preset === Preset.Color_By_Last_Digit_2) {
-            this.backgroundColor = BLACK
-            this.propertyObjects[0].property = Property.Ends_With_Zero
-            this.propertyObjects[0].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[0].color = RAINBOW[0]
-            this.propertyObjects[1].property = Property.Ends_With_One
-            this.propertyObjects[1].visualization =
-                PropertyVisualization.Box_In_Cell
-            this.propertyObjects[1].color = RAINBOW[1]
-            this.propertyObjects[2].property = Property.Ends_With_Two
-            this.propertyObjects[2].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[2].color = RAINBOW[2]
-            this.propertyObjects[3].property = Property.Ends_With_Three
-            this.propertyObjects[3].visualization =
-                PropertyVisualization.Box_In_Cell
-            this.propertyObjects[3].color = RAINBOW[3]
-            this.propertyObjects[4].property = Property.Ends_With_Four
-            this.propertyObjects[4].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[4].color = RAINBOW[4]
-            this.propertyObjects[5].property = Property.Ends_With_Five
-            this.propertyObjects[5].visualization =
-                PropertyVisualization.Box_In_Cell
-            this.propertyObjects[5].color = RAINBOW[5]
-            this.propertyObjects[6].property = Property.Ends_With_Six
-            this.propertyObjects[6].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[6].color = RAINBOW[6]
-            this.propertyObjects[7].property = Property.Ends_With_Seven
-            this.propertyObjects[7].visualization =
-                PropertyVisualization.Box_In_Cell
-            this.propertyObjects[7].color = RAINBOW[7]
-            this.propertyObjects[8].property = Property.Ends_With_Eight
-            this.propertyObjects[8].visualization =
-                PropertyVisualization.Fill_Cell
-            this.propertyObjects[8].color = RAINBOW[8]
-            this.propertyObjects[9].property = Property.Ends_With_Nine
-            this.propertyObjects[9].visualization =
-                PropertyVisualization.Box_In_Cell
-            this.propertyObjects[9].color = RAINBOW[9]
+            const preset = Preset[this.preset] as PresetName
+            this.backgroundColor = presetBackgrounds[preset]
+            const useProps = presetProperties[preset]
+            for (let i = 0; i < useProps.length; ++i) {
+                Object.assign(this.propertyObjects[i], useProps[i])
+            }
         }
     }
 
@@ -853,28 +775,25 @@ earlier ones that use the _same_ style.)
     }
 
     drawPrimaryColorSquare() {
-        this.colorPrimaryColorProperties()
+        this.colorProperties(this.primaryProperties)
         this.drawBigSquare()
     }
 
     drawSecondaryColorSquare() {
-        this.colorSecondaryColorProperties()
+        this.colorProperties(this.secondaryProperties)
         this.drawSmallSquare()
     }
 
     setHasPrimaryColorProperties() {
         this.hasPrimaryColorProperties = false
-        this.propertyObjectsPrimary.pop()
+        this.primaryProperties = []
         for (let i = 0; i < this.propertyObjects.length; i++) {
             if (
                 this.propertyObjects[i].property != Property.None
                 && this.propertyObjects[i].visualization
                     === PropertyVisualization.Fill_Cell
             ) {
-                this.propertyObjectsPrimary.push({
-                    property: this.propertyObjects[i].property,
-                    color: this.propertyObjects[i].color,
-                })
+                this.primaryProperties.push(i)
                 this.hasPrimaryColorProperties = true
             }
         }
@@ -882,44 +801,29 @@ earlier ones that use the _same_ style.)
 
     setHasSecondaryColorProperties() {
         this.hasSecondaryColorProperties = false
-        this.propertyObjectsSecondary.pop()
+        this.secondaryProperties = []
         for (let i = 0; i < this.propertyObjects.length; i++) {
             if (
                 this.propertyObjects[i].property != Property.None
                 && this.propertyObjects[i].visualization
                     === PropertyVisualization.Box_In_Cell
             ) {
-                this.propertyObjectsSecondary.push({
-                    property: this.propertyObjects[i].property,
-                    color: this.propertyObjects[i].color,
-                })
+                this.secondaryProperties.push(i)
                 this.hasSecondaryColorProperties = true
             }
         }
     }
 
-    colorPrimaryColorProperties() {
-        for (let i = 0; i < this.propertyObjectsPrimary.length; i++) {
+    colorProperties(props: number[]) {
+        for (const i of props) {
             if (
                 this.hasProperty(
                     this.currentIndex,
-                    this.propertyObjectsPrimary[i].property
+                    this.propertyObjects[i].property,
+                    this.propertyObjects[i].aux
                 )
             ) {
-                this.sketch.fill(this.propertyObjectsPrimary[i].color)
-            }
-        }
-    }
-
-    colorSecondaryColorProperties() {
-        for (let i = 0; i < this.propertyObjectsSecondary.length; i++) {
-            if (
-                this.hasProperty(
-                    this.currentIndex,
-                    this.propertyObjectsSecondary[i].property
-                )
-            ) {
-                this.sketch.fill(this.propertyObjectsSecondary[i].color)
+                this.sketch.fill(this.propertyObjects[i].color)
             }
         }
     }
@@ -942,7 +846,7 @@ earlier ones that use the _same_ style.)
         )
     }
 
-    hasProperty(ind: number, property: Property) {
+    hasProperty(ind: number, property: Property, aux?: bigint) {
         const propertyName = Property[property] as PropertyName
         if (propertyName in propertyOfFactorization) {
             let factors: Factorization = null
@@ -963,7 +867,8 @@ earlier ones that use the _same_ style.)
             ](factors)
         }
         return propertyIndicatorFunction[propertyName as ValuePropertyName](
-            this.currentNumber
+            this.currentNumber,
+            aux
         )
     }
 
