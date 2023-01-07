@@ -156,15 +156,17 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             this.initialPosition.y
         )
 
-        // Obtain all prime numbers from the sequence
+        // Obtain all prime numbers that appear as factors in the sequence
         for (let i = this.seq.first; i < this.n; i++) {
-            const checkCurrentPrime = this.seq.getElement(i)
-            if (
-                this.isPrime(i)
-                && !this.primeNum.includes(checkCurrentPrime)
-            ) {
-                this.primeNum.push(checkCurrentPrime)
-                this.countPrime += 1
+            const checkCurrentFactors = this.seq.getFactors(i)
+            if (checkCurrentFactors !== null) {
+                for (let j = 0; j < checkCurrentFactors.length; j++) {
+                    const checkCurrentPrime = checkCurrentFactors[j][0]
+                    if (!this.primeNum.includes(checkCurrentPrime)) {
+                        this.primeNum.push(checkCurrentPrime)
+                        this.countPrime += 1
+                    }
+                }
             }
         }
     }
