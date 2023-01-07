@@ -29,7 +29,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     name = 'Primes and Sizes'
     n = 64
     modulus = 100
-    formula = 'log(1/(n^x))'
+    formula = 'log(n^x)'
 
     params = {
         n: {
@@ -307,11 +307,11 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         const combinedColor = this.primeFactors(ind)
 
         // iterate smaller and smaller circles
-        for (let x = this.radii; x >= 1; x--) {
+        for (let x = 0; x < this.radii; x++) {
             // set brightness based on function value
             bright =
                 Math.abs(this.growthFunction(numberNow, x)) % this.modulus
-            bright = (bright * this.brightAdjust) / this.modulus
+            bright = this.brightAdjust * (bright / this.modulus)
 
             // draw the circle
             this.sketch.fill(combinedColor, 100, bright)
