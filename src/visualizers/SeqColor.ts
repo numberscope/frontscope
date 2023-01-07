@@ -9,47 +9,108 @@ import * as math from 'mathjs'
 
 # Primes and Sizes Visualizer
 
-In this visualizer, the brightness of each circle represents how fast $1/a^n$, 
-where a is a number in the sequence, 
-approaches zero as n increases.
-Each prime number is assigned a color, 
-and the color of each circle represents 
-the color combination of its prime factors. \s
+[<img src="../../assets/img/primes-sizes/ring1.png" width="320" 
+style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/primes-sizes/ring1.png)
 
-Press the "Left arrow key" to show/hide the color of each prime factor.\s
-Press the "Right arrow key" to show/hide labels.\s
-Press "[" to turn up brightness.\s
-Press "]" to turn down brightness. \s
+The terms of the sequence are laid out in a grid, left-to-right and top
+to bottom.  All the primes appearing as divisors of the terms onscreen
+are assigned a colour.  Each term of the sequence is coloured as a blend
+of its component prime colours.  The term is drawn as a disk, whose brightness 
+varies according to the given function from outer rim to center.  It is
+possible to turn on `growth rings,' i.e. a modulus that the brightness is
+taken with respect to, so that tighter growth rings indicate faster growth.
+
+### Keyboard interaction
+
+- Press the **left arrow key** to show/hide the color of each prime factor.
+- Press the **right arrow key** to show/hide labels.
+- Press **[** to turn up brightness.
+- Press **]** to turn down brightness.
+
+### Parameters
  **/
 
 const colorMap = new Map()
 
-// Show description box by pressing left arrow key
 class SeqColor extends VisualizerDefault implements VisualizerInterface {
     name = 'Primes and Sizes'
     n = 64
-    modulus = 100
+    ringsBool = false
+    modulus = 25
     formula = 'log(n^x)'
 
     params = {
+        /** md
+##### Number of terms
+
+The number of terms to display onscreen.  The sizes of the discs will 
+be sized so that there are \(N^2\) disc positions, where \(N^2\) is the
+smallest prime exceeding the number of terms (so that the terms mostly fill
+the screen).  Choose a perfect square number of terms to fill the square.
+If the sequence does not have that many terms, the visualizer will 
+only attempt to show the available terms.
+**/
         n: {
             value: this.n,
             forceType: 'integer',
-            displayName: 'number of terms',
+            displayName: 'Number of terms',
             required: true,
         },
+        /** md
+##### Growth function
+
+This is a function in two variables, n and x.  Most standard math notations
+are accepted (+, -, *, / , ^, log, sin, cos etc.)  
+The variable n represents the
+term of which this disc is a representation.  The variable x takes the value 
+0 at the outer rim of the disk, increasing once per pixel until the center.  
+The value of this function determines the brightness of the disk at that 
+radius. A value of 0 is black
+and higher values are brighter.  If the growth ring option is chosen (below)
+then the brightness wraps around, becoming black again after reaching
+full brightness.  This creates the effect of tree rings at tighter intervals
+for faster growing functions.
+Otherwise the brightness will max out at
+full brightness.
+**/
+        formula: {
+            value: this.formula,
+            displayName: 'Growth function',
+            description: "A function in 'n' (term) and 'x' (growth variable)",
+            required: true,
+        },
+        /** md
+##### Growth rings
+
+If this option is enabled, brightness varies from black to full brightness
+and then wraps around to black again.  The result is a `growth ring' or
+'tree ring' effect
+in the disks:  tighter rings indicate faster growth in the growth function.
+**/
+        ringsBool: {
+            value: this.ringsBool,
+            forceType: 'boolean',
+            displayName: 'Growth rings',
+            required: true,
+        },
+        /** md
+##### Growth ring modulus
+
+This controls the rate of growth rings.  A larger value will result in fewer
+growth rings showing.  A rate of '1' often produces interesting effects, 
+since the 
+growth rings may occur so rapidly that the sampling rate (once per pixel)
+can't pick them all up.
+**/
         modulus: {
             value: this.modulus,
             forceType: 'integer',
-            displayName: 'growth ring modulus',
+            displayName: 'Growth ring modulus',
             description: 'Spacing of level sets',
-            required: true,
-        },
-        formula: {
-            value: this.formula,
-            displayName: 'growth function',
-            description: "A function in 'n' (term) and 'x' (growth variable)",
-            required: true,
+            visibleDependency: 'ringsBool',
+            visibleValue: true,
+            required: false,
         },
     }
 
@@ -96,6 +157,9 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             this.canvasSize.x,
             this.canvasSize.y
         )
+        if (this.n > this.seq.last) {
+            this.n = this.seq.last
+        }
         this.columns = Math.ceil(Math.sqrt(this.n))
         this.positionIncrement = Math.floor(this.canvasSize.x / this.columns)
         this.initialRadius = Math.floor(this.positionIncrement / 2)
@@ -185,7 +249,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             }
             this.sketch.noStroke()
         } else {
-            // Moniitor keyboard events after finishing drawing
+            // Monitor keyboard events after finishing drawing
             // Bug: multiple clicks detected when only one click happened
             this.keyboardEvents()
         }
@@ -306,11 +370,24 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         // Obtain the color of the circle
         const combinedColor = this.primeFactors(ind)
 
+        if (!this.ringsBool) {
+            this.modulus = Math.abs(
+                this.growthFunction(numberNow, this.radii)
+            )
+        }
+
         // iterate smaller and smaller circles
         for (let x = 0; x < this.radii; x++) {
             // set brightness based on function value
-            bright =
-                Math.abs(this.growthFunction(numberNow, x)) % this.modulus
+            const val = Math.abs(this.growthFunction(numberNow, x))
+            if (this.ringsBool) {
+                bright = val % this.modulus
+            } else {
+                bright = val
+                if (bright > this.modulus) {
+                    bright = this.modulus
+                }
+            }
             bright = this.brightAdjust * (bright / this.modulus)
 
             // draw the circle
@@ -322,7 +399,6 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
                 radius
             )
 
-            // Change brightness in terms of the difference
             radius -= this.initialRadius / this.radii
         }
     }
@@ -451,4 +527,40 @@ export const exportModule = new VisualizerExportModule(
     SeqColor,
     ''
 )
-// Bug: First circle for n+2, n+3, etc. is not shown properly
+
+/** md
+
+## Examples
+
+Click on any image to expand it.
+
+###### The Positive Integers
+
+[<img src="../../assets/img/primes-sizes/integers.png" width="320" 
+style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/primes-sizes/integers.png)
+[<img src="../../assets/img/primes-sizes/ring25.png" width="320" 
+style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/primes-sizes/ring25.png)
+[<img src="../../assets/img/primes-sizes/ring1.png" width="320" 
+style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/primes-sizes/ring1.png)
+
+First, the non-negative integers, with 
+the default settings. Next, with growth rings with 
+modulus 25. Finally, with growth rings with 
+modulus 1.  The final example shows some interesting 
+effects because the rings
+actually occur more rapidly than once per pixel.  The first
+two discs appear to be missing because they have no prime factors
+to color them.
+
+###### 
+
+## Credit
+
+The original version of this visualizer was created by Jennifer Leong, as part
+of the [Experimental Mathematics
+Lab](https://www.colorado.edu/math/content/experimental-mathematics-lab) at
+[CU Boulder](https://www.colorado.edu/math/).
+**/
