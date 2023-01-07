@@ -98,6 +98,13 @@ enum Direction {
     None,
 }
 
+const leftTurn: Record<string, Direction> = {
+    Right: Direction.Up,
+    Left: Direction.Down,
+    Up: Direction.Left,
+    Down: Direction.Right,
+}
+
 enum Property {
     None,
     Prime,
@@ -413,7 +420,7 @@ class VisualizerGrid extends VisualizerDefault {
 
     //Grid variables
     amountOfNumbers = 4096
-    squareRootOfAmountOfNumbers = 64
+    sideOfGrid = 64
     currentIndex = 0
     startingIndex = 0
     currentNumber = 0n
@@ -432,9 +439,6 @@ class VisualizerGrid extends VisualizerDefault {
     numberToTurnAtForSpiral = 0
     incrementForNumberToTurnAt = 1
     whetherIncrementShouldIncrement = true
-
-    hasPrimaryColorProperties = false
-    hasSecondaryColorProperties = false
 
     //Properties
     propertyObjects: PropertyObject[] = []
@@ -574,7 +578,6 @@ and reveal parameters for it.
 - Last_Digit_Is:  The final digit base 10 is the specified digit
 - Polygonal_Number:  Positive and that many dots can be arranged in a
   polygonal arrangement with the specified number of sides.
-  square, pentagonal etc.
 - Sum_Of_Two_Squares:  Nonnegative and equal to the sum of two squares
 - Abundant:  Its absolute value exceeds the sum of its proper divisors
 - Perfect:  Equal to the sum of its proper divisors
@@ -635,38 +638,32 @@ earlier ones that use the _same_ style.)
     }
 
     setup(): void {
-        // fill background
-        this.sketch.background(this.backgroundColor)
-
         this.setPresets()
-
-        this.sketch.strokeWeight(0)
-
         this.setOverridingSettings()
 
+        console.log('Background', this.backgroundColor)
+        this.sketch.background(this.backgroundColor)
+        this.sketch.strokeWeight(0)
+
         // determine whether to watch for primary or secondary fills
-        this.setHasPrimaryColorProperties()
-        this.setHasSecondaryColorProperties()
+        this.primaryProperties = this.propertiesFilledWith(
+            PropertyVisualization.Fill_Cell
+        )
+        this.secondaryProperties = this.propertiesFilledWith(
+            PropertyVisualization.Box_In_Cell
+        )
 
         this.amountOfNumbers = Math.min(
             this.amountOfNumbers,
             this.seq.last - this.seq.first + 1
         )
 
-        //Round up amount of numbers so that it is a square number.
-        this.squareRootOfAmountOfNumbers = Number(
-            floorSqrt(this.amountOfNumbers)
-        )
+        // Round down amount of numbers so that it is a square number.
+        this.sideOfGrid = Number(floorSqrt(this.amountOfNumbers))
+        this.amountOfNumbers = this.sideOfGrid * this.sideOfGrid
 
-        this.amountOfNumbers =
-            this.squareRootOfAmountOfNumbers
-            * this.squareRootOfAmountOfNumbers
-
-        //This is because 20 x 20 is 1:1 scaling.
-        this.scalingFactor =
-            this.sketch.width / this.squareRootOfAmountOfNumbers
-
-        this.setPathVariables(this.squareRootOfAmountOfNumbers)
+        this.scalingFactor = this.sketch.width / this.sideOfGrid
+        this.setPathVariables(this.sideOfGrid)
     }
 
     draw(): void {
@@ -690,15 +687,9 @@ earlier ones that use the _same_ style.)
             }
 
             this.setCurrentNumber(this.currentIndex, augmentForRowReset)
-
             this.fillGridCell()
-
             this.currentIndex++
-
-            this.moveCoordinatesUsingPath(
-                this.squareRootOfAmountOfNumbers,
-                iteration
-            )
+            this.moveCoordinatesUsingPath(iteration)
         }
         this.sketch.noLoop()
     }
@@ -759,62 +750,40 @@ earlier ones that use the _same_ style.)
     }
 
     fillGridCell() {
-        this.sketch.fill(this.backgroundColor)
-
-        if (this.hasPrimaryColorProperties) {
-            this.drawPrimaryColorSquare()
-        }
-
-        if (this.hasSecondaryColorProperties) {
-            this.drawSecondaryColorSquare()
-        }
-
+        this.drawSquare(this.primaryProperties, this.scalingFactor)
+        this.drawSquare(
+            this.secondaryProperties,
+            this.scalingFactor / 2,
+            this.scalingFactor / 4
+        )
         if (this.showNumbers) {
             this.showNumber()
         }
     }
 
-    drawPrimaryColorSquare() {
-        this.colorProperties(this.primaryProperties)
-        this.drawBigSquare()
-    }
-
-    drawSecondaryColorSquare() {
-        this.colorProperties(this.secondaryProperties)
-        this.drawSmallSquare()
-    }
-
-    setHasPrimaryColorProperties() {
-        this.hasPrimaryColorProperties = false
-        this.primaryProperties = []
-        for (let i = 0; i < this.propertyObjects.length; i++) {
-            if (
-                this.propertyObjects[i].property != Property.None
-                && this.propertyObjects[i].visualization
-                    === PropertyVisualization.Fill_Cell
-            ) {
-                this.primaryProperties.push(i)
-                this.hasPrimaryColorProperties = true
-            }
+    drawSquare(props: number[], size: number, offset = 0) {
+        if (this.colorProperties(props)) {
+            this.sketch.rect(this.x + offset, this.y + offset, size, size)
         }
     }
 
-    setHasSecondaryColorProperties() {
-        this.hasSecondaryColorProperties = false
-        this.secondaryProperties = []
+    propertiesFilledWith(fillType: PropertyVisualization) {
+        const retVal: number[] = []
         for (let i = 0; i < this.propertyObjects.length; i++) {
             if (
                 this.propertyObjects[i].property != Property.None
-                && this.propertyObjects[i].visualization
-                    === PropertyVisualization.Box_In_Cell
+                && this.propertyObjects[i].visualization === fillType
             ) {
-                this.secondaryProperties.push(i)
-                this.hasSecondaryColorProperties = true
+                retVal.push(i)
             }
         }
+        return retVal
     }
 
-    colorProperties(props: number[]) {
+    // returns whether any of the properties held, i.e. whether indicator
+    // needs to be drawn, and by side effect sets the fill color
+    colorProperties(props: number[]): boolean {
+        let retval = false
         for (const i of props) {
             if (
                 this.hasProperty(
@@ -824,26 +793,10 @@ earlier ones that use the _same_ style.)
                 )
             ) {
                 this.sketch.fill(this.propertyObjects[i].color)
+                retval = true
             }
         }
-    }
-
-    drawBigSquare() {
-        this.sketch.rect(
-            this.x,
-            this.y,
-            this.scalingFactor,
-            this.scalingFactor
-        )
-    }
-
-    drawSmallSquare() {
-        this.sketch.rect(
-            this.x + this.scalingFactor / 4,
-            this.y + this.scalingFactor / 4,
-            this.scalingFactor / 2,
-            this.scalingFactor / 2
-        )
+        return retval
     }
 
     hasProperty(ind: number, property: Property, aux?: bigint) {
@@ -885,22 +838,12 @@ earlier ones that use the _same_ style.)
         }
     }
 
-    moveCoordinatesUsingPath(
-        squareRootOfAmountOfNumbers: number,
-        iteration: number
-    ) {
-        this.changeDirectionUsingPathType(
-            squareRootOfAmountOfNumbers,
-            iteration
-        )
-
+    moveCoordinatesUsingPath(iteration: number) {
+        this.changeDirectionUsingPathType(iteration)
         this.moveCoordinatesUsingCurrentDirection()
     }
 
-    changeDirectionUsingPathType(
-        squareRootOfAmountOfNumbers: number,
-        iteration: number
-    ) {
+    changeDirectionUsingPathType(iteration: number) {
         //Choose direction for next number
         if (this.pathType === PathType.Spiral) {
             //Turn at the numberToTurn at which increases every other turn
@@ -913,20 +856,12 @@ earlier ones that use the _same_ style.)
                 } else {
                     this.whetherIncrementShouldIncrement = true
                 }
-
-                if (this.currentDirection === Direction.Right) {
-                    this.currentDirection = Direction.Up
-                } else if (this.currentDirection === Direction.Up) {
-                    this.currentDirection = Direction.Left
-                } else if (this.currentDirection === Direction.Left) {
-                    this.currentDirection = Direction.Down
-                } else if (this.currentDirection === Direction.Down) {
-                    this.currentDirection = Direction.Right
-                }
+                this.currentDirection =
+                    leftTurn[Direction[this.currentDirection]]
             }
         } else if (this.pathType === PathType.Rows) {
             //Go to new row when the row is complete
-            if ((iteration + 1) % squareRootOfAmountOfNumbers === 0) {
+            if ((iteration + 1) % this.sideOfGrid === 0) {
                 this.currentDirection = Direction.StartNewRow
             } else if (iteration === this.amountOfNumbers) {
                 this.currentDirection = Direction.None
@@ -937,18 +872,21 @@ earlier ones that use the _same_ style.)
     }
 
     moveCoordinatesUsingCurrentDirection() {
-        //Move coordinates to direction they're going to
-        if (this.currentDirection === Direction.Right) {
-            this.x += this.scalingFactor
-        } else if (this.currentDirection === Direction.Up) {
-            this.y -= this.scalingFactor
-        } else if (this.currentDirection === Direction.Left) {
-            this.x -= this.scalingFactor
-        } else if (this.currentDirection === Direction.Down) {
-            this.y += this.scalingFactor
-        } else if (this.currentDirection === Direction.StartNewRow) {
-            this.x = 0
-            this.y += this.scalingFactor
+        switch (this.currentDirection) {
+            case Direction.Right:
+                this.x += this.scalingFactor
+                break
+            case Direction.Up:
+                this.y -= this.scalingFactor
+                break
+            case Direction.Left:
+                this.x -= this.scalingFactor
+                break
+            case Direction.StartNewRow:
+                this.x = 0
+            // FALL THROUGH
+            case Direction.Down:
+                this.y += this.scalingFactor
         }
     }
 }
