@@ -237,17 +237,18 @@ can't pick them all up.
 
     draw() {
         if (this.firstDraw == true && this.currentIndex < this.n) {
+            this.sketch.noStroke()
+
             this.drawCircle(this.currentIndex)
 
-            this.currentIndex++
-
             this.changePosition()
+
+            this.currentIndex++
 
             // Check if drawing finished
             if (this.currentIndex >= this.n) {
                 this.firstDraw = false
             }
-            this.sketch.noStroke()
         } else {
             // Monitor keyboard events after finishing drawing
             // Bug: multiple clicks detected when only one click happened
@@ -415,7 +416,7 @@ can't pick them all up.
     changePosition() {
         this.position.add(this.positionIncrement, 0)
         // if we need to go to next line
-        if (this.currentIndex % this.columns == 0) {
+        if ((this.currentIndex - this.seq.first + 1) % this.columns == 0) {
             this.position.x = this.initialPosition.x
             this.position.add(0, this.positionIncrement)
         }
@@ -555,7 +556,14 @@ actually occur more rapidly than once per pixel.  The first
 two discs appear to be missing because they have no prime factors
 to color them.
 
-###### 
+###### The semi-primes
+
+[<img src="../../assets/img/primes-sizes/semiprimes.png" width="320" 
+style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/primes-sizes/semiprimes.png)
+
+This image shows the semi-primes ([A001358](https://oeis.org/A001358))
+with a growth function of \( n^2/x \) and growth rings of modulus 25.
 
 ## Credit
 
