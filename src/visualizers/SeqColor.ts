@@ -171,6 +171,8 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
     draw() {
         if (this.firstDraw == true && this.currentIndex < this.n) {
+            console.log('drawing: ', this.currentIndex)
+            console.log('at position: ', this.position)
             this.drawCircle(this.currentIndex)
 
             this.currentIndex++
@@ -251,12 +253,12 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
     brightnessUp() {
         this.brightAdjust += 1
-        this.redrawCircle()
+        this.redrawCircles()
     }
 
     brightnessDown() {
         this.brightAdjust -= 1
-        this.redrawCircle()
+        this.redrawCircles()
     }
 
     // Draw labels for each circle
@@ -279,36 +281,34 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
     // Remove all labels by drawing circles again
     undrawLabel() {
-        this.redrawCircle()
+        this.redrawCircles()
     }
 
-    redrawCircle() {
+    redrawCircles() {
         this.position = this.sketch.createVector(
             this.initialPosition.x,
             this.initialPosition.y
         )
         this.firstDraw = true
         this.currentIndex = this.seq.first
-        this.sketch.redraw(1)
+        this.sketch.redraw()
     }
 
     drawCircle(ind: number) {
         const numberNowBigint = this.seq.getElement(ind)
         const numberNow = Number(numberNowBigint)
         this.sketch.ellipseMode(this.sketch.RADIUS)
+        this.sketch.colorMode(this.sketch.HSB)
+        this.sketch.noStroke()
         let radius = this.initialRadius
         let bright = 0
 
-        // iterate smaller and smaller circles
-        for (let x = this.radii; x >= 0; x--) {
-            // Obtain the color of the circle
-            const combinedColor = this.primeFactors(
-                ind,
-                Number(this.countPrime)
-            )
+        // Obtain the color of the circle
+        const combinedColor = this.primeFactors(ind)
 
+        // iterate smaller and smaller circles
+        for (let x = this.radii; x >= 1; x--) {
             // draw the circle
-            this.sketch.colorMode(this.sketch.HSB)
             this.sketch.fill(combinedColor, 100, bright)
             this.sketch.ellipse(
                 this.position.x,
@@ -406,14 +406,15 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     }
 
     //return a number which represents the color
-    primeFactors(ind: number, totalPrime: number) {
+    primeFactors(ind: number) {
+        console.log('entering primeFactors with index', ind)
         const factors = this.seq.getFactors(ind)
         if (factors === null) {
-            return -1
+            return -30
         } // factoring failed
 
         //assign color to each prime number
-        const colorNum = 360 / Number(totalPrime)
+        const colorNum = 360 / this.countPrime
 
         colorMap.set(1, 0)
         let tmp = 0
@@ -444,6 +445,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             }
         }
 
+        console.log('returning', colorAll)
         return colorAll
     }
 }
