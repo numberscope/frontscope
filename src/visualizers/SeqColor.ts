@@ -171,8 +171,6 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
     draw() {
         if (this.firstDraw == true && this.currentIndex < this.n) {
-            console.log('drawing: ', this.currentIndex)
-            console.log('at position: ', this.position)
             this.drawCircle(this.currentIndex)
 
             this.currentIndex++
@@ -296,7 +294,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
     drawCircle(ind: number) {
         const numberNowBigint = this.seq.getElement(ind)
-        const numberNow = Number(numberNowBigint)
+        const numberNow = Math.abs(Number(numberNowBigint))
         this.sketch.ellipseMode(this.sketch.RADIUS)
         this.sketch.colorMode(this.sketch.HSB)
         this.sketch.noStroke()
@@ -407,7 +405,6 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
     //return a number which represents the color
     primeFactors(ind: number) {
-        console.log('entering primeFactors with index', ind)
         const factors = this.seq.getFactors(ind)
         if (factors === null) {
             return -30
@@ -445,7 +442,6 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             }
         }
 
-        console.log('returning', colorAll)
         return colorAll
     }
 }
