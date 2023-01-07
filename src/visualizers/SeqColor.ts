@@ -116,6 +116,7 @@ can't pick them all up.
 
     private evaluator: math.EvalFunction
 
+    private last = 0
     private currentIndex = 0
     private position = this.sketch.createVector(0, 0)
     private boxSize = this.sketch.createVector(0, 0)
@@ -157,10 +158,11 @@ can't pick them all up.
             this.canvasSize.x,
             this.canvasSize.y
         )
-        if (this.n > this.seq.last) {
-            this.n = this.seq.last
-        }
         this.columns = Math.ceil(Math.sqrt(this.n))
+        this.last = this.n + this.seq.first // adjust for offset
+        if (this.last > this.seq.last) {
+            this.last = this.seq.last
+        }
         this.positionIncrement = Math.floor(this.canvasSize.x / this.columns)
         this.initialRadius = Math.floor(this.positionIncrement / 2)
         this.radii = this.initialRadius
@@ -221,7 +223,7 @@ can't pick them all up.
         )
 
         // Obtain all prime numbers that appear as factors in the sequence
-        for (let i = this.seq.first; i < this.n; i++) {
+        for (let i = this.seq.first; i < this.last; i++) {
             const checkCurrentFactors = this.seq.getFactors(i)
             if (checkCurrentFactors !== null) {
                 for (let j = 0; j < checkCurrentFactors.length; j++) {
@@ -236,7 +238,7 @@ can't pick them all up.
     }
 
     draw() {
-        if (this.firstDraw == true && this.currentIndex < this.n) {
+        if (this.firstDraw == true && this.currentIndex < this.last) {
             this.sketch.noStroke()
 
             this.drawCircle(this.currentIndex)
@@ -246,7 +248,7 @@ can't pick them all up.
             this.currentIndex++
 
             // Check if drawing finished
-            if (this.currentIndex >= this.n) {
+            if (this.currentIndex >= this.last) {
                 this.firstDraw = false
             }
         } else {
@@ -338,7 +340,7 @@ can't pick them all up.
         )
         this.subG.colorMode(this.sketch.HSB)
         this.subG.noStroke()
-        for (let i = this.seq.first; i < this.n; i++) {
+        for (let i = this.seq.first; i < this.last; i++) {
             this.showCircleLabel(i)
             this.changePosition()
         }
@@ -370,6 +372,7 @@ can't pick them all up.
 
         // Obtain the color of the circle
         const combinedColor = this.primeFactors(ind)
+        this.sketch.fill(combinedColor, 100, bright)
 
         if (!this.ringsBool) {
             this.modulus = Math.abs(
