@@ -27,7 +27,7 @@ const colorMap = new Map()
 // Show description box by pressing left arrow key
 class SeqColor extends VisualizerDefault implements VisualizerInterface {
     name = 'Primes and Sizes'
-    n = 40
+    n = 64
     modulus = 100
     formula = 'log(1/(n^x))'
 
@@ -59,6 +59,9 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     private position = this.sketch.createVector(0, 0)
     private boxSize = this.sketch.createVector(0, 0)
     private canvasSize = this.sketch.createVector(0, 0)
+    private initialPosition = this.sketch.createVector(0, 0)
+    private positionIncrement = 100
+    private columns = 0
     private subG = this.sketch.createGraphics(0, 0)
     private subL = this.sketch.createGraphics(0, 0)
     private boxIsShow = false
@@ -67,6 +70,10 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     private firstDraw = true
     private showLabel = false
     private brightAdjust = 100
+
+    // dot control
+    private radii = 50 // increments of radius in a dot
+    private initialRadius = 50 // size of dots
 
     constructor() {
         super()
@@ -89,6 +96,10 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             this.canvasSize.x,
             this.canvasSize.y
         )
+        this.columns = Math.ceil(Math.sqrt(this.n))
+        this.positionIncrement = Math.floor(this.canvasSize.x / this.columns)
+        this.initialRadius = Math.floor(this.positionIncrement / 2)
+        this.radii = this.initialRadius
     }
 
     checkParameters() {
@@ -136,9 +147,13 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         this.firstDraw = true
 
         // Set position of the circle
+        this.initialPosition = this.sketch.createVector(
+            this.initialRadius,
+            this.initialRadius
+        )
         this.position = this.sketch.createVector(
-            this.canvasSize.x / this.n + 30,
-            this.canvasSize.x / this.n + 50
+            this.initialPosition.x,
+            this.initialPosition.y
         )
 
         // Obtain all prime numbers from the sequence
@@ -156,7 +171,9 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
     draw() {
         if (this.firstDraw == true && this.currentIndex < this.n) {
-            this.drawCircle(this.currentIndex++)
+            this.drawCircle(this.currentIndex)
+
+            this.currentIndex++
 
             this.changePosition()
 
@@ -245,8 +262,8 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     // Draw labels for each circle
     drawLabel() {
         this.position = this.sketch.createVector(
-            this.canvasSize.x / this.n + 30,
-            this.canvasSize.y / this.n + 50
+            this.initialPosition.x,
+            this.initialPosition.y
         )
         this.subL = this.sketch.createGraphics(
             this.canvasSize.x,
@@ -267,8 +284,8 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
     redrawCircle() {
         this.position = this.sketch.createVector(
-            this.canvasSize.x / this.n + 30,
-            this.canvasSize.x / this.n + 50
+            this.initialPosition.x,
+            this.initialPosition.y
         )
         this.firstDraw = true
         this.currentIndex = this.seq.first
@@ -279,16 +296,18 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
         const numberNowBigint = this.seq.getElement(ind)
         const numberNow = Number(numberNowBigint)
         this.sketch.ellipseMode(this.sketch.RADIUS)
-        let radius = 50
+        let radius = this.initialRadius
         let bright = 0
 
-        for (let x = this.n; x >= 2; x--) {
+        // iterate smaller and smaller circles
+        for (let x = this.radii; x >= 0; x--) {
             // Obtain the color of the circle
             const combinedColor = this.primeFactors(
                 ind,
                 Number(this.countPrime)
             )
 
+            // draw the circle
             this.sketch.colorMode(this.sketch.HSB)
             this.sketch.fill(combinedColor, 100, bright)
             this.sketch.ellipse(
@@ -299,16 +318,14 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
             )
 
             // Calculate the difference to next step of growth function
-            const diff = Math.abs(
-                Math.abs(
-                    this.growthFunction(numberNow, x - 1)
-                        - this.growthFunction(numberNow, x)
-                )
-            )
+            const diff =
+                this.growthFunction(numberNow, x - 1)
+                - this.growthFunction(numberNow, x)
+
             // Change brightness in terms of the difference
             const changeColor = (bright + diff) % this.modulus
             bright = (changeColor * this.brightAdjust) / this.modulus
-            radius -= 50 / (this.n - 2)
+            radius -= this.initialRadius / this.radii
         }
     }
 
@@ -322,11 +339,11 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
     }
 
     changePosition() {
-        this.position.add(100, 0)
+        this.position.add(this.positionIncrement, 0)
         // if we need to go to next line
-        if (this.position.x >= this.canvasSize.x) {
-            this.position.x = this.canvasSize.x / this.n + 30
-            this.position.add(0, 100)
+        if (this.currentIndex % this.columns == 0) {
+            this.position.x = this.initialPosition.x
+            this.position.add(0, this.positionIncrement)
         }
     }
 
