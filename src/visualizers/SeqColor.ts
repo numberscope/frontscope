@@ -294,7 +294,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
     drawCircle(ind: number) {
         const numberNowBigint = this.seq.getElement(ind)
-        const numberNow = Math.abs(Number(numberNowBigint))
+        const numberNow = Number(numberNowBigint)
         this.sketch.ellipseMode(this.sketch.RADIUS)
         this.sketch.colorMode(this.sketch.HSB)
         this.sketch.noStroke()
