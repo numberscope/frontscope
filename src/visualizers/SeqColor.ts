@@ -306,6 +306,11 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
 
         // iterate smaller and smaller circles
         for (let x = this.radii; x >= 1; x--) {
+            // set brightness based on function value
+            bright =
+                Math.abs(this.growthFunction(numberNow, x)) % this.modulus
+            bright = (bright * this.brightAdjust) / this.modulus
+
             // draw the circle
             this.sketch.fill(combinedColor, 100, bright)
             this.sketch.ellipse(
@@ -315,14 +320,7 @@ class SeqColor extends VisualizerDefault implements VisualizerInterface {
                 radius
             )
 
-            // Calculate the difference to next step of growth function
-            const diff =
-                this.growthFunction(numberNow, x - 1)
-                - this.growthFunction(numberNow, x)
-
             // Change brightness in terms of the difference
-            const changeColor = (bright + diff) % this.modulus
-            bright = (changeColor * this.brightAdjust) / this.modulus
             radius -= this.initialRadius / this.radii
         }
     }
