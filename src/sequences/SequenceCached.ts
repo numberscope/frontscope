@@ -1,3 +1,4 @@
+import type {Factorization} from './SequenceInterface'
 import {SequenceClassDefault} from './SequenceClassDefault'
 
 const min = Math.min
@@ -20,7 +21,7 @@ export class SequenceCached extends SequenceClassDefault {
     name = 'Cached Base'
     description = 'A base class for cached sequences'
     protected cache: bigint[] = []
-    protected factorCache: ([bigint, bigint][] | null)[] = []
+    protected factorCache: Factorization[] = []
     protected lastCached: number
     protected cachingTo: number
     protected cacheBlock: number
@@ -106,7 +107,7 @@ export class SequenceCached extends SequenceClassDefault {
         return this.cache[n]
     }
 
-    getFactors(n: number): [bigint, bigint][] | null {
+    getFactors(n: number): Factorization {
         this.getElement(n) // fill the cache
         return this.factorCache[n]
     }
@@ -126,9 +127,9 @@ export class SequenceCached extends SequenceClassDefault {
      * receives both the sequence index and the value of the entry.
      * @param {number} n  the index of the entry to factor
      * @param {bigint} value  the value of the entry to factor
-     * @returns {[bigint,bigint][]?} the factorization
+     * @returns {Factorization} the factorization
      */
-    factor(_n: number, _v: bigint): [bigint, bigint][] | null {
+    factor(_n: number, _v: bigint): Factorization {
         return null
     }
 }

@@ -1,7 +1,9 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {VisualizerDefault} from '@/visualizers/VisualizerDefault'
-import {floorSqrt} from '@/shared/math'
+import {bigabs, floorSqrt, modulo} from '@/shared/math'
 import type {ParamInterface} from '@/shared/Paramable'
+import type {Factorization} from '@/sequences/SequenceInterface'
+import simpleFactor from '@/sequences/simpleFactor'
 
 /** md
 # Grid Visualizer
@@ -100,12 +102,14 @@ enum Property {
     Prime,
     Negative,
     Even,
+    Odd,
     Divisible_By_Three,
     Divisible_By_Four,
     Divisible_By_Five,
     Divisible_By_Six,
     Divisible_By_Seven,
     Divisible_By_Eight,
+    Divisible_By_Nine,
     Ends_With_Zero,
     Ends_With_One,
     Ends_With_Two,
@@ -134,59 +138,207 @@ enum PropertyVisualization {
     Box_In_Cell,
 }
 
-function getProperty(
-    value: Property,
-    index: number,
-    hasVisibleDependencyAndPredicate: boolean
-) {
-    const property = {
-        value: value,
-        from: Property,
-        displayName: `Property ${index + 1}`,
-        required: false,
-        visibleDependency: '',
-        visiblePredicate: (dependentValue: Property) =>
-            dependentValue !== Property.None,
-    }
-
-    if (hasVisibleDependencyAndPredicate) {
-        property.visibleDependency = `property${index - 1}`
-        property.visiblePredicate = (dependentValue: Property) =>
-            dependentValue !== Property.None
-    }
-
-    return property
+interface propertyObject {
+    property: Property
+    visualization: PropertyVisualization
+    color: string // should this be a typedef?
 }
 
-function getPropertyVisualization(
-    value: PropertyVisualization,
-    index: number
-) {
-    const propertyVisualization = {
-        value: value,
-        from: PropertyVisualization,
-        displayName: `Display`,
-        required: false,
-        visibleDependency: `property${index}`,
-        visiblePredicate: (dependentValue: Property) =>
-            dependentValue !== Property.None,
+function getPropertyParams(index: number, prop: propertyObject) {
+    return {
+        [`property${index}`]: {
+            value: prop.property,
+            from: Property,
+            displayName: `Property ${index + 1}`,
+            required: false,
+            visibleDependency: index > 0 ? `property${index - 1}` : '',
+            visiblePredicate: (d: Property) => d !== Property.None,
+        },
+        [`prop${index}Vis`]: {
+            value: prop.visualization,
+            from: PropertyVisualization,
+            displayName: 'Display',
+            required: false,
+            visibleDependency: `property${index}`,
+            visiblePredicate: (d: Property) => d !== Property.None,
+        },
+        [`prop${index}Color`]: {
+            value: prop.color,
+            forceType: 'color',
+            displayName: 'Color',
+            required: false,
+            visibleDependency: `property${index}`,
+            visiblePredicate: (d: Property) => d !== Property.None,
+        },
     }
-
-    return propertyVisualization
 }
 
-function getPropertyColor(value: string, index: number) {
-    const propertyColor = {
-        value: value,
-        forceType: 'color',
-        displayName: `Color`,
-        required: false,
-        visibleDependency: `property${index}`,
-        visiblePredicate: (dependentValue: Property) =>
-            dependentValue !== Property.None,
+/*
+ *   FUNCTIONS TO CHECK FOR PROPERTIES
+ */
+function isPrime(factors: Factorization): boolean {
+    if (factors === null) throw new Error('Internal error in Grid')
+    if (factors.length == 0) return false // 1 is not prime
+    const [factor, power] = factors[0]
+    switch (factors.length) {
+        case 1:
+            return factor > 1n && power === 1n
+        case 2:
+            return factor === -1n && factors[1][1] === 1n // negative of prime
     }
+    return false // two or more prime factors
+}
 
-    return propertyColor
+//Adapted from Geeks For Geeks :
+//https://www.geeksforgeeks.org/deficient-number/
+function getSumOfProperDivisors(num: bigint): bigint {
+    if (num === 0n) return 1n // conventional value to make 0 abundant.
+    // returns the sum of divisors of the absolute value
+    if (num < 0n) num = -num
+    let sumOfDivisors = 1n // 1 always divisor, leave out num itself
+    let i, partner
+    // Note that this loop will break beyond square root of n
+    for (i = 2n, partner = num / i; i <= partner; i++, partner = num / i) {
+        if (num % i === 0n) {
+            sumOfDivisors += i
+            if (partner > i) sumOfDivisors += partner
+        }
+    }
+    return sumOfDivisors
+}
+
+function isSumOfTwoSquares(factors: Factorization): boolean {
+    if (factors === null) throw new Error('Internal error in Grid')
+    let legendre = 1
+    for (let i = 0; i < factors.length; i++) {
+        const factor = factors[i]
+        const prime = factor[0]
+        const exponent = factor[1]
+        if (prime === -1n) {
+            // negative numbers are never sums of squares
+            return false
+        }
+        // otherwise update legendre for every prime 3 mod 4
+        if (prime % 4n === 3n && exponent % 2n === 1n) {
+            legendre = -1 * legendre
+        }
+    }
+    if (legendre === 1) {
+        return true
+    } else {
+        return false
+    }
+}
+
+//Modification of Geeks for Geeks :
+//https://www.geeksforgeeks.org/program-check-n-pentagonal-number/
+function isPolygonal(num: bigint, order: bigint): boolean {
+    // negative inputs are never polygonal
+    if (num < 0n) {
+        return false
+    }
+    let i = 1n,
+        M
+    do {
+        M = (order - 2n) * ((i * (i - 1n)) / 2n) + i
+        i += 1n
+    } while (M < num)
+    return M === num
+}
+
+const isAbundant = (n: bigint) => getSumOfProperDivisors(n) > bigabs(n)
+const isPerfect = (n: bigint) => n > 1n && getSumOfProperDivisors(n) === n
+const isDeficient = (n: bigint) => getSumOfProperDivisors(n) < bigabs(n)
+
+function isSemiPrime(factors: Factorization): boolean {
+    if (factors === null) throw new Error('Internal error in Grid')
+    if (factors.length === 0) return false // 1 is not semi-prime
+    const [factor, power] = factors[0]
+    switch (factors.length) {
+        case 1:
+            if (factor < 2n) return false // 0, -1 not semiprime
+            return power === 2n // square of prime
+        case 2:
+            if (factor < 2n) {
+                return factors[1][1] === 2n // negative prime square
+            }
+            return power === 1n && factors[1][1] === 1n // product of two primes
+        case 3:
+            if (factor < 2n) {
+                // negative of product of two primes
+                return factors[1][1] === 1n && factors[2][1] === 1n
+            }
+        // FALL THROUGH
+    }
+    return false // three or more prime factors
+}
+
+function congruenceIndicator(modulus: bigint, residue = 0n) {
+    return (value: bigint) => modulo(value, modulus) === residue
+}
+
+function polygonalIndicator(edges: bigint) {
+    return (value: bigint) => isPolygonal(value, edges)
+}
+
+function lastDigitIndicator(digit: bigint) {
+    return (value: bigint) =>
+        value < 0n ? value % 10n === -digit : value % 10n === digit
+}
+
+/* Define the semantics of the Property values */
+
+type PropertyName = Exclude<keyof typeof Property, number>
+
+const propertyOfFactorization = {
+    Prime: true,
+    Sum_Of_Two_Squares: true,
+    Semi_Prime: true,
+} as const
+
+type FactorPropertyName = keyof typeof propertyOfFactorization
+type ValuePropertyName = Exclude<PropertyName, FactorPropertyName>
+
+const propertyIndicatorFunction: {
+    [key in PropertyName]: key extends FactorPropertyName
+        ? (factorization: Factorization) => boolean
+        : key extends ValuePropertyName
+        ? (() => boolean) | ((value: bigint) => boolean)
+        : never
+} = {
+    None: () => false,
+    Prime: isPrime,
+    Negative: (v: bigint) => v < 0n,
+    Even: congruenceIndicator(2n),
+    Odd: congruenceIndicator(2n, 1n),
+    Divisible_By_Three: congruenceIndicator(3n),
+    Divisible_By_Four: congruenceIndicator(4n),
+    Divisible_By_Five: congruenceIndicator(5n),
+    Divisible_By_Six: congruenceIndicator(6n),
+    Divisible_By_Seven: congruenceIndicator(7n),
+    Divisible_By_Eight: congruenceIndicator(8n),
+    Divisible_By_Nine: congruenceIndicator(9n),
+    Ends_With_Zero: congruenceIndicator(10n),
+    Ends_With_One: lastDigitIndicator(1n),
+    Ends_With_Two: lastDigitIndicator(2n),
+    Ends_With_Three: lastDigitIndicator(3n),
+    Ends_With_Four: lastDigitIndicator(4n),
+    Ends_With_Five: lastDigitIndicator(5n),
+    Ends_With_Six: lastDigitIndicator(6n),
+    Ends_With_Seven: lastDigitIndicator(7n),
+    Ends_With_Eight: lastDigitIndicator(8n),
+    Ends_With_Nine: lastDigitIndicator(9n),
+    Sum_Of_Two_Squares: isSumOfTwoSquares,
+    Triangular_Number: polygonalIndicator(3n),
+    Square_Number: polygonalIndicator(4n),
+    Pentagonal_Number: polygonalIndicator(5n),
+    Hexagonal_Number: polygonalIndicator(6n),
+    Heptagonal_Number: polygonalIndicator(7n),
+    Octagonal_Number: polygonalIndicator(8n),
+    Abundant: isAbundant,
+    Perfect: isPerfect,
+    Deficient: isDeficient,
+    Semi_Prime: isSemiPrime,
 }
 
 class VisualizerGrid extends VisualizerDefault {
@@ -238,48 +390,6 @@ class VisualizerGrid extends VisualizerDefault {
         },
     ]
 
-    propertyIndicatorFunction: {
-        [key in Property]: ((ind: number) => boolean) | (() => boolean)
-    } = {
-        [Property.None]: () => false,
-        [Property.Prime]: (ind: number) => this.isPrime(ind),
-        [Property.Negative]: () => this.currentNumber < 0n,
-        [Property.Even]: () => this.currentNumber % 2n === 0n,
-        [Property.Divisible_By_Three]: () => this.currentNumber % 3n === 0n,
-        [Property.Divisible_By_Four]: () => this.currentNumber % 4n === 0n,
-        [Property.Divisible_By_Five]: () => this.currentNumber % 5n === 0n,
-        [Property.Divisible_By_Six]: () => this.currentNumber % 6n === 0n,
-        [Property.Divisible_By_Seven]: () => this.currentNumber % 7n === 0n,
-        [Property.Divisible_By_Eight]: () => this.currentNumber % 8n === 0n,
-        [Property.Ends_With_One]: () => this.currentNumber % 10n === 1n,
-        [Property.Ends_With_Two]: () => this.currentNumber % 10n === 2n,
-        [Property.Ends_With_Three]: () => this.currentNumber % 10n === 3n,
-        [Property.Ends_With_Four]: () => this.currentNumber % 10n === 4n,
-        [Property.Ends_With_Five]: () => this.currentNumber % 10n === 5n,
-        [Property.Ends_With_Six]: () => this.currentNumber % 10n === 6n,
-        [Property.Ends_With_Seven]: () => this.currentNumber % 10n === 7n,
-        [Property.Ends_With_Eight]: () => this.currentNumber % 10n === 8n,
-        [Property.Ends_With_Nine]: () => this.currentNumber % 10n === 9n,
-        [Property.Ends_With_Zero]: () => this.currentNumber % 10n === 0n,
-        [Property.Sum_Of_Two_Squares]: (ind: number) =>
-            this.isSumOfTwoSquares(ind),
-        [Property.Triangular_Number]: (ind: number) =>
-            this.isPolygonal(ind, 3n),
-        [Property.Square_Number]: (ind: number) => this.isPolygonal(ind, 4n),
-        [Property.Pentagonal_Number]: (ind: number) =>
-            this.isPolygonal(ind, 5n),
-        [Property.Hexagonal_Number]: (ind: number) =>
-            this.isPolygonal(ind, 6n),
-        [Property.Heptagonal_Number]: (ind: number) =>
-            this.isPolygonal(ind, 7n),
-        [Property.Octagonal_Number]: (ind: number) =>
-            this.isPolygonal(ind, 8n),
-        [Property.Abundant]: (ind: number) => this.isAbundant(ind),
-        [Property.Perfect]: (ind: number) => this.isPerfect(ind),
-        [Property.Deficient]: (ind: number) =>
-            !this.isPerfect(ind) && !this.isAbundant(ind),
-        [Property.Semi_Prime]: (ind: number) => this.isSemiPrime(ind),
-    }
     params: {[key: string]: ParamInterface} = {
         /** md
 ### Presets: Which preset to display
@@ -438,30 +548,21 @@ earlier ones that use the _same_ style.)
 
 ##### Color:  Highlight color for cells with the property
          **/
-
+        Object.assign(
+            this.params,
+            getPropertyParams(0, this.propertyObjects[0])
+        )
         for (let i = 1; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
-            this.propertyObjects.push({
+            const ithPropertyObject = {
                 property: Property.None,
                 visualization: PropertyVisualization.Fill_Cell,
                 color: DEFAULT_COLORS[i],
-            })
-        }
-
-        for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
-            (this.params['property' + i] = getProperty(
-                this.propertyObjects[i].property,
-                i,
-                i !== 0
-            )),
-                (this.params['property' + i + 'Visualization'] =
-                    getPropertyVisualization(
-                        this.propertyObjects[i].visualization,
-                        i
-                    )),
-                (this.params['property' + i + 'MainColor'] = getPropertyColor(
-                    this.propertyObjects[i].color,
-                    i
-                ))
+            }
+            this.propertyObjects.push(ithPropertyObject)
+            Object.assign(
+                this.params,
+                getPropertyParams(i, ithPropertyObject)
+            )
         }
     }
 
@@ -475,14 +576,12 @@ earlier ones that use the _same_ style.)
         super.assignParameters()
 
         for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
-            (this.propertyObjects[i].property = this.params['property' + i]
-                .value as Property),
-                (this.propertyObjects[i].visualization = this.params[
-                    'property' + i + 'Visualization'
-                ].value as PropertyVisualization),
-                (this.propertyObjects[i].color = this.params[
-                    'property' + i + 'MainColor'
-                ].value as string)
+            this.propertyObjects[i].property = this.params[`property${i}`]
+                .value as Property
+            this.propertyObjects[i].visualization = this.params[`prop${i}Vis`]
+                .value as PropertyVisualization
+            this.propertyObjects[i].color = this.params[`prop${i}Color`]
+                .value as string
         }
     }
 
@@ -844,7 +943,28 @@ earlier ones that use the _same_ style.)
     }
 
     hasProperty(ind: number, property: Property) {
-        return this.propertyIndicatorFunction[property](ind)
+        const propertyName = Property[property] as PropertyName
+        if (propertyName in propertyOfFactorization) {
+            let factors: Factorization = null
+            if (this.currentNumber === this.seq.getElement(ind)) {
+                factors = this.seq.getFactors(ind)
+            }
+            if (factors === null) {
+                factors = simpleFactor(this.currentNumber)
+            }
+            if (factors === null) {
+                throw new RangeError(
+                    `Factorization needed to compute ${propertyName} `
+                        + `of ${this.currentNumber}, but unavailable.`
+                )
+            }
+            return propertyIndicatorFunction[
+                propertyName as FactorPropertyName
+            ](factors)
+        }
+        return propertyIndicatorFunction[propertyName as ValuePropertyName](
+            this.currentNumber
+        )
     }
 
     showNumber() {
@@ -924,149 +1044,6 @@ earlier ones that use the _same_ style.)
         } else if (this.currentDirection === Direction.StartNewRow) {
             this.x = 0
             this.y += this.scalingFactor
-        }
-    }
-    /*
-     *   FUNCTIONS TO CHECK FOR PROPERTIES
-     */
-    isPrime(ind: number): boolean {
-        const factors = this.seq.getFactors(ind)
-        if (
-            factors === null // if we can't factor, it isn't prime
-            || factors.length === 0 // 1 is not prime
-            || factors[0][0] === 0n // 0 is not prime
-            || (factors.length === 1 && factors[0][0] === -1n) // -1 not prime
-        ) {
-            return false
-        }
-        if (
-            (factors.length === 1 && factors[0][1] === 1n) // prime
-            || (factors.length === 2
-                && factors[0][0] === -1n
-                && factors[1][1] == 1n) // negative of prime
-        ) {
-            return true
-        } else {
-            return false
-        }
-    }
-
-    //Taken from Geeks For Geeks :
-    //https://www.geeksforgeeks.org/deficient-number/
-    getSumOfDivisors(num: bigint): bigint {
-        //
-        // returns the sum of divisors of the absolute value
-        if (num < 0n) {
-            return this.getSumOfDivisors(-num)
-        }
-        let sumOfDivisors = 0n // Initialize sum of prime factors
-
-        // Note that this loop runs till square root of n
-        for (let i = 1n; i <= floorSqrt(num); i++) {
-            if (num % i === 0n) {
-                // If divisors are equal, take only one
-                // of them
-                if (num / i === i) {
-                    sumOfDivisors = sumOfDivisors + i
-                } // Otherwise take both
-                else {
-                    sumOfDivisors = sumOfDivisors + i
-                    sumOfDivisors = sumOfDivisors + num / i
-                }
-            }
-        }
-
-        return sumOfDivisors
-    }
-
-    isSumOfTwoSquares(ind: number): boolean {
-        const factors = this.seq.getFactors(ind)
-
-        if (factors === null) {
-            return false // we can't factor, so can't tell
-        }
-        let legendre = 1
-        for (let i = 0; i < factors.length; i++) {
-            const factor = factors[i]
-            const prime = factor[0]
-            const exponent = factor[1]
-            if (prime === -1n) {
-                // negative numbers are never sums of squares
-                return false
-            }
-            // otherwise update legendre for every prime 3 mod 4
-            if (prime % 4n === 3n && exponent % 2n === 1n) {
-                legendre = -1 * legendre
-            }
-        }
-        if (legendre === 1) {
-            return true
-        } else {
-            return false
-        }
-    }
-
-    //Modification of Geeks for Geeks :
-    //https://www.geeksforgeeks.org/program-check-n-pentagonal-number/
-    isPolygonal(ind: number, order: bigint): boolean {
-        const num = this.seq.getElement(ind)
-
-        // negative inputs are never polygonal
-        if (num < 0n) {
-            return false
-        }
-        let i = 1n,
-            M
-        do {
-            M = (order - 2n) * ((i * (i - 1n)) / 2n) + i
-            i += 1n
-        } while (M < num)
-        return M === num
-    }
-
-    isAbundant(ind: number): boolean {
-        const num = this.seq.getElement(ind)
-        return this.getSumOfDivisors(num) - num > num
-    }
-
-    isPerfect(ind: number): boolean {
-        const num = this.seq.getElement(ind)
-        const sum = this.getSumOfDivisors(num) - num
-        // If sum of divisors is equal to
-        // n, then n is a perfect number
-        if (sum === num && num != 1n) {
-            return true
-        }
-
-        return false
-    }
-
-    isSemiPrime(ind: number): boolean {
-        const factors = this.seq.getFactors(ind)
-        if (
-            factors === null // if we can't factor, it isn't semi-prime
-            || factors.length === 0 // 1 is not semi-prime
-            || factors[0][0] === 0n // 0 is not semi-prime
-            || (factors.length === 1 && factors[0][0] === -1n) // -1 not s-prime
-        ) {
-            return false
-        }
-        if (
-            (factors.length === 1 && factors[0][1] === 2n) // square
-            || (factors.length === 2
-                && factors[0][0] === -1n
-                && factors[1][1] === 2n) // negative of square
-            || (factors.length === 2
-                && factors[0][1] === 1n
-                && factors[1][1] === 1n) // semi-prime
-            || (factors.length === 3
-                && factors[0][0] === -1n
-                && factors[1][1] == 1n
-                && factors[2][1] == 1n) // negative of semi-prime
-        ) {
-            return true
-        } else {
-            return false
         }
     }
 }
