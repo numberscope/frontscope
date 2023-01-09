@@ -319,11 +319,7 @@ function isSumOfTwoSquares(factors: Factorization): boolean {
             legendre = -1 * legendre
         }
     }
-    if (legendre === 1) {
-        return true
-    } else {
-        return false
-    }
+    return legendre === 1
 }
 
 // Modification of Geeks for Geeks:
