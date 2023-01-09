@@ -636,7 +636,6 @@ earlier ones that use the _same_ style.)
         this.setPresets()
         this.setOverridingSettings()
 
-        console.log('Background', this.backgroundColor)
         this.sketch.background(this.backgroundColor)
         this.sketch.strokeWeight(0)
 

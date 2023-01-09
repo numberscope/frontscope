@@ -303,6 +303,8 @@
             return {paramType: types, boxes: ['boolean', 'color']}
         },
         computed: {
+            // The following property is true if any required parameter is
+            // not specified; used to grey out the submit button
             requiredMissing(): boolean {
                 for (const name in this.params) {
                     if (
@@ -316,33 +318,31 @@
                 }
                 return false
             },
+            // The following property is simply the subobject of the params
+            // property consisting only of those key-value pairs corresponding
+            // to parameters that should be displayed in the dialog, based on
+            // the visibility conditions detailed in the api documentation.
             visibleParams(): {[key: string]: ParamInterface} {
                 const viz: {[key: string]: ParamInterface} = {}
-                for (const name in this.params) {
-                    if (this.params[name].visibleDependency) {
-                        const dependsOn =
-                            this.params[this.params[name].visibleDependency]
-                        if ('visiblePredicate' in this.params[name]) {
-                            if (
-                                !this.params[name].visiblePredicate(
-                                    dependsOn.value
-                                )
-                            ) {
+                for (const [name, attrs] of Object.entries(this.params)) {
+                    // collect up the visible parameters by skipping the
+                    // ones that are invisible via `continue`
+                    if (attrs.visibleDependency) {
+                        const dependsOn = this.params[attrs.visibleDependency]
+                        if ('visiblePredicate' in attrs) {
+                            if (!attrs.visiblePredicate(dependsOn.value)) {
                                 continue
                             }
-                        } else {
-                            if (
-                                dependsOn.value
-                                !== this.params[name].visibleValue
-                            ) {
-                                continue
-                            }
+                        } else if (dependsOn.value !== attrs.visibleValue) {
+                            continue
                         }
                     }
                     viz[name] = this.params[name]
                 }
                 return viz
             },
+            // The following property is an object mapping from parameter
+            // names to the string labels that should be used in the dialog
             displayNames(): {[key: string]: string} {
                 const dispNames: {[key: string]: string} = {}
                 for (const name in this.params) {
