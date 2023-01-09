@@ -8,8 +8,8 @@ import simpleFactor from '@/sequences/simpleFactor'
 /** md
 # Grid Visualizer
 
-[<img src="../../assets/img/Grid/example-grid.png" width="320" 
-style="margin-left: 1em; margin-right: 1em" 
+[<img src="../../assets/img/Grid/example-grid.png" width="320"
+style="margin-left: 1em; margin-right: 1em"
 />](../assets/img/Grid/example-grid.png)
 
 This visualizer puts a sequence in a square spiral or in
@@ -269,8 +269,9 @@ function getPropertyParams(index: number, prop: PropertyObject) {
 }
 
 /*
- *   FUNCTIONS TO CHECK FOR PROPERTIES
+ * The following functions are used to check properties.
  */
+
 function isPrime(factors: Factorization): boolean {
     if (factors === null) throw new Error('Internal error in Grid')
     if (factors.length == 0) return false // 1 is not prime
@@ -284,8 +285,8 @@ function isPrime(factors: Factorization): boolean {
     return false // two or more prime factors
 }
 
-//Adapted from Geeks For Geeks :
-//https://www.geeksforgeeks.org/deficient-number/
+// Adapted from Geeks for Geeks:
+// https://www.geeksforgeeks.org/deficient-number/
 function getSumOfProperDivisors(num: bigint): bigint {
     if (num === 0n) return 1n // conventional value to make 0 abundant.
     // returns the sum of divisors of the absolute value
@@ -325,8 +326,8 @@ function isSumOfTwoSquares(factors: Factorization): boolean {
     }
 }
 
-//Modification of Geeks for Geeks :
-//https://www.geeksforgeeks.org/program-check-n-pentagonal-number/
+// Modification of Geeks for Geeks:
+// https://www.geeksforgeeks.org/program-check-n-pentagonal-number/
 function isPolygonal(num: bigint, order = 3n): boolean {
     // negative inputs are never polygonal
     if (num < 0n) {
@@ -418,7 +419,7 @@ const propertyIndicatorFunction: {
 class VisualizerGrid extends VisualizerDefault {
     name = 'Grid'
 
-    //Grid variables
+    // Grid variables
     amountOfNumbers = 4096
     sideOfGrid = 64
     currentIndex = 0
@@ -431,7 +432,7 @@ class VisualizerGrid extends VisualizerDefault {
     backgroundColor = BLACK
     numberColor = WHITE
 
-    //Path variables
+    // Path variables
     x = 0
     y = 0
     scalingFactor = 0
@@ -440,7 +441,7 @@ class VisualizerGrid extends VisualizerDefault {
     incrementForNumberToTurnAt = 1
     whetherIncrementShouldIncrement = true
 
-    //Properties
+    // Properties
     propertyObjects: PropertyObject[] = []
     primaryProperties: number[] = []
     secondaryProperties: number[] = []
@@ -451,7 +452,7 @@ class VisualizerGrid extends VisualizerDefault {
 
 If a preset other than `Custom` is selected, then the `Properties`
 portion of the dialog is overriden.  For details on the meanings of the terms
-below, see the 
+below, see the
 [Properties](#property-1-2-etc-properties-to-display-by-coloring-cells)
 section of the documentation.
 
@@ -465,7 +466,7 @@ section of the documentation.
 - Color_By_Last_Digit_1:  the last digit is shown (one color for each digit
   in a rainbow style)
 - Color_By_Last_Digit_2:  a variation on the last, where odd digits are
-  are indicated by smaller boxes
+  indicated by smaller boxes
          **/
         preset: {
             value: this.preset,
@@ -586,7 +587,7 @@ and reveal parameters for it.
   [semi-prime](https://en.wikipedia.org/wiki/Semiprime), that is, a product of
   exactly two primes (possibly equal)
 
-##### Display:  Highlight style for cells with the property  
+##### Display:  Highlight style for cells with the property
 
 Using different display styles allows for visualizing two properties
 that are both true for the same value at once,
@@ -675,7 +676,7 @@ earlier ones that use the _same_ style.)
             iteration < this.amountOfNumbers;
             iteration++
         ) {
-            //Reset current sequence for row reset and augment by one.
+            // Reset current sequence for row reset and augment by one.
             if (this.currentDirection === Direction.StartNewRow) {
                 if (this.resetAndAugmentByOne) {
                     this.currentIndex = Math.max(
@@ -725,15 +726,15 @@ earlier ones that use the _same_ style.)
     }
 
     setPathVariables(gridSize: number) {
-        //The default starting point is the top left.
+        // The default starting point is the top left.
         this.x = 0
         this.y = 0
 
-        //The default starting direction is right.
+        // The default starting direction is right.
         this.currentDirection = Direction.Right
 
         if (this.pathType === PathType.Spiral) {
-            //The starting point placed so that the whole spiral is centered
+            // The starting point placed so that the whole spiral is centered
             if (gridSize % 2 === 1) {
                 this.x = (gridSize / 2 - 1 / 2) * this.scalingFactor
                 this.y = (gridSize / 2 - 1 / 2) * this.scalingFactor
@@ -742,7 +743,7 @@ earlier ones that use the _same_ style.)
                 this.y = (gridSize / 2) * this.scalingFactor
             }
 
-            //The amount of numbers to the next turn increases every other turn.
+            // The amount of numbers to the next turn increases every other turn
             this.numberToTurnAtForSpiral = 1
             this.incrementForNumberToTurnAt = 1
             this.whetherIncrementShouldIncrement = true
@@ -844,9 +845,9 @@ earlier ones that use the _same_ style.)
     }
 
     changeDirectionUsingPathType(iteration: number) {
-        //Choose direction for next number
+        // Choose direction for next number
         if (this.pathType === PathType.Spiral) {
-            //Turn at the numberToTurn at which increases every other turn
+            // Turn at the numberToTurn at which increases every other turn
             if (iteration === this.numberToTurnAtForSpiral) {
                 this.numberToTurnAtForSpiral
                     += this.incrementForNumberToTurnAt
@@ -860,7 +861,7 @@ earlier ones that use the _same_ style.)
                     leftTurn[Direction[this.currentDirection]]
             }
         } else if (this.pathType === PathType.Rows) {
-            //Go to new row when the row is complete
+            // Go to new row when the row is complete
             if ((iteration + 1) % this.sideOfGrid === 0) {
                 this.currentDirection = Direction.StartNewRow
             } else if (iteration === this.amountOfNumbers) {
@@ -906,48 +907,48 @@ Click on any image to expand it.
 
 ###### The Ulam Spiral
 
-[<img src="../../assets/img/Grid/1.png" width="320" 
+[<img src="../../assets/img/Grid/1.png" width="320"
 style="margin-left: 1em; margin-right: 0.5em"
 />](../assets/img/Grid/1.png)
-[<img src="../../assets/img/Grid/2.png" width="320" 
+[<img src="../../assets/img/Grid/2.png" width="320"
 style="margin-left: 0.5em; margin-right: 1em"
 />](../assets/img/Grid/2.png)
 
 These are the natural numbers in a square spiral, with each of the prime
 numbers highlighted in red; this is the classic [Ulam
-spiral](https://en.wikipedia.org/wiki/Ulam_spiral).  In the first image, the 
-value of each term of the sequence is shown over the corresponding cell, 
+spiral](https://en.wikipedia.org/wiki/Ulam_spiral).  In the first image, the
+value of each term of the sequence is shown over the corresponding cell,
 in order to
 demonstrate the spiral.  In the second, we see many more terms, whereupon
 it becomes evident that the primes form long
-diagonal lines. These diagonal lines are quadratic equations, namely 
-\( x^2 + c\), \( x^2 + 2x + c\), \( x^2 -2x + c\), and 
+diagonal lines. These diagonal lines are quadratic equations, namely
+\( x^2 + c\), \( x^2 + 2x + c\), \( x^2 -2x + c\), and
 \( x^2 + 4x + c \).
 
 ###### Traversing the grid in rows
 
-[<img src="../../assets/img/Grid/3.png" width="320" 
+[<img src="../../assets/img/Grid/3.png" width="320"
 style="margin-left: 1em; margin-right: 0.5em"
 />](../assets/img/Grid/3.png)
-[<img src="../../assets/img/Grid/4.png" width="320" 
+[<img src="../../assets/img/Grid/4.png" width="320"
 style="margin-left: 0.5em; margin-right: 1em"
 />](../assets/img/Grid/4.png)
 
-The natural numbers are put in rows (left to right, top to bottom), 
+The natural numbers are put in rows (left to right, top to bottom),
 with each of the prime numbers
-highlighted in red.  Primes can only appear at positions 
+highlighted in red.  Primes can only appear at positions
 which are coprime to the
 rowlength, leading to the visual effect of black columns.
 
 ###### The Rows_Augment capability
 
-[<img src="../../assets/img/Grid/5.png" width="320" 
+[<img src="../../assets/img/Grid/5.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/5.png)
-[<img src="../../assets/img/Grid/6.png" width="320" 
+[<img src="../../assets/img/Grid/6.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/6.png)
-[<img src="../../assets/img/Grid/7.png" width="320" 
+[<img src="../../assets/img/Grid/7.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/7.png)
-[<img src="../../assets/img/Grid/8.png" width="320" 
+[<img src="../../assets/img/Grid/8.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/8.png)
 
 When you choose ```Rows_Augment``` for the parameter ```Path in Grid```,
@@ -962,35 +963,35 @@ corresponds is \(x^2 – x + C\).
 
 ###### Abundant numbers ([A005101](https://oeis.org/A005101)) and primes
 
-[<img src="../../assets/img/Grid/9.png" width="320" 
+[<img src="../../assets/img/Grid/9.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/9.png)
-[<img src="../../assets/img/Grid/10.png" width="320" 
+[<img src="../../assets/img/Grid/10.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/10.png)
-[<img src="../../assets/img/Grid/11.png" width="320" 
+[<img src="../../assets/img/Grid/11.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/11.png)
 
-[Abundant numbers](https://en.wikipedia.org/wiki/Abundant_number) 
+[Abundant numbers](https://en.wikipedia.org/wiki/Abundant_number)
 ([A005101](https://oeis.org/A005101)) are those less than their sum of
 proper divisors.  The first two images show a spiral and row
-arrangement of the natural numbers, with abundant numbers in 
+arrangement of the natural numbers, with abundant numbers in
 black on a white background.
 
-The last image combines abundant and primes in a spiral arrangement of 
+The last image combines abundant and primes in a spiral arrangement of
 the natural numbers.  The primes appear to fit "around" the abundant
 numbers (this effect is easiest to appreciate by clicking on the last
-image to expand it).  This is a tendency, not a rule, as most 
+image to expand it).  This is a tendency, not a rule, as most
 (but not all) abundant numbers are divisible by 2 or 3.
 
 ###### Polygonal Numbers
 
-[<img src="../../assets/img/Grid/12.png" width="320" 
+[<img src="../../assets/img/Grid/12.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/12.png)
-[<img src="../../assets/img/Grid/13.png" width="320" 
+[<img src="../../assets/img/Grid/13.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/13.png)
-[<img src="../../assets/img/Grid/14.png" width="320" 
+[<img src="../../assets/img/Grid/14.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/14.png)
 
-Putting the natural numbers in a spiral or in rows (first two images), 
+Putting the natural numbers in a spiral or in rows (first two images),
 we can highlight the [polygonal
 numbers](https://en.wikipedia.org/wiki/Polygonal_number). Polygonal numbers
 count dots that can be arranged in the shape of that polygon. For example,
@@ -1003,11 +1004,11 @@ are purple. For the final image, we use the sequence of squares, and use the
 
 ###### Digit colorings
 
-[<img src="../../assets/img/Grid/15.png" width="320" 
+[<img src="../../assets/img/Grid/15.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/15.png)
-[<img src="../../assets/img/Grid/16.png" width="320" 
+[<img src="../../assets/img/Grid/16.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/16.png)
-[<img src="../../assets/img/Grid/pi-digits-more.png" width="320" 
+[<img src="../../assets/img/Grid/pi-digits-more.png" width="320"
 style="margin: 0.5em" />](../assets/img/Grid/pi-digits-more.png)
 
 The first image shows the natural numbers in rows, colored by final digit.
@@ -1016,10 +1017,10 @@ shows the digits of pi ([A000796](https://oeis.org/A000796)) in rows.
 
 ###### Digits of abundant numbers ([A005101](https://oeis.org/A005101))
 
-[<img src="../../assets/img/Grid/19.png" width="320" 
+[<img src="../../assets/img/Grid/19.png" width="320"
 style="margin-left: 1em; margin-right: 0.5em"
 />](../assets/img/Grid/19.png)
-[<img src="../../assets/img/Grid/abundant-more.png" width="320" 
+[<img src="../../assets/img/Grid/abundant-more.png" width="320"
 style="margin-left: 0.5em; margin-right: 1em"
 />](../assets/img/Grid/abundant-more.png)
 
