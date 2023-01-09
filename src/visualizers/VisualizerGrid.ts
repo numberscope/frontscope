@@ -618,9 +618,7 @@ earlier ones that use the _same_ style.)
     }
 
     checkParameters() {
-        const status = super.checkParameters()
-
-        return status
+        return super.checkParameters()
     }
 
     assignParameters(): void {
