@@ -32,7 +32,9 @@ theme:
     prev_next_buttons_location: both
     sticky_navigation: false
 extra_css: [css/coordinate.css, css/override.css]
-extra_javascript: [js/scroll_navigation.js]
+extra_javascript:
+    - js/scroll_navigation.js
+    - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
 plugins:
     - awesome-pages
     - search
@@ -59,3 +61,4 @@ plugins:
                 destination: '\1'
 markdown_extensions:
     - pymdownx.superfences
+    - mdx_math

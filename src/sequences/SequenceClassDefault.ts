@@ -1,4 +1,4 @@
-import type {SequenceInterface} from './SequenceInterface'
+import type {Factorization, SequenceInterface} from './SequenceInterface'
 import {Paramable} from '../shared/Paramable'
 
 /**
@@ -65,7 +65,7 @@ export class SequenceClassDefault
      * factor anything.
      * @param {number} n the index of the entry to get the factors of
      */
-    getFactors(_n: number): [bigint, bigint][] | null {
+    getFactors(_n: number): Factorization {
         return null
     }
 }

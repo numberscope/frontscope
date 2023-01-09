@@ -1,8 +1,12 @@
 /**
- * Provides a utility function so that front-end sequences can factor their
- * smallish values; should go away once essentially all sequences are
- * computed in the backend.
+ * Provides a utility function to factor smallish values in the front end.
+ * This might be able to go away once essentially all sequences are
+ * computed in the backend, except insofar as there are places in the
+ * front end where factorizations are needed for numbers that do
+ * not come from a sequence object...
  */
+
+import type {Factorization} from './SequenceInterface'
 
 // Here's a list of enough primes to make sure we can factor every number
 // up to a million. (Since otherwise prettier insists on just one bigint
@@ -27,13 +31,13 @@ const smallPrimes = [
 
 const sureFactorLimit = 1009n * 1009n // smallest number we can't factor
 
-const factorCache: Record<string, [bigint, bigint][] | null> = {
+const factorCache: Record<string, Factorization> = {
     0: [[0n, 1n]],
     1: [],
     '-1': [[-1n, 1n]],
 }
 
-export default function simpleFactor(v: bigint): [bigint, bigint][] | null {
+export default function simpleFactor(v: bigint): Factorization {
     const vRep = v.toString()
     if (vRep in factorCache) return factorCache[vRep]
     const factors: [bigint, bigint][] = []

@@ -42,8 +42,9 @@ export interface ParamInterface {
      * which the `value` comes.
      */
     from?: {[key: string]: number | string}
-    // The main label of the control for this param:
-    displayName: string
+    // The main label of the control for this param; can depend on
+    // visibleDependency:
+    displayName: string | ((dependency: never) => string)
     // whether the parameter must be specified
     required: boolean
     /* If you want the control for this parameter only to be visible when
@@ -56,8 +57,21 @@ export interface ParamInterface {
      * only be displayed if the 'mode' parameter has the value 'color'
      * (instead of, say, 'greyscale'), then on the 'backgroundColor' param,
      * set `visibleDependency` to 'mode' and `visibleValue` to 'color'.
-     * Note that parameters with a `visibleDependency` will be displayed
-     * with a distinctive appearance when they are visible.
+     * If you want the control for this parameter only to be visible when
+     * some condition is true and that condition relates to another
+     * parameter's specific value (because it is otherwise irrelevant),
+     * set this `visibleDependency` property to the name of
+     * the other parameter, and the following `visiblePredicate` property
+     * to a boolean expression related to the other parameter in order for
+     * this parameter to be visible. For example, if this parameter is
+     * 'backgroundColor' but it should only be displayed if the 'mode'
+     * parameter doesn't has the value 'color'(instead of, say, 'greyscale'),
+     * then on the 'backgroundColor' param, et `visibleDependency` to 'mode'
+     * and `visiblePredicate` (dependentValue: mode) =>
+                dependentValue !== 'color,
+        },
+        Note that parameters with a `visibleDependency` will be displayed
+     *  with a distinctive appearance when they are visible.
      */
     visibleDependency?: string
     /* Note that the visibleValue property does not actually need to be
@@ -65,6 +79,9 @@ export interface ParamInterface {
      * in Vue.
      */
     // visibleValue: any
+    // Since functions are contravariant in their argument types,
+    // `never` below allows the predicate to take any argument type.
+    visiblePredicate?: (dependency: never) => boolean
 
     // Additional explanation text to display:
     description?: string
