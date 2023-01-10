@@ -3,15 +3,12 @@ import {Paramable} from '../shared/Paramable'
 
 /**
  *
- * @class SequenceClassDefault
+ * @class SequenceDefault
  * a minimium working example of a sequence class that implements the interface
  * Primarily intended to be used as a base class for your own sequences.
  *
  */
-export class SequenceClassDefault
-    extends Paramable
-    implements SequenceInterface
-{
+export class SequenceDefault extends Paramable implements SequenceInterface {
     sequenceID: number
     name = 'Base'
     description = 'A Base sequence class'

@@ -23,7 +23,7 @@ the following data and methods:
 4. `sketch`: a `p5` sketch object already live on the page. Usually, this will
    be set by the module manager when a visualizer is created, so all you need
    to do is provide that `initialize()` sets `this.sketch = sketch` (see the
-   `VisualizerDefault` for an example).
+   `SequenceDefault` for an example).
 5. `initialize(sketch, seq)`: a method that is called by the engine to prepare
    the visualizer for drawing. Good practice is to check that `isValid` is
    true before intializing, though you are free to initialize however you
@@ -46,7 +46,7 @@ the following data and methods:
 ### The easy way
 
 The simplest and fastest way to set up your visualizer is to extend the
-`VisualizerDefault` class. This guarantees that you will implement the
+`SequenceDefault` class. This guarantees that you will implement the
 interface, however you will still need to supply your collection of `params`,
 and provide the details of your `checkParameters`, `initialize`, `setup`, and
 `draw` functions. The default class provides a rough template for the best way
@@ -55,14 +55,14 @@ to structure a visualizer.
 The provided example visualizers are good starting points for how to extend
 the default class.
 
-### Example: `VisualizerDifferences.ts`
+### Example: `Differences.ts`
 
-If you open this file, located in `src/visualizers/VisualizerDifferences.ts`,
-and follow along, you'll notice that it begins by setting its name. Then it
-has the two user-settable properties that control its behavior. Then it has
-its `params` object that describe how these two properties should appear in
-the UI (look in `src/shared/Paramable.ts` or other visualizers for all of the
-options you can set in the params object).
+If you open this file, located in `src/visualizers/Differences.ts`, and follow
+along, you'll notice that it begins by setting its name. Then it has the two
+user-settable properties that control its behavior. Then it has its `params`
+object that describe how these two properties should appear in the UI (look in
+`src/shared/Paramable.ts` or other visualizers for all of the options you can
+set in the params object).
 
 In `checkParameters`, the versions of the control values in the params object
 are checked for consistency. This visualizer only has one validation check. It
@@ -76,17 +76,17 @@ are copied into the top-level properties of the visualizer. That's why you
 will see them used directly at the top level in the rest of the visualizer
 code.
 
-Note there's no constructor for the VisualizerDifferences class; generally the
-default constructor supplied by the base class does everything you need.
+Note there's no constructor for the Differences class; generally the default
+constructor supplied by the base class does everything you need.
 
 #### Where to put your visualizers
 
 Place your new visualizer in `src/visualizers`, named in PascalCase (capital
 first letter of every word, no spaces). Also make sure your source file
 contains an `exportModule` describing your visualizer, as in the
-VisualizerDifferences.ts example, so that the menu of visualizers displayed in
-the frontscope will pick up your new visualizer and allow it as an option.
-(There are more details on this "exporting" step below.)
+Differences.ts example, so that the menu of visualizers displayed in the
+frontscope will pick up your new visualizer and allow it as an option. (There
+are more details on this "exporting" step below.)
 
 #### Creating params and assigning their values
 
@@ -141,11 +141,11 @@ object, which is guaranteed to have a method `getElement(n)` that returns the
 The engine expects visualizers to be packaged in `visualizerExportModules`
 which take as their arguments the name of the visualizer which is displayed in
 the UI. You can also reference the name of the visualizer to maintain
-consistency, though the `VisualizerDifferences` sets it explicitly.
+consistency, though the `Differences` sets it explicitly.
 
 The other arguments in the export module are the visualizer itself
-(`VisualizerDifferences` in the example case, which is the name of the class
-we created), and a description.
+(`Differences` in the example case, which is the name of the class we
+created), and a description.
 
 If you place the file containing your visualizer class definition with the
 export module in the folder name `Visualizers`, the engine will automatically

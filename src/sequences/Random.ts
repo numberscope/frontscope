@@ -1,5 +1,5 @@
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
-import {SequenceCached} from './SequenceCached'
+import {Cached} from './Cached.js'
 import simpleFactor from './simpleFactor'
 
 /**
@@ -8,7 +8,7 @@ import simpleFactor from './simpleFactor'
  * Creates a sequence of random integers in a specified range.
  * Starts at index 0 and has no limit.
  */
-class SequenceRandom extends SequenceCached {
+class Random extends Cached {
     name = 'Random Integers in Range'
     description =
         'A sequence of integers chosen independently uniformly '
@@ -31,7 +31,7 @@ class SequenceRandom extends SequenceCached {
     }
 
     /**
-     *Creates an instance of SequenceRandom
+     *Creates an instance of Random
      * @param {*} sequenceID the sequence identifier of the sequence
      */
     constructor(sequenceID: number) {
@@ -67,7 +67,7 @@ class SequenceRandom extends SequenceCached {
 }
 
 export const exportModule = new SequenceExportModule(
-    SequenceRandom,
+    Random,
     'Random Integers in Range',
     SequenceExportKind.FAMILY
 )

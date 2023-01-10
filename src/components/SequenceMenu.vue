@@ -41,7 +41,7 @@
         SequenceExportModule,
         SequenceExportKind,
     } from '../sequences/SequenceInterface'
-    import {SequenceClassDefault} from '../sequences/SequenceClassDefault'
+    import {SequenceDefault} from '../sequences/SequenceDefault.js'
     export default defineComponent({
         name: 'SequenceMenu',
         props: {
@@ -126,9 +126,7 @@
             return {
                 showModal: false,
                 instanceKind: SequenceExportKind.INSTANCE,
-                liveSequence: new SequenceClassDefault(
-                    0
-                ) as SequenceInterface,
+                liveSequence: new SequenceDefault(0) as SequenceInterface,
                 loadingInstance: false,
                 errors: [] as string[],
             }

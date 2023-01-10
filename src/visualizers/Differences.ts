@@ -18,7 +18,7 @@ between the terms in the row above, for as many rows as you like.
 ## Parameters
 **/
 
-class VisualizerDifferences extends VisualizerDefault {
+class Differences extends VisualizerDefault {
     name = 'Differences'
 
     n = 20
@@ -130,7 +130,7 @@ class VisualizerDifferences extends VisualizerDefault {
 
 export const exportModule = new VisualizerExportModule(
     'Differences',
-    VisualizerDifferences,
+    Differences,
     'Produces a table of differences between consecutive terms, '
         + 'potentially iterated several times.'
 )

@@ -12,7 +12,7 @@ the sequence, and below each term, its prime factors.
 ## Parameters
 **/
 
-class VisualizerShowFactors extends VisualizerDefault {
+class ShowFactors extends VisualizerDefault {
     name = 'Show Factors'
 
     start = 1
@@ -92,6 +92,6 @@ class VisualizerShowFactors extends VisualizerDefault {
 
 export const exportModule = new VisualizerExportModule(
     'Show Factors',
-    VisualizerShowFactors,
+    ShowFactors,
     'Produces a table of factors of a sequence.'
 )

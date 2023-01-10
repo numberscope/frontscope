@@ -1,17 +1,17 @@
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
-import {SequenceCached} from './SequenceCached'
+import {Cached} from './Cached.js'
 import simpleFactor from './simpleFactor'
 import * as math from 'mathjs'
 
 /**
  *
- * @class SequenceFormula
- * extends SequenceCached to use mathjs to compute an arbitrary formula in terms
+ * @class Formula
+ * extends Cached to use mathjs to compute an arbitrary formula in terms
  * of n. Currently all such formulas start at index 0 and have no limit, but
  * those are both arbitrary choices; we might at some point want to allow
  * either to be tailored.
  */
-class SequenceFormula extends SequenceCached {
+class Formula extends Cached {
     name = 'Formula: empty'
     description = 'A sequence defined by a formula in n'
     formula = 'n'
@@ -26,7 +26,7 @@ class SequenceFormula extends SequenceCached {
     private evaluator: math.EvalFunction
 
     /**
-     *Creates an instance of SequenceFormula
+     *Creates an instance of Formula
      * @param {*} sequenceID the sequence identifier of the sequence
      */
     constructor(sequenceID: number) {
@@ -82,7 +82,7 @@ class SequenceFormula extends SequenceCached {
 }
 
 export const exportModule = new SequenceExportModule(
-    SequenceFormula,
+    Formula,
     'Sequence by Formula',
     SequenceExportKind.FAMILY
 )
