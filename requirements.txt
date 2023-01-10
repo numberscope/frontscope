@@ -1,3 +1,4 @@
 mkdocs-semiliterate ~= 0.7
 mkdocs-awesome-pages-plugin ~= 2.8
 pymdown-extensions ~= 9.5
+python-markdown-math ~= 0.8

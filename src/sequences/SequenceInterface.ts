@@ -4,6 +4,8 @@ import type {ParamableInterface} from '../shared/Paramable'
  * Every sequence class must implement these properties and functions
  * to be compatible with Numberscope.
  */
+export type Factorization = [bigint, bigint][] | null
+
 export interface SequenceInterface extends ParamableInterface {
     sequenceID: number
 
@@ -56,7 +58,7 @@ export interface SequenceInterface extends ParamableInterface {
      * @param {number} n the index of the element in the sequence we want
      * @returns {Array<[bigint, bigint]>? factorization
      */
-    getFactors(n: number): [bigint, bigint][] | null
+    getFactors(n: number): Factorization
 }
 
 export interface SequenceConstructor {

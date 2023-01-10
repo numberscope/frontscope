@@ -42,6 +42,8 @@ const six: bigint = powmod(6, 2401n, 7n)
 // so a to any power of p is as well.
 
 const fortysixish: number = natlog(100000000000000000000n)
+
+const seven: bigint = bigabs(-7n)
 ```
 
 ### Detailed function reference
@@ -95,10 +97,8 @@ export function modulo(n: number | bigint, modulus: number | bigint): bigint {
     if (bmodulus <= 0n) {
         throw new RangeError(`Attempt to use nonpositive modulus ${bmodulus}`)
     }
-    if (bn < 0n) {
-        return (bn % bmodulus) + bmodulus
-    }
-    return bn % bmodulus
+    const result = bn % bmodulus
+    return result < 0n ? result + bmodulus : result
 }
 
 /** md
@@ -132,4 +132,14 @@ export function natlog(n: number | bigint): number {
     const s15 = s.substring(0, 15)
 
     return nlg16 * (s.length - s15.length) + Math.log(Number('0x' + s15))
+}
+
+/** md
+#### bigabs(n: bigint): bigint
+
+returns the absolute value of a bigint
+**/
+export function bigabs(n: bigint): bigint {
+    if (n < 0n) return -n
+    return n
 }
