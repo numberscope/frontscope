@@ -11,7 +11,7 @@ describe('scope page', () => {
 
         // For some reason, there are two canvases being drawn.
         // We want defaultCanvas1 instead of defaultCanvas0.
-        cy.get('[id=defaultCanvas1]')
+        cy.get('[id=defaultCanvas1]').screenshot('scope-test-screenshot')
     })
 })
 
