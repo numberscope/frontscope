@@ -1,5 +1,5 @@
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
-import {Cached} from './Cached.js'
+import {Cached} from './Cached'
 import simpleFactor from './simpleFactor'
 
 /**

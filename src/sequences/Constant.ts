@@ -1,5 +1,5 @@
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
-import {SequenceDefault} from './SequenceDefault.js'
+import {SequenceDefault} from './SequenceDefault'
 
 /**
  *

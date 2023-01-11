@@ -1,7 +1,7 @@
 import type {ValidationStatus} from '../shared/ValidationStatus'
 import {modulo} from '../shared/math'
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
-import {Cached} from './Cached.js'
+import {Cached} from './Cached'
 import {alertMessage} from '../shared/alertMessage'
 
 import axios from 'axios'

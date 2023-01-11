@@ -41,7 +41,7 @@
         SequenceExportModule,
         SequenceExportKind,
     } from '../sequences/SequenceInterface'
-    import {SequenceDefault} from '../sequences/SequenceDefault.js'
+    import {SequenceDefault} from '../sequences/SequenceDefault'
     export default defineComponent({
         name: 'SequenceMenu',
         props: {

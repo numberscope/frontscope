@@ -1,5 +1,5 @@
 import type {Factorization} from './SequenceInterface'
-import {SequenceDefault} from './SequenceDefault.js'
+import {SequenceDefault} from './SequenceDefault'
 
 const min = Math.min
 const max = Math.max
