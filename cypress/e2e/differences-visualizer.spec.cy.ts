@@ -10,10 +10,20 @@
  * It's somewhat brittle in the sense that it depends on the text
  * of the elements. If the text is changed, this test will need
  * to change. Alternatively, we could create unique IDs for the
- * various anchor tags and buttons that need to be clicked.
+ * various anchor tags and buttons that need to be clicked. The
+ * advantage to using the text is that it's really obvious to the
+ * reader of this file what's being clicked.
  *
  * @author Liam Mulhall <liammulh@gmail.com>
  */
+
+const TEXT_OF_BUTTONS_TO_CLICK = [
+    'Natural Numbers',
+    'Save changes',
+    'Differences',
+    'Save changes',
+    'Create Bundle',
+]
 
 describe('differences visualizer', () => {
     it('can produce a visualization', () => {
@@ -22,15 +32,14 @@ describe('differences visualizer', () => {
         cy.visit('/scope')
 
         // Click the element that contains the provided text.
-        cy.contains('Natural Numbers').click()
-        cy.contains('Save changes').click()
-        cy.contains('Differences').click()
-        cy.contains('Save changes').click()
-        cy.contains('Create Bundle').click()
+        for (const text of TEXT_OF_BUTTONS_TO_CLICK) {
+            cy.contains(text).click()
+        }
 
         // Get the canvas by ID.
         // For some reason, there are two canvases being drawn.
         // We want defaultCanvas1 instead of defaultCanvas0.
+        // See https://github.com/numberscope/frontscope/issues/244.
         cy.get('[id=defaultCanvas1]').screenshot('differences-screenshot')
     })
 })
