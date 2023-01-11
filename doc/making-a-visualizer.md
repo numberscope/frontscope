@@ -23,7 +23,7 @@ the following data and methods:
 4. `sketch`: a `p5` sketch object already live on the page. Usually, this will
    be set by the module manager when a visualizer is created, so all you need
    to do is provide that `initialize()` sets `this.sketch = sketch` (see the
-   `SequenceDefault` for an example).
+   `VisualizerDefault` for an example).
 5. `initialize(sketch, seq)`: a method that is called by the engine to prepare
    the visualizer for drawing. Good practice is to check that `isValid` is
    true before intializing, though you are free to initialize however you
@@ -46,7 +46,7 @@ the following data and methods:
 ### The easy way
 
 The simplest and fastest way to set up your visualizer is to extend the
-`SequenceDefault` class. This guarantees that you will implement the
+`VisualizerDefault` class. This guarantees that you will implement the
 interface, however you will still need to supply your collection of `params`,
 and provide the details of your `checkParameters`, `initialize`, `setup`, and
 `draw` functions. The default class provides a rough template for the best way
