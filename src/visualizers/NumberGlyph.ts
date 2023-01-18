@@ -46,9 +46,9 @@ const colorMap = new Map()
 class NumberGlyph extends VisualizerDefault implements VisualizerInterface {
     name = 'Number Glyphs'
     n = 64
-    ringsBool = false
-    modulus = 25
-    formula = 'log(n^x)'
+    customize = false
+    brightCap = 25
+    formula = 'abs(log(n^x)) % 25'
 
     params = {
         /** md
@@ -68,6 +68,18 @@ only attempt to show the available terms.
             required: true,
         },
         /** md
+##### Customize Glyph Generation
+
+This is a boolean which, if selected, will reveal further customization
+options for the glyph generation function.
+**/
+        customize: {
+            value: this.customize,
+            forceType: 'boolean',
+            displayName: 'Customize glyph',
+            required: true,
+        },
+        /** md
 ##### Growth function
 
 This is a function in two variables, n and x.  Most standard math notations
@@ -77,48 +89,33 @@ term of which this disc is a representation.  The variable x takes the value
 0 at the outer rim of the disk, increasing once per pixel until the center.  
 The value of this function determines the brightness of the disk at that 
 radius. A value of 0 is black
-and higher values are brighter.  If the growth ring option is chosen (below)
-then the brightness wraps around, becoming black again after reaching
-full brightness.  This creates the effect of tree rings at tighter intervals
-for faster growing functions.
-Otherwise the brightness will max out at
-full brightness.
+and higher values are brighter.  
 **/
         formula: {
             value: this.formula,
             displayName: 'Growth function',
             description: "A function in 'n' (term) and 'x' (growth variable)",
+            visibleDependency: 'customize',
+            visibleValue: true,
             required: true,
         },
         /** md
-##### Growth rings
+##### Brightness Adjustment
 
-If this option is enabled, brightness varies from black to full brightness
-and then wraps around to black again.  The result is a `growth ring' or
-'tree ring' effect
-in the disks:  tighter rings indicate faster growth in the growth function.
+This is a brightness adjustment.  It acts as a brightness cap or cutoff:  brightness
+values will range from zero to this value.  If set 
+high (higher
+than most values of the function) it will produce dull dark glyphs.  If set low, 
+brightnesses above the cutoff will be rounded down to the cutoff, resulting in bright 
+`flat' glyphs with less brightness variation.
 **/
-        ringsBool: {
-            value: this.ringsBool,
-            forceType: 'boolean',
-            displayName: 'Growth rings',
-            required: true,
-        },
-        /** md
-##### Growth ring modulus
-
-This controls the rate of growth rings.  A larger value will result in fewer
-growth rings showing.  A rate of '1' often produces interesting effects, 
-since the 
-growth rings may occur so rapidly that the sampling rate (once per pixel)
-can't pick them all up.
-**/
-        modulus: {
-            value: this.modulus,
+        brightCap: {
+            value: this.brightCap,
             forceType: 'integer',
-            displayName: 'Growth ring modulus',
-            description: 'Spacing of level sets',
-            visibleDependency: 'ringsBool',
+            displayName: 'Brightness Adjustment',
+            description:
+                'Smaller values make brighter glyphs with decreased variation',
+            visibleDependency: 'customize',
             visibleValue: true,
             required: false,
         },
@@ -384,25 +381,15 @@ can't pick them all up.
         const combinedColor = this.primeFactors(ind)
         this.sketch.fill(combinedColor, 100, bright)
 
-        if (!this.ringsBool) {
-            this.modulus = Math.abs(
-                this.growthFunction(numberNow, this.radii)
-            )
-        }
-
         // iterate smaller and smaller circles
         for (let x = 0; x < this.radii; x++) {
             // set brightness based on function value
             const val = Math.abs(this.growthFunction(numberNow, x))
-            if (this.ringsBool) {
-                bright = val % this.modulus
-            } else {
-                bright = val
-                if (bright > this.modulus) {
-                    bright = this.modulus
-                }
+            bright = val
+            if (bright > this.brightCap) {
+                bright = this.brightCap
             }
-            bright = this.brightAdjust * (bright / this.modulus)
+            bright = this.brightAdjust * (bright / this.brightCap)
 
             // draw the circle
             this.sketch.fill(combinedColor, 100, bright)
