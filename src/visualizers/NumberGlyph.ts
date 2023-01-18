@@ -31,6 +31,21 @@ tighter growth rings indicate a larger integer.  Growth rings
 that are drawn more frequently than the pixel distance will be suffer 
 from a sort of aliasing effect, appearing as if they are less frequent.
 
+### Bigint errors
+
+Because `math.js` does not handle bigints, this visualizer will produce
+errors when any of the following occur:
+
+- terms do not fit in the javascript Number type
+- the growth function generating evaluated at a term does not fit
+- a sequence from formula produces invalid output because of overflow
+
+The latter two types of errors occur inside `math.js` and may
+produce unpredictable results.  To handle the first type of error,
+currently this visualizer will set all terms whose absolute value
+exceeds \( 2^{53}-1 \) to be 0.
+
+
 ### Keyboard interaction
 
 - Press the **left arrow key** to show/hide the color of each prime factor.
@@ -369,7 +384,13 @@ bright `flat' glyphs with less brightness variation.
     }
 
     drawCircle(ind: number) {
-        const numberNowBigint = this.seq.getElement(ind)
+        let numberNowBigint = this.seq.getElement(ind)
+        if (
+            numberNowBigint < Number.MIN_SAFE_INTEGER
+            || numberNowBigint > Number.MAX_SAFE_INTEGER
+        ) {
+            numberNowBigint = 0n
+        }
         const numberNow = Number(numberNowBigint)
         this.sketch.ellipseMode(this.sketch.RADIUS)
         this.sketch.colorMode(this.sketch.HSB)
@@ -384,8 +405,11 @@ bright `flat' glyphs with less brightness variation.
         // iterate smaller and smaller circles
         for (let x = 0; x < this.radii; x++) {
             // set brightness based on function value
-            const val = Math.abs(this.growthFunction(numberNow, x))
+            const val = this.growthFunction(numberNow, x)
             bright = val
+            if (bright < 0) {
+                bright = 0
+            }
             if (bright > this.brightCap) {
                 bright = this.brightCap
             }
