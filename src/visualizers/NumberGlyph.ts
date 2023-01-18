@@ -7,7 +7,7 @@ import * as math from 'mathjs'
 
 /** md
 
-# Primes and Sizes Visualizer
+# Number Glyphs
 
 [<img src="../../assets/img/primes-sizes/ring1.png" width="320" 
 style="margin-left: 1em; margin-right: 0.5em"
@@ -33,7 +33,7 @@ taken with respect to, so that tighter growth rings indicate faster growth.
 
 const colorMap = new Map()
 
-class SeqColor extends VisualizerDefault implements VisualizerInterface {
+class NumberGlyph extends VisualizerDefault implements VisualizerInterface {
     name = 'Primes and Sizes'
     n = 64
     ringsBool = false
@@ -527,8 +527,8 @@ can't pick them all up.
 }
 
 export const exportModule = new VisualizerExportModule(
-    'Sequence Color',
-    SeqColor,
+    'Number Glyphs',
+    NumberGlyph,
     ''
 )
 
