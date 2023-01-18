@@ -1,13 +1,13 @@
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
-import {SequenceCached} from './SequenceCached'
+import {Cached} from './Cached'
 
 /**
  *
- * @class SequenceClassNaturals
- * extends SequenceCached with a very simple calculate, mostly by way of an
- * example of using SequenceCached.
+ * @class Naturals
+ * extends Cached with a very simple calculate, mostly by way of an
+ * example of using Cached.
  */
-class SequenceNaturals extends SequenceCached {
+class Naturals extends Cached {
     name = 'Natural Numbers'
     description = 'A sequence of the natural numbers'
     includeZero = false
@@ -21,7 +21,7 @@ class SequenceNaturals extends SequenceCached {
     private begin = 1
 
     /**
-     *Creates an instance of SequenceNaturals
+     *Creates an instance of Naturals
      * @param {*} sequenceID the sequence identifier of the sequence
      */
     constructor(sequenceID: number) {
@@ -45,7 +45,7 @@ class SequenceNaturals extends SequenceCached {
 }
 
 export const exportModule = new SequenceExportModule(
-    SequenceNaturals,
+    Naturals,
     'Natural Numbers',
     SequenceExportKind.FAMILY
 )

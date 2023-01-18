@@ -412,7 +412,7 @@ const propertyIndicatorFunction: {
     Semi_Prime: isSemiPrime,
 }
 
-class VisualizerGrid extends VisualizerDefault {
+class Grid extends VisualizerDefault {
     name = 'Grid'
 
     // Grid variables
@@ -887,7 +887,7 @@ earlier ones that use the _same_ style.)
 
 export const exportModule = new VisualizerExportModule(
     'Grid',
-    VisualizerGrid,
+    Grid,
     'Puts numbers in a grid.'
 )
 

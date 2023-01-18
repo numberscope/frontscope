@@ -18,10 +18,7 @@ straight segment. It displays the resulting polygonal path.
 
 // Turtle needs work
 // Throwing the same error on previous Numberscope website
-class VisualizerTurtle
-    extends VisualizerDefault
-    implements VisualizerInterface
-{
+class Turtle extends VisualizerDefault implements VisualizerInterface {
     name = 'Turtle'
     private rotMap = new Map<string, number>()
     domain = [0n, 1n, 2n, 3n, 4n]
@@ -173,8 +170,4 @@ class VisualizerTurtle
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    'Turtle',
-    VisualizerTurtle,
-    ''
-)
+export const exportModule = new VisualizerExportModule('Turtle', Turtle, '')

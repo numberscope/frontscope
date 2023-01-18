@@ -1,7 +1,7 @@
 import type {VisualizerInterface} from './VisualizerInterface'
 import {Paramable} from '../shared/Paramable'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
-import {SequenceClassDefault} from '../sequences/SequenceClassDefault'
+import {SequenceDefault} from '../sequences/SequenceDefault'
 import p5 from 'p5'
 
 export class VisualizerDefault
@@ -14,7 +14,7 @@ export class VisualizerDefault
     sketch: p5 = new p5(sketch => {
         return sketch
     })
-    seq: SequenceInterface = new SequenceClassDefault(0)
+    seq: SequenceInterface = new SequenceDefault(0)
     /***
       Sets the sketch and the sequence to draw with
       This is also where you would generate any settings or

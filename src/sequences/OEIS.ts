@@ -1,19 +1,19 @@
 import type {ValidationStatus} from '../shared/ValidationStatus'
 import {modulo} from '../shared/math'
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
-import {SequenceCached} from './SequenceCached'
+import {Cached} from './Cached'
 import {alertMessage} from '../shared/alertMessage'
 
 import axios from 'axios'
 
 /**
  *
- * @class OEISSequenceTemplate
- * An extension of SequenceCached for getting sequences from backscope,
+ * @class OEIS
+ * An extension of Cached for getting sequences from backscope,
  * the Flask backend.
  *
  */
-export default class OEISSequenceTemplate extends SequenceCached {
+export default class OEIS extends Cached {
     name = 'OEIS Sequence Template'
     description = 'Factory for obtaining sequences from the OEIS'
     oeisSeq = true
@@ -152,7 +152,7 @@ export default class OEISSequenceTemplate extends SequenceCached {
 }
 
 export const exportModule = new SequenceExportModule(
-    OEISSequenceTemplate,
+    OEIS,
     'Add OEIS Sequence',
     SequenceExportKind.GETTER
 )

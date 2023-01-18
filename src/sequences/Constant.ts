@@ -1,13 +1,13 @@
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
-import {SequenceClassDefault} from './SequenceClassDefault'
+import {SequenceDefault} from './SequenceDefault'
 
 /**
  *
- * @class SequenceConstant
+ * @class Constant
  * Extends the sequenceClassDefault, by changing the parameter schema
  * and reimplementing the getElement function.
  */
-class SequenceConstant extends SequenceClassDefault {
+class Constant extends SequenceDefault {
     name = 'Constant Sequence'
     description = 'A sequence with the same value for all nonnegative indices'
     constant = 0n
@@ -32,14 +32,14 @@ class SequenceConstant extends SequenceClassDefault {
 
     getElement(n: number) {
         if (n < 0) {
-            throw RangeError('SequenceConstant requires nonnegative index.')
+            throw RangeError('Constant requires nonnegative index.')
         }
         return this.constant
     }
 }
 
 export const exportModule = new SequenceExportModule(
-    SequenceConstant,
+    Constant,
     'Constant Sequence',
     SequenceExportKind.FAMILY
 )

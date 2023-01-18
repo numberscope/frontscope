@@ -43,7 +43,7 @@ enum ColorStyle {
 // or shrink over time;
 // circles fade to the outside
 
-class VisualizerChaos extends VisualizerDefault {
+class Chaos extends VisualizerDefault {
     name = 'Chaos'
     corners = 4
     frac = 0.5
@@ -455,6 +455,6 @@ class VisualizerChaos extends VisualizerDefault {
 
 export const exportModule = new VisualizerExportModule(
     'Chaos',
-    VisualizerChaos,
+    Chaos,
     'Chaos game played on a sequence.'
 )

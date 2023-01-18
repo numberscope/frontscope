@@ -1,23 +1,23 @@
 import type {Factorization} from './SequenceInterface'
-import {SequenceClassDefault} from './SequenceClassDefault'
+import {SequenceDefault} from './SequenceDefault'
 
 const min = Math.min
 const max = Math.max
 
 /**
  *
- * @class SequenceCached
- * extends the sequenceClassDefault with a facility to cache pre-computed
+ * @class Cached
+ * extends the SequenceDefault class with a facility to cache pre-computed
  * entries in the sequence. Sequences may derive from it and override just
  * the (dummy) calculate() method supplied here, and the caching will
  * automatically occur.
  *
  * Note: to prevent bugs with sequences with non-deterministic formulae
- * (e.g. in SequenceRandom.ts), this class should guarantee that
+ * (e.g. in Random.ts), this class should guarantee that
  * calculate() will never be called on the same input more than once.
  *
  */
-export class SequenceCached extends SequenceClassDefault {
+export class Cached extends SequenceDefault {
     name = 'Cached Base'
     description = 'A base class for cached sequences'
     protected cache: bigint[] = []
@@ -27,7 +27,7 @@ export class SequenceCached extends SequenceClassDefault {
     protected cacheBlock: number
 
     /**
-     * Creates an instance of SequenceCached.
+     * Creates an instance of Cached.
      * Defaults for the parameters, if any, are in parentheses at the
      * end of the description.
      * @param {*} sequenceID the sequence identifier of the sequence
