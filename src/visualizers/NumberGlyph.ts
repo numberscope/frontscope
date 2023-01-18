@@ -14,12 +14,22 @@ style="margin-left: 1em; margin-right: 0.5em"
 />](../assets/img/primes-sizes/ring1.png)
 
 The terms of the sequence are laid out in a grid, left-to-right and top
-to bottom.  All the primes appearing as divisors of the terms onscreen
-are assigned a colour.  Each term of the sequence is coloured as a blend
-of its component prime colours.  The term is drawn as a disk, whose brightness 
-varies according to the given function from outer rim to center.  It is
-possible to turn on `growth rings,' i.e. a modulus that the brightness is
-taken with respect to, so that tighter growth rings indicate faster growth.
+to bottom.  For each term, a glyph is generated:  an image that depends
+on the term, and has distinctive visual features.  The glyph generating
+algorithm may depend on all the terms shown on screen, but 
+repeated terms in the sequence will give repeated glyphs.
+
+The default glyph generation algorithm is as follows.  Each glyph has a 
+colour that reflects the prime factorization of the number, obtained by
+blending colours assigned to all the primes appearing as divisors in the
+terms of the sequence which appear on the screen.
+The term is drawn as a disk, whose brightness 
+varies according to a given function from outer rim to center.
+The function grows faster for larger terms, and incorporates a 
+floor function so that one observes 'growth rings:'
+tighter growth rings indicate a larger integer.  Growth rings
+that are drawn more frequently than the pixel distance will be suffer 
+from a sort of aliasing effect, appearing as if they are less frequent.
 
 ### Keyboard interaction
 
@@ -34,7 +44,7 @@ taken with respect to, so that tighter growth rings indicate faster growth.
 const colorMap = new Map()
 
 class NumberGlyph extends VisualizerDefault implements VisualizerInterface {
-    name = 'Primes and Sizes'
+    name = 'Number Glyphs'
     n = 64
     ringsBool = false
     modulus = 25
