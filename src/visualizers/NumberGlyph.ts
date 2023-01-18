@@ -102,12 +102,12 @@ and higher values are brighter.
         /** md
 ##### Brightness Adjustment
 
-This is a brightness adjustment.  It acts as a brightness cap or cutoff:  brightness
-values will range from zero to this value.  If set 
-high (higher
-than most values of the function) it will produce dull dark glyphs.  If set low, 
-brightnesses above the cutoff will be rounded down to the cutoff, resulting in bright 
-`flat' glyphs with less brightness variation.
+This is a brightness adjustment.  It acts as a brightness cap or cutoff:  
+brightness values will range from zero to this value.  If set 
+high (higher than most values of the function) it will produce dull dark 
+glyphs.  If set low, 
+brightnesses above the cutoff will be rounded down to the cutoff, resulting in 
+bright `flat' glyphs with less brightness variation.
 **/
         brightCap: {
             value: this.brightCap,
