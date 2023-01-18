@@ -9,9 +9,9 @@ import * as math from 'mathjs'
 
 # Number Glyphs
 
-[<img src="../../assets/img/primes-sizes/ring1.png" width="320" 
+[<img src="../../assets/img/glyph/ring1.png" width="320" 
 style="margin-left: 1em; margin-right: 0.5em"
-/>](../assets/img/primes-sizes/ring1.png)
+/>](../assets/img/glyph/ring1.png)
 
 The terms of the sequence are laid out in a grid, left-to-right and top
 to bottom.  For each term, a glyph is generated:  an image that depends
@@ -26,7 +26,7 @@ terms of the sequence which appear on the screen.
 The term is drawn as a disk, whose brightness 
 varies according to a given function from outer rim to center.
 The function grows faster for larger terms, and incorporates a 
-floor function so that one observes 'growth rings:'
+modulus function so that one observes 'growth rings;' that is,
 tighter growth rings indicate a larger integer.  Growth rings
 that are drawn more frequently than the pixel distance will be suffer 
 from a sort of aliasing effect, appearing as if they are less frequent.
@@ -37,8 +37,10 @@ Because `math.js` does not handle bigints, this visualizer will produce
 errors when any of the following occur:
 
 - terms do not fit in the javascript Number type
-- the growth function generating evaluated at a term does not fit
-- a sequence from formula produces invalid output because of overflow
+- the growth function evaluated at a term does not fit in the Number 
+type
+- as with any visualizer, if the visualizer is used with a Sequence 
+From Formula which produces invalid or incorrect output because of overflow
 
 The latter two types of errors occur inside `math.js` and may
 produce unpredictable results.  To handle the first type of error,
@@ -65,7 +67,7 @@ class NumberGlyph extends VisualizerDefault implements VisualizerInterface {
 
     params = {
         /** md
-##### Number of terms
+##### Number of Terms
 
 The number of terms to display onscreen.  The sizes of the discs will 
 be sized so that there are \(N^2\) disc positions, where \(N^2\) is the
@@ -77,11 +79,11 @@ only attempt to show the available terms.
         n: {
             value: this.n,
             forceType: 'integer',
-            displayName: 'Number of terms',
+            displayName: 'Number of Terms',
             required: true,
         },
         /** md
-##### Customize Glyph Generation
+##### Customize Glyphs
 
 This is a boolean which, if selected, will reveal further customization
 options for the glyph generation function.
@@ -89,24 +91,26 @@ options for the glyph generation function.
         customize: {
             value: this.customize,
             forceType: 'boolean',
-            displayName: 'Customize glyph',
+            displayName: 'Customize Glyphs',
             required: true,
         },
         /** md
-##### Growth function
+##### Growth Function
 
 This is a function in two variables, n and x.  Most standard math notations
-are accepted (+, -, *, / , ^, log, sin, cos etc.)  
-The variable n represents the
+are accepted (+, -, *, / , ^, log, sin, cos etc.)  The variable n 
+represents the
 term of which this disc is a representation.  The variable x takes the value 
-0 at the outer rim of the disk, increasing once per pixel until the center.  
-The value of this function determines the brightness of the disk at that 
-radius. A value of 0 is black
+0 at the outer rim of the disk, increasing once per pixel until the 
+center.  The value of this function determines the brightness of the disk 
+at that radius. A value of 0 is black
 and higher values are brighter.  
+
+The default value is `abs(log(max(abs(n),2)^x)) % 25`.
 **/
         formula: {
             value: this.formula,
-            displayName: 'Growth function',
+            displayName: 'Growth Function',
             description: "A function in 'n' (term) and 'x' (growth variable)",
             visibleDependency: 'customize',
             visibleValue: true,
@@ -115,12 +119,17 @@ and higher values are brighter.
         /** md
 ##### Brightness Adjustment
 
-This is a brightness adjustment.  It acts as a brightness cap or cutoff:  
-brightness values will range from zero to this value.  If set 
+This is a brightness adjustment.  It acts as a brightness cap or 
+cutoff:  brightness values will range from zero to this value.  If set 
 high (higher than most values of the function) it will produce dull dark 
 glyphs.  If set low, 
 brightnesses above the cutoff will be rounded down to the cutoff, resulting in 
 bright `flat' glyphs with less brightness variation.
+
+In general, results are nice when the brightness adjustment
+is set to the maximum attained by the Growth Function.
+
+The default value is 25.  
 **/
         brightCap: {
             value: this.brightCap,
@@ -572,33 +581,38 @@ Click on any image to expand it.
 
 ###### The Positive Integers
 
-[<img src="../../assets/img/primes-sizes/integers.png" width="320" 
+[<img src="../../assets/img/glyph/integers.png" width="320" 
 style="margin-left: 1em; margin-right: 0.5em"
-/>](../assets/img/primes-sizes/integers.png)
-[<img src="../../assets/img/primes-sizes/ring25.png" width="320" 
+/>](../assets/img/glyph/integers.png)
+[<img src="../../assets/img/glyph/ring1.png" width="320" 
 style="margin-left: 1em; margin-right: 0.5em"
-/>](../assets/img/primes-sizes/ring25.png)
-[<img src="../../assets/img/primes-sizes/ring1.png" width="320" 
-style="margin-left: 1em; margin-right: 0.5em"
-/>](../assets/img/primes-sizes/ring1.png)
+/>](../assets/img/glyph/ring1.png)
 
 First, the non-negative integers, with 
-the default settings. Next, with growth rings with 
-modulus 25. Finally, with growth rings with 
-modulus 1.  The final example shows some interesting 
+the default settings.  Next, with growth function taken  
+modulo 1 (instead of the default 25) and Brightness Adjustment set 
+to 1.  The second example shows some interesting 
 effects because the rings
-actually occur more rapidly than once per pixel.  The first
-two discs appear to be missing because they have no prime factors
-to color them.
+occur more rapidly than once per pixel.  
 
 ###### The semi-primes
 
-[<img src="../../assets/img/primes-sizes/semiprimes.png" width="320" 
+[<img src="../../assets/img/glyph/semiprimes.png" width="320" 
 style="margin-left: 1em; margin-right: 0.5em"
-/>](../assets/img/primes-sizes/semiprimes.png)
+/>](../assets/img/glyph/semiprimes.png)
 
-This image shows the semi-primes ([A001358](https://oeis.org/A001358))
-with a growth function of \( n^2/x \) and growth rings of modulus 25.
+This image shows the semi-primes 
+([A001358](https://oeis.org/A001358)).  In this example, 121 
+elements are shown.
+
+###### Another growth function
+
+[<img src="../../assets/img/glyph/diff-func.png" width="320" 
+style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/glyph/diff-func.png)
+
+This shows the integers under the growth 
+function \( 25(1-\cos(nx)) \) modulo 25.
 
 ## Credit
 
