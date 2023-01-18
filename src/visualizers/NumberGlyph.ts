@@ -56,14 +56,12 @@ exceeds \( 2^{53}-1 \) to be 0.
 ### Parameters
  **/
 
-const colorMap = new Map()
-
 class NumberGlyph extends VisualizerDefault implements VisualizerInterface {
     name = 'Number Glyphs'
     n = 64
     customize = false
     brightCap = 25
-    formula = 'abs(log(n^x)) % 25'
+    formula = 'abs(log(max(abs(n),2)^x)) % 25'
 
     params = {
         /** md
@@ -138,6 +136,7 @@ bright `flat' glyphs with less brightness variation.
 
     private evaluator: math.EvalFunction
 
+    colorMap = new Map()
     private last = 0
     private currentIndex = 0
     private position = this.sketch.createVector(0, 0)
@@ -250,11 +249,28 @@ bright `flat' glyphs with less brightness variation.
             if (checkCurrentFactors !== null) {
                 for (let j = 0; j < checkCurrentFactors.length; j++) {
                     const checkCurrentPrime = checkCurrentFactors[j][0]
-                    if (!this.primeNum.includes(checkCurrentPrime)) {
+                    if (
+                        !this.primeNum.includes(checkCurrentPrime)
+                        && checkCurrentPrime != 0n
+                        && checkCurrentPrime != -1n
+                    ) {
                         this.primeNum.push(checkCurrentPrime)
                         this.countPrime += 1
                     }
                 }
+            }
+        }
+
+        //assign color to each prime number
+        const colorNum = 360 / this.countPrime
+
+        this.colorMap.set(1, 0)
+        let tmp = 0
+
+        for (let i = 0; i < this.primeNum.length; i++) {
+            if (this.colorMap.has(this.primeNum[i]) == false) {
+                tmp += colorNum
+                this.colorMap.set(this.primeNum[i], tmp)
             }
         }
     }
@@ -385,6 +401,7 @@ bright `flat' glyphs with less brightness variation.
 
     drawCircle(ind: number) {
         let numberNowBigint = this.seq.getElement(ind)
+        // temporary fix while math.js doesn't handle bigint
         if (
             numberNowBigint < Number.MIN_SAFE_INTEGER
             || numberNowBigint > Number.MAX_SAFE_INTEGER
@@ -399,8 +416,15 @@ bright `flat' glyphs with less brightness variation.
         let bright = 0
 
         // Obtain the color of the circle
-        const combinedColor = this.primeFactors(ind)
-        this.sketch.fill(combinedColor, 100, bright)
+        let combinedColor = this.factorColor(ind)
+        let saturation = 100
+        // greyscale if no primes
+        // (occurs for -1,0,1 or couldn't factor)
+        if (combinedColor == -1) {
+            saturation = 0
+            combinedColor = 0
+        }
+        this.sketch.fill(combinedColor, saturation, bright)
 
         // iterate smaller and smaller circles
         for (let x = 0; x < this.radii; x++) {
@@ -416,7 +440,7 @@ bright `flat' glyphs with less brightness variation.
             bright = this.brightAdjust * (bright / this.brightCap)
 
             // draw the circle
-            this.sketch.fill(combinedColor, 100, bright)
+            this.sketch.fill(combinedColor, saturation, bright)
             this.sketch.ellipse(
                 this.position.x,
                 this.position.y,
@@ -461,7 +485,7 @@ bright `flat' glyphs with less brightness variation.
         for (let i = 0; i < this.primeNum.length; i++) {
             this.subG.fill('black')
             this.subG.text(String(this.primeNum[i]), 10 + tmpX, 15 + tmpY)
-            this.subG.fill(colorMap.get(this.primeNum[i]), 100, 100)
+            this.subG.fill(this.colorMap.get(this.primeNum[i]), 100, 100)
 
             this.subG.ellipse(35 + tmpX, 15 + tmpY, 10, 10)
             tmpX += 50
@@ -505,26 +529,13 @@ bright `flat' glyphs with less brightness variation.
     }
 
     //return a number which represents the color
-    primeFactors(ind: number) {
+    factorColor(ind: number) {
         const factors = this.seq.getFactors(ind)
         if (factors === null) {
-            return -30
+            return -1
         } // factoring failed
 
-        //assign color to each prime number
-        const colorNum = 360 / this.countPrime
-
-        colorMap.set(1, 0)
-        let tmp = 0
-
-        for (let i = 0; i < this.primeNum.length; i++) {
-            if (colorMap.has(this.primeNum[i]) == false) {
-                tmp += colorNum
-                colorMap.set(this.primeNum[i], tmp)
-            }
-        }
-
-        //Combine color for each prime factors
+        //Combine color for each prime factor
         let colorAll = -1
         for (let i = 0; i < factors.length; i++) {
             const thisPrime = factors[i][0]
@@ -533,10 +544,10 @@ bright `flat' glyphs with less brightness variation.
                 if (thisPrime == this.primeNum[j]) {
                     for (let k = 0; k < thisExp; k++) {
                         if (colorAll == -1) {
-                            colorAll = colorMap.get(thisPrime)
+                            colorAll = this.colorMap.get(thisPrime)
                         } else {
                             colorAll =
-                                (colorAll + colorMap.get(thisPrime)) / 2
+                                (colorAll + this.colorMap.get(thisPrime)) / 2
                         }
                     }
                 }
