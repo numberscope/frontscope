@@ -73,7 +73,7 @@ const afterScreenshot = (options: {
     actualPath: string // The path to the "actual" screenshot.
     expectedPath: string // The path to the "expected" screenshot.
     shouldCleanup: boolean // Whether we should clean up the screenshots dir.
-    screenshotClosenessPercent: number // How close screenshots should be.
+    screenshotClosenessPercent: number // Percent difference allowed.
     pixelmatchThreshold: number // Sensitivity of lib. 0 to 1. 0 more sensitive.
 }) => {
     if (!screenshotsAreClose(options)) {
