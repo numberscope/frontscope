@@ -4,6 +4,15 @@ import {resolve} from 'node:path'
 import {existsSync} from 'node:fs'
 
 export default defineConfig({
+    // If we don't set video to false, it will record a video
+    // every time Cypress runs.
+    video: false,
+
+    // If we don't set this to false, a screenshot will be taken on
+    // an E2E test failure, which will trigger the after screenshot
+    // hook, and the code in that hook expects to test a visualizer
+    // rather than a screenshot of a failing test.
+    screenshotOnRunFailure: false,
     e2e: {
         // All URLs you type in Cypress are now relative to:
         baseUrl: 'http://localhost:5173',
@@ -14,6 +23,7 @@ export default defineConfig({
                 // There should be a corresponding expected screenshot.
                 const expectedScreenshot = resolve(
                     details.path,
+                    '..',
                     '..',
                     '..',
                     'expected-screenshots',

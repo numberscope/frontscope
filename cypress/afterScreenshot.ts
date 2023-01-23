@@ -57,7 +57,10 @@ const screenshotsAreClose = (options: {
 const cleanupScreenshotDir = () => {
     const screenshots = readdirSync(SCREENSHOT_DIR)
     for (const screenshot of screenshots) {
-        rmSync(resolve(SCREENSHOT_DIR, screenshot), {force: true})
+        rmSync(resolve(SCREENSHOT_DIR, screenshot), {
+            force: true,
+            recursive: true,
+        })
     }
 }
 
