@@ -22,7 +22,7 @@ export default defineConfig({
             on('after:screenshot', details => {
                 // There should be a corresponding expected screenshot.
                 const expectedScreenshot = resolve(
-                    details.path,
+                    details.path, // Path to the actual screenshot.
                     '..',
                     '..',
                     '..',
@@ -31,9 +31,7 @@ export default defineConfig({
                 )
 
                 if (existsSync(expectedScreenshot)) {
-                    afterScreenshot({
-                        actualPath: details.path,
-                        expectedPath: expectedScreenshot,
+                    afterScreenshot(details.path, expectedScreenshot, {
                         shouldCleanup: true,
                         screenshotClosenessPercent: 5,
                         pixelmatchThreshold: 0.5,

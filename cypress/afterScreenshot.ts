@@ -17,17 +17,17 @@ const SCREENSHOT_DIR = resolve(process.cwd(), 'cypress', 'screenshots')
 /**
  * Verifies that two screenshots are close.
  */
-const screenshotsAreClose = (options: {
-    actualPath: string
-    expectedPath: string
-    screenshotClosenessPercent: number
-    pixelmatchThreshold: number
-}) => {
-    const actualContents = readFileSync(
-        resolve(process.cwd(), options.actualPath)
-    )
+const screenshotsAreClose = (
+    actualPath: string,
+    expectedPath: string,
+    options: {
+        screenshotClosenessPercent: number
+        pixelmatchThreshold: number
+    }
+) => {
+    const actualContents = readFileSync(resolve(process.cwd(), actualPath))
     const expectedContents = readFileSync(
-        resolve(process.cwd(), options.expectedPath)
+        resolve(process.cwd(), expectedPath)
     )
     const actualScreenshot = PNG.sync.read(actualContents)
     const expectedScreenshot = PNG.sync.read(expectedContents)
@@ -69,14 +69,16 @@ const cleanupScreenshotDir = () => {
  * screenshots are close, and it optionally cleans up the screenshots
  * directory.
  */
-const afterScreenshot = (options: {
-    actualPath: string // The path to the "actual" screenshot.
-    expectedPath: string // The path to the "expected" screenshot.
-    shouldCleanup: boolean // Whether we should clean up the screenshots dir.
-    screenshotClosenessPercent: number // Percent difference allowed.
-    pixelmatchThreshold: number // Sensitivity of lib. 0 to 1. 0 more sensitive.
-}) => {
-    if (!screenshotsAreClose(options)) {
+const afterScreenshot = (
+    actualPath: string, // The path to the actual screenshot.
+    expectedPath: string, // The path to the expected screenshot.
+    options: {
+        shouldCleanup: boolean // Whether to clean up screenshots dir.
+        screenshotClosenessPercent: number // Percent difference allowed.
+        pixelmatchThreshold: number // Sensitivity (0-1). 0 more sensitive.
+    }
+) => {
+    if (!screenshotsAreClose(actualPath, expectedPath, options)) {
         throw new Error('screenshots are too different')
     }
     if (options.shouldCleanup) {
