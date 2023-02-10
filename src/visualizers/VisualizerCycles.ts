@@ -206,9 +206,9 @@ class VisualizerCycles extends VisualizerDefault {
                 indexOfSquareMouseOver + this.seq.first
             )
 
-            const mainText = `Index: ${indexOfSquareMouseOver}  Value: ${m}  Steps To 1: ${collatzStepsTo1(
-                m
-            )}`
+            const mainText =
+                `Index: ${indexOfSquareMouseOver}  Value: ${m} `
+                + `Steps To 1: ${collatzStepsTo1(m)}`
             this.sketch.text(mainText, 15, lastY + 27)
 
             // smaller background rect for sequence
