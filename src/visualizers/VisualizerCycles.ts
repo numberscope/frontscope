@@ -5,27 +5,30 @@ import {floorSqrt} from '@/shared/math'
 /** md
 # cycles
 This visualizer displays the number of steps each sequence value 
-takes to reach a repeating
-cycle under either the Collatz function or the Juggler function.
+takes to reach a repeating cycle under either the Collatz 
+function or the Juggler function.
 **/
 
-//Choices of sequence formula
-enum cycleFormula {
+// choices of sequence formula
+enum stepsTo1Formula {
     Collatz,
     Juggler,
 }
 
-//Find the number of steps 'n' takes to reach 1 under the collatz formula
+// find the number of steps 'n' takes to reach 1 under the collatz formula
 function collatzStepsTo1(n: bigint): number {
     let steps = 0n
     if (n <= 1n) {
         return 1
     }
     while (n !== 1n) {
+        // if n is even, divide by 2
         if (n % 2n == 0n) {
             n = n / 2n
             steps++
-        } else if (n % 2n !== 0n) {
+        }
+        // if n is odd (not even), then multiply by 3 and add 1
+        else if (n % 2n !== 0n) {
             n = n * 3n + 1n
             steps++
         }
@@ -35,10 +38,8 @@ function collatzStepsTo1(n: bigint): number {
     return Number(steps)
 }
 
-//Find the number of steps 'm' takes to reach 1 under the juggler formula
+// find the number of steps 'm' takes to reach 1 under the juggler formula
 function jugglerStepsTo1(m: bigint): number {
-    // Juggler will NOT work well with bigints because we need to
-    // take a square root of a bigint, currently don't have a good fix
     let steps = 0n
     // steps stop when the sequence reaches 1
     if (m <= 1n) {
@@ -49,9 +50,9 @@ function jugglerStepsTo1(m: bigint): number {
         if (m % 2n == 0n) {
             m = floorSqrt(m)
             steps++
-        } else if (m % 2n !== 0n) {
-            // WARNING The function will fail after too many iterations
-            // if m is odd, take the floor of it's square root cubed
+        }
+        // if m is odd, take the floor of the it's cube
+        else if (m % 2n !== 0n) {
             m = floorSqrt(m ** 3n)
             steps++
         }
@@ -63,10 +64,9 @@ function jugglerStepsTo1(m: bigint): number {
 
 class VisualizerCycles extends VisualizerDefault {
     name = 'Cycles'
-    numberOfTerms = 1000
-    width = 50
-    cycleFormula = cycleFormula.Collatz
-    displayBoxLines = false
+    numberOfTerms = 2000
+    width = 64
+    stepsTo1Formula = stepsTo1Formula.Collatz
     workingSequence = [] as number[]
     params = {
         numberOfTerms: {
@@ -81,16 +81,11 @@ class VisualizerCycles extends VisualizerDefault {
             displayName: 'Mod of Array (width)',
             required: true,
         },
-        cycleFormula: {
-            value: this.cycleFormula,
-            from: cycleFormula,
-            displayName: 'Cycle Formula',
+        stepsTo1Formula: {
+            value: this.stepsTo1Formula,
+            from: stepsTo1Formula,
+            displayName: 'Steps To 1 Formula',
             required: true,
-        },
-        displayBoxLines: {
-            value: this.displayBoxLines,
-            displayName: 'Overlay Box Lines',
-            required: false,
         },
     }
 
@@ -112,37 +107,36 @@ class VisualizerCycles extends VisualizerDefault {
     }
 
     setup() {
-        console.log('Success')
-
-        //assorted settings
+        // assorted settings
         this.sketch.colorMode(this.sketch.HSB)
         this.sketch.background(0, 0, 0)
         this.sketch.textSize(13)
 
-        // Convert the input sequence to an array
+        // convert the input sequence to an array
         this.workingSequence = [] as number[]
         const end = Math.min(
             this.seq.first + this.numberOfTerms - 1,
             this.seq.last
         )
 
-        // maxCycle will be the largest number of steps that
+        // maxStepsTo1 will be the largest number of steps that
         // any of the starting values takes to reach 1
-        let maxCycle = 1
+        let maxStepsTo1 = 1
 
-        // The user selects either collatz or juggler collatz
+        // user selects either collatz or juggler collatz
         const stepFinder =
-            this.cycleFormula === cycleFormula.Collatz
+            this.stepsTo1Formula === stepsTo1Formula.Collatz
                 ? collatzStepsTo1
                 : jugglerStepsTo1
 
         for (let i = this.seq.first; i <= end; i++) {
             this.workingSequence.push(stepFinder(this.seq.getElement(i)))
         }
-        //Find the maxCycle under collatz
+
+        // find the maxStepsTo1 under collatz
         for (let i = 0; i < this.workingSequence.length; i++) {
-            if (this.workingSequence[i] > maxCycle) {
-                maxCycle = this.workingSequence[i]
+            if (this.workingSequence[i] > maxStepsTo1) {
+                maxStepsTo1 = this.workingSequence[i]
             }
         }
 
@@ -152,32 +146,25 @@ class VisualizerCycles extends VisualizerDefault {
             this.sketch.fill(100, 100, 0)
 
             this.sketch.fill(
-                (this.workingSequence[i] * 255) / maxCycle,
+                (this.workingSequence[i] * 255) / maxStepsTo1,
                 100,
                 100
             )
 
-            //Draw each of the squares
+            // draw each of the squares
             this.sketch.noStroke()
             this.sketch.square(x, y, 800 / this.width)
-
-            //Show black lines around each box
-            if (this.displayBoxLines) {
-                this.sketch.stroke(1, 1, 0)
-                this.sketch.square(x, y, 800 / this.width)
-            }
-            this.sketch.noStroke()
         }
     }
 
     // draw() contains all of the mouseOver functions
     draw() {
-        super.draw()
+        super.draw() // not exactly sure what this line is for
 
         this.sketch.colorMode(this.sketch.HSB)
         this.sketch.textFont('Helvetica')
 
-        //x and y-coordinate of mouse
+        // x and y-coordinate of mouse
         const x = this.sketch.mouseX
         const y = this.sketch.mouseY
 
@@ -185,37 +172,46 @@ class VisualizerCycles extends VisualizerDefault {
         const tempY =
             (800 / this.width) * Math.floor(this.numberOfTerms / this.width)
         let lastY = 0
+        // we can't let the display screen go past 720 vertical
+        // or it would go off the screen
         if (tempY < 720) {
             lastY = tempY
         }
         if (tempY >= 720) {
             lastY = 720
         }
+        // given the x and y coordinates of the mouse, find the
+        // corresponding index of the square's sequence value
         const squareWidth = 800 / this.width
         const indexOfSquareMouseOver =
             Math.floor(x / squareWidth)
             + this.width * Math.floor(y / squareWidth)
 
-        //background large rectangle
+        // background large rectangle
         this.sketch.fill(225, 50, 100)
         this.sketch.rect(0, lastY, 800, 80)
 
         // text settings for top of mouseOver info
         this.sketch.fill(0, 0, 100)
-        this.sketch.textSize(25)
+        this.sketch.textSize(20)
 
-        if (indexOfSquareMouseOver < this.workingSequence.length) {
+        // run only if the mouse if over the visualizer
+        if (
+            indexOfSquareMouseOver < this.workingSequence.length
+            && x > 0
+            && y > 0
+            && x <= 800
+        ) {
             let m = this.seq.getElement(
                 indexOfSquareMouseOver + this.seq.first
             )
-            console.log(indexOfSquareMouseOver, m)
 
-            const mainText =
-                `Starting value: ${m} Cycle value: `
-                + `${collatzStepsTo1(m)} Sequence: `
+            const mainText = `Index: ${indexOfSquareMouseOver}  Value: ${m}  Steps To 1: ${collatzStepsTo1(
+                m
+            )}`
             this.sketch.text(mainText, 15, lastY + 27)
 
-            //smaller background rect for sequence
+            // smaller background rect for sequence
             this.sketch.fill(225, 75, 100)
             this.sketch.rect(18, lastY + 40, 765, 30, 10)
 
@@ -242,20 +238,20 @@ class VisualizerCycles extends VisualizerDefault {
 
             // hDist tracks the horizontal distance at which the next number
             // is placed and is dependent on the length of the previous number
-            let hDist = 12 + this.getlength(m) * 5
+            let hDist = 7 + this.getlength(m) * 0.5
             for (let i = 0; hDist <= 700; i++) {
                 const j = this.getlength(m)
                 if (m % 2n == 0n) {
                     m = m / 2n
-                    hDist += j * 5 + 22
+                    hDist += j * 8 + 22
                     // red means the previous number was even
-                    this.sketch.fill(0, 100, 100)
+                    this.sketch.fill(0, 100, 100) // color red
                     this.sketch.text(m.toString(), hDist, lastY + 60)
                 } else if (m % 2n == 1n) {
                     m = 3n * m + 1n
-                    hDist += j * 5 + 22
+                    hDist += j * 8 + 22
                     // blue means the previous number was odd
-                    this.sketch.fill(240, 100, 100)
+                    this.sketch.fill(240, 100, 100) // color blue
                     this.sketch.text(m.toString(), hDist, lastY + 60)
                 }
             }
