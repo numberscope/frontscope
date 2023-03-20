@@ -36,6 +36,12 @@ describe('differences visualizer', () => {
             cy.contains(text).click()
         }
 
+        // Set the viewport so that the screenshot is the same on different
+        // platforms. See the discussion in
+        // https://github.com/numberscope/frontscope/pull/245 for some context
+        // on this.
+        cy.viewport('macbook-16')
+
         // Get the canvas by ID.
         // For some reason, there are two canvases being drawn.
         // We want defaultCanvas1 instead of defaultCanvas0.
