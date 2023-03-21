@@ -1,7 +1,7 @@
 import p5 from 'p5'
 import {modulo} from '../shared/math'
-import {VisualizerDefault} from './VisualizerDefault'
 import {VisualizerExportModule} from './VisualizerInterface'
+import {VisualizerP5} from './VisualizerP5'
 
 /** md
 # Chaos Visualizer
@@ -43,7 +43,7 @@ enum ColorStyle {
 // or shrink over time;
 // circles fade to the outside
 
-class Chaos extends VisualizerDefault {
+class Chaos extends VisualizerP5 {
     name = 'Chaos'
     corners = 4
     frac = 0.5

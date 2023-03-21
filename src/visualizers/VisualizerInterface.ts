@@ -1,6 +1,5 @@
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 import type {ParamableInterface} from '../shared/Paramable'
-import type p5 from 'p5'
 
 interface VisualizerConstructor {
     new (): VisualizerInterface
@@ -28,22 +27,15 @@ export interface VisualizerInterface extends ParamableInterface {
      */
     seq: SequenceInterface
     /**
-     * A p5 sketch instance.
-     */
-    sketch: p5
-    /**
      * Initialize is simply applying the validated configuration params to the
      * visualizer to prepare it to draw.
-     * @param sketch The p5 instance the visualizer will draw on
+     * @param canvasContainer The HTML element that the visualizer is
+     *                        given to create a canvas in
      * @param seq The Sequence object supplying sequence values
      */
-    initialize(sketch: p5, seq: SequenceInterface): void
-    /**
-     * Sets up the p5 canvas.
-     */
+    initialize(canvasContainer: HTMLElement, seq: SequenceInterface): void
+
     setup(): void
-    /**
-     * Draws the sequence through the visualizer into the p5 canvas.
-     */
+
     draw(): void
 }

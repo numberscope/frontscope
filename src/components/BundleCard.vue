@@ -32,8 +32,11 @@
     export default defineComponent({
         name: 'BundleCard',
         mounted() {
+            const canvasContainer = document.getElementById(
+                this.cid
+            ) as HTMLElement
             this.seq.initialize()
-            this.viz.initialize(this.viz.sketch, this.seq)
+            this.viz.initialize(canvasContainer, this.seq)
             this.viz.setup()
             this.viz.draw()
         },

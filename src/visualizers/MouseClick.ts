@@ -1,10 +1,9 @@
-import {VisualizerDefault} from './VisualizerDefault'
 import type {ValidationStatus} from '../shared/ValidationStatus'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
-import type p5 from 'p5'
 import {VisualizerExportModule} from './VisualizerInterface'
+import {VisualizerP5} from './VisualizerP5'
 
-class MouseClick extends VisualizerDefault {
+class MouseClick extends VisualizerP5 {
     name = 'Mouse Click'
     onClickMessage = 'Huzzah! The mouse was clicked!'
 
@@ -21,8 +20,8 @@ class MouseClick extends VisualizerDefault {
         return super.checkParameters()
     }
 
-    initialize(sketch: p5, seq: SequenceInterface) {
-        super.initialize(sketch, seq)
+    initialize(canvasContainer: HTMLElement, seq: SequenceInterface) {
+        super.initialize(canvasContainer, seq)
     }
 
     setup() {

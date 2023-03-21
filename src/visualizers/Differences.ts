@@ -1,7 +1,6 @@
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import type p5 from 'p5'
-import {VisualizerDefault} from './VisualizerDefault'
+import {VisualizerP5} from './VisualizerP5'
 
 const min = Math.min
 
@@ -18,7 +17,7 @@ between the terms in the row above, for as many rows as you like.
 ## Parameters
 **/
 
-class Differences extends VisualizerDefault {
+class Differences extends VisualizerP5 {
     name = 'Differences'
 
     n = 20
@@ -60,8 +59,8 @@ class Differences extends VisualizerDefault {
         return status
     }
 
-    initialize(sketch: p5, seq: SequenceInterface): void {
-        super.initialize(sketch, seq)
+    initialize(canvasContainer: HTMLElement, seq: SequenceInterface): void {
+        super.initialize(canvasContainer, seq)
         if (!this.levels) {
             this.levels = this.n
             this.refreshParams()

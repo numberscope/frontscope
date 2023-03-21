@@ -35,13 +35,15 @@
         },
         methods: {
             closeCanvas: function (): void {
-                this.activeViz.sketch.noLoop()
                 this.$emit('closeCanvas')
             },
         },
         mounted: function (): void {
+            const canvasContainer = document.getElementById(
+                'p5-goes-here'
+            ) as HTMLElement
             this.activeSeq.initialize()
-            this.activeViz.initialize(this.activeViz.sketch, this.activeSeq)
+            this.activeViz.initialize(canvasContainer, this.activeSeq)
             this.activeViz.setup()
             this.activeViz.draw()
         },

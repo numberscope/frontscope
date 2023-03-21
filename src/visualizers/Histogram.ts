@@ -1,5 +1,5 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import {VisualizerDefault} from './VisualizerDefault'
+import {VisualizerP5} from './VisualizerP5'
 
 /** md
 # Factor Histogram
@@ -17,7 +17,7 @@ Designed by Devlin Costello.
 ## Parameters
 **/
 
-class FactorHistogramVisualizer extends VisualizerDefault {
+class FactorHistogramVisualizer extends VisualizerP5 {
     name = 'Factor Histogram'
 
     binSize = 1

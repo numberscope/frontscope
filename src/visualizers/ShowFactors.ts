@@ -1,5 +1,5 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import {VisualizerDefault} from './VisualizerDefault'
+import {VisualizerP5} from './VisualizerP5'
 
 /** md
 # Show Factors Visualizer
@@ -12,7 +12,7 @@ the sequence, and below each term, its prime factors.
 ## Parameters
 **/
 
-class ShowFactors extends VisualizerDefault {
+class ShowFactors extends VisualizerP5 {
     name = 'Show Factors'
 
     start = 1
