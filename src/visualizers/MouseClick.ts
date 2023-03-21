@@ -27,8 +27,6 @@ class MouseClick extends VisualizerDefault {
 
     setup() {
         super.setup()
-        console.log('in mouse click setup')
-        console.log(this.canvas)
         this.canvas.mouseClicked(() => {
             this.sketch.text(this.onClickMessage, 50, 50)
         })

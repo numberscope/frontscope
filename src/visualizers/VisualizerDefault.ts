@@ -36,9 +36,7 @@ export class VisualizerDefault
     }
     setup(): void {
         this.canvas = this.sketch.createCanvas(800, 800)
-        console.log(this.canvas)
         this.sketch.background('white')
-        console.log('default setup done')
     }
     draw(): void {
         if (this.sketch.frameCount >= 50) {
