@@ -14,6 +14,7 @@ export class VisualizerDefault
     sketch: p5 = new p5(sketch => {
         return sketch
     })
+    canvas: p5.Renderer | Record<string, never> = {}
     seq: SequenceInterface = new SequenceDefault(0)
     /***
       Sets the sketch and the sequence to draw with
@@ -34,9 +35,15 @@ export class VisualizerDefault
         }
     }
     setup(): void {
-        return
+        this.canvas = this.sketch.createCanvas(800, 800)
+        console.log(this.canvas)
+        this.sketch.background('white')
+        console.log('default setup done')
     }
     draw(): void {
+        if (this.sketch.frameCount >= 50) {
+            this.sketch.noLoop()
+        }
         return
     }
 }

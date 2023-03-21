@@ -16,7 +16,7 @@
     import type {PropType} from 'vue'
     import type {VisualizerInterface} from '../visualizers/VisualizerInterface'
     import type {SequenceInterface} from '../sequences/SequenceInterface'
-    import p5 from 'p5'
+    import type p5 from 'p5'
     import StopDrawingButton from './StopDrawingButton.vue'
     export default defineComponent({
         name: 'CanvasArea',
@@ -43,19 +43,9 @@
             const activeSeq = this.activeSeq
             activeSeq.initialize()
             const activeViz = this.activeViz
-            this.drawing = new p5(function (sketch) {
-                activeViz.initialize(sketch, activeSeq)
-                sketch.setup = function () {
-                    sketch.createCanvas(800, 800)
-                    sketch.background('white')
-                    activeViz.setup()
-                }
-                sketch.draw = function () {
-                    activeViz.draw()
-                }
-            }, document.getElementById('p5-goes-here') as HTMLElement)
-            this.drawing.setup()
-            this.drawing.draw()
+            activeViz.initialize(this.activeViz.sketch, activeSeq)
+            activeViz.setup()
+            activeViz.draw()
         },
         data: function () {
             return {drawing: {} as p5} // To get correct type
