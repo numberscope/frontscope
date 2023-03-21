@@ -35,17 +35,15 @@
         },
         methods: {
             closeCanvas: function (): void {
-                this.drawing.noLoop()
+                this.activeViz.sketch.noLoop()
                 this.$emit('closeCanvas')
             },
         },
         mounted: function (): void {
-            const activeSeq = this.activeSeq
-            activeSeq.initialize()
-            const activeViz = this.activeViz
-            activeViz.initialize(this.activeViz.sketch, activeSeq)
-            activeViz.setup()
-            activeViz.draw()
+            this.activeSeq.initialize()
+            this.activeViz.initialize(this.activeViz.sketch, this.activeSeq)
+            this.activeViz.setup()
+            this.activeViz.draw()
         },
         data: function () {
             return {drawing: {} as p5} // To get correct type

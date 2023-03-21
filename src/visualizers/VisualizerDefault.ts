@@ -39,9 +39,6 @@ export class VisualizerDefault
         this.sketch.background('white')
     }
     draw(): void {
-        if (this.sketch.frameCount >= 50) {
-            this.sketch.noLoop()
-        }
         return
     }
 }

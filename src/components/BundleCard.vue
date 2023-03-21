@@ -26,32 +26,16 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
-    import p5 from 'p5'
     // we need a unique id for each canvas
     // see https://github.com/vuejs/vue/issues/5886#issuecomment-308647738
     let cid_count = 0
     export default defineComponent({
         name: 'BundleCard',
         mounted() {
-            const seq = this.seq
-            seq.initialize()
-            const viz = this.viz
-            const thumb = new p5(function (sketch) {
-                viz.initialize(sketch, seq)
-                sketch.setup = function () {
-                    sketch.createCanvas(200, 200)
-                    sketch.background('white')
-                    viz.setup()
-                }
-                sketch.draw = function () {
-                    viz.draw()
-                    if (sketch.frameCount >= 50) {
-                        sketch.noLoop()
-                    }
-                }
-            }, document.getElementById(this.cid) as HTMLElement)
-            thumb.setup()
-            thumb.draw()
+            this.seq.initialize()
+            this.viz.initialize(this.viz.sketch, this.seq)
+            this.viz.setup()
+            this.viz.draw()
         },
         methods: {},
         props: {
