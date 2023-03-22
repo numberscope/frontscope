@@ -1,8 +1,8 @@
 import p5 from 'p5'
 import {modulo} from '../shared/math'
-import {VisualizerDefault} from './VisualizerDefault'
 import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {VisualizerP5} from './VisualizerP5'
 
 /** md
 # Shift Compare Visualizer
@@ -20,10 +20,7 @@ modulus). The pixel is colored black otherwise.
 
 // CAUTION: This is unstable with some sequences
 // Using it may crash your browser
-class VizShiftCompare
-    extends VisualizerDefault
-    implements VisualizerInterface
-{
+class VizShiftCompare extends VisualizerP5 implements VisualizerInterface {
     name = 'Shift Compare'
     private img: p5.Image = new p5.Image(1, 1) // just a dummy
     mod = 2n

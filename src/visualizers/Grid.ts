@@ -1,9 +1,9 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import {VisualizerDefault} from '@/visualizers/VisualizerDefault'
 import {bigabs, floorSqrt, modulo} from '@/shared/math'
 import type {ParamInterface} from '@/shared/Paramable'
 import type {Factorization} from '@/sequences/SequenceInterface'
 import simpleFactor from '@/sequences/simpleFactor'
+import {VisualizerP5} from './VisualizerP5'
 
 /** md
 # Grid Visualizer
@@ -412,7 +412,7 @@ const propertyIndicatorFunction: {
     Semi_Prime: isSemiPrime,
 }
 
-class Grid extends VisualizerDefault {
+class Grid extends VisualizerP5 {
     name = 'Grid'
 
     // Grid variables

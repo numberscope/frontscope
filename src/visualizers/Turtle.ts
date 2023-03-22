@@ -1,8 +1,8 @@
 import p5 from 'p5'
-import {VisualizerDefault} from './VisualizerDefault'
 import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
+import {VisualizerP5} from './VisualizerP5'
 
 /** md
 # Turtle Visualizer
@@ -18,7 +18,7 @@ straight segment. It displays the resulting polygonal path.
 
 // Turtle needs work
 // Throwing the same error on previous Numberscope website
-class Turtle extends VisualizerDefault implements VisualizerInterface {
+class Turtle extends VisualizerP5 implements VisualizerInterface {
     name = 'Turtle'
     private rotMap = new Map<string, number>()
     domain = [0n, 1n, 2n, 3n, 4n]
@@ -106,9 +106,13 @@ class Turtle extends VisualizerDefault implements VisualizerInterface {
     private X = 0
     private Y = 0
 
-    initialize(sketch: p5, seq: SequenceInterface) {
-        this.sketch = sketch
-        this.seq = seq
+    initialize(
+        canvasContainer: HTMLElement,
+        seq: SequenceInterface,
+        maxWidth: number,
+        maxHeight: number
+    ) {
+        super.initialize(canvasContainer, seq, maxWidth, maxHeight)
 
         this.currentIndex = seq.first
         this.orientation = 0
@@ -121,8 +125,6 @@ class Turtle extends VisualizerDefault implements VisualizerInterface {
                 (Math.PI / 180) * this.range[i]
             )
         }
-
-        this.ready = true
     }
 
     checkParameters() {

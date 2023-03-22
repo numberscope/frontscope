@@ -1,6 +1,5 @@
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 import type {ParamableInterface} from '../shared/Paramable'
-import type p5 from 'p5'
 
 interface VisualizerConstructor {
     new (): VisualizerInterface
@@ -10,7 +9,6 @@ export class VisualizerExportModule {
     name: string
     description: string
     visualizer: VisualizerConstructor
-
     constructor(
         name: string,
         viz: VisualizerConstructor,
@@ -28,22 +26,32 @@ export interface VisualizerInterface extends ParamableInterface {
      */
     seq: SequenceInterface
     /**
-     * A p5 sketch instance.
+     * The maximum width the visualizer is allowed to occupy on the screen
+     * in pixels(?).
      */
-    sketch: p5
+    maxWidth: number
+    /**
+     * The maximum height the visualizer is allowed to occupy on the screen
+     * in pixels(?).
+     */
+    maxHeight: number
     /**
      * Initialize is simply applying the validated configuration params to the
      * visualizer to prepare it to draw.
-     * @param sketch The p5 instance the visualizer will draw on
+     * @param canvasContainer The HTML element that the visualizer is
+     *                        given to create a canvas in
      * @param seq The Sequence object supplying sequence values
+     * @param maxWidth The maximum width for the visualizer in pixels(?)
+     * @param maxHeight The maximum height for the visualizer in pixels(?)
      */
-    initialize(sketch: p5, seq: SequenceInterface): void
-    /**
-     * Sets up the p5 canvas.
-     */
+    initialize(
+        canvasContainer: HTMLElement,
+        seq: SequenceInterface,
+        maxWidth: number,
+        maxHeight: number
+    ): void
+
     setup(): void
-    /**
-     * Draws the sequence through the visualizer into the p5 canvas.
-     */
+
     draw(): void
 }

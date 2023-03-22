@@ -6,7 +6,7 @@
                 <p class="card-text">
                     This is a bundle of {{ seq.name + ' + ' + viz.name }}.
                 </p>
-                <div :id="cid"></div>
+                <div class="canvasContainer" :id="cid"></div>
                 <a
                     v-on:click="$emit('drawBundle', {seq: seq, viz: viz})"
                     href="#"
@@ -26,32 +26,24 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
-    import p5 from 'p5'
     // we need a unique id for each canvas
     // see https://github.com/vuejs/vue/issues/5886#issuecomment-308647738
     let cid_count = 0
     export default defineComponent({
         name: 'BundleCard',
         mounted() {
-            const seq = this.seq
-            seq.initialize()
-            const viz = this.viz
-            const thumb = new p5(function (sketch) {
-                viz.initialize(sketch, seq)
-                sketch.setup = function () {
-                    sketch.createCanvas(200, 200)
-                    sketch.background('white')
-                    viz.setup()
-                }
-                sketch.draw = function () {
-                    viz.draw()
-                    if (sketch.frameCount >= 50) {
-                        sketch.noLoop()
-                    }
-                }
-            }, document.getElementById(this.cid) as HTMLElement)
-            thumb.setup()
-            thumb.draw()
+            const canvasContainer = document.getElementById(
+                this.cid
+            ) as HTMLElement
+            this.seq.initialize()
+            this.viz.initialize(
+                canvasContainer,
+                this.seq,
+                canvasContainer.offsetWidth,
+                canvasContainer.offsetHeight
+            )
+            this.viz.setup()
+            this.viz.draw()
         },
         methods: {},
         props: {
@@ -73,5 +65,9 @@
     .card {
         margin: 1em;
         min-height: 250px;
+    }
+    .canvasContainer {
+        width: 100px;
+        height: 100px;
     }
 </style>

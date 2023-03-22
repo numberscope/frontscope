@@ -2,7 +2,6 @@ import type {VisualizerInterface} from './VisualizerInterface'
 import {Paramable} from '../shared/Paramable'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {SequenceDefault} from '../sequences/SequenceDefault'
-import p5 from 'p5'
 
 export class VisualizerDefault
     extends Paramable
@@ -11,20 +10,24 @@ export class VisualizerDefault
     name = 'Default Visualizer'
     description = 'Base class for implementing Visualizers'
     ready = false
-    sketch: p5 = new p5(sketch => {
-        return sketch
-    })
     seq: SequenceInterface = new SequenceDefault(0)
+    maxWidth = 0
+    maxHeight = 0
     /***
       Sets the sketch and the sequence to draw with
       This is also where you would generate any settings or
       draw functions if needed
       */
-    initialize(sketch: p5, seq: SequenceInterface): void {
+    initialize(
+        canvasContainer: HTMLElement,
+        seq: SequenceInterface,
+        maxWidth: number,
+        maxHeight: number
+    ): void {
         if (this.isValid) {
-            this.sketch = sketch
+            this.maxWidth = maxWidth
+            this.maxHeight = maxHeight
             this.seq = seq
-
             this.ready = true
         } else {
             throw (
@@ -33,10 +36,12 @@ export class VisualizerDefault
             )
         }
     }
-    setup(): void {
+
+    setup() {
         return
     }
-    draw(): void {
+
+    draw() {
         return
     }
 }

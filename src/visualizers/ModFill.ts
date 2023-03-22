@@ -1,8 +1,8 @@
 import {modulo} from '../shared/math'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
-import {VisualizerDefault} from '../visualizers/VisualizerDefault'
 import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {VisualizerP5} from './VisualizerP5'
 
 /** md
 # Mod Fill Visualizer
@@ -18,7 +18,7 @@ occur by watching the order the cells are filled in as the diagram is drawn.
 ## Parameters
 **/
 
-class VizModFill extends VisualizerDefault implements VisualizerInterface {
+class VizModFill extends VisualizerP5 implements VisualizerInterface {
     name = 'Mod Fill'
     modDimension = 10n
     params = {
