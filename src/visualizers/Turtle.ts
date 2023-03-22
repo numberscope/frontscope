@@ -106,8 +106,13 @@ class Turtle extends VisualizerP5 implements VisualizerInterface {
     private X = 0
     private Y = 0
 
-    initialize(canvasContainer: HTMLElement, seq: SequenceInterface) {
-        super.initialize(canvasContainer, seq)
+    initialize(
+        canvasContainer: HTMLElement,
+        seq: SequenceInterface,
+        maxWidth: number,
+        maxHeight: number
+    ) {
+        super.initialize(canvasContainer, seq, maxWidth, maxHeight)
 
         this.currentIndex = seq.first
         this.orientation = 0

@@ -6,7 +6,7 @@
                 <p class="card-text">
                     This is a bundle of {{ seq.name + ' + ' + viz.name }}.
                 </p>
-                <div :id="cid"></div>
+                <div class="canvasContainer" :id="cid"></div>
                 <a
                     v-on:click="$emit('drawBundle', {seq: seq, viz: viz})"
                     href="#"
@@ -36,7 +36,12 @@
                 this.cid
             ) as HTMLElement
             this.seq.initialize()
-            this.viz.initialize(canvasContainer, this.seq)
+            this.viz.initialize(
+                canvasContainer,
+                this.seq,
+                canvasContainer.offsetWidth,
+                canvasContainer.offsetHeight
+            )
             this.viz.setup()
             this.viz.draw()
         },
@@ -60,5 +65,9 @@
     .card {
         margin: 1em;
         min-height: 250px;
+    }
+    .canvasContainer {
+        width: 100px;
+        height: 100px;
     }
 </style>

@@ -20,8 +20,13 @@ class MouseClick extends VisualizerP5 {
         return super.checkParameters()
     }
 
-    initialize(canvasContainer: HTMLElement, seq: SequenceInterface) {
-        super.initialize(canvasContainer, seq)
+    initialize(
+        canvasContainer: HTMLElement,
+        seq: SequenceInterface,
+        maxWidth: number,
+        maxHeight: number
+    ) {
+        super.initialize(canvasContainer, seq, maxWidth, maxHeight)
     }
 
     setup() {

@@ -59,8 +59,13 @@ class Differences extends VisualizerP5 {
         return status
     }
 
-    initialize(canvasContainer: HTMLElement, seq: SequenceInterface): void {
-        super.initialize(canvasContainer, seq)
+    initialize(
+        canvasContainer: HTMLElement,
+        seq: SequenceInterface,
+        maxWidth: number,
+        maxHeight: number
+    ) {
+        super.initialize(canvasContainer, seq, maxWidth, maxHeight)
         if (!this.levels) {
             this.levels = this.n
             this.refreshParams()

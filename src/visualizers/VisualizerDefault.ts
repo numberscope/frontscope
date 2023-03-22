@@ -11,13 +11,22 @@ export class VisualizerDefault
     description = 'Base class for implementing Visualizers'
     ready = false
     seq: SequenceInterface = new SequenceDefault(0)
+    maxWidth = 0
+    maxHeight = 0
     /***
       Sets the sketch and the sequence to draw with
       This is also where you would generate any settings or
       draw functions if needed
       */
-    initialize(canvasContainer: HTMLElement, seq: SequenceInterface): void {
+    initialize(
+        canvasContainer: HTMLElement,
+        seq: SequenceInterface,
+        maxWidth: number,
+        maxHeight: number
+    ): void {
         if (this.isValid) {
+            this.maxWidth = maxWidth
+            this.maxHeight = maxHeight
             this.seq = seq
             this.ready = true
         } else {

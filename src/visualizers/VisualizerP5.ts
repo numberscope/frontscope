@@ -11,12 +11,17 @@ export class VisualizerP5 extends VisualizerDefault {
     // against it being undefined.
     sketch: p5 = new p5(sketch => sketch)
     canvas: p5.Renderer | Record<string, never> = {}
-    initialize(canvasContainer: HTMLElement, seq: SequenceInterface) {
-        super.initialize(canvasContainer, seq)
+    initialize(
+        canvasContainer: HTMLElement,
+        seq: SequenceInterface,
+        maxWidth: number,
+        maxHeight: number
+    ) {
+        super.initialize(canvasContainer, seq, maxWidth, maxHeight)
         this.sketch = new p5(sketch => sketch, canvasContainer)
     }
     setup() {
-        this.canvas = this.sketch.createCanvas(800, 800)
+        this.canvas = this.sketch.createCanvas(this.maxWidth, this.maxHeight)
         this.sketch.background('white')
     }
     draw() {

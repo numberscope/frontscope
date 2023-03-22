@@ -6,7 +6,7 @@
             </div>
         </div>
         <div class="col-sm-10">
-            <div id="p5-goes-here"></div>
+            <div id="canvasContainer"></div>
         </div>
     </div>
 </template>
@@ -40,10 +40,18 @@
         },
         mounted: function (): void {
             const canvasContainer = document.getElementById(
-                'p5-goes-here'
+                'canvasContainer'
             ) as HTMLElement
             this.activeSeq.initialize()
-            this.activeViz.initialize(canvasContainer, this.activeSeq)
+            this.activeViz.initialize(
+                canvasContainer,
+                this.activeSeq,
+                canvasContainer.offsetWidth,
+                canvasContainer.offsetHeight
+            )
+
+            // These two methods are (presumably) only needed by p5
+            // visualizers.
             this.activeViz.setup()
             this.activeViz.draw()
         },
@@ -53,4 +61,9 @@
     })
 </script>
 
-<style scoped></style>
+<style scoped>
+    #canvasContainer {
+        width: 800px;
+        height: 800px;
+    }
+</style>
