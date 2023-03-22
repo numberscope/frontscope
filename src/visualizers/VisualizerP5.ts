@@ -1,15 +1,12 @@
 import {VisualizerDefault} from './VisualizerDefault'
 import p5 from 'p5'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
+import {dummySketch} from '../shared/dummyp5'
 
 export class VisualizerP5 extends VisualizerDefault {
     name = 'p5 Visualizer'
     description = 'Base class for implementing p5 visualizers'
-
-    // We initialize the sketch variable to be a dummy p5 object because
-    // we want it to have the correct type, and we don't want to guard
-    // against it being undefined.
-    sketch: p5 = new p5(sketch => sketch)
+    sketch: p5 = dummySketch
     canvas: p5.Renderer | Record<string, never> = {}
     initialize(
         canvasContainer: HTMLElement,
