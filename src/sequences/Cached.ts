@@ -6,6 +6,19 @@ const max = Math.max
 
 /**
  *
+ * @class CachingError
+ * extends the built-in Error class to indicate that a cache is trying
+ * to be accessed while it is being filled, or other caching impropriety.
+ */
+export class CachingError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'CachingError' // (2)
+    }
+}
+
+/**
+ *
  * @class Cached
  * extends the SequenceDefault class with a facility to cache pre-computed
  * entries in the sequence. Sequences may derive from it and override just
@@ -22,8 +35,10 @@ export class Cached extends SequenceDefault {
     description = 'A base class for cached sequences'
     protected cache: bigint[] = []
     protected factorCache: Factorization[] = []
-    protected lastCached: number
-    protected cachingTo: number
+    protected lastValueCached: number
+    protected lastFactorCached: number
+    protected cachingValuesTo: number
+    protected cachingFactorsTo: number
     protected cacheBlock: number
 
     /**
@@ -48,38 +63,47 @@ export class Cached extends SequenceDefault {
         this.first = first ?? 0
         this.last = last ?? Infinity
         this.cacheBlock = cacheBlock ?? 128
-        this.lastCached = this.first - 1
-        this.cachingTo = this.lastCached
+        this.lastValueCached = this.first - 1
+        this.lastFactorCached = this.first - 1
+        this.cachingValuesTo = this.lastValueCached
+        this.cachingFactorsTo = this.lastFactorCached
     }
 
     initialize(): void {
         if (this.ready) return
         super.initialize()
         this.ready = false
-        this.cachingTo = min(this.lastCached + this.cacheBlock, this.last)
-        this.fillCache()
+        this.cachingValuesTo = min(
+            this.lastValueCached + this.cacheBlock,
+            this.last
+        )
+        this.fillValueCache()
         this.ready = true
     }
 
-    resizeCache(n: number): void {
-        /* We want to grab at least a whole cacheBlock, but we also want
+    newCacheSize(n: number, lastCached: number): number {
+        /* Returns the new limit for a cache size:
+           We want to grab at least a whole cacheBlock, but we also want
            to grab more if we've already gotten a lot, and of course we
            need to grab enough to have the current requested index...
-         */
-        this.cachingTo = max(
-            this.lastCached + this.cacheBlock,
-            2 * this.lastCached,
+        */
+        let newLimit = max(
+            lastCached + this.cacheBlock,
+            2 * lastCached,
             n + 1
         )
-        /* ... except if that would put us past the last index: */
-        this.cachingTo = min(this.last, this.cachingTo)
+        newLimit = min(this.last, newLimit)
+        return newLimit
     }
 
-    fillCache(): void {
-        for (let i: number = this.lastCached + 1; i <= this.cachingTo; i++) {
+    fillValueCache(): void {
+        for (
+            let i: number = this.lastValueCached + 1;
+            i <= this.cachingValuesTo;
+            i++
+        ) {
             this.cache[i] = this.calculate(i)
-            this.factorCache[i] = this.factor(i, this.cache[i])
-            this.lastCached = i
+            this.lastValueCached = i
         }
     }
 
@@ -89,7 +113,7 @@ export class Cached extends SequenceDefault {
                 `Cached: Index ${n} not in ${this.first}..${this.last}.`
             )
         }
-        if (n <= this.lastCached) {
+        if (n <= this.lastValueCached) {
             return this.cache[n]
         }
         /* Check for a race condition: attempting to get a value while it's
@@ -97,18 +121,40 @@ export class Cached extends SequenceDefault {
            occur if a prior fillCache() threw an uncaught exception, for
            example.
          */
-        if (this.lastCached != this.cachingTo) {
-            throw Error(
-                `Currently caching ${this.lastCached} to ${this.cachingTo}.`
+        if (this.lastValueCached != this.cachingValuesTo) {
+            throw new CachingError(
+                `Currently caching ${this.lastValueCached} to `
+                    + `${this.cachingValuesTo}.`
             )
         }
-        this.resizeCache(n)
-        this.fillCache()
+        this.cachingValuesTo = this.newCacheSize(n, this.lastValueCached)
+        this.fillValueCache()
         return this.cache[n]
     }
 
+    fillFactorCache(): void {
+        for (
+            let i: number = this.lastFactorCached + 1;
+            i <= this.cachingFactorsTo;
+            i++
+        ) {
+            this.factorCache[i] = this.factor(i, this.getElement(i))
+            this.lastFactorCached = i
+        }
+    }
+
     getFactors(n: number): Factorization {
-        this.getElement(n) // fill the cache
+        if (n <= this.lastFactorCached) {
+            return this.factorCache[n]
+        }
+        if (this.lastFactorCached != this.cachingFactorsTo) {
+            throw new CachingError(
+                `Currently factoring ${this.lastFactorCached} to `
+                    + `${this.cachingFactorsTo}.`
+            )
+        }
+        this.cachingFactorsTo = this.newCacheSize(n, this.lastFactorCached)
+        this.fillFactorCache()
         return this.factorCache[n]
     }
 

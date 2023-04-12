@@ -27,6 +27,7 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import p5 from 'p5'
+    import {CachingError} from '../sequences/Cached'
     // we need a unique id for each canvas
     // see https://github.com/vuejs/vue/issues/5886#issuecomment-308647738
     let cid_count = 0
@@ -44,7 +45,17 @@
                     viz.setup()
                 }
                 sketch.draw = function () {
-                    viz.draw()
+                    try {
+                        viz.draw()
+                    } catch (e) {
+                        if (e instanceof CachingError) {
+                            sketch.cursor('progress')
+                            return
+                        } else {
+                            throw e
+                        }
+                    }
+                    sketch.cursor(sketch.ARROW)
                     if (sketch.frameCount >= 50) {
                         sketch.noLoop()
                     }

@@ -16,6 +16,7 @@
     import type {PropType} from 'vue'
     import type {VisualizerInterface} from '../visualizers/VisualizerInterface'
     import type {SequenceInterface} from '../sequences/SequenceInterface'
+    import {CachingError} from '../sequences/Cached'
     import p5 from 'p5'
     import StopDrawingButton from './StopDrawingButton.vue'
     export default defineComponent({
@@ -51,7 +52,17 @@
                     activeViz.setup()
                 }
                 sketch.draw = function () {
-                    activeViz.draw()
+                    try {
+                        activeViz.draw()
+                    } catch (e) {
+                        if (e instanceof CachingError) {
+                            sketch.cursor('progress')
+                            return
+                        } else {
+                            throw e
+                        }
+                    }
+                    sketch.cursor(sketch.ARROW)
                 }
             }, document.getElementById('p5-goes-here') as HTMLElement)
             this.drawing.setup()
