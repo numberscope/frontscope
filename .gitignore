@@ -15,3 +15,6 @@ site
 
 # Emacs backup files
 *~
+
+# Screenshots taken using Cypress
+cypress/screenshots/
