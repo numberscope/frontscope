@@ -102,7 +102,7 @@
                                 v-on:input="
                                     setArray(
                                         $event,
-                                        param.value as [number | BigInt]
+                                        param.value as [number | bigint]
                                     )
                                 " />
                             <input
@@ -214,7 +214,7 @@
                     // Continue with old value
                 }
                 this.integerReminder(
-                    (p.value as BigInt).toString(),
+                    (p.value as bigint).toString(),
                     target.value,
                     p
                 )
@@ -245,7 +245,7 @@
                 ;(p.value as p5.Vector).x = Number(part[0])
                 ;(p.value as p5.Vector).y = Number(part[1])
             },
-            setArray(e: Event, a: [number | BigInt]) {
+            setArray(e: Event, a: [number | bigint]) {
                 const target = e.target as HTMLInputElement
                 const parts = target.value.split(',')
                 if (typeof a[0] === 'number') {
