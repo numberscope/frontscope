@@ -518,12 +518,9 @@ property being tested.
         },
 
         /** md
-### Count When Number in Integer Count: Increase number when 
-
-- Spiral:  An Ulam-type square spiral starting at the center of grid.
-- Rows:  Left-to-right, top-to-bottom in rows.
-- Rows_Augment:  Each row restarts the sequence from the starting index,
-    but adds the row number to the sequence _values_.
+### Count when Nnmber in integer count: Modify sequence so that it starts
+at 1 and increases whenever a sequence number is in an integer sequence
+starting at the first number of the sequence
          **/
         countWhenNumberInIntegerCount: {
             value: this.countWhenNumberInIntegerCount,
