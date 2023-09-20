@@ -425,6 +425,7 @@ class Grid extends VisualizerDefault {
     preset = Preset.Custom
     pathType = PathType.Spiral
     resetAndAugmentByOne = false
+    countWhenNumberInIntegerCount = false
     backgroundColor = BLACK
     numberColor = WHITE
 
@@ -436,6 +437,10 @@ class Grid extends VisualizerDefault {
     numberToTurnAtForSpiral = 0
     incrementForNumberToTurnAt = 1
     whetherIncrementShouldIncrement = true
+
+    //Count when number in integer count variables
+    counterWhenNumberInIntegerCount = 0n
+    integerCountFromStartOfSequence = 0n
 
     // Properties
     propertyObjects: PropertyObject[] = []
@@ -510,6 +515,22 @@ property being tested.
             from: PathType,
             displayName: 'Path in grid',
             required: false,
+        },
+
+        /** md
+### Count When Number in Integer Count: Increase number when 
+
+- Spiral:  An Ulam-type square spiral starting at the center of grid.
+- Rows:  Left-to-right, top-to-bottom in rows.
+- Rows_Augment:  Each row restarts the sequence from the starting index,
+    but adds the row number to the sequence _values_.
+         **/
+        countWhenNumberInIntegerCount: {
+            value: this.countWhenNumberInIntegerCount,
+            forceType: 'boolean',
+            displayName: 'Count when number in integer count',
+            required: false,
+            description: 'Note: Works only for increasing sequences',
         },
 
         /** md
@@ -664,6 +685,9 @@ earlier ones that use the _same_ style.)
         this.currentIndex = Math.max(this.startingIndex, this.seq.first)
         let augmentForRowReset = 0n
 
+        this.integerCountFromStartOfSequence =
+            this.seq.getElement(this.currentIndex) - 1n
+
         for (
             let iteration = 0;
             iteration < this.amountOfNumbers;
@@ -681,8 +705,11 @@ earlier ones that use the _same_ style.)
             }
 
             this.setCurrentNumber(this.currentIndex, augmentForRowReset)
-            this.fillGridCell()
+
             this.currentIndex++
+
+            this.fillGridCell()
+
             this.moveCoordinatesUsingPath(iteration)
         }
         this.sketch.noLoop()
@@ -714,7 +741,36 @@ earlier ones that use the _same_ style.)
     }
 
     setCurrentNumber(currentIndex: number, augmentForRow: bigint) {
-        this.currentNumber = this.seq.getElement(currentIndex)
+        if (this.countWhenNumberInIntegerCount) {
+            this.integerCountFromStartOfSequence++
+
+            if (
+                this.integerCountFromStartOfSequence
+                === this.seq.getElement(this.currentIndex)
+            ) {
+                this.counterWhenNumberInIntegerCount++
+
+                for (let x = 0; x < 100; x++) {
+                    this.currentIndex++
+
+                    if (
+                        this.integerCountFromStartOfSequence
+                        != this.seq.getElement(this.currentIndex)
+                    ) {
+                        this.currentIndex--
+                    } else {
+                        break
+                    }
+                }
+            } else {
+                this.currentIndex--
+            }
+
+            this.currentNumber = this.counterWhenNumberInIntegerCount
+        } else {
+            this.currentNumber = this.seq.getElement(currentIndex)
+        }
+
         this.currentNumber = this.currentNumber + augmentForRow
     }
 
@@ -1022,6 +1078,50 @@ digit, the scarcity of odd abundant numbers (indicated on the left by small
 squares) becomes visually apparent.  As we zoom out in the right image, we
 see they are clearly not random.
 
+###### Count when number in integer count capability
+
+[<img src="../../assets/img/Grid/15.png" width="320"
+style="margin: 0.5em" />](../assets/img/Grid/21.png)
+[<img src="../../assets/img/Grid/16.png" width="320"
+style="margin: 0.5em" />](../assets/img/Grid/22.png)
+[<img src="../../assets/img/Grid/15.png" width="320"
+style="margin: 0.5em" />](../assets/img/Grid/23.png)
+[<img src="../../assets/img/Grid/16.png" width="320"
+style="margin: 0.5em" />](../assets/img/Grid/24.png)
+[<img src="../../assets/img/Grid/15.png" width="320"
+style="margin: 0.5em" />](../assets/img/Grid/25.png)
+[<img src="../../assets/img/Grid/16.png" width="320"
+style="margin: 0.5em" />](../assets/img/Grid/26.png)
+[<img src="../../assets/img/Grid/15.png" width="320"
+style="margin: 0.5em" />](../assets/img/Grid/27.png)
+[<img src="../../assets/img/Grid/16.png" width="320"
+style="margin: 0.5em" />](../assets/img/Grid/28.png)
+
+"Count when numbers in integer count" takes the input sequence and creates
+a new sequence using an intermediary sequence that it also creates. Here's
+an example:
+
+Input sequence: A000040: 			   2,3,5,7,11, 13 ...
+
+Intermediary sequence: 				   2,3,4,5,6,7,8,9,10,11,12,13 ...
+
+Output sequence:                       1,2,2,3,3,4,4,4,4,   5,  5,  6 ...
+
+As you can see, the intermediary sequence is ascending consecutive integer
+sequence which starts at the first number of the input sequence.
+
+The output sequence then follows the intermediary sequence number by number.
+If a number in the intermediary sequence is the same as a number in the input
+sequence, the output sequence increases by one. If a number in the intermediary
+sequence is not the same as a number in the input sequence, the sequence does
+not increase.
+
+The inspiration for this is OEIS sequence A000720, which is the output sequence
+minus the first number.
+
+Images 21 and 22 are the fibonacci numbers.
+Images 23, 24, 25, and 26 are the prime numbers.
+Images 27 and 28 are the square numbers.
 
 ## Credit
 
