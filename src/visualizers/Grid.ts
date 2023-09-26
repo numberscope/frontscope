@@ -89,6 +89,11 @@ enum PathType {
     Rows_Augment,
 }
 
+enum ModifySequence {
+    No,
+    Change_To_Natural_Numbers,
+}
+
 enum Direction {
     Right,
     Left,
@@ -425,6 +430,7 @@ class Grid extends VisualizerDefault {
     preset = Preset.Custom
     pathType = PathType.Spiral
     resetAndAugmentByOne = false
+    modifySequence = ModifySequence.No
     backgroundColor = BLACK
     numberColor = WHITE
 
@@ -436,6 +442,9 @@ class Grid extends VisualizerDefault {
     numberToTurnAtForSpiral = 0
     incrementForNumberToTurnAt = 1
     whetherIncrementShouldIncrement = true
+
+    // Modify Sequence variables
+    naturalNumberCounter = 0n
 
     // Properties
     propertyObjects: PropertyObject[] = []
@@ -492,7 +501,7 @@ property being tested.
          **/
         startingIndex: {
             value: this.startingIndex,
-            displayName: 'Starting Index',
+            displayName: 'Starting index',
             required: false,
             description: '',
         },
@@ -509,6 +518,17 @@ property being tested.
             value: this.pathType,
             from: PathType,
             displayName: 'Path in grid',
+            required: false,
+        },
+
+        /** md
+### Modify sequence: Changes the values of the sequence to different values
+
+         **/
+        modifySequence: {
+            value: this.modifySequence,
+            from: ModifySequence,
+            displayName: 'Modify sequence',
             required: false,
         },
 
@@ -682,7 +702,6 @@ earlier ones that use the _same_ style.)
 
             this.setCurrentNumber(this.currentIndex, augmentForRowReset)
             this.fillGridCell()
-            this.currentIndex++
             this.moveCoordinatesUsingPath(iteration)
         }
         this.sketch.noLoop()
@@ -714,7 +733,16 @@ earlier ones that use the _same_ style.)
     }
 
     setCurrentNumber(currentIndex: number, augmentForRow: bigint) {
-        this.currentNumber = this.seq.getElement(currentIndex)
+        if (this.modifySequence === ModifySequence.No) {
+            this.currentNumber = this.seq.getElement(currentIndex)
+            this.currentIndex++
+        } else if (
+            this.modifySequence === ModifySequence.Change_To_Natural_Numbers
+        ) {
+            this.currentNumber = this.naturalNumberCounter
+            this.naturalNumberCounter++
+        }
+
         this.currentNumber = this.currentNumber + augmentForRow
     }
 
