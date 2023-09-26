@@ -540,6 +540,7 @@ property being tested.
         /** md
 ### Modify sequence: Changes the values of the sequence to different values
 
+-Change_to_natural_numbers makes natural numbers the base sequence
          **/
         modifySequence: {
             value: this.modifySequence,
@@ -550,7 +551,6 @@ property being tested.
 
         /** md
 ### Natural numbers starting number: The number the natural numbers start at
-
          **/
         naturalNumbersStartingNumber: {
             value: this.naturalNumbersStartingNumber,
@@ -562,9 +562,8 @@ property being tested.
         },
 
         /** md
-### Make non-sequence numbers constant: Changes the values of non-sequence
-    numbers to one value.
-
+### Make sequence numbers constant: Changes the values of sequence numbers
+    to one value
          **/
         makeSequenceNumbersConstant: {
             value: this.makeSequenceNumbersConstant,
@@ -577,7 +576,7 @@ property being tested.
         },
 
         /** md
-### Constant value for non-sequence numbers: The value non-sequence numbers
+### Constant value for sequence numbers: The value non-sequence numbers
 are changed to
      **/
         sequenceNumbersConstant: {
@@ -591,7 +590,7 @@ are changed to
 
         /** md
 ### Make non-sequence numbers constant: Changes the values of non-sequence
-    numbers to one value.
+    numbers to one value
          **/
         makeNonSequenceNumbersConstant: {
             value: this.makeNonSequenceNumbersConstant,
