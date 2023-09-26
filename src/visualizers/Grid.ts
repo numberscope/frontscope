@@ -1,6 +1,6 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {VisualizerDefault} from '@/visualizers/VisualizerDefault'
-import {bigabs, floorSqrt, modulo, safeNumber} from '@/shared/math'
+import {bigabs, floorSqrt, modulo} from '@/shared/math'
 import type {ParamInterface} from '@/shared/Paramable'
 import type {Factorization} from '@/sequences/SequenceInterface'
 import simpleFactor from '@/sequences/simpleFactor'
@@ -446,6 +446,8 @@ class Grid extends VisualizerDefault {
     // Modify Sequence variables
     naturalNumbersCounter = 0n
     naturalNumbersStartingNumber = 0
+    makeNonSequenceNumbersConstant = false
+    constantValueForNonSequenceNumbers = 0
 
     // Properties
     propertyObjects: PropertyObject[] = []
@@ -534,12 +536,40 @@ property being tested.
         },
 
         /** md
-### Modify sequence: Changes the values of the sequence to different values
+### Natural numbers starting number: The number the natural numbers start at
 
          **/
         naturalNumbersStartingNumber: {
             value: this.naturalNumbersStartingNumber,
             displayName: 'Natural Numbers Starting Number',
+            required: false,
+            visibleDependency: 'modifySequence',
+            visiblePredicate: (dependentValue: ModifySequence) =>
+                dependentValue === ModifySequence.Change_To_Natural_Numbers,
+        },
+
+        /** md
+### Make non-sequence numbers constant: Changes the values of non-sequence numbers
+    to one value.
+
+         **/
+        makeNonSequenceNumbersConstant: {
+            value: this.makeNonSequenceNumbersConstant,
+            forceType: 'boolean',
+            displayName: 'Make Non-Sequence Numbers Constant',
+            required: false,
+            visibleDependency: 'modifySequence',
+            visiblePredicate: (dependentValue: ModifySequence) =>
+                dependentValue === ModifySequence.Change_To_Natural_Numbers,
+        },
+
+        /** md
+### Constant value for non-sequence numbers: The value non-sequence numbers are changed
+    to
+         **/
+        constantValueForNonSequenceNumbers: {
+            value: this.constantValueForNonSequenceNumbers,
+            displayName: 'Non Sequence Numbers',
             required: false,
             visibleDependency: 'modifySequence',
             visiblePredicate: (dependentValue: ModifySequence) =>
@@ -720,6 +750,7 @@ earlier ones that use the _same_ style.)
             }
 
             this.setCurrentNumber(this.currentIndex, augmentForRowReset)
+
             this.fillGridCell()
             this.moveCoordinatesUsingPath(iteration)
         }
@@ -760,6 +791,34 @@ earlier ones that use the _same_ style.)
         ) {
             this.currentNumber = this.naturalNumbersCounter
             this.naturalNumbersCounter++
+
+            if (this.makeNonSequenceNumbersConstant) {
+                //Increase index until sequence element at index isn't less than current number
+                if (this.currentIndex < this.seq.last) {
+                    for (let x = 0; x < 1000; x++) {
+                        if (
+                            this.seq.getElement(this.currentIndex)
+                            < this.currentNumber
+                        ) {
+                            this.currentIndex++
+                        } else {
+                            break
+                        }
+                    }
+                }
+
+                if (
+                    this.seq.getElement(currentIndex) !== this.currentNumber
+                ) {
+                    this.currentNumber = BigInt(
+                        this.constantValueForNonSequenceNumbers
+                    )
+                }
+
+                if (this.currentIndex === this.seq.last) {
+                    this.currentIndex--
+                }
+            }
         }
 
         this.currentNumber = this.currentNumber + augmentForRow
