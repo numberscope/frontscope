@@ -1,6 +1,6 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {VisualizerDefault} from '@/visualizers/VisualizerDefault'
-import {bigabs, floorSqrt, modulo} from '@/shared/math'
+import {bigabs, floorSqrt, modulo, safeNumber} from '@/shared/math'
 import type {ParamInterface} from '@/shared/Paramable'
 import type {Factorization} from '@/sequences/SequenceInterface'
 import simpleFactor from '@/sequences/simpleFactor'
@@ -444,7 +444,8 @@ class Grid extends VisualizerDefault {
     whetherIncrementShouldIncrement = true
 
     // Modify Sequence variables
-    naturalNumberCounter = 0n
+    naturalNumbersCounter = 0n
+    naturalNumbersStartingNumber = 0
 
     // Properties
     propertyObjects: PropertyObject[] = []
@@ -530,6 +531,19 @@ property being tested.
             from: ModifySequence,
             displayName: 'Modify sequence',
             required: false,
+        },
+
+        /** md
+### Modify sequence: Changes the values of the sequence to different values
+
+         **/
+        naturalNumbersStartingNumber: {
+            value: this.naturalNumbersStartingNumber,
+            displayName: 'Natural Numbers Starting Number',
+            required: false,
+            visibleDependency: 'modifySequence',
+            visiblePredicate: (dependentValue: ModifySequence) =>
+                dependentValue === ModifySequence.Change_To_Natural_Numbers,
         },
 
         /** md
@@ -682,6 +696,7 @@ earlier ones that use the _same_ style.)
 
     draw(): void {
         this.currentIndex = Math.max(this.startingIndex, this.seq.first)
+        this.naturalNumbersCounter = BigInt(this.naturalNumbersStartingNumber)
         let augmentForRowReset = 0n
 
         for (
@@ -695,6 +710,10 @@ earlier ones that use the _same_ style.)
                     this.currentIndex = Math.max(
                         this.startingIndex,
                         this.seq.first
+                    )
+
+                    this.naturalNumbersCounter = BigInt(
+                        this.naturalNumbersStartingNumber
                     )
                     augmentForRowReset++
                 }
@@ -739,8 +758,8 @@ earlier ones that use the _same_ style.)
         } else if (
             this.modifySequence === ModifySequence.Change_To_Natural_Numbers
         ) {
-            this.currentNumber = this.naturalNumberCounter
-            this.naturalNumberCounter++
+            this.currentNumber = this.naturalNumbersCounter
+            this.naturalNumbersCounter++
         }
 
         this.currentNumber = this.currentNumber + augmentForRow
