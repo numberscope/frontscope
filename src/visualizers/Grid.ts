@@ -112,6 +112,7 @@ const leftTurn: Record<string, Direction> = {
 
 enum Property {
     None,
+    Equals,
     Prime,
     Negative,
     Even,
@@ -132,6 +133,7 @@ enum PropertyVisualization {
 }
 
 const propertyAuxName: Record<string, string> = {
+    Equals: 'Equals',
     Divisible_By: 'Divisor',
     Last_Digit_Is: 'Digit',
     Polygonal_Number: 'Sides',
@@ -290,6 +292,14 @@ function isPrime(factors: Factorization): boolean {
     return false // two or more prime factors
 }
 
+function equals(number: bigint, order = 3n) {
+    if (number === order) {
+        return true
+    } else {
+        return false
+    }
+}
+
 // Adapted from Geeks for Geeks:
 // https://www.geeksforgeeks.org/deficient-number/
 function getSumOfProperDivisors(num: bigint): bigint {
@@ -404,6 +414,7 @@ const propertyIndicatorFunction: {
 } = {
     None: () => false,
     Prime: isPrime,
+    Equals: equals,
     Negative: (v: bigint) => v < 0n,
     Even: congruenceIndicator(2n, 0n),
     Odd: congruenceIndicator(2n, 1n),
@@ -549,8 +560,8 @@ property being tested.
         },
 
         /** md
-### Make non-sequence numbers constant: Changes the values of non-sequence numbers
-    to one value.
+### Make non-sequence numbers constant: Changes the values of non-sequence
+    numbers to one value.
 
          **/
         makeNonSequenceNumbersConstant: {
@@ -564,8 +575,8 @@ property being tested.
         },
 
         /** md
-### Constant value for non-sequence numbers: The value non-sequence numbers are changed
-    to
+### Constant value for non-sequence numbers: The value non-sequence numbers
+    are changed to
          **/
         constantValueForNonSequenceNumbers: {
             value: this.constantValueForNonSequenceNumbers,
@@ -632,6 +643,7 @@ that property holds for a given integer.
 will be used.  Choosing anything other than none will add a new property
 and reveal parameters for it.
 - Prime:  Its absolute value is prime
+- Equals: Same as a value
 - Negative:  Less than zero
 - Even:  Divisible by two
 - Odd: Not even
@@ -793,7 +805,8 @@ earlier ones that use the _same_ style.)
             this.naturalNumbersCounter++
 
             if (this.makeNonSequenceNumbersConstant) {
-                //Increase index until sequence element at index isn't less than current number
+                //Increase index until sequence element at index isn't less than
+                //current number
                 if (this.currentIndex < this.seq.last) {
                     for (let x = 0; x < 1000; x++) {
                         if (
