@@ -461,10 +461,6 @@ class Grid extends VisualizerDefault {
     // Modify Sequence variables
     naturalNumbersCounter = 0n
     naturalNumbersStartingNumber = 0
-    makeSequenceNumbersConstant = false
-    sequenceNumbersConstant = -1
-    makeNonSequenceNumbersConstant = false
-    nonSequenceNumbersConstant = -2
     currentNumberIsSequenceNumber = false
 
     // Properties
@@ -564,60 +560,9 @@ property being tested.
             visibleDependency: 'modifySequence',
             visiblePredicate: (dependentValue: ModifySequence) =>
                 dependentValue === ModifySequence.Change_To_Natural_Numbers,
-        },
-
-        /** md
-### Make sequence numbers constant: Changes the values of sequence numbers
-    to one value
-         **/
-        makeSequenceNumbersConstant: {
-            value: this.makeSequenceNumbersConstant,
-            forceType: 'boolean',
-            displayName: 'Make sequence numbers constant',
-            required: false,
-            visibleDependency: 'modifySequence',
-            visiblePredicate: (dependentValue: ModifySequence) =>
-                dependentValue === ModifySequence.Change_To_Natural_Numbers,
-        },
-
-        /** md
-### Constant value for sequence numbers: The value non-sequence numbers
-are changed to
-     **/
-        sequenceNumbersConstant: {
-            value: this.sequenceNumbersConstant,
-            displayName: 'Sequence numbers',
-            required: false,
-            visibleDependency: 'makeSequenceNumbersConstant',
-            visiblePredicate: (dependentValue: boolean) =>
-                dependentValue === true,
-        },
-
-        /** md
-### Make non-sequence numbers constant: Changes the values of non-sequence
-    numbers to one value
-         **/
-        makeNonSequenceNumbersConstant: {
-            value: this.makeNonSequenceNumbersConstant,
-            forceType: 'boolean',
-            displayName: 'Make non-sequence numbers constant',
-            required: false,
-            visibleDependency: 'modifySequence',
-            visiblePredicate: (dependentValue: ModifySequence) =>
-                dependentValue === ModifySequence.Change_To_Natural_Numbers,
-        },
-
-        /** md
-### Constant value for non-sequence numbers: The value non-sequence numbers
-    are changed to
-         **/
-        nonSequenceNumbersConstant: {
-            value: this.nonSequenceNumbersConstant,
-            displayName: 'Non sequence numbers',
-            required: false,
-            visibleDependency: 'makeNonSequenceNumbersConstant',
-            visiblePredicate: (dependentValue: boolean) =>
-                dependentValue === true,
+            description:
+                'Note: Sequence_Number and Not_Sequence_Number properties'
+                + ' work only for increasing numbers',
         },
 
         /** md
@@ -854,20 +799,8 @@ earlier ones that use the _same_ style.)
 
             if (this.seq.getElement(currentIndex) === this.currentNumber) {
                 this.currentNumberIsSequenceNumber = true
-
-                if (this.makeSequenceNumbersConstant) {
-                    this.currentNumber = BigInt(this.sequenceNumbersConstant)
-                }
-            }
-
-            if (this.seq.getElement(currentIndex) !== this.currentNumber) {
+            } else {
                 this.currentNumberIsSequenceNumber = false
-
-                if (this.makeNonSequenceNumbersConstant) {
-                    this.currentNumber = BigInt(
-                        this.nonSequenceNumbersConstant
-                    )
-                }
             }
         }
 
