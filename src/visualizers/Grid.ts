@@ -89,6 +89,11 @@ enum PathType {
     Rows_Augment,
 }
 
+enum ModifySequence {
+    No,
+    Change_To_Natural_Numbers,
+}
+
 enum Direction {
     Right,
     Left,
@@ -107,6 +112,9 @@ const leftTurn: Record<string, Direction> = {
 
 enum Property {
     None,
+    Equals,
+    Sequence_Number,
+    Not_Sequence_Number,
     Prime,
     Negative,
     Even,
@@ -127,6 +135,7 @@ enum PropertyVisualization {
 }
 
 const propertyAuxName: Record<string, string> = {
+    Equals: 'Equals',
     Divisible_By: 'Divisor',
     Last_Digit_Is: 'Digit',
     Polygonal_Number: 'Sides',
@@ -285,6 +294,14 @@ function isPrime(factors: Factorization): boolean {
     return false // two or more prime factors
 }
 
+function equals(number: bigint, order = 3n) {
+    if (number === order) {
+        return true
+    } else {
+        return false
+    }
+}
+
 // Adapted from Geeks for Geeks:
 // https://www.geeksforgeeks.org/deficient-number/
 function getSumOfProperDivisors(num: bigint): bigint {
@@ -399,6 +416,9 @@ const propertyIndicatorFunction: {
 } = {
     None: () => false,
     Prime: isPrime,
+    Equals: equals,
+    Sequence_Number: () => false,
+    Not_Sequence_Number: () => false,
     Negative: (v: bigint) => v < 0n,
     Even: congruenceIndicator(2n, 0n),
     Odd: congruenceIndicator(2n, 1n),
@@ -425,6 +445,7 @@ class Grid extends VisualizerDefault {
     preset = Preset.Custom
     pathType = PathType.Spiral
     resetAndAugmentByOne = false
+    modifySequence = ModifySequence.No
     backgroundColor = BLACK
     numberColor = WHITE
 
@@ -436,6 +457,15 @@ class Grid extends VisualizerDefault {
     numberToTurnAtForSpiral = 0
     incrementForNumberToTurnAt = 1
     whetherIncrementShouldIncrement = true
+
+    // Modify Sequence variables
+    naturalNumbersCounter = 0n
+    naturalNumbersStartingNumber = 0
+    makeSequenceNumbersConstant = false
+    sequenceNumbersConstant = -1
+    makeNonSequenceNumbersConstant = false
+    nonSequenceNumbersConstant = -2
+    currentNumberIsSequenceNumber = false
 
     // Properties
     propertyObjects: PropertyObject[] = []
@@ -492,7 +522,7 @@ property being tested.
          **/
         startingIndex: {
             value: this.startingIndex,
-            displayName: 'Starting Index',
+            displayName: 'Starting index',
             required: false,
             description: '',
         },
@@ -510,6 +540,84 @@ property being tested.
             from: PathType,
             displayName: 'Path in grid',
             required: false,
+        },
+
+        /** md
+### Modify sequence: Changes the values of the sequence to different values
+
+-Change_to_natural_numbers makes natural numbers the base sequence
+         **/
+        modifySequence: {
+            value: this.modifySequence,
+            from: ModifySequence,
+            displayName: 'Modify sequence',
+            required: false,
+        },
+
+        /** md
+### Natural numbers starting number: The number the natural numbers start at
+         **/
+        naturalNumbersStartingNumber: {
+            value: this.naturalNumbersStartingNumber,
+            displayName: 'Natural numbers start at',
+            required: false,
+            visibleDependency: 'modifySequence',
+            visiblePredicate: (dependentValue: ModifySequence) =>
+                dependentValue === ModifySequence.Change_To_Natural_Numbers,
+        },
+
+        /** md
+### Make sequence numbers constant: Changes the values of sequence numbers
+    to one value
+         **/
+        makeSequenceNumbersConstant: {
+            value: this.makeSequenceNumbersConstant,
+            forceType: 'boolean',
+            displayName: 'Make sequence numbers constant',
+            required: false,
+            visibleDependency: 'modifySequence',
+            visiblePredicate: (dependentValue: ModifySequence) =>
+                dependentValue === ModifySequence.Change_To_Natural_Numbers,
+        },
+
+        /** md
+### Constant value for sequence numbers: The value non-sequence numbers
+are changed to
+     **/
+        sequenceNumbersConstant: {
+            value: this.sequenceNumbersConstant,
+            displayName: 'Sequence numbers',
+            required: false,
+            visibleDependency: 'makeSequenceNumbersConstant',
+            visiblePredicate: (dependentValue: boolean) =>
+                dependentValue === true,
+        },
+
+        /** md
+### Make non-sequence numbers constant: Changes the values of non-sequence
+    numbers to one value
+         **/
+        makeNonSequenceNumbersConstant: {
+            value: this.makeNonSequenceNumbersConstant,
+            forceType: 'boolean',
+            displayName: 'Make non-sequence numbers constant',
+            required: false,
+            visibleDependency: 'modifySequence',
+            visiblePredicate: (dependentValue: ModifySequence) =>
+                dependentValue === ModifySequence.Change_To_Natural_Numbers,
+        },
+
+        /** md
+### Constant value for non-sequence numbers: The value non-sequence numbers
+    are changed to
+         **/
+        nonSequenceNumbersConstant: {
+            value: this.nonSequenceNumbersConstant,
+            displayName: 'Non sequence numbers',
+            required: false,
+            visibleDependency: 'makeNonSequenceNumbersConstant',
+            visiblePredicate: (dependentValue: boolean) =>
+                dependentValue === true,
         },
 
         /** md
@@ -568,6 +676,7 @@ that property holds for a given integer.
 will be used.  Choosing anything other than none will add a new property
 and reveal parameters for it.
 - Prime:  Its absolute value is prime
+- Equals: Same as a value
 - Negative:  Less than zero
 - Even:  Divisible by two
 - Odd: Not even
@@ -662,6 +771,7 @@ earlier ones that use the _same_ style.)
 
     draw(): void {
         this.currentIndex = Math.max(this.startingIndex, this.seq.first)
+        this.naturalNumbersCounter = BigInt(this.naturalNumbersStartingNumber)
         let augmentForRowReset = 0n
 
         for (
@@ -676,13 +786,17 @@ earlier ones that use the _same_ style.)
                         this.startingIndex,
                         this.seq.first
                     )
+
+                    this.naturalNumbersCounter = BigInt(
+                        this.naturalNumbersStartingNumber
+                    )
                     augmentForRowReset++
                 }
             }
 
             this.setCurrentNumber(this.currentIndex, augmentForRowReset)
+
             this.fillGridCell()
-            this.currentIndex++
             this.moveCoordinatesUsingPath(iteration)
         }
         this.sketch.noLoop()
@@ -714,7 +828,49 @@ earlier ones that use the _same_ style.)
     }
 
     setCurrentNumber(currentIndex: number, augmentForRow: bigint) {
-        this.currentNumber = this.seq.getElement(currentIndex)
+        if (this.modifySequence === ModifySequence.No) {
+            this.currentNumber = this.seq.getElement(currentIndex)
+            this.currentIndex++
+        } else if (
+            this.modifySequence === ModifySequence.Change_To_Natural_Numbers
+        ) {
+            this.currentNumber = this.naturalNumbersCounter
+            this.naturalNumbersCounter++
+
+            //Increase index until sequence element at index isn't less than
+            //current number
+            if (this.currentIndex < this.seq.last) {
+                for (let x = 0; x < 1000; x++) {
+                    if (
+                        this.seq.getElement(this.currentIndex)
+                        < this.currentNumber
+                    ) {
+                        this.currentIndex++
+                    } else {
+                        break
+                    }
+                }
+            }
+
+            if (this.seq.getElement(currentIndex) === this.currentNumber) {
+                this.currentNumberIsSequenceNumber = true
+
+                if (this.makeSequenceNumbersConstant) {
+                    this.currentNumber = BigInt(this.sequenceNumbersConstant)
+                }
+            }
+
+            if (this.seq.getElement(currentIndex) !== this.currentNumber) {
+                this.currentNumberIsSequenceNumber = false
+
+                if (this.makeNonSequenceNumbersConstant) {
+                    this.currentNumber = BigInt(
+                        this.nonSequenceNumbersConstant
+                    )
+                }
+            }
+        }
+
         this.currentNumber = this.currentNumber + augmentForRow
     }
 
@@ -813,6 +969,13 @@ earlier ones that use the _same_ style.)
                 propertyName as FactorPropertyName
             ](factors)
         }
+        if (property === Property.Sequence_Number) {
+            return this.currentNumberIsSequenceNumber
+        }
+        if (property === Property.Not_Sequence_Number) {
+            return !this.currentNumberIsSequenceNumber
+        }
+
         return propertyIndicatorFunction[propertyName as ValuePropertyName](
             this.currentNumber,
             aux
