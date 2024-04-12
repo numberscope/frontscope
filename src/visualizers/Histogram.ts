@@ -23,6 +23,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
     binSize = 1
     terms = 100
     firstIndex = NaN
+    mouseOver = true
 
     params = {
         /** md
@@ -56,6 +57,18 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             value: this.terms,
             forceType: 'integer',
             displayName: 'Number of Terms',
+            required: true,
+        },
+
+        /** md
+- Mouse Over:   This turns on a mouse over feature that shows you the height
+                of the bin that you are currently hovering over, as well as
+                the number of prime factors that bin has.
+         **/
+        mouseOver: {
+            value: this.mouseOver,
+            forceType: 'boolean',
+            displayName: 'Mouse Over',
             required: true,
         },
     }
@@ -155,7 +168,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             -Infinity
         )
         // 0.95 Creates a small offset from the side of the screen
-        return (0.95 * this.sketch.width) / greatestValue
+        return (0.95 * this.sketch.height) / greatestValue
     }
 
     draw() {
@@ -166,28 +179,30 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         const height = this.height()
         const binWidth = this.binWidth()
         const binFactorArray = this.binFactorArray()
-        const offsetScalar = 0.975
-        const textOffsetScalar = 0.995
+        const largeOffsetScalar = 0.975
+        const smallOffsetScalar = 0.995
+        const largeOffsetNumber = (1 - largeOffsetScalar) * this.sketch.width
+        const smallOffsetNumber = (1 - smallOffsetScalar) * this.sketch.width
         this.sketch.line(
             // Draws the y-axis
-            (1 - offsetScalar) * this.sketch.width,
+            largeOffsetNumber,
             0,
-            (1 - offsetScalar) * this.sketch.width,
+            largeOffsetNumber,
             this.sketch.height
         )
         this.sketch.line(
             // Draws the x-axis
             0,
-            offsetScalar * this.sketch.height,
+            largeOffsetScalar * this.sketch.height,
             this.sketch.width,
-            offsetScalar * this.sketch.height
+            largeOffsetScalar * this.sketch.height
         )
 
         for (let i = 0; i < 30; i++) {
             this.sketch.rect(
                 // Draws the rectangles for the Histogram
-                (1 - offsetScalar) * this.sketch.width + binWidth * i,
-                offsetScalar * this.sketch.height
+                largeOffsetNumber + binWidth * i,
+                largeOffsetScalar * this.sketch.height
                     - height * binFactorArray[i],
                 binWidth,
                 height * binFactorArray[i]
@@ -208,21 +223,126 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                 // Draws text for if the bin size is not 1
                 this.sketch.text(
                     this.binSize * i + ' - ' + (this.binSize * (i + 1) - 1),
-                    1 - offsetScalar + binWidth * (i + 1 / 2),
-                    textOffsetScalar * this.sketch.width
+                    1 - largeOffsetScalar + binWidth * (i + 1 / 2),
+                    smallOffsetScalar * this.sketch.width
                 )
             } else {
                 // Draws text for if the bin size is 1
                 this.sketch.text(
                     i,
-                    (1 - offsetScalar) * this.sketch.width
-                        + (binWidth * (i + 1) - binWidth / 2),
-                    textOffsetScalar * this.sketch.width
+                    largeOffsetNumber + (binWidth * (i + 1) - binWidth / 2),
+                    smallOffsetScalar * this.sketch.width
                 )
             }
         }
 
-        this.sketch.noLoop()
+        let tickHeight = Math.floor(
+            (0.95 * this.sketch.height) / (height * 5)
+        )
+
+        // Sets the tickHeight to 1 if the calculated value is less than 1
+        if (tickHeight === 0) {
+            tickHeight = 1
+        }
+        // Draws the markings on the Y-axis
+        for (let i = 0; i < 9; i++) {
+            // Draws the tick marks
+            this.sketch.line(
+                largeOffsetNumber / 2,
+                this.sketch.height
+                    - largeOffsetNumber
+                    - tickHeight * height * (i + 1),
+                (3 * largeOffsetNumber) / 2,
+                this.sketch.height
+                    - largeOffsetNumber
+                    - tickHeight * height * (i + 1)
+            )
+
+            // Places the numbers on the right side of the axis if
+            // they are too big or the left side if they are small enough
+            if (tickHeight > binFactorArray[0]) {
+                this.sketch.text(
+                    tickHeight * (i + 1),
+                    (3 * largeOffsetNumber) / 2,
+                    this.sketch.height
+                        - largeOffsetNumber
+                        - tickHeight * height * (i + 1)
+                        + (3 * smallOffsetNumber) / 2
+                )
+            } else {
+                this.sketch.text(
+                    tickHeight * (i + 1),
+                    0,
+                    this.sketch.height
+                        - largeOffsetNumber
+                        - tickHeight * height * (i + 1)
+                        + (3 * smallOffsetNumber) / 2
+                )
+            }
+        }
+
+        const mouseX = this.sketch.mouseX
+        const mouseY = this.sketch.mouseY
+        const binIndex = Math.floor((mouseX - largeOffsetNumber) / binWidth)
+        let inBin = false
+        const boxHeight = this.sketch.width * 0.06
+        const boxWidth = this.sketch.width * 0.15
+
+        // Checks to see whether the mouse is in the bin drawn on the screen
+        if (
+            mouseY
+                > largeOffsetScalar * this.sketch.height
+                    - height * binFactorArray[binIndex]
+            && mouseY / height < largeOffsetScalar * this.sketch.height
+        ) {
+            inBin = true
+        }
+
+        // Draws the box and the text inside the box
+        if (inBin === true && this.mouseOver === true) {
+            this.sketch.rect(
+                mouseX,
+                mouseY - boxHeight,
+                boxWidth,
+                boxHeight,
+                Math.floor(smallOffsetNumber),
+                Math.floor(smallOffsetNumber),
+                Math.floor(smallOffsetNumber),
+                0
+            )
+
+            // Draws the text for the number of prime factors
+            // that bin represents
+            this.sketch.text(
+                'Factors:',
+                mouseX + smallOffsetNumber,
+                mouseY - boxHeight + largeOffsetNumber
+            )
+            this.sketch.text(
+                binIndex,
+                mouseX
+                    + boxWidth
+                    - 3 * smallOffsetNumber * binIndex.toString().length,
+                mouseY - boxHeight + largeOffsetNumber
+            )
+
+            // Draws the text for the number of elements of the sequence
+            // in the bin
+            this.sketch.text(
+                'Height:',
+                mouseX + smallOffsetNumber,
+                mouseY - boxHeight + largeOffsetNumber * 2
+            )
+            this.sketch.text(
+                binFactorArray[binIndex],
+                mouseX
+                    + boxWidth
+                    - 3
+                        * smallOffsetNumber
+                        * binFactorArray[binIndex].toString().length,
+                mouseY - boxHeight + largeOffsetNumber * 2
+            )
+        }
     }
 }
 
