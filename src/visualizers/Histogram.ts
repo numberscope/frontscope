@@ -21,7 +21,6 @@ bar corresponds to a range of possible Omega values (a bin).
 The height of each bar shows how many entries in the sequence
 have a corresponding value of Omega.
 
-Originally designed by Devlin Costello.
 
 ## Parameters
 **/
@@ -72,7 +71,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         /** md
 - Mouse Over:   This turns on a mouse over feature that shows you the height
                 of the bin that you are currently hovering over, as well as
-		the bin label (which Omega values are included).
+		the bin label (i.e., which Omega values are included).
          **/
         mouseOver: {
             value: this.mouseOver,
