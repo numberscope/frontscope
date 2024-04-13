@@ -8,11 +8,20 @@ import {VisualizerDefault} from './VisualizerDefault'
 width="320" style="float: right; margin-left: 1em;" />](
 ../assets/img/FactorHistogram/ExampleImage.png)
 
-This visualizer counts the number of prime factors of each entry in the
-sequence and creates a histogram of the results. The horizontal axis
-represents _X_, the number of prime factors. The height of each bar shows
-how many entries in the sequence have a corresponding value of _X_.
-Designed by Devlin Costello.
+This visualizer counts the number of prime factors (with multiplicity)
+of each entry in the sequence and creates a histogram of the results. 
+
+The number of prime factors with multiplicity is a function commonly
+called
+[Omega](https://oeis.org/wiki/
+Omega(n),_number_of_prime_factors_of_n_(with_multiplicity)).
+
+The horizontal axis represents values of Omega.  Each
+bar corresponds to a range of possible Omega values (a bin).
+The height of each bar shows how many entries in the sequence
+have a corresponding value of Omega.
+
+Originally designed by Devlin Costello.
 
 ## Parameters
 **/
@@ -27,7 +36,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
 
     params = {
         /** md
-- Bin Size: The size (number of _X_ values included) for each bin
+- Bin Size: The size (number of Omega values) for each bin
   of the histogram.
          **/
         binSize: {
@@ -37,8 +46,8 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             required: true,
         },
         /** md
-- First Index: The first index to start getting the factors and forming the
-               histogram from. If the first index is before the first term
+- First Index: The first index included in the statistics.
+               If the first index is before the first term
                of the series then the first term of the series will be used.
          **/
         firstIndex: {
@@ -49,7 +58,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         },
 
         /** md
-- Number of Terms: The number of terms in the series after the first term.
+- Number of Terms: The number of terms included in the statistics.
                    If this goes past the last term of the sequence it will
                    show all terms of the sequence after the first index.
          **/
@@ -63,7 +72,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         /** md
 - Mouse Over:   This turns on a mouse over feature that shows you the height
                 of the bin that you are currently hovering over, as well as
-                the number of prime factors that bin has.
+		the bin label (which Omega values are included).
          **/
         mouseOver: {
             value: this.mouseOver,
@@ -106,8 +115,8 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         return Math.trunc(input / this.binSize)
     }
 
-    // Create an array with the number of factor of
-    // each element at the corresponding index of the array
+    // Create an array with the number of factors of
+    // the element at the corresponding index of the array
     factorArray(): number[] {
         const factorArray = []
         for (let i = this.startIndex(); i < this.endIndex(); i++) {
@@ -153,9 +162,11 @@ class FactorHistogramVisualizer extends VisualizerDefault {
     binWidth(): number {
         // 0.95 Creates a small offset from the side of the screen
         if (this.binFactorArray().length <= 30) {
-            return (0.95 * this.sketch.width) / this.binFactorArray().length
+            return (
+                (0.95 * this.sketch.width) / this.binFactorArray().length - 1
+            )
         } else {
-            return (0.95 * this.sketch.width) / 30
+            return (0.95 * this.sketch.width) / 30 - 1
         }
     }
 
@@ -167,8 +178,8 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             (a, b) => Math.max(a, b),
             -Infinity
         )
-        // 0.95 Creates a small offset from the side of the screen
-        return (0.95 * this.sketch.height) / greatestValue
+        // magic number creates a small offset from the top of the screen
+        return (0.9 * this.sketch.height) / greatestValue
     }
 
     draw() {
@@ -179,10 +190,12 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         const height = this.height()
         const binWidth = this.binWidth()
         const binFactorArray = this.binFactorArray()
-        const largeOffsetScalar = 0.975
-        const smallOffsetScalar = 0.995
+        const largeOffsetScalar = 0.945 // padding between axes and edge
+        const smallOffsetScalar = 0.996
         const largeOffsetNumber = (1 - largeOffsetScalar) * this.sketch.width
         const smallOffsetNumber = (1 - smallOffsetScalar) * this.sketch.width
+        let binText = ''
+        let binTextSize = 0
         this.sketch.line(
             // Draws the y-axis
             largeOffsetNumber,
@@ -201,10 +214,10 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         for (let i = 0; i < 30; i++) {
             this.sketch.rect(
                 // Draws the rectangles for the Histogram
-                largeOffsetNumber + binWidth * i,
+                largeOffsetNumber + binWidth * i + 1,
                 largeOffsetScalar * this.sketch.height
                     - height * binFactorArray[i],
-                binWidth,
+                binWidth - 2,
                 height * binFactorArray[i]
             )
             if (binFactorArray.length > 30) {
@@ -220,16 +233,22 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                 )
             }
             if (this.binSize != 1) {
-                // Draws text for if the bin size is not 1
+                // Draws text in the case the bin size is not 1
+                binText = (
+                    this.binSize * i
+                    + ' - '
+                    + (this.binSize * (i + 1) - 1)
+                ).toString()
                 this.sketch.text(
-                    this.binSize * i + ' - ' + (this.binSize * (i + 1) - 1),
+                    binText,
                     1 - largeOffsetScalar + binWidth * (i + 1 / 2),
                     smallOffsetScalar * this.sketch.width
                 )
             } else {
-                // Draws text for if the bin size is 1
+                // Draws text in the case the bin size is 1
+                binText = i.toString()
                 this.sketch.text(
-                    i,
+                    binText,
                     largeOffsetNumber + (binWidth * (i + 1) - binWidth / 2),
                     smallOffsetScalar * this.sketch.width
                 )
@@ -248,7 +267,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         for (let i = 0; i < 9; i++) {
             // Draws the tick marks
             this.sketch.line(
-                largeOffsetNumber / 2,
+                (largeOffsetNumber * 3) / 4,
                 this.sketch.height
                     - largeOffsetNumber
                     - tickHeight * height * (i + 1),
@@ -259,20 +278,19 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             )
 
             // Places the numbers on the right side of the axis if
-            // they are too big or the left side if they are small enough
-            if (tickHeight > binFactorArray[0]) {
+            // they are 4 digits or more; left side otherwise
+            let tickNudge = 0
+            if (tickHeight > 999) {
+                tickNudge = (3 * largeOffsetNumber) / 2
+            }
+            // Avoid placing text that will get cut off
+            if (
+                tickHeight * (i + 1)
+                < this.sketch.height - 30 * this.sketch.textAscent()
+            ) {
                 this.sketch.text(
                     tickHeight * (i + 1),
-                    (3 * largeOffsetNumber) / 2,
-                    this.sketch.height
-                        - largeOffsetNumber
-                        - tickHeight * height * (i + 1)
-                        + (3 * smallOffsetNumber) / 2
-                )
-            } else {
-                this.sketch.text(
-                    tickHeight * (i + 1),
-                    0,
+                    tickNudge,
                     this.sketch.height
                         - largeOffsetNumber
                         - tickHeight * height * (i + 1)
@@ -285,8 +303,9 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         const mouseY = this.sketch.mouseY
         const binIndex = Math.floor((mouseX - largeOffsetNumber) / binWidth)
         let inBin = false
-        const boxHeight = this.sketch.width * 0.06
         const boxWidth = this.sketch.width * 0.15
+        const textVerticalSpacing = this.sketch.textAscent()
+        const boxHeight = textVerticalSpacing * 2.3
 
         // Checks to see whether the mouse is in the bin drawn on the screen
         if (
@@ -316,14 +335,22 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             this.sketch.text(
                 'Factors:',
                 mouseX + smallOffsetNumber,
-                mouseY - boxHeight + largeOffsetNumber
+                mouseY - boxHeight + textVerticalSpacing
             )
+            if (this.binSize != 1) {
+                binText =
+                    this.binSize * binIndex
+                    + '-'
+                    + (this.binSize * (binIndex + 1) - 1)
+            } else {
+                binText = binIndex.toString()
+            }
+            binTextSize =
+                this.sketch.textWidth(binText) + 3 * smallOffsetNumber
             this.sketch.text(
-                binIndex,
-                mouseX
-                    + boxWidth
-                    - 3 * smallOffsetNumber * binIndex.toString().length,
-                mouseY - boxHeight + largeOffsetNumber
+                binText,
+                mouseX + boxWidth - binTextSize,
+                mouseY - boxHeight + textVerticalSpacing
             )
 
             // Draws the text for the number of elements of the sequence
@@ -331,16 +358,17 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             this.sketch.text(
                 'Height:',
                 mouseX + smallOffsetNumber,
-                mouseY - boxHeight + largeOffsetNumber * 2
+                mouseY - boxHeight + textVerticalSpacing * 2
             )
             this.sketch.text(
                 binFactorArray[binIndex],
                 mouseX
                     + boxWidth
-                    - 3
-                        * smallOffsetNumber
-                        * binFactorArray[binIndex].toString().length,
-                mouseY - boxHeight + largeOffsetNumber * 2
+                    - 3 * smallOffsetNumber
+                    - this.sketch.textWidth(
+                        binFactorArray[binIndex].toString()
+                    ),
+                mouseY - boxHeight + textVerticalSpacing * 2
             )
         }
     }
