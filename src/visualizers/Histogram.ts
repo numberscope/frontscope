@@ -284,17 +284,16 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                 tickNudge = (3 * largeOffsetNumber) / 2
             }
             // Avoid placing text that will get cut off
-            if (
-                tickHeight * (i + 1)
-                < this.sketch.height - 30 * this.sketch.textAscent()
-            ) {
+            const tickYPosition =
+                this.sketch.height
+                - largeOffsetNumber
+                - tickHeight * height * (i + 1)
+                + (3 * smallOffsetNumber) / 2
+            if (tickYPosition > this.sketch.textAscent()) {
                 this.sketch.text(
                     tickHeight * (i + 1),
                     tickNudge,
-                    this.sketch.height
-                        - largeOffsetNumber
-                        - tickHeight * height * (i + 1)
-                        + (3 * smallOffsetNumber) / 2
+                    tickYPosition
                 )
             }
         }
@@ -310,9 +309,10 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         // Checks to see whether the mouse is in the bin drawn on the screen
         if (
             mouseY
-                > largeOffsetScalar * this.sketch.height
+                > largeOffsetScalar * this.sketch.height // below top
                     - height * binFactorArray[binIndex]
-            && mouseY / height < largeOffsetScalar * this.sketch.height
+            // and above axis
+            && mouseY < largeOffsetScalar * this.sketch.height
         ) {
             inBin = true
         }
