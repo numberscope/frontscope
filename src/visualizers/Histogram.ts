@@ -33,6 +33,8 @@ class FactorHistogramVisualizer extends VisualizerDefault {
     firstIndex = NaN
     mouseOver = true
 
+    binFactorArray: any = []
+
     params = {
         /** md
 - Bin Size: The size (number of Omega values) for each bin
@@ -138,32 +140,27 @@ class FactorHistogramVisualizer extends VisualizerDefault {
 
     // Create an array with the frequency of each number
     // of factors in the corresponding bins
-    binFactorArray(): number[] {
-        const binFactorArray = []
+    binFactorArraySetup() {
         const factorArray = this.factorArray()
         const largestValue = factorArray.reduce(
-            (a, b) => Math.max(a, b),
+            (a: number, b: number) => Math.max(a, b),
             -Infinity
         )
         for (let i = 0; i < this.binOf(largestValue) + 1; i++) {
-            binFactorArray.push(0)
+            this.binFactorArray.push(0)
         }
 
         for (let i = 0; i < factorArray.length; i++) {
-            binFactorArray[this.binOf(factorArray[i])]++
+            this.binFactorArray[this.binOf(factorArray[i])]++
         }
-
-        return binFactorArray
     }
 
     // Create a number that represents how
     // many pixels wide each bin should be
     binWidth(): number {
         // 0.95 Creates a small offset from the side of the screen
-        if (this.binFactorArray().length <= 30) {
-            return (
-                (0.95 * this.sketch.width) / this.binFactorArray().length - 1
-            )
+        if (this.binFactorArray.length <= 30) {
+            return (0.95 * this.sketch.width) / this.binFactorArray.length - 1
         } else {
             return (0.95 * this.sketch.width) / 30 - 1
         }
@@ -172,9 +169,8 @@ class FactorHistogramVisualizer extends VisualizerDefault {
     // Create a number that represents how many pixels high
     // each increase of one in the bin array should be
     height(): number {
-        const binFactorArray = this.binFactorArray()
-        const greatestValue = binFactorArray.reduce(
-            (a, b) => Math.max(a, b),
+        const greatestValue = this.binFactorArray.reduce(
+            (a: number, b: number) => Math.max(a, b),
             -Infinity
         )
         // magic number creates a small offset from the top of the screen
@@ -182,19 +178,37 @@ class FactorHistogramVisualizer extends VisualizerDefault {
     }
 
     draw() {
-        // These numbers provide the rgb values for the background color
+        if (this.binFactorArray.length == 0) {
+            this.binFactorArraySetup()
+        }
         // This is light blue
         this.sketch.background(176, 227, 255)
         this.sketch.textSize(0.02 * this.sketch.height)
         const height = this.height()
         const binWidth = this.binWidth()
-        const binFactorArray = this.binFactorArray()
         const largeOffsetScalar = 0.945 // padding between axes and edge
         const smallOffsetScalar = 0.996
         const largeOffsetNumber = (1 - largeOffsetScalar) * this.sketch.width
         const smallOffsetNumber = (1 - smallOffsetScalar) * this.sketch.width
         let binText = ''
         let binTextSize = 0
+
+        // Checks to see whether the mouse is in the bin drawn on the screen
+        let inBin = false
+        const mouseX = this.sketch.mouseX
+        const mouseY = this.sketch.mouseY
+        const binIndex = Math.floor((mouseX - largeOffsetNumber) / binWidth)
+        if (
+            mouseY
+                > largeOffsetScalar * this.sketch.height // below top
+                    - height * this.binFactorArray[binIndex]
+            // and above axis
+            && mouseY < largeOffsetScalar * this.sketch.height
+        ) {
+            inBin = true
+        }
+
+        // Draw the axes
         this.sketch.line(
             // Draws the y-axis
             largeOffsetNumber,
@@ -211,15 +225,20 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         )
 
         for (let i = 0; i < 30; i++) {
+            if (inBin && i == binIndex) {
+                this.sketch.fill(200, 200, 200)
+            } else {
+                this.sketch.fill('white')
+            }
             this.sketch.rect(
                 // Draws the rectangles for the Histogram
                 largeOffsetNumber + binWidth * i + 1,
                 largeOffsetScalar * this.sketch.height
-                    - height * binFactorArray[i],
+                    - height * this.binFactorArray[i],
                 binWidth - 2,
-                height * binFactorArray[i]
+                height * this.binFactorArray[i]
             )
-            if (binFactorArray.length > 30) {
+            if (this.binFactorArray.length > 30) {
                 this.sketch.text(
                     'Too many unique factors.',
                     this.sketch.width * 0.75,
@@ -231,6 +250,8 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                     this.sketch.height * 0.05
                 )
             }
+
+            this.sketch.fill('black') // text must be filled
             if (this.binSize != 1) {
                 // Draws text in the case the bin size is not 1
                 binText = (
@@ -297,77 +318,66 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             }
         }
 
-        const mouseX = this.sketch.mouseX
-        const mouseY = this.sketch.mouseY
-        const binIndex = Math.floor((mouseX - largeOffsetNumber) / binWidth)
-        let inBin = false
-        const boxWidth = this.sketch.width * 0.15
-        const textVerticalSpacing = this.sketch.textAscent()
-        const boxHeight = textVerticalSpacing * 2.3
-
-        // Checks to see whether the mouse is in the bin drawn on the screen
-        if (
-            mouseY
-                > largeOffsetScalar * this.sketch.height // below top
-                    - height * binFactorArray[binIndex]
-            // and above axis
-            && mouseY < largeOffsetScalar * this.sketch.height
-        ) {
-            inBin = true
-        }
-
         // Draws the box and the text inside the box
         if (inBin === true && this.mouseOver === true) {
+            const boxWidth = this.sketch.width * 0.15
+            const textVerticalSpacing = this.sketch.textAscent()
+            const boxHeight = textVerticalSpacing * 2.3
+            const boxX = Math.min(mouseX, this.sketch.width - boxWidth)
+            const boxY = mouseY - boxHeight
+            const boxRadius = Math.floor(smallOffsetNumber)
+            const boxOffset = smallOffsetNumber
+            this.sketch.fill('white')
             this.sketch.rect(
-                mouseX,
-                mouseY - boxHeight,
+                boxX,
+                boxY,
                 boxWidth,
                 boxHeight,
-                Math.floor(smallOffsetNumber),
-                Math.floor(smallOffsetNumber),
-                Math.floor(smallOffsetNumber),
-                0
+                boxRadius,
+                boxRadius,
+                boxRadius,
+                boxRadius
             )
 
             // Draws the text for the number of prime factors
             // that bin represents
+            this.sketch.fill('black')
             this.sketch.text(
                 'Factors:',
-                mouseX + smallOffsetNumber,
-                mouseY - boxHeight + textVerticalSpacing
+                boxX + boxOffset,
+                boxY + textVerticalSpacing
             )
             if (this.binSize != 1) {
-                binText =
+                binText = (
                     this.binSize * binIndex
                     + '-'
                     + (this.binSize * (binIndex + 1) - 1)
+                ).toString()
             } else {
                 binText = binIndex.toString()
             }
-            binTextSize =
-                this.sketch.textWidth(binText) + 3 * smallOffsetNumber
+            binTextSize = this.sketch.textWidth(binText) + 3 * boxOffset
             this.sketch.text(
                 binText,
-                mouseX + boxWidth - binTextSize,
-                mouseY - boxHeight + textVerticalSpacing
+                boxX + boxWidth - binTextSize,
+                boxY + textVerticalSpacing
             )
 
             // Draws the text for the number of elements of the sequence
             // in the bin
             this.sketch.text(
                 'Height:',
-                mouseX + smallOffsetNumber,
-                mouseY - boxHeight + textVerticalSpacing * 2
+                boxX + boxOffset,
+                boxY + textVerticalSpacing * 2
             )
+            const heightText = this.binFactorArray[binIndex].toString()
             this.sketch.text(
-                binFactorArray[binIndex],
-                mouseX
+                heightText,
+                boxX
                     + boxWidth
-                    - 3 * smallOffsetNumber
-                    - this.sketch.textWidth(
-                        binFactorArray[binIndex].toString()
-                    ),
-                mouseY - boxHeight + textVerticalSpacing * 2
+                    - 3 * boxOffset
+                    - this.sketch.textWidth(heightText),
+                boxY + textVerticalSpacing * 2
             )
         }
     }
