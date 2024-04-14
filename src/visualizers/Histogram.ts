@@ -33,7 +33,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
     firstIndex = NaN
     mouseOver = true
 
-    binFactorArray: any = []
+    binFactorArray: number[] = []
 
     params = {
         /** md
