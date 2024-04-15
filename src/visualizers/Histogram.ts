@@ -198,10 +198,15 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         const mouseX = this.sketch.mouseX
         const mouseY = this.sketch.mouseY
         const binIndex = Math.floor((mouseX - largeOffsetNumber) / binWidth)
+        const xAxisHeight = largeOffsetScalar * this.sketch.height
         if (
             mouseY
-                > largeOffsetScalar * this.sketch.height // below top
-                    - height * this.binFactorArray[binIndex]
+                // hard to mouseover tiny bars, so minimum height to catch mouse
+                > Math.min(
+                    largeOffsetScalar * this.sketch.height
+                        - height * this.binFactorArray[binIndex],
+                    xAxisHeight - 10
+                )
             // and above axis
             && mouseY < largeOffsetScalar * this.sketch.height
         ) {
@@ -209,19 +214,20 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         }
 
         // Draw the axes
+        const yAxisPosition = largeOffsetNumber
         this.sketch.line(
             // Draws the y-axis
-            largeOffsetNumber,
+            yAxisPosition,
             0,
-            largeOffsetNumber,
+            yAxisPosition,
             this.sketch.height
         )
         this.sketch.line(
             // Draws the x-axis
             0,
-            largeOffsetScalar * this.sketch.height,
+            xAxisHeight,
             this.sketch.width,
-            largeOffsetScalar * this.sketch.height
+            xAxisHeight
         )
 
         for (let i = 0; i < 30; i++) {
@@ -323,6 +329,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             const boxWidth = this.sketch.width * 0.15
             const textVerticalSpacing = this.sketch.textAscent()
             const boxHeight = textVerticalSpacing * 2.3
+            // don't want box to wander past right edge of canvas
             const boxX = Math.min(mouseX, this.sketch.width - boxWidth)
             const boxY = mouseY - boxHeight
             const boxRadius = Math.floor(smallOffsetNumber)
