@@ -177,12 +177,97 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         return (0.9 * this.sketch.height) / greatestValue
     }
 
+    // check if mouse is in the given bin
+    mouseOverInBin(xAxisHeight: number, binIndex: number): boolean {
+        if (
+            this.sketch.mouseY
+                // hard to mouseover tiny bars; min height to catch mouse
+                > Math.min(
+                    xAxisHeight
+                        - this.height() * this.binFactorArray[binIndex],
+                    xAxisHeight - 10
+                )
+            // and above axis
+            && this.sketch.mouseY < xAxisHeight
+        ) {
+            return true
+        }
+        return false
+    }
+
+    drawHoverBox(binIndex: number, offset: number) {
+        const mouseX = this.sketch.mouseX
+        const mouseY = this.sketch.mouseY
+        const boxWidth = this.sketch.width * 0.15
+        const textVerticalSpacing = this.sketch.textAscent()
+        const boxHeight = textVerticalSpacing * 2.3
+        // don't want box to wander past right edge of canvas
+        const boxX = Math.min(mouseX, this.sketch.width - boxWidth)
+        const boxY = mouseY - boxHeight
+        const boxOffset = offset
+        const boxRadius = Math.floor(boxOffset)
+
+        // create the box itself
+        this.sketch.fill('white')
+        this.sketch.rect(
+            boxX,
+            boxY,
+            boxWidth,
+            boxHeight,
+            boxRadius,
+            boxRadius,
+            boxRadius,
+            boxRadius
+        )
+
+        // Draws the text for the number of prime factors
+        // that bin represents
+        this.sketch.fill('black')
+        this.sketch.text(
+            'Factors:',
+            boxX + boxOffset,
+            boxY + textVerticalSpacing
+        )
+        let binText = ''
+        if (this.binSize != 1) {
+            binText = (
+                this.binSize * binIndex
+                + '-'
+                + (this.binSize * (binIndex + 1) - 1)
+            ).toString()
+        } else {
+            binText = binIndex.toString()
+        }
+        const binTextSize = this.sketch.textWidth(binText) + 3 * boxOffset
+        this.sketch.text(
+            binText,
+            boxX + boxWidth - binTextSize,
+            boxY + textVerticalSpacing
+        )
+
+        // Draws the text for the number of elements of the sequence
+        // in the bin
+        this.sketch.text(
+            'Height:',
+            boxX + boxOffset,
+            boxY + textVerticalSpacing * 2
+        )
+        const heightText = this.binFactorArray[binIndex].toString()
+        this.sketch.text(
+            heightText,
+            boxX
+                + boxWidth
+                - 3 * boxOffset
+                - this.sketch.textWidth(heightText),
+            boxY + textVerticalSpacing * 2
+        )
+    }
+
     draw() {
         if (this.binFactorArray.length == 0) {
             this.binFactorArraySetup()
         }
-        // This is light blue
-        this.sketch.background(176, 227, 255)
+        this.sketch.background(176, 227, 255) // light blue
         this.sketch.textSize(0.02 * this.sketch.height)
         const height = this.height()
         const binWidth = this.binWidth()
@@ -190,29 +275,15 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         const smallOffsetScalar = 0.996
         const largeOffsetNumber = (1 - largeOffsetScalar) * this.sketch.width
         const smallOffsetNumber = (1 - smallOffsetScalar) * this.sketch.width
-        let binText = ''
-        let binTextSize = 0
+        const binIndex = Math.floor(
+            (this.sketch.mouseX - largeOffsetNumber) / binWidth
+        )
+        const xAxisHeight = largeOffsetScalar * this.sketch.height
 
         // Checks to see whether the mouse is in the bin drawn on the screen
-        const mouseX = this.sketch.mouseX
-        const mouseY = this.sketch.mouseY
-        const binIndex = Math.floor((mouseX - largeOffsetNumber) / binWidth)
-        const xAxisHeight = largeOffsetScalar * this.sketch.height
         let inBin = false
         if (this.mouseOver) {
-            if (
-                mouseY
-                    // hard to mouseover tiny bars; min height to catch mouse
-                    > Math.min(
-                        largeOffsetScalar * this.sketch.height
-                            - height * this.binFactorArray[binIndex],
-                        xAxisHeight - 10
-                    )
-                // and above axis
-                && mouseY < largeOffsetScalar * this.sketch.height
-            ) {
-                inBin = true
-            }
+            inBin = this.mouseOverInBin(xAxisHeight, binIndex)
         }
 
         // Draw the axes
@@ -262,7 +333,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             this.sketch.fill('black') // text must be filled
             if (this.binSize != 1) {
                 // Draws text in the case the bin size is not 1
-                binText = (
+                const binText = (
                     this.binSize * i
                     + ' - '
                     + (this.binSize * (i + 1) - 1)
@@ -274,7 +345,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                 )
             } else {
                 // Draws text in the case the bin size is 1
-                binText = i.toString()
+                const binText = i.toString()
                 this.sketch.text(
                     binText,
                     largeOffsetNumber + (binWidth * (i + 1) - binWidth / 2),
@@ -326,69 +397,11 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             }
         }
 
-        // Draws the box and the text inside the box
+        // If mouse interaction, draw hover box
         if (this.mouseOver === true && inBin === true) {
-            const boxWidth = this.sketch.width * 0.15
-            const textVerticalSpacing = this.sketch.textAscent()
-            const boxHeight = textVerticalSpacing * 2.3
-            // don't want box to wander past right edge of canvas
-            const boxX = Math.min(mouseX, this.sketch.width - boxWidth)
-            const boxY = mouseY - boxHeight
-            const boxRadius = Math.floor(smallOffsetNumber)
-            const boxOffset = smallOffsetNumber
-            this.sketch.fill('white')
-            this.sketch.rect(
-                boxX,
-                boxY,
-                boxWidth,
-                boxHeight,
-                boxRadius,
-                boxRadius,
-                boxRadius,
-                boxRadius
-            )
-
-            // Draws the text for the number of prime factors
-            // that bin represents
-            this.sketch.fill('black')
-            this.sketch.text(
-                'Factors:',
-                boxX + boxOffset,
-                boxY + textVerticalSpacing
-            )
-            if (this.binSize != 1) {
-                binText = (
-                    this.binSize * binIndex
-                    + '-'
-                    + (this.binSize * (binIndex + 1) - 1)
-                ).toString()
-            } else {
-                binText = binIndex.toString()
-            }
-            binTextSize = this.sketch.textWidth(binText) + 3 * boxOffset
-            this.sketch.text(
-                binText,
-                boxX + boxWidth - binTextSize,
-                boxY + textVerticalSpacing
-            )
-
-            // Draws the text for the number of elements of the sequence
-            // in the bin
-            this.sketch.text(
-                'Height:',
-                boxX + boxOffset,
-                boxY + textVerticalSpacing * 2
-            )
-            const heightText = this.binFactorArray[binIndex].toString()
-            this.sketch.text(
-                heightText,
-                boxX
-                    + boxWidth
-                    - 3 * boxOffset
-                    - this.sketch.textWidth(heightText),
-                boxY + textVerticalSpacing * 2
-            )
+            this.drawHoverBox(binIndex, smallOffsetNumber)
         }
+        // If no mouse interaction, don't loop
         if (this.mouseOver === false) {
             this.sketch.noLoop()
         }
