@@ -194,23 +194,25 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         let binTextSize = 0
 
         // Checks to see whether the mouse is in the bin drawn on the screen
-        let inBin = false
         const mouseX = this.sketch.mouseX
         const mouseY = this.sketch.mouseY
         const binIndex = Math.floor((mouseX - largeOffsetNumber) / binWidth)
         const xAxisHeight = largeOffsetScalar * this.sketch.height
-        if (
-            mouseY
-                // hard to mouseover tiny bars, so minimum height to catch mouse
-                > Math.min(
-                    largeOffsetScalar * this.sketch.height
-                        - height * this.binFactorArray[binIndex],
-                    xAxisHeight - 10
-                )
-            // and above axis
-            && mouseY < largeOffsetScalar * this.sketch.height
-        ) {
-            inBin = true
+        let inBin = false
+        if (this.mouseOver) {
+            if (
+                mouseY
+                    // hard to mouseover tiny bars; min height to catch mouse
+                    > Math.min(
+                        largeOffsetScalar * this.sketch.height
+                            - height * this.binFactorArray[binIndex],
+                        xAxisHeight - 10
+                    )
+                // and above axis
+                && mouseY < largeOffsetScalar * this.sketch.height
+            ) {
+                inBin = true
+            }
         }
 
         // Draw the axes
@@ -231,7 +233,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         )
 
         for (let i = 0; i < 30; i++) {
-            if (inBin && i == binIndex) {
+            if (this.mouseOver && inBin && i == binIndex) {
                 this.sketch.fill(200, 200, 200)
             } else {
                 this.sketch.fill('white')
@@ -325,7 +327,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         }
 
         // Draws the box and the text inside the box
-        if (inBin === true && this.mouseOver === true) {
+        if (this.mouseOver === true && inBin === true) {
             const boxWidth = this.sketch.width * 0.15
             const textVerticalSpacing = this.sketch.textAscent()
             const boxHeight = textVerticalSpacing * 2.3
