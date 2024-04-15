@@ -389,6 +389,9 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                 boxY + textVerticalSpacing * 2
             )
         }
+        if (this.mouseOver === false) {
+            this.sketch.noLoop()
+        }
     }
 }
 
