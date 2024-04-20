@@ -1,7 +1,7 @@
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {P5Visualizer} from './P5Visualizer'
 import type p5 from 'p5'
-import {VisualizerDefault} from './VisualizerDefault'
 
 const min = Math.min
 
@@ -18,7 +18,7 @@ between the terms in the row above, for as many rows as you like.
 ## Parameters
 **/
 
-class Differences extends VisualizerDefault {
+class Differences extends P5Visualizer {
     name = 'Differences'
 
     n = 20
@@ -60,21 +60,26 @@ class Differences extends VisualizerDefault {
         return status
     }
 
-    initialize(sketch: p5, seq: SequenceInterface): void {
-        super.initialize(sketch, seq)
+    inhabit(element: HTMLElement): void {
+        super.inhabit(element)
         if (!this.levels) {
             this.levels = this.n
             this.refreshParams()
         }
-        if (seq.last - seq.first + 1 < this.levels) {
+    }
+
+    setup() {
+        super.setup()
+        if (this.seq.last - this.seq.first + 1 < this.levels) {
             throw Error(
-                `Sequence ${seq.name} has too few entries `
+                `Sequence ${this.seq.name} has too few entries `
                     + `for ${this.levels} levels.`
             )
         }
     }
 
     drawDifferences(n: number, lvls: number, sequence: SequenceInterface) {
+        if (!this.sketch) return
         //changed background color to grey since you can't see what's going on
         this.sketch.background('black')
 
@@ -122,9 +127,10 @@ class Differences extends VisualizerDefault {
         }
     }
 
-    draw() {
+    draw(sketch: p5) {
+        super.draw(sketch)
         this.drawDifferences(this.n, this.levels, this.seq)
-        this.sketch.noLoop()
+        sketch.noLoop()
     }
 }
 

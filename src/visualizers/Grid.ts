@@ -1,9 +1,13 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import {VisualizerDefault} from '@/visualizers/VisualizerDefault'
+import {P5Visualizer} from '@/visualizers/P5Visualizer'
 import {bigabs, floorSqrt, modulo} from '@/shared/math'
 import type {ParamInterface} from '@/shared/Paramable'
-import type {Factorization} from '@/sequences/SequenceInterface'
+import type {
+    SequenceInterface,
+    Factorization,
+} from '@/sequences/SequenceInterface'
 import simpleFactor from '@/sequences/simpleFactor'
+import type p5 from 'p5'
 
 /** md
 # Grid Visualizer
@@ -412,7 +416,7 @@ const propertyIndicatorFunction: {
     Semi_Prime: isSemiPrime,
 }
 
-class Grid extends VisualizerDefault {
+class Grid extends P5Visualizer {
     name = 'Grid'
 
     // Grid variables
@@ -551,8 +555,8 @@ This parameter is only available when the "Show Numbers" parameter is checked.
         },
     }
 
-    constructor() {
-        super()
+    constructor(seq: SequenceInterface) {
+        super(seq)
         /** md
 ### Property 1, 2, etc.:  Properties to display by coloring cells
 
@@ -613,10 +617,6 @@ earlier ones that use the _same_ style.)
         }
     }
 
-    checkParameters() {
-        return super.checkParameters()
-    }
-
     assignParameters(): void {
         super.assignParameters()
 
@@ -633,6 +633,10 @@ earlier ones that use the _same_ style.)
     }
 
     setup(): void {
+        super.setup()
+        if (!this.sketch) {
+            throw 'Attempt to show Grid before injecting into element'
+        }
         this.setPresets()
         this.setOverridingSettings()
 
@@ -660,7 +664,8 @@ earlier ones that use the _same_ style.)
         this.setPathVariables(this.sideOfGrid)
     }
 
-    draw(): void {
+    draw(sketch: p5): void {
+        super.draw(sketch)
         this.currentIndex = Math.max(this.startingIndex, this.seq.first)
         let augmentForRowReset = 0n
 
@@ -685,7 +690,7 @@ earlier ones that use the _same_ style.)
             this.currentIndex++
             this.moveCoordinatesUsingPath(iteration)
         }
-        this.sketch.noLoop()
+        sketch.noLoop()
     }
 
     setPresets() {
@@ -756,7 +761,7 @@ earlier ones that use the _same_ style.)
     }
 
     drawSquare(props: number[], size: number, offset = 0) {
-        if (this.colorProperties(props)) {
+        if (this.sketch && this.colorProperties(props)) {
             this.sketch.rect(this.x + offset, this.y + offset, size, size)
         }
     }
@@ -786,7 +791,7 @@ earlier ones that use the _same_ style.)
                     this.propertyObjects[i].aux
                 )
             ) {
-                this.sketch.fill(this.propertyObjects[i].color)
+                this.sketch?.fill(this.propertyObjects[i].color)
                 retval = true
             }
         }
@@ -822,7 +827,7 @@ earlier ones that use the _same_ style.)
     showNumber() {
         const currentNumberAsString = this.currentNumber.toString()
 
-        if (this.showNumbers) {
+        if (this.sketch && this.showNumbers) {
             this.sketch.fill(this.numberColor)
             this.sketch.text(
                 currentNumberAsString,

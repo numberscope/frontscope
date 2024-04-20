@@ -1,5 +1,6 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import {VisualizerDefault} from './VisualizerDefault'
+import {P5Visualizer} from './P5Visualizer'
+import type p5 from 'p5'
 
 /** md
 # Factor Histogram
@@ -25,7 +26,7 @@ have a corresponding value of Omega.
 ## Parameters
 **/
 
-class FactorHistogramVisualizer extends VisualizerDefault {
+class FactorHistogramVisualizer extends P5Visualizer {
     name = 'Factor Histogram'
 
     binSize = 1
@@ -158,44 +159,43 @@ class FactorHistogramVisualizer extends VisualizerDefault {
     // Create a number that represents how
     // many pixels wide each bin should be
     binWidth(): number {
+        const width = this.sketch?.width ?? 0
         // 0.95 Creates a small offset from the side of the screen
         if (this.binFactorArray.length <= 30) {
-            return (0.95 * this.sketch.width) / this.binFactorArray.length - 1
+            return (0.95 * width) / this.binFactorArray.length - 1
         } else {
-            return (0.95 * this.sketch.width) / 30 - 1
+            return (0.95 * width) / 30 - 1
         }
     }
 
     // Create a number that represents how many pixels high
     // each increase of one in the bin array should be
     height(): number {
+        const height = this.sketch?.height ?? 0
         const greatestValue = this.binFactorArray.reduce(
             (a: number, b: number) => Math.max(a, b),
             -Infinity
         )
         // magic number creates a small offset from the top of the screen
-        return (0.9 * this.sketch.height) / greatestValue
+        return (0.9 * height) / greatestValue
     }
 
     // check if mouse is in the given bin
     mouseOverInBin(xAxisHeight: number, binIndex: number): boolean {
-        if (
-            this.sketch.mouseY
-                // hard to mouseover tiny bars; min height to catch mouse
+        const y = this.sketch?.mouseY ?? 0
+        // hard to mouseover tiny bars; min height to catch mouse
+        return (
+            y
                 > Math.min(
                     xAxisHeight
                         - this.height() * this.binFactorArray[binIndex],
                     xAxisHeight - 10
-                )
-            // and above axis
-            && this.sketch.mouseY < xAxisHeight
-        ) {
-            return true
-        }
-        return false
+                ) && y < xAxisHeight
+        ) // and above axis
     }
 
     drawHoverBox(binIndex: number, offset: number) {
+        if (!this.sketch) return
         const mouseX = this.sketch.mouseX
         const mouseY = this.sketch.mouseY
         const boxWidth = this.sketch.width * 0.15
@@ -263,22 +263,23 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         )
     }
 
-    draw() {
+    draw(sketch: p5) {
+        super.draw(sketch)
         if (this.binFactorArray.length == 0) {
             this.binFactorArraySetup()
         }
-        this.sketch.background(176, 227, 255) // light blue
-        this.sketch.textSize(0.02 * this.sketch.height)
+        sketch.background(176, 227, 255) // light blue
+        sketch.textSize(0.02 * sketch.height)
         const height = this.height()
         const binWidth = this.binWidth()
         const largeOffsetScalar = 0.945 // padding between axes and edge
         const smallOffsetScalar = 0.996
-        const largeOffsetNumber = (1 - largeOffsetScalar) * this.sketch.width
-        const smallOffsetNumber = (1 - smallOffsetScalar) * this.sketch.width
+        const largeOffsetNumber = (1 - largeOffsetScalar) * sketch.width
+        const smallOffsetNumber = (1 - smallOffsetScalar) * sketch.width
         const binIndex = Math.floor(
-            (this.sketch.mouseX - largeOffsetNumber) / binWidth
+            (sketch.mouseX - largeOffsetNumber) / binWidth
         )
-        const xAxisHeight = largeOffsetScalar * this.sketch.height
+        const xAxisHeight = largeOffsetScalar * sketch.height
 
         // Checks to see whether the mouse is in the bin drawn on the screen
         let inBin = false
@@ -288,49 +289,39 @@ class FactorHistogramVisualizer extends VisualizerDefault {
 
         // Draw the axes
         const yAxisPosition = largeOffsetNumber
-        this.sketch.line(
-            // Draws the y-axis
-            yAxisPosition,
-            0,
-            yAxisPosition,
-            this.sketch.height
-        )
-        this.sketch.line(
-            // Draws the x-axis
-            0,
-            xAxisHeight,
-            this.sketch.width,
-            xAxisHeight
-        )
+        // Draw the y-axis
+        sketch.line(yAxisPosition, 0, yAxisPosition, sketch.height)
+        // Draw the x-axis
+        sketch.line(0, xAxisHeight, sketch.width, xAxisHeight)
 
         for (let i = 0; i < 30; i++) {
             if (this.mouseOver && inBin && i == binIndex) {
-                this.sketch.fill(200, 200, 200)
+                sketch.fill(200, 200, 200)
             } else {
-                this.sketch.fill('white')
+                sketch.fill('white')
             }
-            this.sketch.rect(
-                // Draws the rectangles for the Histogram
+            // Draw the rectangles for the Histogram
+            sketch.rect(
                 largeOffsetNumber + binWidth * i + 1,
-                largeOffsetScalar * this.sketch.height
+                largeOffsetScalar * sketch.height
                     - height * this.binFactorArray[i],
                 binWidth - 2,
                 height * this.binFactorArray[i]
             )
             if (this.binFactorArray.length > 30) {
-                this.sketch.text(
+                sketch.text(
                     'Too many unique factors.',
-                    this.sketch.width * 0.75,
-                    this.sketch.height * 0.03
+                    sketch.width * 0.75,
+                    sketch.height * 0.03
                 )
-                this.sketch.text(
+                sketch.text(
                     'Displaying the first 30',
-                    this.sketch.width * 0.75,
-                    this.sketch.height * 0.05
+                    sketch.width * 0.75,
+                    sketch.height * 0.05
                 )
             }
 
-            this.sketch.fill('black') // text must be filled
+            sketch.fill('black') // text must be filled
             if (this.binSize != 1) {
                 // Draws text in the case the bin size is not 1
                 const binText = (
@@ -338,25 +329,23 @@ class FactorHistogramVisualizer extends VisualizerDefault {
                     + ' - '
                     + (this.binSize * (i + 1) - 1)
                 ).toString()
-                this.sketch.text(
+                sketch.text(
                     binText,
                     1 - largeOffsetScalar + binWidth * (i + 1 / 2),
-                    smallOffsetScalar * this.sketch.width
+                    smallOffsetScalar * sketch.width
                 )
             } else {
                 // Draws text in the case the bin size is 1
                 const binText = i.toString()
-                this.sketch.text(
+                sketch.text(
                     binText,
                     largeOffsetNumber + (binWidth * (i + 1) - binWidth / 2),
-                    smallOffsetScalar * this.sketch.width
+                    smallOffsetScalar * sketch.width
                 )
             }
         }
 
-        let tickHeight = Math.floor(
-            (0.95 * this.sketch.height) / (height * 5)
-        )
+        let tickHeight = Math.floor((0.95 * sketch.height) / (height * 5))
 
         // Sets the tickHeight to 1 if the calculated value is less than 1
         if (tickHeight === 0) {
@@ -365,13 +354,13 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         // Draws the markings on the Y-axis
         for (let i = 0; i < 9; i++) {
             // Draws the tick marks
-            this.sketch.line(
+            sketch.line(
                 (largeOffsetNumber * 3) / 4,
-                this.sketch.height
+                sketch.height
                     - largeOffsetNumber
                     - tickHeight * height * (i + 1),
                 (3 * largeOffsetNumber) / 2,
-                this.sketch.height
+                sketch.height
                     - largeOffsetNumber
                     - tickHeight * height * (i + 1)
             )
@@ -384,16 +373,12 @@ class FactorHistogramVisualizer extends VisualizerDefault {
             }
             // Avoid placing text that will get cut off
             const tickYPosition =
-                this.sketch.height
+                sketch.height
                 - largeOffsetNumber
                 - tickHeight * height * (i + 1)
                 + (3 * smallOffsetNumber) / 2
-            if (tickYPosition > this.sketch.textAscent()) {
-                this.sketch.text(
-                    tickHeight * (i + 1),
-                    tickNudge,
-                    tickYPosition
-                )
+            if (tickYPosition > sketch.textAscent()) {
+                sketch.text(tickHeight * (i + 1), tickNudge, tickYPosition)
             }
         }
 
@@ -403,7 +388,7 @@ class FactorHistogramVisualizer extends VisualizerDefault {
         }
         // If no mouse interaction, don't loop
         if (this.mouseOver === false) {
-            this.sketch.noLoop()
+            sketch.noLoop()
         }
     }
 }

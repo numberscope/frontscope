@@ -1,6 +1,6 @@
 import p5 from 'p5'
 import {modulo} from '../shared/math'
-import {VisualizerDefault} from './VisualizerDefault'
+import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
 /** md
@@ -21,14 +21,20 @@ class Palette {
     textColor: p5.Color
 
     constructor(
-        sketch: p5,
+        sketch: p5 | undefined = undefined,
         hexList: string[] = [],
         hexBack = '#000000',
         hexText = '#FFFFFF'
     ) {
-        this.colorList = hexList.map(colorSpec => sketch.color(colorSpec))
-        this.backgroundColor = sketch.color(hexBack)
-        this.textColor = sketch.color(hexText)
+        if (sketch) {
+            this.colorList = hexList.map(colorSpec => sketch.color(colorSpec))
+            this.backgroundColor = sketch.color(hexBack)
+            this.textColor = sketch.color(hexText)
+        } else {
+            // Hacks because p5 gives us no way to make a color without a sketch
+            this.backgroundColor = {} as p5.Color
+            this.textColor = {} as p5.Color
+        }
     }
 }
 
@@ -43,7 +49,7 @@ enum ColorStyle {
 // or shrink over time;
 // circles fade to the outside
 
-class Chaos extends VisualizerDefault {
+class Chaos extends P5Visualizer {
     name = 'Chaos'
     corners = 4
     frac = 0.5
@@ -182,7 +188,7 @@ class Chaos extends VisualizerDefault {
     private walkerPositions: p5.Vector[] = []
 
     // colour palette
-    private currentPalette = new Palette(this.sketch)
+    private currentPalette = new Palette()
 
     checkParameters() {
         const status = super.checkParameters()
@@ -237,15 +243,17 @@ class Chaos extends VisualizerDefault {
         // creates corners of a polygon with given centre and radius
         const pts: p5.Vector[] = []
         for (let i = 0; i < this.corners; i++) {
-            const angle = this.sketch.radians(45 + (360 * i) / this.corners)
-            pts.push(p5.Vector.fromAngle(angle, radius).add(center))
+            const angle = this.sketch?.radians(45 + (360 * i) / this.corners)
+            pts.push(p5.Vector.fromAngle(angle ?? 0, radius).add(center))
         }
         return pts
     }
 
     setup() {
         super.setup()
-
+        if (!this.sketch) {
+            throw 'Attempt to show Chaos before injecting into element'
+        }
         // decide which palette to set by default
         // we need a colourpicker in the params eventually
         // right now this is a little arbitrary
@@ -376,8 +384,8 @@ class Chaos extends VisualizerDefault {
         this.sketch.strokeWeight(0)
     }
 
-    draw() {
-        super.draw()
+    draw(sketch: p5) {
+        super.draw(sketch)
 
         // we do pixelsPerFrame pixels each time through the draw cycle;
         // this speeds things up essentially
@@ -402,7 +410,7 @@ class Chaos extends VisualizerDefault {
             this.walkerPositions[myWalker].lerp(myCornerPosition, this.frac)
 
             // choose colour to mark position
-            let myColor = this.sketch.color(0)
+            let myColor = sketch.color(0)
             switch (this.colorStyle) {
                 case ColorStyle.Walker:
                     myColor = this.currentPalette.colorList[myWalker]
@@ -412,13 +420,13 @@ class Chaos extends VisualizerDefault {
                     break
                 case ColorStyle.Index:
                     if (this.seqLength < +Infinity) {
-                        myColor = this.sketch.lerpColor(
+                        myColor = sketch.lerpColor(
                             this.currentPalette.colorList[0],
                             this.currentPalette.colorList[1],
                             this.myIndex / this.seqLength
                         )
                     } else {
-                        myColor = this.sketch.lerpColor(
+                        myColor = sketch.lerpColor(
                             this.currentPalette.colorList[0],
                             this.currentPalette.colorList[1],
                             Number(
@@ -441,15 +449,15 @@ class Chaos extends VisualizerDefault {
             myColor.setAlpha(255 * this.alpha)
 
             // draw a circle
-            this.sketch.fill(myColor)
-            this.sketch.circle(
+            sketch.fill(myColor)
+            sketch.circle(
                 this.walkerPositions[myWalker].x,
                 this.walkerPositions[myWalker].y,
                 this.circSize
             )
         }
         // stop drawing if we exceed decreed terms
-        if (this.myIndex > this.last) this.sketch.noLoop()
+        if (this.myIndex > this.last) sketch.noLoop()
     }
 }
 

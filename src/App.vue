@@ -22,6 +22,8 @@
         --ns-footer-height: 9ex;
     }
     main {
+        display: flex;
+        flex-direction: column;
         min-height: calc(100vh - var(--ns-footer-height));
         font-family: Arial, Helvetica, sans-serif;
         -webkit-font-smoothing: antialiased;

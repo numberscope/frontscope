@@ -1,6 +1,5 @@
 import p5 from 'p5'
-import {VisualizerDefault} from './VisualizerDefault'
-import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
+import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 
@@ -18,7 +17,7 @@ straight segment. It displays the resulting polygonal path.
 
 // Turtle needs work
 // Throwing the same error on previous Numberscope website
-class Turtle extends VisualizerDefault implements VisualizerInterface {
+class Turtle extends P5Visualizer {
     name = 'Turtle'
     private rotMap = new Map<string, number>()
     domain = [0n, 1n, 2n, 3n, 4n]
@@ -121,8 +120,6 @@ class Turtle extends VisualizerDefault implements VisualizerInterface {
                 (Math.PI / 180) * this.range[i]
             )
         }
-
-        this.ready = true
     }
 
     checkParameters() {
@@ -141,6 +138,10 @@ class Turtle extends VisualizerDefault implements VisualizerInterface {
     }
 
     setup() {
+        super.setup()
+        if (!this.sketch) {
+            throw 'Attempt to show Turtle before injecting into element'
+        }
         this.X = this.sketch.width / 2
         this.Y = this.sketch.height / 2
         this.sketch.background(this.bgColor)
@@ -149,12 +150,13 @@ class Turtle extends VisualizerDefault implements VisualizerInterface {
         this.sketch.frameRate(30)
     }
 
-    draw() {
+    draw(sketch: p5) {
+        super.draw(sketch)
         const currElement = this.seq.getElement(this.currentIndex++)
         const angle = this.rotMap.get(currElement.toString())
 
         if (angle == undefined) {
-            this.sketch.noLoop()
+            sketch.noLoop()
             return
         }
 
@@ -165,8 +167,8 @@ class Turtle extends VisualizerDefault implements VisualizerInterface {
         this.X += this.stepSize * Math.cos(this.orientation)
         this.Y += this.stepSize * Math.sin(this.orientation)
 
-        this.sketch.line(oldX, oldY, this.X, this.Y)
-        if (this.currentIndex > this.seq.last) this.sketch.noLoop()
+        sketch.line(oldX, oldY, this.X, this.Y)
+        if (this.currentIndex > this.seq.last) sketch.noLoop()
     }
 }
 
