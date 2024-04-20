@@ -1,7 +1,6 @@
 import p5 from 'p5'
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
 # Turtle Visualizer
@@ -105,11 +104,9 @@ class Turtle extends P5Visualizer {
     private X = 0
     private Y = 0
 
-    initialize(sketch: p5, seq: SequenceInterface) {
-        this.sketch = sketch
-        this.seq = seq
-
-        this.currentIndex = seq.first
+    inhabit(element: HTMLElement) {
+        super.inhabit(element)
+        this.currentIndex = this.seq.first
         this.orientation = 0
         this.X = 0
         this.Y = 0
@@ -139,24 +136,22 @@ class Turtle extends P5Visualizer {
 
     setup() {
         super.setup()
-        if (!this.sketch) {
-            throw 'Attempt to show Turtle before injecting into element'
-        }
         this.X = this.sketch.width / 2
         this.Y = this.sketch.height / 2
-        this.sketch.background(this.bgColor)
-        this.sketch.stroke(this.strokeColor)
-        this.sketch.strokeWeight(this.strokeWeight)
-        this.sketch.frameRate(30)
+        this.sketch
+            .background(this.bgColor)
+            .stroke(this.strokeColor)
+            .strokeWeight(this.strokeWeight)
+            .frameRate(30)
     }
 
-    draw(sketch: p5) {
-        super.draw(sketch)
+    draw() {
+        super.draw()
         const currElement = this.seq.getElement(this.currentIndex++)
         const angle = this.rotMap.get(currElement.toString())
 
         if (angle == undefined) {
-            sketch.noLoop()
+            this.sketch.noLoop()
             return
         }
 
@@ -167,8 +162,8 @@ class Turtle extends P5Visualizer {
         this.X += this.stepSize * Math.cos(this.orientation)
         this.Y += this.stepSize * Math.sin(this.orientation)
 
-        sketch.line(oldX, oldY, this.X, this.Y)
-        if (this.currentIndex > this.seq.last) sketch.noLoop()
+        this.sketch.line(oldX, oldY, this.X, this.Y)
+        if (this.currentIndex > this.seq.last) this.sketch.noLoop()
     }
 }
 

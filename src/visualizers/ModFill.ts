@@ -50,8 +50,7 @@ class VizModFill extends P5Visualizer {
     }
 
     drawNew(sketch: p5, num: number, seq: SequenceInterface) {
-        const black = sketch.color(0)
-        sketch.fill(black)
+        sketch.fill(0)
         for (let mod = 1n; mod <= this.modDimension; mod++) {
             const s = seq.getElement(num)
             const x = Number(mod - 1n) * this.rectWidth
@@ -72,12 +71,12 @@ class VizModFill extends P5Visualizer {
         this.i = this.seq.first
     }
 
-    draw(sketch: p5) {
-        super.draw(sketch)
-        this.drawNew(sketch, this.i, this.seq)
+    draw() {
+        super.draw()
+        this.drawNew(this.sketch, this.i, this.seq)
         this.i++
         if (this.i == 1000 || this.i > this.seq.last) {
-            sketch.noLoop()
+            this.sketch.noLoop()
         }
     }
 }

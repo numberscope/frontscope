@@ -1,7 +1,5 @@
-import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
-import type p5 from 'p5'
 
 const min = Math.min
 
@@ -66,10 +64,6 @@ class Differences extends P5Visualizer {
             this.levels = this.n
             this.refreshParams()
         }
-    }
-
-    setup() {
-        super.setup()
         if (this.seq.last - this.seq.first + 1 < this.levels) {
             throw Error(
                 `Sequence ${this.seq.name} has too few entries `
@@ -78,26 +72,27 @@ class Differences extends P5Visualizer {
         }
     }
 
-    drawDifferences(n: number, lvls: number, sequence: SequenceInterface) {
-        if (!this.sketch) return
-        //changed background color to grey since you can't see what's going on
-        this.sketch.background('black')
-
+    draw() {
+        super.draw()
+        const sketch = this.sketch
+        const sequence = this.seq
         const fontSize = 20
-        this.sketch.textFont('Arial')
-        this.sketch.textSize(fontSize)
-        this.sketch.textStyle(this.sketch.BOLD)
         const xDelta = 50
         const yDelta = 50
         let firstX = 30
         const firstY = 30
-        this.sketch.colorMode(this.sketch.HSB, 255)
-        let myColor = this.sketch.color(100, 255, 150)
-        let hue
+        sketch
+            .background('black')
+            .textFont('Arial')
+            .textSize(fontSize)
+            .textStyle(sketch.BOLD)
+            .colorMode(sketch.HSB, 255)
+        let myColor = sketch.color(100, 255, 150)
+        let hue = 0
 
         const workingSequence = []
-        const end = min(sequence.first + n - 1, sequence.last)
-        const levels = min(lvls, end - this.first + 1)
+        const end = min(sequence.first + this.n - 1, sequence.last)
+        const levels = min(this.levels, end - this.first + 1)
 
         // workingSequence cannibalizes the first n elements
         for (let i = sequence.first; i <= end; i++) {
@@ -106,11 +101,11 @@ class Differences extends P5Visualizer {
 
         for (let i = 0; i < levels; i++) {
             hue = ((i * 255) / 6) % 255
-            myColor = this.sketch.color(hue, 150, 200)
-            this.sketch.fill(myColor)
+            myColor = sketch.color(hue, 150, 200)
+            sketch.fill(myColor)
             /* Draw the row, updating workingSequence: */
             for (let j = 0; j < workingSequence.length; j++) {
-                this.sketch.text(
+                sketch.text(
                     workingSequence[j].toString(),
                     firstX + j * xDelta,
                     firstY + i * yDelta
@@ -125,11 +120,6 @@ class Differences extends P5Visualizer {
             // Move the next row forward half an entry, for a pyramid shape.
             firstX = firstX + (1 / 2) * xDelta
         }
-    }
-
-    draw(sketch: p5) {
-        super.draw(sketch)
-        this.drawDifferences(this.n, this.levels, this.seq)
         sketch.noLoop()
     }
 }

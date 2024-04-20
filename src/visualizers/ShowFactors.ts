@@ -1,6 +1,5 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
-import type p5 from 'p5'
 
 /** md
 # Show Factors Visualizer
@@ -41,18 +40,20 @@ class ShowFactors extends P5Visualizer {
     }
     first = 0
 
-    draw(sketch: p5) {
-        super.draw(sketch)
-        sketch.background('black')
+    draw() {
+        super.draw()
+        const sketch = this.sketch
         const fontSize = 20
-        sketch.textFont('Arial')
-        sketch.textSize(fontSize)
-        sketch.textStyle(sketch.BOLD)
+        sketch
+            .background('black')
+            .textFont('Arial')
+            .textSize(fontSize)
+            .textStyle(sketch.BOLD)
+            .colorMode(sketch.HSB, 255)
         const xDelta = 50
         const yDelta = 50
         const firstX = 30
         const firstY = 30
-        sketch.colorMode(sketch.HSB, 255)
         let myColor = sketch.color(100, 255, 150)
         let hue
 
@@ -64,8 +65,9 @@ class ShowFactors extends P5Visualizer {
             const xCoord = firstX + (i - this.start) * xDelta
             hue = ((i * 255) / 6) % 255
             myColor = sketch.color(hue, 150, 200)
-            sketch.fill(myColor)
-            sketch.text(this.seq.getElement(i).toString(), xCoord, firstY)
+            sketch
+                .fill(myColor)
+                .text(this.seq.getElement(i).toString(), xCoord, firstY)
             const factors = this.seq.getFactors(i)
             if (factors) {
                 let j = 1

@@ -1,6 +1,5 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
-import type p5 from 'p5'
 
 /** md
 # Factor Histogram
@@ -159,7 +158,7 @@ class FactorHistogramVisualizer extends P5Visualizer {
     // Create a number that represents how
     // many pixels wide each bin should be
     binWidth(): number {
-        const width = this.sketch?.width ?? 0
+        const width = this.sketch.width
         // 0.95 Creates a small offset from the side of the screen
         if (this.binFactorArray.length <= 30) {
             return (0.95 * width) / this.binFactorArray.length - 1
@@ -171,7 +170,7 @@ class FactorHistogramVisualizer extends P5Visualizer {
     // Create a number that represents how many pixels high
     // each increase of one in the bin array should be
     height(): number {
-        const height = this.sketch?.height ?? 0
+        const height = this.sketch.height
         const greatestValue = this.binFactorArray.reduce(
             (a: number, b: number) => Math.max(a, b),
             -Infinity
@@ -182,7 +181,7 @@ class FactorHistogramVisualizer extends P5Visualizer {
 
     // check if mouse is in the given bin
     mouseOverInBin(xAxisHeight: number, binIndex: number): boolean {
-        const y = this.sketch?.mouseY ?? 0
+        const y = this.sketch.mouseY
         // hard to mouseover tiny bars; min height to catch mouse
         return (
             y
@@ -195,39 +194,37 @@ class FactorHistogramVisualizer extends P5Visualizer {
     }
 
     drawHoverBox(binIndex: number, offset: number) {
-        if (!this.sketch) return
-        const mouseX = this.sketch.mouseX
-        const mouseY = this.sketch.mouseY
-        const boxWidth = this.sketch.width * 0.15
-        const textVerticalSpacing = this.sketch.textAscent()
+        const sketch = this.sketch
+        const mouseX = sketch.mouseX
+        const mouseY = sketch.mouseY
+        const boxWidth = sketch.width * 0.15
+        const textVerticalSpacing = sketch.textAscent()
         const boxHeight = textVerticalSpacing * 2.3
         // don't want box to wander past right edge of canvas
-        const boxX = Math.min(mouseX, this.sketch.width - boxWidth)
+        const boxX = Math.min(mouseX, sketch.width - boxWidth)
         const boxY = mouseY - boxHeight
         const boxOffset = offset
         const boxRadius = Math.floor(boxOffset)
 
         // create the box itself
-        this.sketch.fill('white')
-        this.sketch.rect(
-            boxX,
-            boxY,
-            boxWidth,
-            boxHeight,
-            boxRadius,
-            boxRadius,
-            boxRadius,
-            boxRadius
-        )
+        sketch
+            .fill('white')
+            .rect(
+                boxX,
+                boxY,
+                boxWidth,
+                boxHeight,
+                boxRadius,
+                boxRadius,
+                boxRadius,
+                boxRadius
+            )
 
         // Draws the text for the number of prime factors
         // that bin represents
-        this.sketch.fill('black')
-        this.sketch.text(
-            'Factors:',
-            boxX + boxOffset,
-            boxY + textVerticalSpacing
-        )
+        sketch
+            .fill('black')
+            .text('Factors:', boxX + boxOffset, boxY + textVerticalSpacing)
         let binText = ''
         if (this.binSize != 1) {
             binText = (
@@ -238,8 +235,8 @@ class FactorHistogramVisualizer extends P5Visualizer {
         } else {
             binText = binIndex.toString()
         }
-        const binTextSize = this.sketch.textWidth(binText) + 3 * boxOffset
-        this.sketch.text(
+        const binTextSize = sketch.textWidth(binText) + 3 * boxOffset
+        sketch.text(
             binText,
             boxX + boxWidth - binTextSize,
             boxY + textVerticalSpacing
@@ -247,24 +244,22 @@ class FactorHistogramVisualizer extends P5Visualizer {
 
         // Draws the text for the number of elements of the sequence
         // in the bin
-        this.sketch.text(
+        sketch.text(
             'Height:',
             boxX + boxOffset,
             boxY + textVerticalSpacing * 2
         )
         const heightText = this.binFactorArray[binIndex].toString()
-        this.sketch.text(
+        sketch.text(
             heightText,
-            boxX
-                + boxWidth
-                - 3 * boxOffset
-                - this.sketch.textWidth(heightText),
+            boxX + boxWidth - 3 * boxOffset - sketch.textWidth(heightText),
             boxY + textVerticalSpacing * 2
         )
     }
 
-    draw(sketch: p5) {
-        super.draw(sketch)
+    draw() {
+        super.draw()
+        const sketch = this.sketch
         if (this.binFactorArray.length == 0) {
             this.binFactorArraySetup()
         }

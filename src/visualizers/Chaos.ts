@@ -243,17 +243,14 @@ class Chaos extends P5Visualizer {
         // creates corners of a polygon with given centre and radius
         const pts: p5.Vector[] = []
         for (let i = 0; i < this.corners; i++) {
-            const angle = this.sketch?.radians(45 + (360 * i) / this.corners)
-            pts.push(p5.Vector.fromAngle(angle ?? 0, radius).add(center))
+            const angle = this.sketch.radians(45 + (360 * i) / this.corners)
+            pts.push(p5.Vector.fromAngle(angle, radius).add(center))
         }
         return pts
     }
 
     setup() {
         super.setup()
-        if (!this.sketch) {
-            throw 'Attempt to show Chaos before injecting into element'
-        }
         // decide which palette to set by default
         // we need a colourpicker in the params eventually
         // right now this is a little arbitrary
@@ -364,11 +361,12 @@ class Chaos extends P5Visualizer {
 
         // Draw corner labels if desired
         if (this.showLabels) {
-            this.sketch.stroke(this.currentPalette.textColor)
-            this.sketch.fill(this.currentPalette.textColor)
-            this.sketch.strokeWeight(textStroke)
-            this.sketch.textSize(textSize)
-            this.sketch.textAlign(this.sketch.CENTER, this.sketch.CENTER)
+            this.sketch
+                .stroke(this.currentPalette.textColor)
+                .fill(this.currentPalette.textColor)
+                .strokeWeight(textStroke)
+                .textSize(textSize)
+                .textAlign(this.sketch.CENTER, this.sketch.CENTER)
             // Get appropriate locations for the labels
             const cornersLabels = this.chaosWindow(
                 center,
@@ -384,9 +382,9 @@ class Chaos extends P5Visualizer {
         this.sketch.strokeWeight(0)
     }
 
-    draw(sketch: p5) {
-        super.draw(sketch)
-
+    draw() {
+        super.draw()
+        const sketch = this.sketch
         // we do pixelsPerFrame pixels each time through the draw cycle;
         // this speeds things up essentially
         const pixelsLimit =

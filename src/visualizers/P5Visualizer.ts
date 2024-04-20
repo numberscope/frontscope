@@ -36,10 +36,23 @@ const p5methods: P5Methods[] = Object.getOwnPropertyNames(
 
 // Base class for implementing Visualizers that use p5.js
 export class P5Visualizer extends WithP5 implements VisualizerInterface {
+    private _sketch?: p5
+    private _canvas?: p5.Renderer
+
     name = 'P5-based Visualizer'
     within?: HTMLElement
-    sketch?: p5
-    canvas?: p5.Renderer
+    get sketch(): p5 {
+        if (!this._sketch) {
+            throw 'Attempt to access p5 sketch while Visualizer is unmounted.'
+        }
+        return this._sketch
+    }
+    get canvas(): p5.Renderer {
+        if (!this._canvas) {
+            throw 'Attempt to access canvas while Visualizer is unmounted.'
+        }
+        return this._canvas
+    }
     seq: SequenceInterface
 
     /***
@@ -64,10 +77,20 @@ export class P5Visualizer extends WithP5 implements VisualizerInterface {
             )
         }
         this.within = element
-        this.sketch = new p5(sketch => {
-            this.sketch = sketch
-            // A little bit of gymnastics to set all of the p5 methods
-            // in the sketch that exist on the Visualizser:
+        this._sketch = new p5(sketch => {
+            this._sketch = sketch // must assign here,  as setup is called
+            // before the `new p5` returns; I think that makes the outer
+            // (re-) assigning of that result to this._sketch redundant, but
+            // I also think it makes this code a bit clearer than if inhabit()
+            // simply calls `new p5(...)` and discards the result, so I left
+            // that outer reassignment there.
+
+            // Now, a little bit of gymnastics to set all of the p5 methods
+            // in the sketch that exist on the Visualizser. Since TypeScript
+            // seems to require that they be methods in this base class, I
+            // couldn't find a way to arrange the code so that the below could
+            // be simplified to just check whether or not `this[method]` is
+            // defined or undefined:
             for (const method of p5methods) {
                 const definition = this[method]
                 const dummyText = method + '(){}'
@@ -76,11 +99,11 @@ export class P5Visualizer extends WithP5 implements VisualizerInterface {
                     sketch[method] = definition.bind(this)
                 }
             }
-            // And draw is special because of passing in the sketch
-            // and the error handling
+            // And draw is special because of the error handling, so we
+            // treat it separately.
             sketch.draw = () => {
                 try {
-                    this.draw(sketch)
+                    this.draw()
                 } catch (e) {
                     if (e instanceof CachingError) {
                         sketch.cursor('progress')
@@ -107,14 +130,14 @@ export class P5Visualizer extends WithP5 implements VisualizerInterface {
      * All it has to do is call draw, since p5 calls setup for us.
      */
     show(): void {
-        this.sketch?.draw()
+        this._sketch?.draw()
     }
 
     /**
      * Stop displaying the visualizer
      */
     stop(): void {
-        this.sketch?.noLoop()
+        this._sketch?.noLoop()
     }
 
     /**
@@ -129,15 +152,11 @@ export class P5Visualizer extends WithP5 implements VisualizerInterface {
 
     /**
      * The p5 setup for this visualizer. Note that derived Visualizers
-     * _must_ call this first and should just return if it returns false
+     * _must_ call this first.
      */
     setup() {
-        if (!this.sketch) {
-            throw 'Attempt to show P5 Visualizer before injecting into element'
-        }
         const [w, h] = this.measure()
-        this.canvas = this.sketch.createCanvas(w, h)
-        this.sketch.background('white')
+        this._canvas = this.sketch.background('white').createCanvas(w, h)
     }
 
     /**
@@ -145,7 +164,7 @@ export class P5Visualizer extends WithP5 implements VisualizerInterface {
      * it is best for derived Visualizers to call this first in case
      * we ever want or need to put some functionality here.
      */
-    draw(_sketch: p5): void {
+    draw(): void {
         return
     }
 
@@ -153,19 +172,19 @@ export class P5Visualizer extends WithP5 implements VisualizerInterface {
      * What to do when the window resizes
      */
     windowResized(): void {
-        if (!this.sketch) return
+        if (!this._sketch) return
         // Make sure the canvas isn't acting as a "strut" keeping the div big:
-        this.sketch.resizeCanvas(10, 10)
+        this._sketch.resizeCanvas(10, 10)
         const [w, h] = this.measure()
-        this.sketch.resizeCanvas(w, h)
+        this._sketch.resizeCanvas(w, h)
     }
 
     /**
      * Get rid of the visualization altogether
      */
     dispose(): void {
-        if (this.sketch) this.sketch.remove()
-        this.sketch = undefined
-        this.canvas = undefined
+        this._sketch?.remove()
+        this._sketch = undefined
+        this._canvas = undefined
     }
 }

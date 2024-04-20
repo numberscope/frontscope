@@ -48,9 +48,6 @@ class VizShiftCompare extends P5Visualizer {
 
     setup() {
         super.setup()
-        if (!this.sketch) {
-            throw 'Attempt to show ShiftCompare before injecting into element'
-        }
         this.img = this.sketch.createImage(
             this.sketch.width,
             this.sketch.height
@@ -68,8 +65,9 @@ class VizShiftCompare extends P5Visualizer {
     }
 
     //This will be called everytime to draw
-    draw(sketch: p5) {
-        super.draw(sketch)
+    draw() {
+        super.draw()
+        const sketch = this.sketch
         // Ensure mouse coordinates are sane.
         // Mouse coordinates look they're floats by default.
         const d = sketch.pixelDensity()

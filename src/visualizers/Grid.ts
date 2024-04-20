@@ -7,7 +7,6 @@ import type {
     Factorization,
 } from '@/sequences/SequenceInterface'
 import simpleFactor from '@/sequences/simpleFactor'
-import type p5 from 'p5'
 
 /** md
 # Grid Visualizer
@@ -634,14 +633,10 @@ earlier ones that use the _same_ style.)
 
     setup(): void {
         super.setup()
-        if (!this.sketch) {
-            throw 'Attempt to show Grid before injecting into element'
-        }
         this.setPresets()
         this.setOverridingSettings()
 
-        this.sketch.background(this.backgroundColor)
-        this.sketch.strokeWeight(0)
+        this.sketch.background(this.backgroundColor).strokeWeight(0)
 
         // determine whether to watch for primary or secondary fills
         this.primaryProperties = this.propertiesFilledWith(
@@ -664,8 +659,8 @@ earlier ones that use the _same_ style.)
         this.setPathVariables(this.sideOfGrid)
     }
 
-    draw(sketch: p5): void {
-        super.draw(sketch)
+    draw(): void {
+        super.draw()
         this.currentIndex = Math.max(this.startingIndex, this.seq.first)
         let augmentForRowReset = 0n
 
@@ -690,7 +685,7 @@ earlier ones that use the _same_ style.)
             this.currentIndex++
             this.moveCoordinatesUsingPath(iteration)
         }
-        sketch.noLoop()
+        this.sketch.noLoop()
     }
 
     setPresets() {
@@ -761,7 +756,7 @@ earlier ones that use the _same_ style.)
     }
 
     drawSquare(props: number[], size: number, offset = 0) {
-        if (this.sketch && this.colorProperties(props)) {
+        if (this.colorProperties(props)) {
             this.sketch.rect(this.x + offset, this.y + offset, size, size)
         }
     }
@@ -791,7 +786,7 @@ earlier ones that use the _same_ style.)
                     this.propertyObjects[i].aux
                 )
             ) {
-                this.sketch?.fill(this.propertyObjects[i].color)
+                this.sketch.fill(this.propertyObjects[i].color)
                 retval = true
             }
         }
@@ -827,13 +822,14 @@ earlier ones that use the _same_ style.)
     showNumber() {
         const currentNumberAsString = this.currentNumber.toString()
 
-        if (this.sketch && this.showNumbers) {
-            this.sketch.fill(this.numberColor)
-            this.sketch.text(
-                currentNumberAsString,
-                this.x + 0 * this.scalingFactor,
-                this.y + (15 * this.scalingFactor) / 20
-            )
+        if (this.showNumbers) {
+            this.sketch
+                .fill(this.numberColor)
+                .text(
+                    currentNumberAsString,
+                    this.x + 0 * this.scalingFactor,
+                    this.y + (15 * this.scalingFactor) / 20
+                )
         }
     }
 
