@@ -1,5 +1,5 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import {VisualizerDefault} from './VisualizerDefault'
+import {P5Visualizer} from './P5Visualizer'
 
 /** md
 # Show Factors Visualizer
@@ -12,7 +12,7 @@ the sequence, and below each term, its prime factors.
 ## Parameters
 **/
 
-class ShowFactors extends VisualizerDefault {
+class ShowFactors extends P5Visualizer {
     name = 'Show Factors'
 
     start = 1
@@ -41,17 +41,20 @@ class ShowFactors extends VisualizerDefault {
     first = 0
 
     draw() {
-        this.sketch.background('black')
+        super.draw()
+        const sketch = this.sketch
         const fontSize = 20
-        this.sketch.textFont('Arial')
-        this.sketch.textSize(fontSize)
-        this.sketch.textStyle(this.sketch.BOLD)
+        sketch
+            .background('black')
+            .textFont('Arial')
+            .textSize(fontSize)
+            .textStyle(sketch.BOLD)
+            .colorMode(sketch.HSB, 255)
         const xDelta = 50
         const yDelta = 50
         const firstX = 30
         const firstY = 30
-        this.sketch.colorMode(this.sketch.HSB, 255)
-        let myColor = this.sketch.color(100, 255, 150)
+        let myColor = sketch.color(100, 255, 150)
         let hue
 
         for (
@@ -61,23 +64,16 @@ class ShowFactors extends VisualizerDefault {
         ) {
             const xCoord = firstX + (i - this.start) * xDelta
             hue = ((i * 255) / 6) % 255
-            myColor = this.sketch.color(hue, 150, 200)
-            this.sketch.fill(myColor)
-            this.sketch.text(
-                this.seq.getElement(i).toString(),
-                xCoord,
-                firstY
-            )
+            myColor = sketch.color(hue, 150, 200)
+            sketch
+                .fill(myColor)
+                .text(this.seq.getElement(i).toString(), xCoord, firstY)
             const factors = this.seq.getFactors(i)
             if (factors) {
                 let j = 1
                 for (const [base, power] of factors) {
-                    this.sketch.text(
-                        base.toString(),
-                        xCoord,
-                        firstY + j * yDelta
-                    )
-                    this.sketch.text(
+                    sketch.text(base.toString(), xCoord, firstY + j * yDelta)
+                    sketch.text(
                         power.toString(),
                         xCoord + xDelta / 3,
                         firstY + j * yDelta - yDelta / 4
@@ -86,7 +82,7 @@ class ShowFactors extends VisualizerDefault {
                 }
             }
         }
-        this.sketch.noLoop()
+        sketch.noLoop()
     }
 }
 
