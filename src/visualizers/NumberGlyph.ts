@@ -1,8 +1,6 @@
-import type p5 from 'p5'
-import {VisualizerDefault} from './VisualizerDefault'
-import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {P5Visualizer} from './P5Visualizer'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
+import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import * as math from 'mathjs'
 
 /** md
@@ -58,7 +56,7 @@ exceeds \( 2^{53}-1 \) to be 0.
 ### Parameters
  **/
 
-class NumberGlyph extends VisualizerDefault implements VisualizerInterface {
+class NumberGlyph extends P5Visualizer {
     name = 'Number Glyphs'
     n = 64
     customize = false
@@ -167,20 +165,17 @@ The default value is 25.
     private radii = 50 // increments of radius in a dot
     private initialRadius = 50 // size of dots
 
-    constructor() {
-        super()
+    constructor(seq: SequenceInterface) {
+        super(seq)
         // It is mandatory to initialize the `evaluator` property here,
         // so just use a simple dummy formula until the user provides one.
         this.evaluator = math.compile(this.formula)
     }
 
-    initialize(sketch: p5, seq: SequenceInterface) {
-        super.initialize(sketch, seq)
-        this.sketch = sketch
-        this.seq = seq
-        this.currentIndex = seq.first
+    inhabit(element: HTMLElement) {
+        super.inhabit(element)
+        this.currentIndex = this.seq.first
         this.position = this.sketch.createVector(0, 0)
-        this.ready = true
         this.boxSize = this.sketch.createVector(800, 90)
         this.subG = this.sketch.createGraphics(this.boxSize.x, this.boxSize.y)
         this.canvasSize = this.sketch.createVector(800, 800)
@@ -236,9 +231,11 @@ The default value is 25.
     }
 
     setup() {
-        this.sketch.background('black')
-        this.sketch.colorMode(this.sketch.HSB, 360, 100, 100)
-        this.sketch.frameRate(30)
+        super.setup()
+        this.sketch
+            .background('black')
+            .colorMode(this.sketch.HSB, 360, 100, 100)
+            .frameRate(30)
 
         this.firstDraw = true
 
@@ -285,6 +282,7 @@ The default value is 25.
     }
 
     draw() {
+        super.draw()
         if (this.firstDraw == true && this.currentIndex < this.last) {
             this.sketch.noStroke()
 
