@@ -55,7 +55,7 @@ class NumberGlyph extends P5Visualizer {
     n = 64
     customize = false
     brightCap = 25
-    formula = 'abs(log(max(abs(n),2)^x)) % 25'
+    formula = 'log(max(abs(n),2)^x) % 25'
 
     params = {
         /** md
@@ -94,11 +94,11 @@ are accepted (+, -, *, / , ^, log, sin, cos etc.)  The variable n
 represents the
 term of which this disc is a representation.  The variable x takes the value 
 0 at the outer rim of the disk, increasing once per pixel until the 
-center.  The value of this function determines the brightness of the disk 
-at that radius. A value of 0 is black
+center.  The absolute value of this function determines the brightness of the
+disk at that radius. A value of 0 is black
 and higher values are brighter.  
 
-The default value is `abs(log(max(abs(n),2)^x)) % 25`.
+The default value is `log(max(abs(n),2)^x) % 25`.
 **/
         formula: {
             value: this.formula,
@@ -322,7 +322,7 @@ The default value is 25.
             const val = this.growthFunction(numberNow, x)
             bright = val
             if (bright < 0) {
-                bright = 0
+                bright = -bright
             }
             if (bright > this.brightCap) {
                 bright = this.brightCap
