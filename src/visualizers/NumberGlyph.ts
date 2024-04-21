@@ -63,7 +63,7 @@ class NumberGlyph extends P5Visualizer {
 
 The number of terms to display onscreen.  The sizes of the discs will 
 be sized so that there are \(N^2\) disc positions, where \(N^2\) is the
-smallest prime exceeding the number of terms (so that the terms mostly fill
+smallest square exceeding the number of terms (so that the terms mostly fill
 the screen).  Choose a perfect square number of terms to fill the square.
 If the sequence does not have that many terms, the visualizer will 
 only attempt to show the available terms.
