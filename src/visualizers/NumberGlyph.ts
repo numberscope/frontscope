@@ -1,4 +1,4 @@
-import type p5 from 'p5'
+import p5 from 'p5'
 import {P5Visualizer} from './P5Visualizer'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 //import type {Factorization} from '../sequences/SequenceInterface'
@@ -140,10 +140,8 @@ The default value is 25.
     colorMap = new Map()
     private last = 0
     private currentIndex = 0
-    private position = {} as p5.Vector
-    private boxSize = {} as p5.Vector
-    private canvasSize = {} as p5.Vector
-    private initialPosition = {} as p5.Vector
+    private position = new p5.Vector()
+    private initialPosition = new p5.Vector()
     private positionIncrement = 100
     private columns = 0
     private boxIsShow = false
@@ -206,14 +204,18 @@ The default value is 25.
 
         this.currentIndex = this.seq.first
         this.position = this.sketch.createVector(0, 0)
-        this.boxSize = this.sketch.createVector(800, 90)
-        this.canvasSize = this.sketch.createVector(800, 800)
+        const canvasSize = this.sketch.createVector(
+            this.sketch.width,
+            this.sketch.height
+        )
         this.columns = Math.ceil(Math.sqrt(this.n))
         this.last = this.n + this.seq.first // adjust for offset
         if (this.last > this.seq.last) {
             this.last = this.seq.last
         }
-        this.positionIncrement = Math.floor(this.canvasSize.x / this.columns)
+        this.positionIncrement = Math.floor(
+            Math.min(canvasSize.x, canvasSize.y) / this.columns
+        )
         this.initialRadius = Math.floor(this.positionIncrement / 2)
         this.radii = this.initialRadius
 
