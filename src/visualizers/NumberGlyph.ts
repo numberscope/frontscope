@@ -164,10 +164,6 @@ The default value is 25.
         this.evaluator = math.compile(this.formula)
     }
 
-    inhabit(element: HTMLElement) {
-        super.inhabit(element)
-    }
-
     checkParameters() {
         // code currently re-used from SequenceFormula.ts
         const status = super.checkParameters()
