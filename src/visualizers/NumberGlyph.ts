@@ -47,14 +47,6 @@ produce unpredictable results.  To handle the first type of error,
 currently this visualizer will set all terms whose absolute value
 exceeds \( 2^{53}-1 \) to be 0.
 
-
-### Keyboard interaction
-
-- Press the **left arrow key** to show/hide the color of each prime factor.
-- Press the **right arrow key** to show/hide labels.
-- Press **[** to turn up brightness.
-- Press **]** to turn down brightness.
-
 ### Parameters
  **/
 
@@ -256,7 +248,10 @@ The default value is 25.
         // Obtain all prime numbers that appear as factors in the sequence
         for (let i = this.seq.first; i < this.last; i++) {
             const checkCurrentFactors = this.seq.getFactors(i)
-            if (checkCurrentFactors !== null) {
+            if (
+                checkCurrentFactors !== null
+                && checkCurrentFactors !== undefined
+            ) {
                 for (let j = 0; j < checkCurrentFactors.length; j++) {
                     const checkCurrentPrime = checkCurrentFactors[j][0]
                     if (
@@ -300,114 +295,7 @@ The default value is 25.
             if (this.currentIndex >= this.last) {
                 this.firstDraw = false
             }
-        } else {
-            // Monitor keyboard events after finishing drawing
-            // Bug: multiple clicks detected when only one click happened
-            this.keyboardEvents()
         }
-    }
-    /** The following code can be used to fix the keyboardEvents() bug
-     * once issue #120 is resolved
-	keyPressed() {
-  if (this.sketch.keyCode === this.sketch.LEFT_ARROW) {
-        // Show/hide description box when the left arrow key is pressed
-            if (this.boxIsShow == true && this.subG != null) {
-                this.boxIsShow = false
-                this.undrawBox()
-            } else {
-                this.boxIsShow = true
-                this.drawBox()
-            }
-	}  else if (this.sketch.keyCode === this.sketch.RIGHT_ARROW) {
-        // Show/hide label when right arrow key is pressed
-    if (this.showLabel == false) {
-                this.showLabel = true
-                this.drawLabel()
-            } else {
-                this.showLabel = false
-                this.undrawLabel()
-            }
-	}
-	}
-	**/
-    keyboardEvents() {
-        // Show description box when the left arrow key is pressed
-        if (this.sketch.keyIsDown(this.sketch.LEFT_ARROW)) {
-            if (this.boxIsShow == true && this.subG != null) {
-                this.boxIsShow = false
-                this.undrawBox()
-            } else {
-                this.boxIsShow = true
-                this.drawBox()
-            }
-        }
-
-        // Show label when right arrow key is pressed
-        if (
-            this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
-            && this.firstDraw == false
-        ) {
-            if (this.showLabel == false) {
-                this.showLabel = true
-                this.drawLabel()
-            } else {
-                this.showLabel = false
-                this.undrawLabel()
-            }
-        }
-
-        // Increase brightness "[" key is pressed
-        if (this.sketch.keyIsDown(219) && this.firstDraw == false) {
-            this.brightnessUp()
-        }
-
-        // Decrease brightness "]" key is pressed
-        if (this.sketch.keyIsDown(221) && this.firstDraw == false) {
-            this.brightnessDown()
-        }
-    }
-
-    brightnessUp() {
-        this.brightAdjust += 1
-        this.redrawCircles()
-    }
-
-    brightnessDown() {
-        this.brightAdjust -= 1
-        this.redrawCircles()
-    }
-
-    // Draw labels for each circle
-    drawLabel() {
-        this.position = this.sketch.createVector(
-            this.initialPosition.x,
-            this.initialPosition.y
-        )
-        this.subL = this.sketch.createGraphics(
-            this.canvasSize.x,
-            this.canvasSize.y
-        )
-        this.subG.colorMode(this.sketch.HSB)
-        this.subG.noStroke()
-        for (let i = this.seq.first; i < this.last; i++) {
-            this.showCircleLabel(i)
-            this.changePosition()
-        }
-    }
-
-    // Remove all labels by drawing circles again
-    undrawLabel() {
-        this.redrawCircles()
-    }
-
-    redrawCircles() {
-        this.position = this.sketch.createVector(
-            this.initialPosition.x,
-            this.initialPosition.y
-        )
-        this.firstDraw = true
-        this.currentIndex = this.seq.first
-        this.sketch.redraw()
     }
 
     drawCircle(ind: number) {
@@ -463,57 +351,12 @@ The default value is 25.
         }
     }
 
-    showCircleLabel(numberNow: number) {
-        this.sketch.fill('white')
-        this.sketch.text(
-            '1/'.concat(String(numberNow)).concat('^n'),
-            this.position.x,
-            this.position.y
-        )
-    }
-
     changePosition() {
         this.position.add(this.positionIncrement, 0)
         // if we need to go to next line
         if ((this.currentIndex - this.seq.first + 1) % this.columns == 0) {
             this.position.x = this.initialPosition.x
             this.position.add(0, this.positionIncrement)
-        }
-    }
-
-    drawBox() {
-        //Create a white background for the description box
-        this.subG = this.sketch.createGraphics(this.boxSize.x, this.boxSize.y)
-        this.subG.colorMode(this.sketch.HSB)
-        this.subG.noStroke()
-        this.subG.fill(0, 0, 100)
-        this.subG.rect(0, 0, this.boxSize.x, this.boxSize.y)
-        this.subG.fill('black')
-        let tmpX = 0
-        let tmpY = 0
-
-        //Show the color of every prime number
-        for (let i = 0; i < this.primeNum.length; i++) {
-            this.subG.fill('black')
-            this.subG.text(String(this.primeNum[i]), 10 + tmpX, 15 + tmpY)
-            this.subG.fill(this.colorMap.get(this.primeNum[i]), 100, 100)
-
-            this.subG.ellipse(35 + tmpX, 15 + tmpY, 10, 10)
-            tmpX += 50
-            if (tmpX >= this.canvasSize.x) {
-                tmpX = 0
-                tmpY += 30
-            }
-        }
-        this.sketch.image(this.subG, 0, 700)
-    }
-
-    undrawBox() {
-        if (this.subG) {
-            //Draw a new black background to cover the description box
-            this.subG.fill('black')
-            this.subG.rect(0, 0, this.boxSize.x, this.boxSize.y)
-            this.sketch.image(this.subG, 0, 700)
         }
     }
 
