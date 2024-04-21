@@ -146,8 +146,6 @@ The default value is 25.
     private initialPosition = {} as p5.Vector
     private positionIncrement = 100
     private columns = 0
-    private subG = {} as p5.Graphics
-    private subL = {} as p5.Graphics
     private boxIsShow = false
     private primeNum: bigint[] = []
     private countPrime = 0
@@ -213,12 +211,7 @@ The default value is 25.
         this.currentIndex = this.seq.first
         this.position = this.sketch.createVector(0, 0)
         this.boxSize = this.sketch.createVector(800, 90)
-        this.subG = this.sketch.createGraphics(this.boxSize.x, this.boxSize.y)
         this.canvasSize = this.sketch.createVector(800, 800)
-        this.subL = this.sketch.createGraphics(
-            this.canvasSize.x,
-            this.canvasSize.y
-        )
         this.columns = Math.ceil(Math.sqrt(this.n))
         this.last = this.n + this.seq.first // adjust for offset
         if (this.last > this.seq.last) {
