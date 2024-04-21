@@ -58,10 +58,16 @@ initialization as well.
 
 You shouldn't need to implement `show()`, `stop()`, or `dispose()`, but you
 can implement a `setup()` function as usual with [p5](https://p5js.org/learn/)
-if needed to set the stage of the graphics for your visualization. If you do,
-you _must_ call `super.setup()` to begin with the standard setup, that creates
-the p5 canvas for you. And you should definitely create a `draw()` function as
-usual with p5; it is still a good idea to start with `super.draw()`.
+if there are any one-time graphical operations you want to do, like drawing a
+background or specifying colors, etc. If you do create such a function, in it
+you _must_ call `super.setup()` to begin with the standard setup, as it
+creates the p5 canvas for you. Finally, you should definitely create a
+`draw()` function as usual with p5; it is still a good idea to start with
+`super.draw()`.
+
+There are also a number of functions like `keyPressed()` or `mouseClicked()`
+that you can implement to handle various interactions with your visualization.
+See the [p5 documentation](https://p5js.org/reference) for details on these.
 
 Some of the previously existing visualizers provide good starting points to
 see how to extend the base P5Visualizer class.
