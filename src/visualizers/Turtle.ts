@@ -1,8 +1,6 @@
 import p5 from 'p5'
-import {VisualizerDefault} from './VisualizerDefault'
-import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
+import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
 # Turtle Visualizer
@@ -18,7 +16,7 @@ straight segment. It displays the resulting polygonal path.
 
 // Turtle needs work
 // Throwing the same error on previous Numberscope website
-class Turtle extends VisualizerDefault implements VisualizerInterface {
+class Turtle extends P5Visualizer {
     name = 'Turtle'
     private rotMap = new Map<string, number>()
     domain = [0n, 1n, 2n, 3n, 4n]
@@ -106,11 +104,9 @@ class Turtle extends VisualizerDefault implements VisualizerInterface {
     private X = 0
     private Y = 0
 
-    initialize(sketch: p5, seq: SequenceInterface) {
-        this.sketch = sketch
-        this.seq = seq
-
-        this.currentIndex = seq.first
+    inhabit(element: HTMLElement) {
+        super.inhabit(element)
+        this.currentIndex = this.seq.first
         this.orientation = 0
         this.X = 0
         this.Y = 0
@@ -121,8 +117,6 @@ class Turtle extends VisualizerDefault implements VisualizerInterface {
                 (Math.PI / 180) * this.range[i]
             )
         }
-
-        this.ready = true
     }
 
     checkParameters() {
@@ -141,15 +135,18 @@ class Turtle extends VisualizerDefault implements VisualizerInterface {
     }
 
     setup() {
+        super.setup()
         this.X = this.sketch.width / 2
         this.Y = this.sketch.height / 2
-        this.sketch.background(this.bgColor)
-        this.sketch.stroke(this.strokeColor)
-        this.sketch.strokeWeight(this.strokeWeight)
-        this.sketch.frameRate(30)
+        this.sketch
+            .background(this.bgColor)
+            .stroke(this.strokeColor)
+            .strokeWeight(this.strokeWeight)
+            .frameRate(30)
     }
 
     draw() {
+        super.draw()
         const currElement = this.seq.getElement(this.currentIndex++)
         const angle = this.rotMap.get(currElement.toString())
 

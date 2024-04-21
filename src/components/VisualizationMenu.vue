@@ -26,12 +26,14 @@
     } from '@/visualizers/VisualizerInterface'
     import VizSelector from '../components/ToolSelector.vue'
     import SeqVizParamsModal from '../components/SeqVizParamsModal.vue'
+    import type {SequenceInterface} from '../sequences/SequenceInterface'
+    import {SequenceDefault} from '../sequences/SequenceDefault'
     export default defineComponent({
         name: 'VizualizationMenu',
         props: {
             visualizers: Array as PropType<VisualizerExportModule[]>,
             activeViz: Object as PropType<VisualizerInterface | null>,
-            activeSeq: Object,
+            activeSeq: Object as PropType<SequenceInterface | null>,
         },
         components: {
             VizSelector,
@@ -45,7 +47,9 @@
                 this.showModal = false
             },
             setParams: function (viz: VisualizerExportModule) {
-                this.livevisualizer = new viz.visualizer()
+                this.livevisualizer = new viz.visualizer(
+                    this.activeSeq ?? this.dummySequence
+                )
                 this.openParamsModal()
             },
             createViz: function () {
@@ -64,6 +68,7 @@
                 showModal: false,
                 // "as" clauses below for type inference of the data
                 livevisualizer: {} as VisualizerInterface,
+                dummySequence: new SequenceDefault(0),
                 errors: [] as string[],
             }
         },

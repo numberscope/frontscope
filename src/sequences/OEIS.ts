@@ -44,7 +44,10 @@ export default class OEIS extends Cached {
         super(sequenceID) // Don't know the index range yet, will fill in later
     }
 
-    async fillCache(): Promise<void> {
+    /* Unlike the base Cached sequence class, we grab the entire sequence
+       at once.
+    */
+    async fillValueCache(): Promise<void> {
         // Catch HTTP errors. (This function has multiple HTTP requests.)
         try {
             // import.meta.env is basically your configuration.
@@ -75,41 +78,52 @@ export default class OEIS extends Cached {
             */
                 this.first = 0
                 this.last = -1
-            } else {
-                // OK, now get the factors
-                const factorUrl =
-                    urlPrefix
-                    + `get_oeis_factors/${this.oeisId}/${this.cacheBlock}`
-                const factorResponse = await axios.get(factorUrl)
-                for (const k in factorResponse.data.factors) {
-                    const index = Number(k)
-                    if (index < this.first || index > this.last) continue
-                    const factors = factorResponse.data.factors[k]
-                    if (factors === 'no_fac') {
-                        this.factorCache[index] = null
+                this.cacheBlock = 0
+            }
+            this.lastValueCached = this.last
+            this.cachingValuesTo = this.last
+        } catch (e) {
+            window.alert(alertMessage(e))
+        }
+    }
+
+    async fillFactorCache(): Promise<void> {
+        // Short-circuit if sequence is empty
+        if (this.cacheBlock < 1) return
+        try {
+            const urlPrefix = `${import.meta.env.VITE_BACKSCOPE_URL}/api/`
+            const factorUrl =
+                urlPrefix
+                + `get_oeis_factors/${this.oeisId}/${this.cacheBlock}`
+            const factorResponse = await axios.get(factorUrl)
+            for (const k in factorResponse.data.factors) {
+                const index = Number(k)
+                if (index < this.first || index > this.last) continue
+                const factors = factorResponse.data.factors[k]
+                if (factors === 'no_fac') {
+                    this.factorCache[index] = null
+                } else {
+                    // Sadly, we have to parse the factors as a _string_
+                    // ourselves:
+                    if (factors === '[]') {
+                        this.factorCache[index] = []
                     } else {
-                        // Sadly, we have to parse the factors as a _string_
-                        // ourselves:
-                        if (factors === '[]') {
-                            this.factorCache[index] = []
-                        } else {
-                            // Lop off the initial '[[' and final ']]'
-                            const internals = factors.slice(2, -2)
-                            // That leaves '],[' separating the pairs
-                            const entries = internals.split('],[')
-                            this.factorCache[index] = entries.map(
-                                (pair: string) => {
-                                    // And each pair is comma-separated
-                                    const [base, power] = pair.split(',', 2)
-                                    return [BigInt(base), BigInt(power)]
-                                }
-                            )
-                        }
+                        // Lop off the initial '[[' and final ']]'
+                        const internals = factors.slice(2, -2)
+                        // That leaves '],[' separating the pairs
+                        const entries = internals.split('],[')
+                        this.factorCache[index] = entries.map(
+                            (pair: string) => {
+                                // And each pair is comma-separated
+                                const [base, power] = pair.split(',', 2)
+                                return [BigInt(base), BigInt(power)]
+                            }
+                        )
                     }
                 }
             }
-            this.lastCached = this.last
-            this.cachingTo = this.last
+            this.lastFactorCached = this.last
+            this.cachingFactorsTo = this.last
         } catch (e) {
             window.alert(alertMessage(e))
         }

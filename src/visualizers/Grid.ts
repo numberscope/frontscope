@@ -1,8 +1,11 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import {VisualizerDefault} from '@/visualizers/VisualizerDefault'
+import {P5Visualizer} from '@/visualizers/P5Visualizer'
 import {bigabs, floorSqrt, modulo} from '@/shared/math'
 import type {ParamInterface} from '@/shared/Paramable'
-import type {Factorization} from '@/sequences/SequenceInterface'
+import type {
+    SequenceInterface,
+    Factorization,
+} from '@/sequences/SequenceInterface'
 import simpleFactor from '@/sequences/simpleFactor'
 
 /** md
@@ -412,7 +415,7 @@ const propertyIndicatorFunction: {
     Semi_Prime: isSemiPrime,
 }
 
-class Grid extends VisualizerDefault {
+class Grid extends P5Visualizer {
     name = 'Grid'
 
     // Grid variables
@@ -551,8 +554,8 @@ This parameter is only available when the "Show Numbers" parameter is checked.
         },
     }
 
-    constructor() {
-        super()
+    constructor(seq: SequenceInterface) {
+        super(seq)
         /** md
 ### Property 1, 2, etc.:  Properties to display by coloring cells
 
@@ -613,10 +616,6 @@ earlier ones that use the _same_ style.)
         }
     }
 
-    checkParameters() {
-        return super.checkParameters()
-    }
-
     assignParameters(): void {
         super.assignParameters()
 
@@ -633,11 +632,11 @@ earlier ones that use the _same_ style.)
     }
 
     setup(): void {
+        super.setup()
         this.setPresets()
         this.setOverridingSettings()
 
-        this.sketch.background(this.backgroundColor)
-        this.sketch.strokeWeight(0)
+        this.sketch.background(this.backgroundColor).strokeWeight(0)
 
         // determine whether to watch for primary or secondary fills
         this.primaryProperties = this.propertiesFilledWith(
@@ -661,6 +660,7 @@ earlier ones that use the _same_ style.)
     }
 
     draw(): void {
+        super.draw()
         this.currentIndex = Math.max(this.startingIndex, this.seq.first)
         let augmentForRowReset = 0n
 
@@ -823,12 +823,13 @@ earlier ones that use the _same_ style.)
         const currentNumberAsString = this.currentNumber.toString()
 
         if (this.showNumbers) {
-            this.sketch.fill(this.numberColor)
-            this.sketch.text(
-                currentNumberAsString,
-                this.x + 0 * this.scalingFactor,
-                this.y + (15 * this.scalingFactor) / 20
-            )
+            this.sketch
+                .fill(this.numberColor)
+                .text(
+                    currentNumberAsString,
+                    this.x + 0 * this.scalingFactor,
+                    this.y + (15 * this.scalingFactor) / 20
+                )
         }
     }
 

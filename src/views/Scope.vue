@@ -20,9 +20,9 @@ back and forth between any of them and the main page.
 The remaining pages of the User Guide provide information on each of the
 implemented visualizers.
       -->
-    <div class="container-fluid">
-        <div class="row" v-if="drawingActive">
-            <div class="col-sm-12">
+    <div class="container-fluid scope-container">
+        <div class="row propflex" v-if="drawingActive">
+            <div class="col-sm-12 propflex">
                 <CanvasArea
                     v-bind:activeViz="guaranteeViz()"
                     v-bind:activeSeq="guaranteeSeq()"
@@ -146,3 +146,16 @@ implemented visualizers.
         },
     })
 </script>
+
+<style>
+    .scope-container {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+    .propflex {
+        /* Propagates flexibility from its parent to its children */
+        display: flex;
+        flex: 1;
+    }
+</style>

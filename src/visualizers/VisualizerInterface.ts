@@ -1,9 +1,12 @@
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 import type {ParamableInterface} from '../shared/Paramable'
-import type p5 from 'p5'
 
 interface VisualizerConstructor {
-    new (): VisualizerInterface
+    /**
+     * Constructs a visualizer
+     * @param seq SequenceInterface The initial sequence to visualize
+     */
+    new (seq: SequenceInterface): VisualizerInterface
 }
 
 export class VisualizerExportModule {
@@ -24,26 +27,29 @@ export class VisualizerExportModule {
 
 export interface VisualizerInterface extends ParamableInterface {
     /**
-     * A sequence instance that fulfills the sequence interface.
+     * Change the sequence the visualizer is showing.
      */
-    seq: SequenceInterface
+    view(seq: SequenceInterface): void
     /**
-     * A p5 sketch instance.
+     * Provide the element that the visualizer will now realize itself
+     * within. The visualizer should stop any prior visualizations,
+     * and prepare to draw within the provided element.
+     * @param element HTMLElement The DOM node where the visualizer should
+     *     insert itself.
      */
-    sketch: p5
+    inhabit(element: HTMLElement): void
     /**
-     * Initialize is simply applying the validated configuration params to the
-     * visualizer to prepare it to draw.
-     * @param sketch The p5 instance the visualizer will draw on
-     * @param seq The Sequence object supplying sequence values
+     * Show the sequence according to this visualizer.
      */
-    initialize(sketch: p5, seq: SequenceInterface): void
+    show(): void
     /**
-     * Sets up the p5 canvas.
+     * Stop drawing the visualization
      */
-    setup(): void
+    stop(): void
     /**
-     * Draws the sequence through the visualizer into the p5 canvas.
+     * Throw out the visualization, release its resources, etc.
+     * Note that after this call, it is ok to call inhabit() again,
+     * possibly with a different div, to reinitialize it.
      */
-    draw(): void
+    dispose(): void
 }

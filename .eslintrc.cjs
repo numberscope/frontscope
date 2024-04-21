@@ -14,6 +14,10 @@ module.exports = {
             'error',
             {argsIgnorePattern: '^_'},
         ],
+        '@typescript-eslint/no-empty-function': [
+            'error',
+            {allow: ['methods']},
+        ],
         'max-len': ['error', {code: 80, comments: 80}],
         'operator-linebreak': [
             'error',
