@@ -60,7 +60,7 @@ implemented visualizers.
     import CanvasArea from '../components/CanvasArea.vue'
     import BundleManager from '../components/BundleManager.vue'
     import VISUALIZERS from '../visualizers/visualizers'
-    import WORKBENCH from '../workbench/visualizers'
+    import WORKBENCH from '../visualizers-workbench/visualizers'
     import SEQUENCES from '../sequences/sequences'
     import type {SequenceInterface} from '../sequences/SequenceInterface'
     import {

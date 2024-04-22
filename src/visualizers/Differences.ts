@@ -73,7 +73,6 @@ class Differences extends P5Visualizer {
     }
 
     draw() {
-        super.draw()
         const sketch = this.sketch
         const sequence = this.seq
         const fontSize = 20
