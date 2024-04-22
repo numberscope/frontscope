@@ -197,4 +197,22 @@ export class P5Visualizer extends WithP5 implements VisualizerInterface {
         this._canvas = undefined
         this.within = undefined
     }
+    /* Further remarks on realizing visualizers in the DOM with inhabit()
+       and depart():
+
+       If an HTML element (usually a div) gets removed from the DOM while
+       a visualizer is still inhabiting it, the visualizer becomes a
+       troublesome "ghost": the user can't see or interact with it, but
+       it's still listening for events and consuming system resources.
+       There are two ways to prevent this:
+
+       1. Immediately tell the visualizer to depart the div you're removing.
+
+       2. Immediately tell the visualizer to inhabit a div that is still in
+          the DOM.
+
+       It's safe for these calls to happen redundantly. If you tell a
+       visualizer to depart a div that it's not inhabiting, or to inhabit
+       a div that it's already inhabiting, nothing will happen.
+    */
 }
