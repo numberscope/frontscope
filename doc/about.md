@@ -12,9 +12,9 @@ source projects.
 You can find [Numberscope on GitHub](https://github.com/numberscope) or
 [contact the organizers](mailto:numberscope@colorado.edu).
 
-## Current Technical Lead
+## Current Design Committee
 
--   Liam Mulhall
+-   Kate Stange, Aaron Fenyes, Glen Whitney 
 
 ## Contributors
 
@@ -24,8 +24,10 @@ You can find [Numberscope on GitHub](https://github.com/numberscope) or
 -   Isabel Anaya
 -   Sebastian Bozlee
 -   Devlin Costello
+-   Aaron Fenyes
 -   Brendan Heaney
 -   Steven Hristopoulos
+-   Jennifer Leong
 -   Ang Li
 -   Theodore Lincke
 -   Josiah Martinez
