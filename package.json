@@ -71,7 +71,7 @@
         "help:lint:staged": "echo Only for internal use in the pre-commit hook.",
         "lint:staged": "lint-staged",
         "//only lifecycle scripts below here": "echo",
-        "prepare": "husky install",
+        "prepare": "husky",
         "postinstall": "python3 -m venv .venv && cd tools && node pyrun.mjs python -m pip install -U pip && node pyrun.mjs pip install -r requirements.txt"
     },
     "dependencies": {
@@ -96,7 +96,7 @@
         "eslint": "^8.56.0",
         "eslint-plugin-vue": "^9.25.0",
         "happy-dom": "^14.7.1",
-        "husky": "^7.0.4",
+        "husky": "^9.0.11",
         "jsdom": "^24.0.0",
         "lint-staged": "^15.2.2",
         "mathjs": "^12.4.1",
