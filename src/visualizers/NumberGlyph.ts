@@ -179,7 +179,7 @@ The default value is 25.
         }
         const othersymbs = parsetree.filter(
             (node, path, parent) =>
-                node.type === 'SymbolNode'
+                math.isSymbolNode(node)
                 && parent?.type !== 'FunctionNode'
                 && node.name !== 'n'
                 && node.name !== 'x'
