@@ -92,7 +92,7 @@
         "@vue/eslint-config-typescript": "^13.0.0",
         "@vue/test-utils": "^2.0.2",
         "@vue/tsconfig": "^0.5.1",
-        "axios": "^0.27.2",
+        "axios": "^0.28.0",
         "eslint": "^8.56.0",
         "eslint-plugin-vue": "^9.25.0",
         "happy-dom": "^2.39.1",
