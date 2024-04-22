@@ -52,7 +52,7 @@ class Formula extends Cached {
         }
         const othersymbs = parsetree.filter(
             (node, path, parent) =>
-                node.type === 'SymbolNode'
+                math.isSymbolNode(node)
                 && parent?.type !== 'FunctionNode'
                 && node.name !== 'n'
         )
