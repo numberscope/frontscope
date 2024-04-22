@@ -51,7 +51,7 @@ list these properties after the `params` property.
 
 -   p5 Visualizer Template: `index`, `flash`.
 
-### Check parameters
+#### Check parameters
 
 When the user clicks "save", this function validates the parameter values, and
 prompts the user to change any invalid parameters. You don't have to do
@@ -62,7 +62,7 @@ there might not be any sequence loaded when the validation check runs.
 -   p5 Visualizer Template: Make sure that the step size is positive.
 -   Differences: Make sure that the `number` is no less than the `levels`.
 
-### Set up the visualizer
+#### Set up the visualizer
 
 You can implement a `setup()` function as usual with
 [p5](https://p5js.org/learn/) if there are any one-time graphical operations
@@ -72,7 +72,7 @@ specifying colors. If you implement `setup()`, start by calling
 `super.setup()` if you have a really good reason to create the canvas
 yourself).
 
-### _(Advanced)_ Inhabit
+#### _(Advanced)_ Inhabit
 
 You can implement an `inhabit()` function if you have initialization you want
 performed whenever the visualizer is inserted onto the page. If you do this,
@@ -84,11 +84,11 @@ start by calling `super.inhabit()` to get the standard initialization as well.
     done in `checkParameters` because when the user is choosing the
     parameters, the visualizer has not yet been associated with any sequence.
 
-### _(Advanced)_ Start, stop, and dispose of the visualizer
+##### _(Advanced)_ Start, stop, and dispose of the visualizer
 
 You shouldn't need to implement `show()`, `stop()`, or `dispose()`.
 
-### Draw the visualization!
+#### Draw the visualization!
 
 Implement `draw()` to draw your visualization! Look at the examples and the
 [p5.js reference](https://p5js.org/reference/) to see what kinds of things you
