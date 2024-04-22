@@ -71,7 +71,7 @@
         "help:lint:staged": "echo Only for internal use in the pre-commit hook.",
         "lint:staged": "lint-staged",
         "//only lifecycle scripts below here": "echo",
-        "prepare": "husky install",
+        "prepare": "husky",
         "postinstall": "python3 -m venv .venv && cd tools && node pyrun.mjs python -m pip install -U pip && node pyrun.mjs pip install -r requirements.txt"
     },
     "dependencies": {
