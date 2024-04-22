@@ -14,7 +14,7 @@ You can find [Numberscope on GitHub](https://github.com/numberscope) or
 
 ## Current Design Committee
 
--   Kate Stange, Aaron Fenyes, Glen Whitney 
+-   Katherine Stange, Aaron Fenyes, Glen Whitney 
 
 ## Contributors
 
