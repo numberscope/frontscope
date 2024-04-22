@@ -23,6 +23,7 @@ You can find [Numberscope on GitHub](https://github.com/numberscope) or
 -   Khaled Allen
 -   Isabel Anaya
 -   Sebastian Bozlee
+-   Olivia Brobin
 -   Devlin Costello
 -   Aaron Fenyes
 -   Brendan Heaney
