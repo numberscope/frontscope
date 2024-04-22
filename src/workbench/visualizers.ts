@@ -7,8 +7,7 @@ const vizFiles = import.meta.glob('./*.ts', {eager: true})
 const vizMODULES: {[key: string]: VisualizerExportModule} = {}
 
 // for each file in the list of visualizer files...
-console.log('Reading workbench visualizers')
-if (import.meta.env.VITE_WORKBENCH) {
+if (import.meta.env.VITE_WORKBENCH === '1') {
     console.log('Importing workbench visualizers')
     for (const file in vizFiles) {
         const mod = vizFiles[file] as {exportModule: VisualizerExportModule}
