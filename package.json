@@ -9,6 +9,7 @@
         "help:dev:2": "echo Note the server will hot-reload the code from any",
         "help:dev:3": "echo source files as they change, to ease development.",
         "dev": "npm run typecheck && vite",
+        "dev:workbench": "npm run typecheck && vite --mode workbench",
         "help:doc:serve": "run-s -s help:doc:serve:*",
         "help:doc:serve:1": "echo This is like the 'dev' script, but for the",
         "help:doc:serve:2": "echo embedded documentation rather than the",
