@@ -16,14 +16,14 @@ class P5VisualizerTemplate extends P5Visualizer {
 
     // external parameters, which the user can choose while creating the
     // visualizer bundle
-    baseIndex = 0 // the default value of this parameter is zero
+    stepSize = 1 // the default value of this parameter is zero
     params = {
         /** md
-- baseIndex: Where in the sequence to start browsing.
+- stepSize: How far to step when the user presses a left or right arrow key.
          **/
-        baseIndex: {
-            value: this.baseIndex,
-            displayName: 'Base index',
+        stepSize: {
+            value: this.stepSize,
+            displayName: 'Step size',
             required: true,
         },
     }
@@ -37,13 +37,10 @@ class P5VisualizerTemplate extends P5Visualizer {
     checkParameters() {
         const status = super.checkParameters()
 
-        // make sure the base index doesn't precede the first index
-        if (this.params.baseIndex.value < this.seq.first) {
+        // make sure the step size is positive
+        if (this.params.stepSize.value <= 0) {
             status.isValid = false
-            status.errors.push(
-                "The base index can't precede the"
-                    + ` first index, ${this.seq.first}`
-            )
+            status.errors.push('Step size must be positive')
         }
 
         return status
@@ -51,23 +48,15 @@ class P5VisualizerTemplate extends P5Visualizer {
 
     setup() {
         // run the setup process for a general p5 visualizer, and make sure the
-        // p5 sketch has been successfully created. most p5 visualizers should
-        // do this
+        // p5 sketch has been successfully created. you should do this unless
+        // you have a really good reason to take over canvas creation
         super.setup()
-        if (!this.sketch) {
-            throw (
-                'Attempt to show p5 Template Visualizer'
-                + ' before injecting into element'
-            )
-        }
 
-        // start viewing the sequence at the base index, which the user chose
-        // when creating the visualizer
-        this.index = this.baseIndex
+        // start at the beginning of the sequence
+        this.index = this.seq.first
 
         this.sketch.stroke(51, 51, 255)
         this.sketch.textAlign(this.sketch.CENTER, this.sketch.CENTER)
-        /*this.sketch.fill(128, 159, 255)*/
     }
 
     draw() {
@@ -110,14 +99,14 @@ class P5VisualizerTemplate extends P5Visualizer {
 
         const oldIndex = this.index
         if (sketch.keyCode === sketch.DOWN_ARROW) {
-            this.index = this.baseIndex
+            this.index = this.seq.first
         } else if (sketch.keyCode === sketch.RIGHT_ARROW) {
-            this.index += 1
+            this.index += this.stepSize
         } else if (
             sketch.keyCode === sketch.LEFT_ARROW
             && this.index > this.seq.first
         ) {
-            this.index -= 1
+            this.index -= this.stepSize
         }
 
         // show a flash when the index changes
