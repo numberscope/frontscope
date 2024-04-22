@@ -70,6 +70,11 @@ export class P5Visualizer extends WithP5 implements VisualizerInterface {
      * @param element HTMLElement  Where the visualizer should inject itself
      */
     inhabit(element: HTMLElement): void {
+        if (this.within === element) return // already inhabiting there
+        if (this.within) {
+            // oops, already inhabiting somewhere else; depart there
+            this.depart(this.within)
+        }
         if (!this.isValid) {
             throw (
                 'The visualizer is not valid. '
@@ -182,9 +187,14 @@ export class P5Visualizer extends WithP5 implements VisualizerInterface {
     /**
      * Get rid of the visualization altogether
      */
-    dispose(): void {
-        this._sketch?.remove()
+    depart(element: HTMLElement): void {
+        if (!this._sketch || !this.within) {
+            throw 'Attempt to dispose P5Visualizer that is not on view.'
+        }
+        if (this.within !== element) return // that view already departed
+        this._sketch.remove()
         this._sketch = undefined
         this._canvas = undefined
+        this.within = undefined
     }
 }

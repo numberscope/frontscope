@@ -46,8 +46,10 @@
             )
             this.activeViz.show()
         },
-        unmounted() {
-            this.activeViz.dispose()
+        beforeUnmount() {
+            this.activeViz.depart(
+                document.getElementById('visualizer-here') as HTMLElement
+            )
         },
     })
 </script>
