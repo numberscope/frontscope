@@ -115,4 +115,7 @@ class ShiftCompare extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(ShiftCompare)
+export const exportModule = new VisualizerExportModule(
+    ShiftCompare,
+    'A grid showing pairwise congruence of sequence entries, to some modulus'
+)

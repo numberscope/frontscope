@@ -80,4 +80,7 @@ class ModFill extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(ModFill)
+export const exportModule = new VisualizerExportModule(
+    ModFill,
+    'A triangular grid showing which residues occur, to each modulus.'
+)

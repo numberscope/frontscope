@@ -402,7 +402,10 @@ The default value is 25.
     }
 }
 
-export const exportModule = new VisualizerExportModule(NumberGlyph)
+export const exportModule = new VisualizerExportModule(
+    NumberGlyph,
+    'Map entries to colorful glyphs using their magnitudes and prime factors'
+)
 
 /** md
 

@@ -161,4 +161,7 @@ class Turtle extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(Turtle)
+export const exportModule = new VisualizerExportModule(
+    Turtle,
+    'Use a sequence to steer a virtual turtle that leaves a visible trail.'
+)
