@@ -32,6 +32,7 @@ class P5VisualizerTemplate extends P5Visualizer {
          **/
         stepSize: {
             value: this.stepSize,
+            forceType: 'integer',
             displayName: 'Step size',
             required: true,
         },

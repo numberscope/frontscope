@@ -60,7 +60,6 @@ implemented visualizers.
     import CanvasArea from '../components/CanvasArea.vue'
     import BundleManager from '../components/BundleManager.vue'
     import VISUALIZERS from '../visualizers/visualizers'
-    import WORKBENCH from '../visualizers-workbench/visualizers'
     import SEQUENCES from '../sequences/sequences'
     import type {SequenceInterface} from '../sequences/SequenceInterface'
     import {
@@ -128,9 +127,6 @@ implemented visualizers.
             const sequences = []
             for (const vizKey in VISUALIZERS) {
                 visualizers.push(VISUALIZERS[vizKey])
-            }
-            for (const vizKey in WORKBENCH) {
-                visualizers.push(WORKBENCH[vizKey])
             }
             for (const seqKey in SEQUENCES) {
                 sequences.push(SEQUENCES[seqKey])
