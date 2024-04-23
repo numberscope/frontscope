@@ -42,8 +42,8 @@
             this.viz.show()
             setTimeout(() => this.viz.stop(), 500)
         },
-        unmounted() {
-            this.viz.dispose()
+        beforeUnmount() {
+            this.viz.depart(document.getElementById(this.cid) as HTMLElement)
         },
         methods: {},
         props: {

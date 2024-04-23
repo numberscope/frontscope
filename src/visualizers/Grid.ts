@@ -397,8 +397,8 @@ const propertyIndicatorFunction: {
     [key in PropertyName]: key extends FactorPropertyName
         ? (factorization: Factorization) => boolean
         : key extends ValuePropertyName
-        ? (() => boolean) | ((value: bigint, aux?: bigint) => boolean)
-        : never
+          ? (() => boolean) | ((value: bigint, aux?: bigint) => boolean)
+          : never
 } = {
     None: () => false,
     Prime: isPrime,
