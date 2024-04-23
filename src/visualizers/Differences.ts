@@ -17,7 +17,7 @@ between the terms in the row above, for as many rows as you like.
 **/
 
 class Differences extends P5Visualizer {
-    name = 'Differences'
+    static visualizationName = 'Differences'
 
     n = 20
     levels = 5
@@ -124,8 +124,7 @@ class Differences extends P5Visualizer {
 }
 
 export const exportModule = new VisualizerExportModule(
-    'Differences',
     Differences,
-    'Produces a table of differences between consecutive terms, '
-        + 'potentially iterated several times.'
+    'Produces a table of differences between consecutive entries, '
+        + 'potentially iterated several times'
 )
