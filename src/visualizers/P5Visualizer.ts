@@ -35,11 +35,23 @@ const p5methods: P5Methods[] = Object.getOwnPropertyNames(
 ).filter(name => name != 'constructor') as P5Methods[]
 
 // Base class for implementing Visualizers that use p5.js
-export class P5Visualizer extends WithP5 implements VisualizerInterface {
+export abstract class P5Visualizer
+    extends WithP5
+    implements VisualizerInterface
+{
     private _sketch?: p5
     private _canvas?: p5.Renderer
 
-    name = 'P5-based Visualizer'
+    /* In the P5Visualizer hierarchy, the visualization() string of the
+     * visualizer is supplied by a static member called `visualizationName`.
+     */
+    static visualizationName = 'abstract P5-based Visualizer'
+    visualization(): string {
+        return (
+            Object.getPrototypeOf(this).constructor.visualizationName
+            || 'monkeypod'
+        )
+    }
     within?: HTMLElement
     get sketch(): p5 {
         if (!this._sketch) {
@@ -66,7 +78,12 @@ export class P5Visualizer extends WithP5 implements VisualizerInterface {
 
     /***
      * Places the sketch into the given HTML element, and prepares to draw.
-     * This has to create the sketch and generate the methods it needs.
+     * This has to create the sketch and generate the methods it needs. In
+     * p5-based visualizers, we presume that initialization will generally
+     * take place in the standard p5 setup() method, so only the rare
+     * visualizer that needs to interact with the DOM or affect the
+     * of the p5 object itself would need to implement an extended or replaced
+     * inhabit() method.
      * @param element HTMLElement  Where the visualizer should inject itself
      */
     inhabit(element: HTMLElement): void {
@@ -165,13 +182,12 @@ export class P5Visualizer extends WithP5 implements VisualizerInterface {
     }
 
     /**
-     * The p5 drawing function. Even though it currently does nothing
-     * it is best for derived Visualizers to call this first in case
-     * we ever want or need to put some functionality here.
+     * The p5 drawing function. This must be implemented by derived classes
+     * that actually wish to serve as Visualizers. It should use p5 methods
+     * on this.sketch to create the desired image connected with the
+     * associated sequence/parameters.
      */
-    draw(): void {
-        return
-    }
+    abstract draw(): void
 
     /**
      * What to do when the window resizes

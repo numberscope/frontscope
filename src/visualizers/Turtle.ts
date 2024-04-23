@@ -17,7 +17,7 @@ straight segment. It displays the resulting polygonal path.
 // Turtle needs work
 // Throwing the same error on previous Numberscope website
 class Turtle extends P5Visualizer {
-    name = 'Turtle'
+    static visualizationName = 'Turtle'
     private rotMap = new Map<string, number>()
     domain = [0n, 1n, 2n, 3n, 4n]
     range = [30, 45, 60, 90, 120]
@@ -104,21 +104,6 @@ class Turtle extends P5Visualizer {
     private X = 0
     private Y = 0
 
-    inhabit(element: HTMLElement) {
-        super.inhabit(element)
-        this.currentIndex = this.seq.first
-        this.orientation = 0
-        this.X = 0
-        this.Y = 0
-
-        for (let i = 0; i < this.domain.length; i++) {
-            this.rotMap.set(
-                this.domain[i].toString(),
-                (Math.PI / 180) * this.range[i]
-            )
-        }
-    }
-
     checkParameters() {
         const status = super.checkParameters()
 
@@ -136,8 +121,18 @@ class Turtle extends P5Visualizer {
 
     setup() {
         super.setup()
+        this.currentIndex = this.seq.first
+        this.orientation = 0
         this.X = this.sketch.width / 2
         this.Y = this.sketch.height / 2
+
+        for (let i = 0; i < this.domain.length; i++) {
+            this.rotMap.set(
+                this.domain[i].toString(),
+                (Math.PI / 180) * this.range[i]
+            )
+        }
+
         this.sketch
             .background(this.bgColor)
             .stroke(this.strokeColor)
@@ -146,7 +141,6 @@ class Turtle extends P5Visualizer {
     }
 
     draw() {
-        super.draw()
         const currElement = this.seq.getElement(this.currentIndex++)
         const angle = this.rotMap.get(currElement.toString())
 
@@ -167,4 +161,7 @@ class Turtle extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule('Turtle', Turtle, '')
+export const exportModule = new VisualizerExportModule(
+    Turtle,
+    'Use a sequence to steer a virtual turtle that leaves a visible trail'
+)

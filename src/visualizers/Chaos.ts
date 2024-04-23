@@ -50,7 +50,7 @@ enum ColorStyle {
 // circles fade to the outside
 
 class Chaos extends P5Visualizer {
-    name = 'Chaos'
+    static visualizationName = 'Chaos'
     corners = 4
     frac = 0.5
     walkers = 1
@@ -383,7 +383,6 @@ class Chaos extends P5Visualizer {
     }
 
     draw() {
-        super.draw()
         const sketch = this.sketch
         // we do pixelsPerFrame pixels each time through the draw cycle;
         // this speeds things up essentially
@@ -460,7 +459,6 @@ class Chaos extends P5Visualizer {
 }
 
 export const exportModule = new VisualizerExportModule(
-    'Chaos',
     Chaos,
-    'Chaos game played on a sequence.'
+    'Chaos game played using a sequence to select moves'
 )

@@ -51,7 +51,7 @@ exceeds \( 2^{53}-1 \) to be 0.
  **/
 
 class NumberGlyph extends P5Visualizer {
-    name = 'Number Glyphs'
+    static visualizationName = 'Number Glyphs'
     n = 64
     customize = false
     brightCap = 25
@@ -272,7 +272,6 @@ The default value is 25.
     }
 
     draw() {
-        super.draw()
         if (this.firstDraw == true && this.currentIndex < this.last) {
             this.sketch.noStroke()
 
@@ -404,9 +403,8 @@ The default value is 25.
 }
 
 export const exportModule = new VisualizerExportModule(
-    'Number Glyphs',
     NumberGlyph,
-    ''
+    'Map entries to colorful glyphs using their magnitudes and prime factors'
 )
 
 /** md
