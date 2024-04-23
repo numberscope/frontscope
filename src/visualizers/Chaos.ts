@@ -460,5 +460,5 @@ class Chaos extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     Chaos,
-    'Chaos game played using a sequence to select moves.'
+    'Chaos game played using a sequence to select moves'
 )

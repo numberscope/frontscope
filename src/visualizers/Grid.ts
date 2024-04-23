@@ -887,7 +887,7 @@ earlier ones that use the _same_ style.)
 
 export const exportModule = new VisualizerExportModule(
     Grid,
-    'Puts numbers in a grid, highlight cells based on various properties.'
+    'Puts numbers in a grid, highlighting cells based on various properties'
 )
 
 /** md

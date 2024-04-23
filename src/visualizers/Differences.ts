@@ -125,6 +125,6 @@ class Differences extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     Differences,
-    'Produces a table of differences between consecutive terms, '
-        + 'potentially iterated several times.'
+    'Produces a table of differences between consecutive entries, '
+        + 'potentially iterated several times'
 )

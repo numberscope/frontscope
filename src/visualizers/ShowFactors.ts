@@ -87,5 +87,5 @@ class ShowFactors extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     ShowFactors,
-    'Produces a table of factors of a sequence.'
+    'Produces a table of factors of a sequence'
 )

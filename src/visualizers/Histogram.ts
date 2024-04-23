@@ -394,5 +394,5 @@ _Originally contributed by Devlin Costello._
 
 export const exportModule = new VisualizerExportModule(
     FactorHistogram,
-    'Displays a Histogram of the number of prime factors of a sequence.'
+    'Displays a histogram of the number of prime factors of a sequence'
 )

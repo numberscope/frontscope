@@ -15,10 +15,10 @@ export class VisualizerExportModule {
     description: string
     visualizer: VisualizerConstructor
 
-    constructor(viz: VisualizerConstructor, description?: string) {
+    constructor(viz: VisualizerConstructor, description: string) {
         this.name = viz.visualizationName
         this.visualizer = viz
-        this.description = description || ''
+        this.description = description
     }
 }
 
