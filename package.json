@@ -71,14 +71,14 @@
         "help:lint:staged": "echo Only for internal use in the pre-commit hook.",
         "lint:staged": "lint-staged",
         "//only lifecycle scripts below here": "echo",
-        "prepare": "husky install",
+        "prepare": "husky",
         "postinstall": "python3 -m venv .venv && cd tools && node pyrun.mjs python -m pip install -U pip && node pyrun.mjs pip install -r requirements.txt"
     },
     "dependencies": {
         "bigint-isqrt": "^0.3.2",
         "bigint-mod-arith": "^3.3.1",
         "p5": "^1.9.2",
-        "vue": "^3.4.23",
+        "vue": "^3.4.24",
         "vue-router": "^4.3.2"
     },
     "devDependencies": {
@@ -90,13 +90,13 @@
         "@vitejs/plugin-vue": "^5.0.4",
         "@vue/eslint-config-prettier": "^9.0.0",
         "@vue/eslint-config-typescript": "^13.0.0",
-        "@vue/test-utils": "^2.0.2",
+        "@vue/test-utils": "^2.4.5",
         "@vue/tsconfig": "^0.5.1",
         "axios": "^0.28.0",
         "eslint": "^8.56.0",
         "eslint-plugin-vue": "^9.25.0",
-        "happy-dom": "^2.39.1",
-        "husky": "^7.0.4",
+        "happy-dom": "^14.7.1",
+        "husky": "^9.0.11",
         "jsdom": "^24.0.0",
         "lint-staged": "^15.2.2",
         "mathjs": "^12.4.1",
@@ -107,7 +107,7 @@
         "typescript": "^5.4.5",
         "vite": "^5.2.10",
         "vitest": "^1.5.0",
-        "vue-tsc": "^2.0.13",
+        "vue-tsc": "^2.0.14",
         "vue-unique-id": "^3.2.1"
     },
     "lint-staged": {
