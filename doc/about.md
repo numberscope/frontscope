@@ -28,6 +28,7 @@ You can find [Numberscope on GitHub](https://github.com/numberscope) or
 -   Aaron Fenyes
 -   Brendan Heaney
 -   Steven Hristopoulos
+-   Clyde Kertzer
 -   Jennifer Leong
 -   Ang Li
 -   Theodore Lincke
