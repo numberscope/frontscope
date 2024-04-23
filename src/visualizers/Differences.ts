@@ -58,8 +58,8 @@ class Differences extends P5Visualizer {
         return status
     }
 
-    inhabit(element: HTMLElement): void {
-        super.inhabit(element)
+    setup(): void {
+        super.setup()
         if (!this.levels) {
             this.levels = this.n
             this.refreshParams()

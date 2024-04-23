@@ -38,14 +38,14 @@ examples in the `src/visualizers-workbench` directory:
 Let's look at the parts of a p5 visualizer. We recommend following along in
 one of the basic examples as you read.
 
-#### Name
+#### :key: Name _(required)_
 
 The `name` property appears in the titles of bundle cards.
 
 The name that appears in the visualizer list is set later, when you
 [export the visualizer](#export-the-visualizer).
 
-#### Parameters
+#### :bulb: Parameters _(often used)_
 
 Parameters are the user-facing structures that ask for values when a
 visualizer is created. When the user clicks "save", each parameter stores its
@@ -62,7 +62,7 @@ you can set in the `params` property.
 -   **Differences:** `n = 20`, `levels = 5`. The parameters are refreshed in
     the in the `inhabit()` method.
 
-#### Other top-level properties
+#### :bulb: Other top-level properties _(often used)_
 
 You may also need top-level properties that are set and updated while the
 visualizer is running, beyond the user's direct control. By convention, we
@@ -71,7 +71,7 @@ list these properties after the `params` property.
 -   **p5 Visualizer Template:** `index`, `flash`.
 -   **Differences:** `first`.
 
-#### Check parameters
+#### :bulb: Check parameters _(often used)_
 
 When the user clicks "save", `checkParameters()` is called, giving you a
 chance to check the parameter values and prompt the user to correct any
@@ -86,12 +86,13 @@ won't be able to prompt the user for corrections at that point.
 -   **Differences:** Make sure that the number of terms is at least the number
     of levels.
 
-#### Inhabit a spot on the page
+#### :nut*and_bolt: Inhabit a page element *(advanced)\_
 
-Each time the visualizer is inserted into the page, the `inhabit()` function
-is called, giving you your first initialization opportunity. If you implement
-`inhabit()`, start by calling `super.inhabit()`, which does the
-behind-the-scenes work of managing p5 canvass.
+Each time the visualizer is inserted into a page element, the `inhabit()`
+function is called, giving you access to the element the visualizer is about
+to inhabit. If you implement `inhabit()`, start by passing the given element
+up to `super.inhabit()`, which does the behind-the-scenes work of managing p5
+canvass.
 
 When `inhabit()` is called, the visualizer will always be attached to a
 sequence, so you can do sequence-dependent validation and initialization here.
@@ -101,35 +102,31 @@ sequence, so you can do sequence-dependent validation and initialization here.
     case it was left unset in the parameters dialog. Do a consistency check
     between the sequence being visualized and the parameters.
 
-#### Set up the visualizer
+#### :bulb: Set up the visualizer _(often used)_
 
 When the p5 graphics context becomes available, `setup()` is called, giving
 you your first chance to set graphics options and draw on the canvas. This is
 a good place for one-time graphics operations, like painting the background of
 a static visualizer or setting colors and stroke options that won't change
-from frame to frame. If you implement `setup()`, start by calling
-`super.setup()`, which does the behind-the-scenes work of creating a p5
-canvas.
+from frame to frame.
 
-#### _(Advanced)_ Start, stop, and dispose of the visualizer
+If you implement `setup()`, start by calling `super.setup()`, which includes
+the [`createCanvas()`](https://p5js.org/reference/#/p5/createCanvas) call that
+must appear in every p5 setup function.
 
-You shouldn't need to implement `show()`, `stop()`, or `dispose()`. You can
+#### :nut*and_bolt: Show or stop the visualization; depart from a page element *(advanced)\_
+
+You shouldn't need to implement `show()`, `stop()`, or `depart()`. You can
 learn about them from the [visualizer interface](#abstract-visualizers)
 documentation, and from how they're implemented in the `P5Visualizer` base
 class.
 
-#### Draw the visualization!
+#### :key: Draw the visualization _(required)_
 
 The `draw()` function is called on each frame, giving you a chance to draw
 your visualization! Look at the examples and the p5
 [tutorials](https://p5js.org/learn/) and
 [p5.js reference](https://p5js.org/reference/) to learn about what you can do.
-
-If your visualizer leaves any part of the canvas unpainted, you should start
-by using `super.draw()` to draw the default background. It doesn't do anything
-right now, but it might do something in the future. Since the p5 Visualizer
-Template and Differences visualizer both paint the whole canvas with the p5
-`background` function, they don't need to call `super.draw()`.
 
 Drawing tools and options are found in the graphics context, `this.sketch`.
 Accessing `this.sketch` triggers some consistency checks, so it's most
@@ -140,7 +137,10 @@ Sequence information is found in `this.seq`. This is a `SequenceInterface`
 object, so it will always have a method `getElement(n)` that returns the `n`th
 element in the sequence.
 
-#### Stop and start animation
+You have to implement this method, even if it does nothing. Your visualizer
+can't be loaded into Numberscope without it.
+
+#### :bulb: Stop and start animation _(often used)_
 
 If your visualization is a static picture, call the sketch's `noLoop()`
 function when you're done drawing. This stops the animation loop, so you don't
@@ -148,25 +148,19 @@ waste time re-drawing the same picture dozens of times per second. If the
 visualization is only static temporarily, you can call `loop()` to re-start
 the animation loop whenever you need to.
 
-One interesting animation design pattern, used in visualizers like Mod Fill,
-is to iterate through one sequence element per frame, refining the
-visualization each time. Once enough elements have been processed, the
-visualizer calls `noLoop()`, leaving a static, finished picture. This makes
-the visualizer seem to build itself up over a a fraction of a second.
-
 -   **p5 Visualizer Template:** Only loop while animating the white flash that
     indicates an index change.
 -   **Differences:** Draw the whole visualization in one frame, and then call
     `noLoop()` to stop the animation loop.
 
-#### Respond to user interactions
+#### :bulb: Respond to user interactions _(often used)_
 
 Each time the user interacts with your visualization, an
 [event handling](https://p5js.org/reference/#group-Events) function like
 `keyPressed()` or `mouseClicked()` will be called, giving you a chance to
 respond. There are handlers for a wide variety of input events.
 
-#### Export the visualizer
+#### :key: Export the visualizer _(required)_
 
 The engine expects the visualizer to be packaged in a `VisualizerExportModule`
 object, whose constructor takes three arguments:
@@ -175,7 +169,7 @@ object, whose constructor takes three arguments:
 -   The visualizer class
 -   A short description
 
-#### _(Advanced)_ Handle errors
+#### :nut*and_bolt: Handle errors *(advanced)\_
 
 You can create an error message with the `alertMessage` utility in
 `src/shared/`, and show it to the user with
@@ -200,7 +194,7 @@ visualizer. This interface includes the following data and methods.
      better obey the principle of documentation alongside relevant code.
 -->
 
-1. `isValid`: a boolean that is used to determine if the visualizer is ready
+1. `isValid`: A boolean that is used to determine if the visualizer is ready
    to draw. Generally this will be set automatically based on what you return
    from the `checkParameters` method (see below).
 2. `params`: The engine expects all visualizers to have parameters that can be
@@ -209,14 +203,13 @@ visualizer. This interface includes the following data and methods.
    satisfy the `ParamInterface` -- basically, they describe the parameter,
    giving whether it is required, how it should be labeled and presented in
    the UI, and so on.
-3. `view()`: Takes a sequence object that implements the sequence interface.
-   It should arrange for the visualizer to display information about the given
-   sequence (without actually drawing anything at the time `view()` is
-   called).
-4. `inhabit(element)`: Inserts a view of the the visualizer into the given
+3. `view(seq)`: Load the given sequence into the visualizer, where the drawing
+   operations in later function calls will be able to access them. This method
+   should not do any drawing.
+4. `inhabit(element)`: Insert a view of the the visualizer into the given
    `HTMLElement`. This element is typically a `div` whose size is already set
    up to comprise the available space for visualization. The `inhabit()`
-   function should not do any visualization.
+   method should not do any drawing.
 5. `validate()`: Return a `ValidationStatus` object that indicates to the
    engine that the visualizer is valid. The engine will call `validate` before
    it calls `initialize`, and it will only proceed if the `isValid` property
@@ -225,13 +218,13 @@ visualizer. This interface includes the following data and methods.
    details, and you can just implement the `checkParameters()` method, which
    only has to return a `ValidationStatus` that indicates whether the
    parameter values are sensible.
-6. `show()`: Begin (or resume) displaying the visualization.
-7. `stop()`: Pause displaying the visualization (but don't erase any
-   visualization produced so far or otherwise clean up the visualizer).
-8. `dispose()`: Throw out the visualization, release its resources, remove its
-   injected DOM elements, etc. Note that after this call, the visualizer must
-   support `inhabit()` being called again, perhaps with a different div, to
-   re-initialize the visualization.
+6. `show()`: Start or resume display of the visualization.
+7. `stop()`: Pause display of the visualization. Don't erase any visualization
+   produced so far or otherwise clean up the visualizer.
+8. `depart()`: Throw out the visualization, release its resources, remove its
+   injected DOM elements, and do any other required cleanup. After this call,
+   the visualizer must support `inhabit()` being called again, perhaps with a
+   different div, to re-initialize the visualization.
 
 ### Where to put your visualizer
 

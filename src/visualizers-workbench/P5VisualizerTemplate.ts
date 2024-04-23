@@ -54,16 +54,14 @@ class P5VisualizerTemplate extends P5Visualizer {
         // you should leave it to the superclass unless you have a very
         // compelling reason to do it yourself
         super.inhabit(element)
-
-        // start at the beginning of the sequence
-        this.index = this.seq.first
     }
 
     setup() {
-        // do the behind-the-scenes work of creating a p5 canvas. this work is
-        // finicky, and your visualizer won't work unless it's done properly, so
-        // you should leave it to the superclass unless you have a very
-        // compelling reason to do it yourself
+        // the base setup function includes the `createCanvas()` call that must
+        // appear in every p5 setup function
+        //
+        //   https://p5js.org/reference/#/p5/createCanvas
+        //
         super.setup()
 
         // accessing `this.sketch` triggers some consistency checks, so it's
@@ -75,17 +73,12 @@ class P5VisualizerTemplate extends P5Visualizer {
         // frame to frame
         sketch.stroke(51, 51, 255)
         sketch.textAlign(sketch.CENTER, sketch.CENTER)
+
+        // start at the beginning of the sequence
+        this.index = this.seq.first
     }
 
     draw() {
-        // if your visualizer leaves any part of the canvas unpainted, you
-        // should start by using `super.draw()` to draw the default background.
-        // it doesn't do anything right now, but it might do something in the
-        // future. this particular visualizer doesn't need the default
-        // background, because it paints the whole canvas with
-        // `sketch.background()`
-        /* super.draw() */
-
         // accessing `this.sketch` triggers some consistency checks, so it's
         // most parsimonious to access it at most once per function call,
         // storing its value as a local constant for future reference
