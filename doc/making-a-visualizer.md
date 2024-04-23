@@ -40,10 +40,8 @@ one of the basic examples as you read.
 
 #### :key: Name _(required)_
 
-The `name` property appears in the titles of bundle cards.
-
-The name that appears in the visualizer list is set later, when you
-[export the visualizer](#export-the-visualizer).
+Put the visualizer's name in the static `visualizationName` property. The name
+is used in the visualizer list and the titles of bundle cards.
 
 #### :bulb: Parameters _(often used)_
 
@@ -163,11 +161,7 @@ respond. There are handlers for a wide variety of input events.
 #### :key: Export the visualizer _(required)_
 
 The engine expects the visualizer to be packaged in a `VisualizerExportModule`
-object, whose constructor takes three arguments:
-
--   The name that should appear on the visualizer list
--   The visualizer class
--   A short description
+object, constructed from the visualizer class and a short description string.
 
 #### :nut*and_bolt: Handle errors *(advanced)\_
 

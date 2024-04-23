@@ -6,14 +6,22 @@ import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 
 [image should go here]
 
-This template can be used as a starting point for designing a p5 visualizer.
+This template can be used as a starting point for designing a p5 visualizer. You
+can use it to step back and forth through a sequence, showing each element as a
+written number.
 
 ## Parameters
+
+- Step size
+
+## Interactions
+
+- Use the left and right arrow keys to step
 **/
 
 class P5VisualizerTemplate extends P5Visualizer {
     // the name that appears in bundle card titles
-    name = 'p5 Visualizer Template'
+    static visualizationName = 'p5 Visualizer Template'
 
     // external parameters, which the user can choose while creating the
     // visualizer bundle
@@ -160,12 +168,6 @@ class P5VisualizerTemplate extends P5Visualizer {
 }
 
 export const exportModule = new VisualizerExportModule(
-    // the name that appears on the visualizer list
-    'p5 Visualizer Template',
-
-    // the name of the visualizer class
-    P5VisualizerTemplate,
-
-    // a short description
-    'A template for p5 visualizers'
+    P5VisualizerTemplate, // visualizer class
+    'A template for p5 visualizers' // short description
 )
