@@ -18,8 +18,8 @@ occur by watching the order the cells are filled in as the diagram is drawn.
 ## Parameters
 **/
 
-class VizModFill extends P5Visualizer {
-    name = 'Mod Fill'
+class ModFill extends P5Visualizer {
+    static visualizationName = 'Mod Fill'
     modDimension = 10n
     params = {
         /** md
@@ -72,7 +72,6 @@ class VizModFill extends P5Visualizer {
     }
 
     draw() {
-        super.draw()
         this.drawNew(this.sketch, this.i, this.seq)
         this.i++
         if (this.i == 1000 || this.i > this.seq.last) {
@@ -81,8 +80,4 @@ class VizModFill extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    'Mod Fill',
-    VizModFill,
-    ''
-)
+export const exportModule = new VisualizerExportModule(ModFill)

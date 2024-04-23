@@ -2,9 +2,12 @@
     <div class="col-4-sm">
         <div class="card" style="width: 18rem">
             <div class="card-body">
-                <h5 class="card-title">{{ seq.name + ' + ' + viz.name }}</h5>
+                <h5 class="card-title">
+                    {{ `${viz.visualization()} of ${seq.name}` }}
+                </h5>
                 <p class="card-text">
-                    This is a bundle of {{ seq.name + ' + ' + viz.name }}.
+                    Display {{ seq.name }} using a {{ viz.visualization() }}
+                    visualization.
                 </p>
                 <div class="card-preview" :id="cid"></div>
                 <div class="card-buttons">

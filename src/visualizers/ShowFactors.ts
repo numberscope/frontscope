@@ -13,7 +13,7 @@ the sequence, and below each term, its prime factors.
 **/
 
 class ShowFactors extends P5Visualizer {
-    name = 'Show Factors'
+    static visualizationName = 'Show Factors'
 
     start = 1
     end = 20
@@ -41,7 +41,6 @@ class ShowFactors extends P5Visualizer {
     first = 0
 
     draw() {
-        super.draw()
         const sketch = this.sketch
         const fontSize = 20
         sketch
@@ -87,7 +86,6 @@ class ShowFactors extends P5Visualizer {
 }
 
 export const exportModule = new VisualizerExportModule(
-    'Show Factors',
     ShowFactors,
     'Produces a table of factors of a sequence.'
 )

@@ -19,8 +19,8 @@ modulus). The pixel is colored black otherwise.
 
 // CAUTION: This is unstable with some sequences
 // Using it may crash your browser
-class VizShiftCompare extends P5Visualizer {
-    name = 'Shift Compare'
+class ShiftCompare extends P5Visualizer {
+    static visualizationName = 'Shift Compare'
     private img: p5.Image = new p5.Image(1, 1) // just a dummy
     mod = 2n
     params = {
@@ -66,7 +66,6 @@ class VizShiftCompare extends P5Visualizer {
 
     //This will be called everytime to draw
     draw() {
-        super.draw()
         const sketch = this.sketch
         // Ensure mouse coordinates are sane.
         // Mouse coordinates look they're floats by default.
@@ -116,8 +115,4 @@ class VizShiftCompare extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    'Shift Compare',
-    VizShiftCompare,
-    ''
-)
+export const exportModule = new VisualizerExportModule(ShiftCompare)

@@ -416,7 +416,7 @@ const propertyIndicatorFunction: {
 }
 
 class Grid extends P5Visualizer {
-    name = 'Grid'
+    static visualizationName = 'Grid'
 
     // Grid variables
     amountOfNumbers = 4096
@@ -660,7 +660,6 @@ earlier ones that use the _same_ style.)
     }
 
     draw(): void {
-        super.draw()
         this.currentIndex = Math.max(this.startingIndex, this.seq.first)
         let augmentForRowReset = 0n
 
@@ -887,9 +886,8 @@ earlier ones that use the _same_ style.)
 }
 
 export const exportModule = new VisualizerExportModule(
-    'Grid',
     Grid,
-    'Puts numbers in a grid.'
+    'Puts numbers in a grid, highlight cells based on various properties.'
 )
 
 /** md
