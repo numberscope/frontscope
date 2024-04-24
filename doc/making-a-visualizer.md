@@ -188,16 +188,11 @@ object, constructed from the visualizer class and a short description string.
 <!-- prettier-ignore -->
 #### :nut_and_bolt: Handle errors _(advanced)_
 
-You can create an error message with the `alertMessage` utility in
-`src/shared/`, and show it to the user with
-[`window.alert`](https://developer.mozilla.org/en-US/docs/Web/API/Window/alert):
-
-```typescript
-window.alert(alertMessage(someError))
-```
-
-You can also just throw an error. If it's not caught anywhere else, the
-visualizer framework will show it in an error dialog.
+There are two ways to let people interacting with a visualizer know that
+something unexpected has happened. The first is with the
+[alertMessage](../src/shared/alertMessage.md) utility. The second is to just
+throw an error. If it's not caught anywhere else, the visualizer framework
+will show it in an error dialog.
 
 ### Abstract visualizers
 
