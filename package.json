@@ -68,7 +68,7 @@
         "help:lint:check:08": "echo reports discrepancies with its preferred",
         "help:lint:check:09": "echo formatting, while some formatting not",
         "help:lint:check:10": "echo \"preferred by 'prettier' is nevertheless\"",
-        "help:lint:check:11": "echo \"acceptable to 'eslint.\"",
+        "help:lint:check:11": "echo \"acceptable to 'eslint'.\"",
         "lint:check": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore",
         "help:lint:list": "run-s -s help:lint:list:*",
         "help:lint:list:1": "echo \"This is like the 'lint' script but only\"",
