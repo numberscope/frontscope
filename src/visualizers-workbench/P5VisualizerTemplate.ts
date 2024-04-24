@@ -27,19 +27,22 @@ class P5VisualizerTemplate extends P5Visualizer {
 
     // === parameters ===
     // top-level properties that the user can choose while creating the
-    // visualizer bundle
+    // visualizer bundle. if a parameter is meant to have a default value, we
+    // conventionally use that as the initial value, so we can refer to it when
+    // we set the default value below
 
-    stepSize = 1 // the default value of this parameter is zero
+    stepSize = 1
 
     /** md
 ## Parameters
     **/
     params = {
         /** md
-- **Step size:** How far to step when the user presses an arrow key.
+- **Step size:** How far to step when the user presses an arrow key. _(Positive
+integer.)_
          **/
         stepSize: {
-            value: this.stepSize,
+            value: this.stepSize, // default value
             forceType: 'integer',
             displayName: 'Step size',
             required: true,

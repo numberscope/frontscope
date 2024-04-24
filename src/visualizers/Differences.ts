@@ -31,18 +31,18 @@ class Differences extends P5Visualizer {
     **/
     params = {
         /** md
-- **Elements in top row:** How many terms of the sequence to display in the top
-row.
+- **Entries in top row:** How many sequence entries to display in the top
+row. _(Positive integer or zero. Zero means all available entries.)_
          **/
         n: {
             value: this.n,
             forceType: 'integer',
-            displayName: 'Elements in top row',
+            displayName: 'Entries in top row',
             required: true,
         },
         /** md
-- **Number of rows:** How many rows to produce. Cannot be larger than the number
-of elements in the top row.
+- **Number of rows:** How many rows to produce. _(Positive integer, no larger
+than the number of entries in the top row.)_
          **/
         levels: {
             value: this.levels,
@@ -58,10 +58,20 @@ of elements in the top row.
     checkParameters() {
         const status = super.checkParameters()
 
+        if (this.params.levels.value < 1) {
+            status.isValid = false
+            status.errors.push('Number of rows must be positive')
+        }
+        if (this.params.n.value < 0) {
+            status.isValid = false
+            status.errors.push(
+                "Number of entries in top row can't be negative"
+            )
+        }
         if (this.params.n.value < this.params.levels.value) {
             status.isValid = false
             status.errors.push(
-                'Number of rows cannot exceed length of first row'
+                "Number of rows can't exceed length of first row"
             )
         }
 
