@@ -43,10 +43,13 @@ class P5VisualizerTemplate extends P5Visualizer {
 
     // internal properties. the value of `index` will always be overwritten in
     // `setup()`, but TypeScript can't infer that, so we have to give `index`
-    // an initial value
+    // an initial value. the same goes for the `ns____` color strings
     index = 0
     justStepped = false
     flash = 0
+    nsGray400 = ''
+    nsNavBG = ''
+    nsInfoBG = ''
 
     checkParameters() {
         const status = super.checkParameters()
@@ -73,9 +76,15 @@ class P5VisualizerTemplate extends P5Visualizer {
         // storing its value as a local constant for future reference
         const sketch = this.sketch
 
+        // get Numberscope palette colors from page style
+        const style = getComputedStyle(document.body)
+        this.nsGray400 = style.getPropertyValue('--bs-gray-400')
+        this.nsNavBG = style.getPropertyValue('--ns-navigation-background')
+        this.nsInfoBG = style.getPropertyValue('--ns-information-background')
+
         // set the stroke color and text alignment, which won't change from
         // frame to frame
-        sketch.stroke(51, 51, 255)
+        sketch.stroke(sketch.color(this.nsInfoBG))
         sketch.textAlign(sketch.CENTER, sketch.CENTER)
 
         // start at the beginning of the sequence
@@ -98,7 +107,7 @@ class P5VisualizerTemplate extends P5Visualizer {
         // paint the background. for an animated visualizer, this is often done
         // as the first drawing step in each frame, wiping out the previous
         // frame and leaving a blank canvas to draw on
-        sketch.background(206, 212, 218)
+        sketch.background(this.nsGray400)
 
         // fade the white flash that shows the index has changed, and set the
         // text fill color accordingly
@@ -113,7 +122,7 @@ class P5VisualizerTemplate extends P5Visualizer {
             sketch.noLoop()
         }
         const textFill = sketch.lerpColor(
-            sketch.color(128, 159, 255),
+            sketch.color(this.nsNavBG),
             sketch.color(255),
             this.flash
         )
@@ -122,7 +131,6 @@ class P5VisualizerTemplate extends P5Visualizer {
         // print the current element
         const element = this.seq.getElement(this.index)
         sketch.text(element.toString(), 0, 0)
-        console.log('drawn')
     }
 
     // when the user presses a key while the sketch is in focus, this function
