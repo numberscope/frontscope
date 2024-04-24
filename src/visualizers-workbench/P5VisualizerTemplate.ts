@@ -80,9 +80,11 @@ class P5VisualizerTemplate extends P5Visualizer {
         this.nsInfoBG = style.getPropertyValue('--ns-information-background')
 
         // set the stroke color and text alignment, which won't change from
-        // frame to frame
-        sketch.stroke(sketch.color(this.nsInfoBG))
-        sketch.textAlign(sketch.CENTER, sketch.CENTER)
+        // frame to frame. each setting method returns a reference to the
+        // sketch, so you can chain the methods as shown here
+        sketch
+            .stroke(sketch.color(this.nsInfoBG))
+            .textAlign(sketch.CENTER, sketch.CENTER)
 
         // start at the beginning of the sequence
         this.index = this.seq.first
@@ -97,9 +99,10 @@ class P5VisualizerTemplate extends P5Visualizer {
         // scale and center the coordinate system. calculations involving the
         // canvas dimensions need to be done every frame, because the dimensions
         // can change at any time
-        sketch.translate(0.5 * sketch.width, 0.5 * sketch.height)
         const smallDim = Math.min(sketch.width, sketch.height)
-        sketch.textSize(0.2 * smallDim)
+        sketch
+            .translate(0.5 * sketch.width, 0.5 * sketch.height)
+            .textSize(0.2 * smallDim)
 
         // paint the background. for an animated visualizer, this is often done
         // as the first drawing step in each frame, wiping out the previous
