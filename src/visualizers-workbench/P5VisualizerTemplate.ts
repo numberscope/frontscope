@@ -139,27 +139,25 @@ class P5VisualizerTemplate extends P5Visualizer {
 - **Left and right arrow keys:** Step back and forth through the sequence.
     **/
     keyPressed() {
-        // accessing `this.sketch` triggers some consistency checks, so it's
-        // most parsimonious to access it at most once per function call,
-        // storing its value as a local constant for future reference
         const sketch = this.sketch
 
+        // check which key was pressed, and respond accordingly
+        //
+        //   https://p5js.org/reference/#/p5/keyCode
+        //
         const oldIndex = this.index
-        if (
-            sketch.keyCode === sketch.RIGHT_ARROW
-            && this.index < this.seq.last
-        ) {
+        if (sketch.keyCode === sketch.RIGHT_ARROW) {
             this.index += this.stepSize
-        } else if (
-            sketch.keyCode === sketch.LEFT_ARROW
-            && this.index > this.seq.first
-        ) {
+        } else if (sketch.keyCode === sketch.LEFT_ARROW) {
             this.index -= this.stepSize
         }
 
-        // show a flash when the index changes. the `loop()` function re-starts
-        // the sketch's animation loop
-        if (this.index !== oldIndex) {
+        // make sure we haven't stepped out of bounds
+        if (this.index < this.seq.first || this.index > this.seq.last) {
+            this.index = oldIndex
+        } else {
+            // show a flash when the index changes. the `loop()` function
+            // re-starts the sketch's animation loop
             this.justStepped = true
             this.flash = 1
             sketch.loop()
