@@ -71,9 +71,6 @@ class P5VisualizerTemplate extends P5Visualizer {
         //
         super.setup()
 
-        // accessing `this.sketch` triggers some consistency checks, so it's
-        // most parsimonious to access it at most once per function call,
-        // storing its value as a local constant for future reference
         const sketch = this.sketch
 
         // get Numberscope palette colors from page style
