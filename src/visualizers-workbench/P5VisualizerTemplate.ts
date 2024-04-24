@@ -1,3 +1,4 @@
+import p5 from 'p5' // we need the p5.Color type to declare top-level colors
 import {P5Visualizer} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 
@@ -19,11 +20,15 @@ required and commonly used features._
 **/
 
 class P5VisualizerTemplate extends P5Visualizer {
-    // the name that appears in bundle card titles
+    // === visualizer name ===
+    // appears in the visualizer list and bundle card titles
+
     static visualizationName = 'Entries (p5 Template)'
 
-    // parameters: top-level properties that the user can choose while creating
-    // the visualizer bundle
+    // === parameters ===
+    // top-level properties that the user can choose while creating the
+    // visualizer bundle
+
     stepSize = 1 // the default value of this parameter is zero
 
     /** md
@@ -41,15 +46,22 @@ class P5VisualizerTemplate extends P5Visualizer {
         },
     }
 
-    // internal properties. the value of `index` will always be overwritten in
-    // `setup()`, but TypeScript can't infer that, so we have to give `index`
-    // an initial value. the same goes for the `ns____` color strings
+    // === internal properties ===
+    // top-level properties that are set and updated while the visualizer is
+    // running, beyond the user's direct control
+
+    // navigation. the index will be initialized during setup, but TypeScript
+    // can't infer that, so we have to give `index` a placeholder value
     index = 0
     justStepped = false
     flash = 0
-    nsGray400 = ''
-    nsNavBG = ''
-    nsInfoBG = ''
+
+    // palette colors. these will be initialized during setup, which is our
+    // first chance to create colors. for now, we use `undefined` as a
+    // placeholder value
+    bg: p5.Color | undefined = undefined
+    baseFill: p5.Color | undefined = undefined
+    outline: p5.Color | undefined = undefined
 
     checkParameters() {
         const status = super.checkParameters()
@@ -73,31 +85,36 @@ class P5VisualizerTemplate extends P5Visualizer {
 
         const sketch = this.sketch
 
-        // get Numberscope palette colors from page style
-        const style = getComputedStyle(document.body)
-        this.nsGray400 = style.getPropertyValue('--bs-gray-400')
-        this.nsNavBG = style.getPropertyValue('--ns-navigation-background')
-        this.nsInfoBG = style.getPropertyValue('--ns-information-background')
+        // initialize palette colors, chosen from the Numberscope site palette
+        this.bg = sketch.color(206, 212, 218)
+        this.baseFill = sketch.color(128, 159, 255)
+        const outline = sketch.color(51, 51, 255)
 
         // set the stroke color and text alignment, which won't change from
         // frame to frame. each setting method returns a reference to the
         // sketch, so you can chain the methods as shown here
-        sketch
-            .stroke(sketch.color(this.nsInfoBG))
-            .textAlign(sketch.CENTER, sketch.CENTER)
+        sketch.stroke(outline).textAlign(sketch.CENTER, sketch.CENTER)
 
         // start at the beginning of the sequence
         this.index = this.seq.first
     }
 
+    // this is where you draw your visualization! look at the examples and the
+    // p5 tutorials and reference to learn about what you can do
+    //
+    //   https://p5js.org/learn/
+    //   https://p5js.org/reference/
+    //
+    // you have to implement this method, even if it does nothing. your
+    // visualizer can't be loaded into Numberscope without it
     draw() {
         // accessing `this.sketch` triggers some consistency checks. by storing
         // its value as a local constant, we avoid redundant checks
         const sketch = this.sketch
 
-        // scale and center the coordinate system. calculations involving the
-        // canvas dimensions need to be done every frame, because the dimensions
-        // can change at any time
+        // scale and center the coordinate system; scale the text to fit the
+        // canvas. calculations involving canvas dimensions need to be done
+        // every frame, because the dimensions can change at any time
         const smallDim = Math.min(sketch.width, sketch.height)
         sketch
             .translate(0.5 * sketch.width, 0.5 * sketch.height)
@@ -106,7 +123,7 @@ class P5VisualizerTemplate extends P5Visualizer {
         // paint the background. for an animated visualizer, this is often done
         // as the first drawing step in each frame, wiping out the previous
         // frame and leaving a blank canvas to draw on
-        sketch.background(this.nsGray400)
+        sketch.background(this.bg as p5.Color)
 
         // fade the white flash that shows the index has changed, and set the
         // text fill color accordingly
@@ -121,7 +138,7 @@ class P5VisualizerTemplate extends P5Visualizer {
             sketch.noLoop()
         }
         const textFill = sketch.lerpColor(
-            sketch.color(this.nsNavBG),
+            this.baseFill as p5.Color,
             sketch.color(255),
             this.flash
         )

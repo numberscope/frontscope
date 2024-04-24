@@ -63,8 +63,14 @@ you can set in the `params` property.
 #### :bulb: Other top-level properties _(often used)_
 
 You may also need top-level properties that are set and updated while the
-visualizer is running, beyond the user's direct control. By convention, we
-list these properties after the `params` property.
+visualizer is running, beyond the user's direct control. These might do things
+like:
+
+-   Keeping track of which part of the sequence you're looking at.
+-   Storing colors that are created during setup.
+-   Remembering where an animated object is.
+
+By convention, we list these properties after the `params` property.
 
 -   **p5 Visualizer Template:** `index`, `flash`.
 -   **Differences:** `first`.
