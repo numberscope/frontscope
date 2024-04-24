@@ -191,5 +191,5 @@ class P5VisualizerTemplate extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     P5VisualizerTemplate, // visualizer class
-    'A template for p5 visualizers' // short description
+    'Step through entries one at a time' // short description
 )
