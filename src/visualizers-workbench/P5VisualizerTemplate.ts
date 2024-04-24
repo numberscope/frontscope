@@ -60,14 +60,6 @@ class P5VisualizerTemplate extends P5Visualizer {
         return status
     }
 
-    inhabit(element: HTMLElement): void {
-        // do the behind-the-scenes work of managing p5 canvases. this work is
-        // finicky, and your visualizer won't work unless it's done properly, so
-        // you should leave it to the superclass unless you have a very
-        // compelling reason to do it yourself
-        super.inhabit(element)
-    }
-
     setup() {
         // the base setup function includes the `createCanvas()` call that must
         // appear in every p5 setup function
