@@ -27,6 +27,13 @@ Numberscope, you'll move it to `src/visualizers`. Then Frontscope will notice
 and load it when you call the usual `npm run dev`. For details, see
 [below](#where-to-put-your-visualizer).
 
+#### Document your visualizer
+
+Each visualizer has its documentation woven into the source code, using
+special `/** md`&nbsp;…&nbsp;`**/` comments. We have some
+[conventions](#how-to-document-your-visualizer) for what the documentation
+comments should include and where in the source code they should go.
+
 ### p5 visualizers
 
 A good way to start a p5 visualizer is to copy and modify one of the basic
@@ -247,3 +254,7 @@ As discussed [earlier](#test-your-visualizer-on-the-workbench), visualizers
 that aren't ready for Numberscope users should go in
 `src/visualizers-workbench`. You can load them for testing by calling
 `npm run dev:workbench`.
+
+### How to document your visualizer
+
+_Explain documentation conventions here._
