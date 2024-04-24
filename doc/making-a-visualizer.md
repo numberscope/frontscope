@@ -85,7 +85,7 @@ that point.
 -   **Differences:** Make sure that the number of terms is at least the number
     of levels.
 
-#### :nut*and_bolt: Inhabit a page element *(advanced)\_
+#### :gear: Inhabit a page element _(advanced)_
 
 Each time the visualizer is inserted into a page element, the `inhabit()`
 function is called, giving you access to the element the visualizer is about
@@ -113,7 +113,7 @@ If you implement `setup()`, start by calling `super.setup()`, which includes
 the [`createCanvas()`](https://p5js.org/reference/#/p5/createCanvas) call that
 must appear in every p5 setup function.
 
-#### :nut*and_bolt: Show or stop the visualization; depart from a page element *(advanced)\_
+#### :gear: Show or stop the visualization; depart from a page element _(advanced)_
 
 You shouldn't need to implement `show()`, `stop()`, or `depart()`. You can
 learn about them from the [visualizer interface](#abstract-visualizers)
@@ -164,7 +164,7 @@ respond. There are handlers for a wide variety of input events.
 The engine expects the visualizer to be packaged in a `VisualizerExportModule`
 object, constructed from the visualizer class and a short description string.
 
-#### :nut*and_bolt: Handle errors *(advanced)\_
+#### :gear: Handle errors _(advanced)_
 
 You can create an error message with the `alertMessage` utility in
 `src/shared/`, and show it to the user with
