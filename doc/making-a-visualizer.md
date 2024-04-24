@@ -48,12 +48,12 @@ examples in the `src/visualizers-workbench` directory:
 Let's look at the parts of a p5 visualizer. We recommend following along in
 one of the basic examples as you read.
 
-#### :key: Name _(required)_
+#### 🔑️ Name _(required)_
 
 Put the visualizer's name in the static `visualizationName` property. The name
 is used in the visualizer list and the titles of bundle cards.
 
-#### :bulb: Parameters _(often used)_
+#### 💡️ Parameters _(often used)_
 
 Parameters are the user-facing structures that ask for values when a
 visualizer is created. When the user clicks "save", each parameter stores its
@@ -70,7 +70,7 @@ you can set in the `params` property.
 -   **Differences:** `n = 20`, `levels = 5`. The parameters are refreshed in
     the in the `inhabit()` method.
 
-#### :bulb: Other top-level properties _(often used)_
+#### 💡️ Other top-level properties _(often used)_
 
 You may also need top-level properties that are set and updated while the
 visualizer is running, beyond the user's direct control. These might do things
@@ -85,7 +85,7 @@ By convention, we list these properties after the `params` property.
 -   **p5 Visualizer Template:** `index`, `flash`.
 -   **Differences:** `first`.
 
-#### :bulb: Check parameters _(often used)_
+#### 💡️ Check parameters _(often used)_
 
 When the user clicks "save", `checkParameters()` is called, giving you a
 chance to check the parameter values and prompt the user to correct any
@@ -101,8 +101,7 @@ that point.
 -   **Differences:** Make sure that the number of terms is at least the number
     of levels.
 
-<!-- prettier-ignore -->
-#### :nut_and_bolt: Inhabit a page element _(advanced)_
+#### 🔩️ Inhabit a page element _(advanced)_
 
 Each time the visualizer is inserted into a page element, the `inhabit()`
 function is called, giving you access to the element the visualizer is about
@@ -118,7 +117,7 @@ You can access the attached sequence here, but we recommend doing that in
     case it was left unset in the parameters dialog. Do a consistency check
     between the sequence being visualized and the parameters.
 
-#### :bulb: Set up the visualizer _(often used)_
+#### 💡️ Set up the visualizer _(often used)_
 
 When the p5 graphics context becomes available, `setup()` is called, giving
 you your first chance to set graphics options and draw on the canvas. This is
@@ -133,15 +132,14 @@ must appear in every p5 setup function.
 When `setup()` is called, the visualizer will always be attached to a
 sequence, so you can do sequence-dependent validation and initialization here.
 
-<!-- prettier-ignore -->
-#### :nut_and_bolt: Show or stop the visualization; depart from a page element _(advanced)_
+#### 🔩️ Show or stop the visualization; depart from a page element _(advanced)_
 
 You shouldn't need to implement `show()`, `stop()`, or `depart()`. You can
 learn about them from the [visualizer interface](#abstract-visualizers)
 documentation, and from how they're implemented in the `P5Visualizer` base
 class.
 
-#### :key: Draw the visualization _(required)_
+#### 🔑️ Draw the visualization _(required)_
 
 The `draw()` function is called on each frame, giving you a chance to draw
 your visualization! Look at the examples and the p5
@@ -160,7 +158,7 @@ entry in the sequence.
 You have to implement the `draw()` method, even if it does nothing. Your
 visualizer can't be loaded into Numberscope without it.
 
-#### :bulb: Stop and start animation _(often used)_
+#### 💡️ Stop and start animation _(often used)_
 
 If your visualization is a static picture, call the sketch's `noLoop()`
 function when you're done drawing. This stops the animation loop, so you don't
@@ -173,20 +171,19 @@ the animation loop whenever you need to.
 -   **Differences:** Draw the whole visualization in one frame, and then call
     `noLoop()` to stop the animation loop.
 
-#### :bulb: Respond to user interactions _(often used)_
+#### 💡️ Respond to user interactions _(often used)_
 
 Each time the user interacts with your visualization, an
 [event handling](https://p5js.org/reference/#group-Events) function like
 `keyPressed()` or `mouseClicked()` will be called, giving you a chance to
 respond. There are handlers for a wide variety of input events.
 
-#### :key: Export the visualizer _(required)_
+#### 🔑️ Export the visualizer _(required)_
 
 The engine expects the visualizer to be packaged in a `VisualizerExportModule`
 object, constructed from the visualizer class and a short description string.
 
-<!-- prettier-ignore -->
-#### :nut_and_bolt: Handle errors _(advanced)_
+#### 🔩️ Handle errors _(advanced)_
 
 There are two ways to let people interacting with a visualizer know that
 something unexpected has happened. The first is with the
