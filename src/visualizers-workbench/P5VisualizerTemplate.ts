@@ -91,9 +91,8 @@ class P5VisualizerTemplate extends P5Visualizer {
     }
 
     draw() {
-        // accessing `this.sketch` triggers some consistency checks, so it's
-        // most parsimonious to access it at most once per function call,
-        // storing its value as a local constant for future reference
+        // accessing `this.sketch` triggers some consistency checks. by storing
+        // its value as a local constant, we avoid redundant checks
         const sketch = this.sketch
 
         // scale and center the coordinate system. calculations involving the
