@@ -50,11 +50,11 @@ class P5VisualizerTemplate extends P5Visualizer {
     // top-level properties that are set and updated while the visualizer is
     // running, beyond the user's direct control
 
-    // navigation. the index will be initialized during setup, but TypeScript
-    // can't infer that, so we have to give `index` a placeholder value
+    // navigation and animation states. these properties will be initialized
+    // during setup, but TypeScript can't infer that, so we have to give the
+    // properties placeholder values
     index = 0
-    justStepped = false
-    flash = 0
+    lastStepTime = 0
 
     // palette colors. these will be initialized during setup, which is our
     // first chance to create colors. for now, we use `undefined` as a
@@ -97,6 +97,9 @@ class P5VisualizerTemplate extends P5Visualizer {
 
         // start at the beginning of the sequence
         this.index = this.seq.first
+
+        // reset the last step time
+        this.lastStepTime = -1000000
     }
 
     // this is where you draw your visualization! look at the examples and the
@@ -125,22 +128,17 @@ class P5VisualizerTemplate extends P5Visualizer {
         // frame and leaving a blank canvas to draw on
         sketch.background(this.bg as p5.Color)
 
-        // fade the white flash that shows the index has changed, and set the
-        // text fill color accordingly
-        if (this.justStepped) {
-            this.justStepped = false
-        } else {
-            this.flash *= Math.exp(-0.01 * sketch.deltaTime)
-        }
-        if (this.flash < 0.001) {
+        // indicate each step with a white flash
+        let flash = Math.exp(-0.01 * (sketch.millis() - this.lastStepTime))
+        if (flash < 0.001) {
             // stop the animation when the flash has faded
-            this.flash = 0
+            flash = 0
             sketch.noLoop()
         }
         const textFill = sketch.lerpColor(
             this.baseFill as p5.Color,
             sketch.color(255),
-            this.flash
+            flash
         )
         sketch.fill(textFill)
 
@@ -180,10 +178,9 @@ class P5VisualizerTemplate extends P5Visualizer {
         if (this.index < this.seq.first || this.index > this.seq.last) {
             this.index = oldIndex
         } else {
-            // show a flash when the index changes. the `loop()` function
-            // re-starts the sketch's animation loop
-            this.justStepped = true
-            this.flash = 1
+            // re-start the animation loop to print the new entry. remember
+            // when we stepped so we can show a flash
+            this.lastStepTime = sketch.millis()
             sketch.loop()
         }
     }
