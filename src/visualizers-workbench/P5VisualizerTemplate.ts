@@ -50,18 +50,15 @@ class P5VisualizerTemplate extends P5Visualizer {
     // top-level properties that are set and updated while the visualizer is
     // running, beyond the user's direct control
 
-    // navigation and animation states. these properties will be initialized
-    // during setup, but TypeScript can't infer that, so we have to give the
-    // properties placeholder values
+    // navigation state. this property will be initialized during setup, but
+    // TypeScript can't infer that, so we have to give a placeholder value
     index = 0
-    lastStepTime = 0
 
-    // palette colors. these will be initialized during setup, which is our
+    // palette colors. these will also be initialized during setup, which is our
     // first chance to create colors. for now, we use `undefined` as a
     // placeholder value
-    bg: p5.Color | undefined = undefined
-    baseFill: p5.Color | undefined = undefined
-    outline: p5.Color | undefined = undefined
+    bgColor: p5.Color | undefined = undefined
+    textColor: p5.Color | undefined = undefined
 
     checkParameters() {
         const status = super.checkParameters()
@@ -86,20 +83,17 @@ class P5VisualizerTemplate extends P5Visualizer {
         const sketch = this.sketch
 
         // initialize palette colors, chosen from the Numberscope site palette
-        this.bg = sketch.color(206, 212, 218)
-        this.baseFill = sketch.color(128, 159, 255)
-        const outline = sketch.color(51, 51, 255)
+        this.bgColor = sketch.color(206, 212, 218)
+        this.textColor = sketch.color(128, 159, 255)
+        const outlineColor = sketch.color(51, 51, 255)
 
         // set the stroke color and text alignment, which won't change from
         // frame to frame. each setting method returns a reference to the
         // sketch, so you can chain the methods as shown here
-        sketch.stroke(outline).textAlign(sketch.CENTER, sketch.CENTER)
+        sketch.stroke(outlineColor).textAlign(sketch.CENTER, sketch.CENTER)
 
         // start at the beginning of the sequence
         this.index = this.seq.first
-
-        // reset the last step time
-        this.lastStepTime = -1000000
     }
 
     // this is where you draw your visualization! look at the examples and the
@@ -126,25 +120,24 @@ class P5VisualizerTemplate extends P5Visualizer {
         // paint the background. for an animated visualizer, this is often done
         // as the first drawing step in each frame, wiping out the previous
         // frame and leaving a blank canvas to draw on
-        sketch.background(this.bg as p5.Color)
+        sketch.background(this.bgColor as p5.Color)
 
-        // indicate each step with a white flash
-        let flash = Math.exp(-0.01 * (sketch.millis() - this.lastStepTime))
-        if (flash < 0.001) {
-            // stop the animation when the flash has faded
-            flash = 0
-            sketch.noLoop()
-        }
-        const textFill = sketch.lerpColor(
-            this.baseFill as p5.Color,
-            sketch.color(255),
-            flash
-        )
-        sketch.fill(textFill)
-
-        // print the current element
+        // print the current entry
         const element = this.seq.getElement(this.index)
-        sketch.text(element.toString(), 0, 0)
+        sketch.fill(this.textColor as p5.Color).text(element.toString(), 0, 0)
+
+        // draw a progress bar. drawing methods can be chained, just like
+        // setting methods
+        const progress = 1 - 7 / (7 + Math.sqrt(this.index - this.seq.first))
+        const barLength = 0.6 * smallDim
+        sketch
+            .fill(255, 128 + 128 * progress, 0)
+            .translate(-0.5 * barLength, 0.2 * smallDim)
+            .line(0, 0, barLength, 0)
+            .circle(progress * barLength, 0, 0.02 * smallDim)
+
+        // stop the animation loop
+        sketch.noLoop()
     }
 
     // when the user presses a key while the sketch is in focus, this function
@@ -178,9 +171,7 @@ class P5VisualizerTemplate extends P5Visualizer {
         if (this.index < this.seq.first || this.index > this.seq.last) {
             this.index = oldIndex
         } else {
-            // re-start the animation loop to print the new entry. remember
-            // when we stepped so we can show a flash
-            this.lastStepTime = sketch.millis()
+            // re-start the animation loop to print the new entry
             sketch.loop()
         }
     }
