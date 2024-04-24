@@ -1,4 +1,5 @@
 INHERIT: mkdocs.yml
 nav:
+    - Overview: README.md
     - User Guide:
           - ... | flat | src/visualizers-workbench/*
