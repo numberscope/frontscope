@@ -100,8 +100,8 @@ to inhabit. If you implement `inhabit()`, start by passing the given element
 up to `super.inhabit()`, which does the behind-the-scenes work of managing p5
 canvases.
 
-When `inhabit()` is called, the visualizer will always be attached to a
-sequence, so you can do sequence-dependent validation and initialization here.
+You can access the attached sequence here, but we recommend doing that in
+`setup()` instead.
 
 -   **p5 Visualizer Template:** Go to the beginning of the sequence.
 -   **Differences:** Fill in the default value of the `levels` property in
@@ -119,6 +119,9 @@ from frame to frame.
 If you implement `setup()`, start by calling `super.setup()`, which includes
 the [`createCanvas()`](https://p5js.org/reference/#/p5/createCanvas) call that
 must appear in every p5 setup function.
+
+When `setup()` is called, the visualizer will always be attached to a
+sequence, so you can do sequence-dependent validation and initialization here.
 
 <!-- prettier-ignore -->
 #### :nut_and_bolt: Show or stop the visualization; depart from a page element _(advanced)_
@@ -142,10 +145,10 @@ a local constant for future reference.
 
 Sequence information is found in `this.seq`. This is a `SequenceInterface`
 object, so it will always have a method `getElement(n)` that returns the `n`th
-element in the sequence.
+entry in the sequence.
 
-You have to implement this method, even if it does nothing. Your visualizer
-can't be loaded into Numberscope without it.
+You have to implement the `draw()` method, even if it does nothing. Your
+visualizer can't be loaded into Numberscope without it.
 
 #### :bulb: Stop and start animation _(often used)_
 
