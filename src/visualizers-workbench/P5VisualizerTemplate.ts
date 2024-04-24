@@ -2,33 +2,36 @@ import {P5Visualizer} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 
 /** md
-# p5 Visualizer Template
+# Entries (p5 Template)
 
-[image should go here]
+[<img
+  src="../../assets/img/Entries/1729.png"
+  width=700
+  style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/Differences/squares.png)
 
-This template can be used as a starting point for designing a p5 visualizer. You
-can use it to step back and forth through a sequence, showing each element as a
-written number.
+This visualizer allows you to step back and forth through a sequence, showing
+each entry as a written number.
 
-## Parameters
-
-- Step size
-
-## Interactions
-
-- Use the left and right arrow keys to step
+_This visualizer is meant to be used as a template for new visualizers based on
+the p5.js library. It includes explanatory comments and minimal examples of
+required and commonly used features._
 **/
 
 class P5VisualizerTemplate extends P5Visualizer {
     // the name that appears in bundle card titles
-    static visualizationName = 'p5 Visualizer Template'
+    static visualizationName = 'Entries (p5 Template)'
 
-    // external parameters, which the user can choose while creating the
-    // visualizer bundle
+    // parameters: top-level properties that the user can choose while creating
+    // the visualizer bundle
     stepSize = 1 // the default value of this parameter is zero
+
+    /** md
+## Parameters
+    **/
     params = {
         /** md
-- stepSize: How far to step when the user presses a left or right arrow key.
+- **Step size:** How far to step when the user presses an arrow key.
          **/
         stepSize: {
             value: this.stepSize,
@@ -38,8 +41,8 @@ class P5VisualizerTemplate extends P5Visualizer {
         },
     }
 
-    // internal parameters. the value of `index` will always be overwritten in
-    // `inhabit()`, but TypeScript can't infer that, so we have to give `index`
+    // internal properties. the value of `index` will always be overwritten in
+    // `setup()`, but TypeScript can't infer that, so we have to give `index`
     // an initial value
     index = 0
     justStepped = false
@@ -139,6 +142,10 @@ class P5VisualizerTemplate extends P5Visualizer {
     //
     //   https://p5js.org/reference/#group-Events
     //
+    /** md
+## Controls
+- **Left and right arrow keys:** Step back and forth through the sequence.
+    **/
     keyPressed() {
         // accessing `this.sketch` triggers some consistency checks, so it's
         // most parsimonious to access it at most once per function call,

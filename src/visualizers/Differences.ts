@@ -6,25 +6,33 @@ const min = Math.min
 /** md
 # Difference Visualizer
 
-(example image should go here)
+[<img
+  src="../../assets/img/Differences/squares.png"
+  width=696
+  style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/Differences/squares.png)
 
-This is a very simple visualizer that just prints a row of values from
-the sequence, and below that, between each two terms, their difference.
-It can continue this process, adding rows that indicate differences
-between the terms in the row above, for as many rows as you like.
-
-## Parameters
+This visualizer prints a row of sequence entries, followed by a row of
+differences between entries, followed by a row of differences between
+differences, and so on, for as many rows as you like. The rows are shifted so
+that each difference appears between and below the two numbers it's the
+difference of.
 **/
 
 class Differences extends P5Visualizer {
     static visualizationName = 'Differences'
 
+    // parameters
     n = 20
     levels = 5
 
+    /** md
+## Parameters
+    **/
     params = {
         /** md
-- n: The number of terms of the sequence to display in the top row.
+- **Elements in top row:** How many terms of the sequence to display in the top
+row.
          **/
         n: {
             value: this.n,
@@ -33,7 +41,8 @@ class Differences extends P5Visualizer {
             required: true,
         },
         /** md
-- levels: The number of rows to produce. Cannot be larger than n.
+- **Number of rows:** How many rows to produce. Cannot be larger than the number
+of elements in the top row.
          **/
         levels: {
             value: this.levels,
@@ -43,6 +52,7 @@ class Differences extends P5Visualizer {
             description: 'If zero, defaults to the length of top row',
         },
     }
+
     first = 0
 
     checkParameters() {
