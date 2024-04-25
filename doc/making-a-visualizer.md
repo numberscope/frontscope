@@ -239,8 +239,10 @@ parameter's key, put a documentation block that displays like this:
 
 #### Controls
 
-In a documentation block just before the first event handling method, put
-"Controls" in a level-2 heading. Display control information like this:
+If users can interact with your visualizer while it's running, these
+interactions should be documented too. In a documentation block just before
+the first event handling method, put "Controls" in a level-2 heading. Display
+control information like this:
 
 > **Key or gesture:** Description of effect.
 
