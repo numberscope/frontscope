@@ -112,7 +112,8 @@ Each time the visualizer is inserted into a page element, the `inhabit()`
 function is called, giving you access to the element the visualizer is about
 to inhabit. If you don't need information from the web page your visualizer is
 running in, or access to its document object model (DOM), you shouldn't need
-to implement `inhabit()`.
+to implement `inhabit()`. The full details on this method are in the
+[visualizer interface](behind-the-scenes.md) documentation.
 
 #### 💡️ Set up the visualizer _(often used)_
 

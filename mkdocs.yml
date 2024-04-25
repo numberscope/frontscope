@@ -21,6 +21,7 @@ nav:
           - doc/pull-request-checklist.md
           - doc/visual-studio-code-setup.md
     - Internal code and APIs:
+          - doc/behind-the-scenes.md
           - doc/working-with-bigints.md
           - ... | flat | src/shared/*
     - Other Information:

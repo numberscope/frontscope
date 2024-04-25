@@ -1,5 +1,14 @@
 # Visualizers: Behind the Scenes
 
+<!-- TODO:
+     * This information/page needs either to be in, or extracteed from,
+       the relevant source files to maintain DRYness and "doc-code adjacency"
+       principles.
+     * If we continue to use tables, need to get the text to wrap in
+       the description part. Perhaps install and use
+       https://pypi.org/project/markdown-grid-tables/
+-->
+
 In the guide to [making a visualizer](making-a-visualizer.md), we saw how to
 extend the [`P5Visualizer`](making-a-visualizer.md#p5-visualizers) base class.
 Now, let's take a peek at how a base class works internally. This page will be
