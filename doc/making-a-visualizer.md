@@ -106,13 +106,16 @@ that point.
 
 Each time the visualizer is inserted into a page element, the `inhabit()`
 function is called, giving you access to the element the visualizer is about
-to inhabit. If you implement `inhabit()`, start by passing the given element
-up to `super.inhabit()`, which does the behind-the-scenes work of managing p5
+to inhabit. If you don't need information from the web page your visualizer is
+running in, or access to its document object model (DOM), you shouldn't need
+to implement `inhabit()`.
+
+If you do implement `inhabit()`, start by passing the given element up to
+`super.inhabit()`, which does the behind-the-scenes work of managing p5
 canvases.
 
-You can access the attached sequence here, but we recommend doing that in
-`setup()` instead. Neither the p5 Template visualizer nor the Differences
-visualizer implement `inhabit()`.
+You can access the attached sequence in `inhabit()`, but we recommend doing
+that in `setup()` instead.
 
 #### 💡️ Set up the visualizer _(often used)_
 
