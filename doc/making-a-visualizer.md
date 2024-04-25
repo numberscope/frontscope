@@ -111,13 +111,6 @@ to inhabit. If you don't need information from the web page your visualizer is
 running in, or access to its document object model (DOM), you shouldn't need
 to implement `inhabit()`.
 
-If you do implement `inhabit()`, start by passing the given element up to
-`super.inhabit()`, which does the behind-the-scenes work of managing p5
-canvases.
-
-You can access the attached sequence in `inhabit()`, but we recommend doing
-that in `setup()` instead.
-
 #### 💡️ Set up the visualizer _(often used)_
 
 When the p5 graphics context becomes available, `setup()` is called, giving
