@@ -31,9 +31,8 @@ class Palette {
             this.backgroundColor = sketch.color(hexBack)
             this.textColor = sketch.color(hexText)
         } else {
-            // Hacks because p5 gives us no way to make a color without a sketch
-            this.backgroundColor = {} as p5.Color
-            this.textColor = {} as p5.Color
+            this.backgroundColor = P5Visualizer.INVALID_COLOR
+            this.textColor = P5Visualizer.INVALID_COLOR
         }
     }
 }

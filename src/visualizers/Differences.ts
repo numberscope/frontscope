@@ -6,34 +6,43 @@ const min = Math.min
 /** md
 # Difference Visualizer
 
-(example image should go here)
+[<img
+  src="../../assets/img/Differences/squares.png"
+  width=696
+  style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/Differences/squares.png)
 
-This is a very simple visualizer that just prints a row of values from
-the sequence, and below that, between each two terms, their difference.
-It can continue this process, adding rows that indicate differences
-between the terms in the row above, for as many rows as you like.
-
-## Parameters
+This visualizer prints a row of sequence entries, followed by a row of
+differences between entries, followed by a row of differences between
+differences, and so on, for as many rows as you like. The rows are shifted so
+that each difference appears between and below the two numbers it's the
+difference of.
 **/
 
 class Differences extends P5Visualizer {
     static visualizationName = 'Differences'
 
+    // parameters
     n = 20
     levels = 5
 
+    /** md
+## Parameters
+    **/
     params = {
         /** md
-- n: The number of terms of the sequence to display in the top row.
+- **Entries in top row:** How many sequence entries to display in the top
+  row. _(Positive integer or zero. Zero means all available entries.)_
          **/
         n: {
             value: this.n,
             forceType: 'integer',
-            displayName: 'Elements in top row',
+            displayName: 'Entries in top row',
             required: true,
         },
         /** md
-- levels: The number of rows to produce. Cannot be larger than n.
+- **Number of rows:** How many rows to produce. _(Positive integer, no larger
+  than 'Entries in top row.')_
          **/
         levels: {
             value: this.levels,
@@ -43,15 +52,26 @@ class Differences extends P5Visualizer {
             description: 'If zero, defaults to the length of top row',
         },
     }
+
     first = 0
 
     checkParameters() {
         const status = super.checkParameters()
 
+        if (this.params.levels.value < 1) {
+            status.isValid = false
+            status.errors.push('Number of rows must be positive')
+        }
+        if (this.params.n.value < 0) {
+            status.isValid = false
+            status.errors.push(
+                "Number of entries in top row can't be negative"
+            )
+        }
         if (this.params.n.value < this.params.levels.value) {
             status.isValid = false
             status.errors.push(
-                'Number of rows cannot exceed length of first row'
+                "Number of rows can't exceed length of first row"
             )
         }
 

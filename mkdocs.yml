@@ -4,6 +4,7 @@ nav:
     - Overview: README.md
     - User Guide:
           - Introduction: doc/user_guide.md
+          - ... | src/visualizers-workbench/*
           - ... | flat | src/visualizers/*
     - Extending:
           - doc/extending.md
@@ -20,8 +21,9 @@ nav:
           - doc/pull-request-checklist.md
           - doc/visual-studio-code-setup.md
     - Internal code and APIs:
+          - doc/behind-the-scenes.md
           - doc/working-with-bigints.md
-          - src/shared/math.md
+          - ... | flat | src/shared/*
     - Other Information:
           - ... | flat | doc/*.md
 docs_dir: doc
@@ -36,29 +38,31 @@ extra_javascript:
     - js/scroll_navigation.js
     - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
 plugins:
-    - awesome-pages
-    - search
-    - semiliterate:
-          exclude_extensions:
-              - '.jpg'
-              - '.ttf'
-              - '.ico'
-              - '.spec.ts'
-              - 'LICENSE.md'
-          ignore_folders: [node_modules, dist, coverage, '.venv', '.git']
-          ignore_hidden: false
-          include_extensions: ['.png', 'math.ts']
-          extract_on_copy: true
-          extract_standard_markdown:
-              terminate: '<!-- CUT HERE -->'
-          merge_docs_dir: false
-          semiliterate:
-              - pattern: '\.ts' # Standard in-code markup
-                extract:
-                    start: '^\s*/\*\*+\W?md\b' # Opening like /** md
-                    stop: '^\s*\*\*/\s*$' # closing **/ by itself on a line
-              - pattern: '[.](.*).generator$'
-                destination: '\1'
+    awesome-pages:
+        collapse_single_pages: true
+        filename: mkdocs-index.yml
+    search: {}
+    semiliterate:
+        exclude_extensions:
+            - '.jpg'
+            - '.ttf'
+            - '.ico'
+            - '.spec.ts'
+            - 'LICENSE.md'
+        ignore_folders: [node_modules, dist, coverage, '.venv', '.git']
+        ignore_hidden: false
+        include_extensions: ['.png', 'math.ts', '.yml']
+        extract_on_copy: true
+        extract_standard_markdown:
+            terminate: '<!-- CUT HERE -->'
+        merge_docs_dir: false
+        semiliterate:
+            - pattern: '\.ts' # Standard in-code markup
+              extract:
+                  start: '^\s*/\*\*+\W?md\b' # Opening like /** md
+                  stop: '^\s*\*\*/\s*$' # closing **/ by itself on a line
+            - pattern: '[.](.*).generator$'
+              destination: '\1'
 markdown_extensions:
     - pymdownx.superfences
     - mdx_math

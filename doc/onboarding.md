@@ -99,3 +99,7 @@ Boulder Experimental Mathematics Lab.)
 
 See [the doc on running from source](./running-from-source.md) for more
 information.
+
+## Making a visualizer
+
+Now that you're set up, try [making a visualizer](making-a-visualizer.md)!

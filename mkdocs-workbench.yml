@@ -1,0 +1,4 @@
+INHERIT: mkdocs.yml
+plugins:
+    awesome-pages:
+        filename: mkdocs-workbench.yml
