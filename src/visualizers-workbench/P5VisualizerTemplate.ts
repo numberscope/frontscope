@@ -155,7 +155,7 @@ class P5VisualizerTemplate extends P5Visualizer {
             .stroke(this.outlineColor)
             .text(element.toString(), 0, 0)
 
-        // draw a progress bar
+        // draw a progress bar; see documentation below
         const barScale = 7
         const sqrtDist = Math.sqrt(this.index - this.seq.first)
         const progress = 1 - barScale / (barScale + sqrtDist)
@@ -222,6 +222,16 @@ class P5VisualizerTemplate extends P5Visualizer {
         }
     }
 }
+/** md
+## The "sequence progress bar"
+
+Below the displayed sequence entry, this visualizer displays a "progress
+bar" to indicate your position (current index) in the sequence. Note that
+because integer sequences can have infinitely many terms, it behaves a little
+differently than most progress bars you are used to. In particular, as you
+step, you will find that the bar advances less and less each time. That's
+because infinity is, well, infinitely far away!
+**/
 
 // === Export module ===
 // Putting this at the end of the source file makes it easy for other people
