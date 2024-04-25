@@ -151,9 +151,9 @@ your visualization! Look at the examples and the p5
 [p5.js reference](https://p5js.org/reference/) to learn about what you can do.
 
 Drawing tools and options are found in the graphics context, `this.sketch`.
-Accessing `this.sketch` triggers some consistency checks, so it's most
-parsimonious to access it at most once per function call, storing its value as
-a local constant for future reference.
+Accessing `this.sketch` triggers some consistency checks, so we recommend
+storing its value as a local constant in each function call that uses it. This
+avoids redundant checks.
 
 Sequence information is found in `this.seq`. This is a `SequenceInterface`
 object, so it will always have a method `getElement(n)` that returns the `n`th
@@ -249,6 +249,22 @@ control information like this:
 You can organize the control documentation comments in whatever way makes the
 most sense. If possible, order the event handling methods so that most
 controls can be documented near the method that implements them.
+
+#### Additional documentation
+
+Any additional documentation should go in documentation comments after all of
+the event handling methods. This is the place for in-depth discussions,
+example settings, image galleries, credits, and so forth.
+
+Code-related documentation, like explanations of algorithms used in the
+visualizer, should go as close as possible to the related code. This means, in
+particular, that code requiring additional documentation should come after the
+event handling methods if possible.
+
+#### Export block
+
+The `VisualizerExportModule` block should be the last thing in the visualizer
+source file. That makes it easy to find.
 
 ### Abstract visualizers
 
