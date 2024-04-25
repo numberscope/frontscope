@@ -172,6 +172,12 @@ class P5VisualizerTemplate extends P5Visualizer {
             .stroke(this.outlineColor)
             .rect(0, 0, barLen, barWidth)
 
+        // hint for person viewing
+        sketch
+            .textSize(0.02 * smallDim)
+            .fill(this.outlineColor)
+            .text('(←/→ keys)', 0.5 * barLen, 0.05 * smallDim)
+
         // === Stopping the animation loop ===
         // If your visualization is completely drawn and won't
         // need to change in future frames if there are no interaction events
