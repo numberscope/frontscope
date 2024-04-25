@@ -56,26 +56,29 @@ is used in the visualizer list and the titles of bundle cards.
 
 #### 💡️ Parameters _(often used)_
 
-Parameters are the user-facing structures that ask for values when a
-visualizer is created. When the user clicks "save", each parameter stores its
-value in a corresponding top-level property of the visualizer object. If you
-change one of those top-level properties while the visualizer is running, you
-should refresh the corresponding parameter by calling `this.refreshParams()`.
+Parameters are the user-facing structures that ask for control values when a
+visualizer is created. When someone running your visualizer sets a parameter
+in the graphical interface (UI), its value is written to a corresponding
+top-level property of the visualizer object. Conversely, if your code
+internally changes one of those top-level properties while the visualizer is
+running, you should refresh the corresponding parameter by calling
+`this.refreshParams()` so the person interacting with it can see the change.
 
-Below the list of parameter properties, the visualizer class has a `params`
-property that describes how the parameters should appear in the UI. Look in
-`src/shared/Paramable.ts`, or in other visualizers, to learn about the options
-you can set in the `params` property.
+Below the list of these parameter properties, the visualizer class also needs
+a `params` property that describes how the parameters should appear in the UI.
+Look in `src/shared/Paramable.ts`, or in other visualizers, to learn about the
+options you can set in the `params` property -- labels for the parameter,
+allowed values for a dropdown menu, and so on.
 
 -   **p5 Template:** `stepSize`.
 -   **Differences:** `n`, `levels`. This visualizer uses `refreshParams()`
     when it auto-fills the optional parameter `levels`.
 
-#### 💡️ Other top-level properties _(often used)_
+#### 💡️ Other properties _(often used)_
 
-You may also need top-level properties that are set and updated while the
-visualizer is running, beyond the user's direct control. These might do things
-like:
+You may also need internal data (top-level properties that are set and updated
+while the visualizer is running, beyond the user's direct control). These
+properties might do things like:
 
 -   Keeping track of which part of the sequence you're looking at.
 -   Storing colors that are created during setup.
@@ -86,7 +89,7 @@ By convention, we list these properties after the `params` property.
 -   **p5 Template:** `index`.
 -   **Differences:** `first`.
 
-#### 💡️ Check parameters _(often used)_
+#### 💡️ Determine if parameters are consistent _(often used)_
 
 When the user clicks "save", `checkParameters()` is called, giving you a
 chance to check the parameter values and prompt the user to correct any
@@ -179,12 +182,13 @@ Each time the user interacts with your visualization, an
 `keyPressed()` or `mouseClicked()` will be called, giving you a chance to
 respond. There are handlers for a wide variety of input events.
 
-#### 🔑️ Export the visualizer _(required)_
+#### 🔑️ How to make your visualizer available _(required)_
 
 The engine expects the visualizer to be packaged in a `VisualizerExportModule`
 object, constructed from the visualizer class and a short description string.
+This "export" happens after the class definition.
 
-#### 🔩️ Handle errors _(advanced)_
+#### 🔩️ How to handle errors _(advanced)_
 
 There are two ways to let people interacting with a visualizer know that
 something unexpected has happened. The first is with the
