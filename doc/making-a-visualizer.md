@@ -272,7 +272,10 @@ Now that we've seen how to extend the [`P5Visualizer`](#p5-visualizers) base
 class, let's take a peek at how the base class works internally. This section
 will be most useful to you if you want to write a new base class, or to build
 a visualizer so different from anything else that it shouldn't have a base
-class.
+class. However, you can also use this knowledge to override the default
+behavior of a base class you're extending. By overriding methods like
+`inhabit()`, `show()`, `stop()`, and `depart()`, you can customize your
+visualizer's behavior more deeply than usual.
 
 Behind the scenes, a visualizer base class is an implementation of the
 visualizer interface (`VisualizerInterface`). To support parameters, the base
