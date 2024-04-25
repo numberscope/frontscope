@@ -3,16 +3,16 @@
 // also a simple working Visualizer in its own right. It includes comments,
 // formatted like this one, that explain what each part of a Visualizer
 // is and does. You don't need to include these comments in your own
-// Visualizer---but you should include ordinary comments, of course! You should
-// also include the documentation comments, which are formatted like this:
+// Visualizer --- but you should include ordinary comments, of course! You
+// should also include the documentation comments, which are formatted like
+// this:
 //
 //   /** md
 //   ...
 //   **/
 //
-// These comments get compiled into the Visualizer's user guide page
+// These comments get compiled into the Visualizer's user guide page.
 
-import p5 from 'p5' // we need the p5.Color type to declare top-level colors
 import {P5Visualizer} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 
@@ -65,17 +65,18 @@ integer.)_
     // Top-level properties that are set and updated while the visualizer is
     // running, beyond the user's direct control. All of these properties will
     // be initialized during setup, but TypeScript can't infer that, so we have
-    // to give them placeholder values. We use `undefined` as a placeholder for
-    // colors because the function that creates color objects won't be available
-    // until steup
+    // to give them placeholder values. P5Visualizer provides an INVALID_COLOR
+    // we can use to initialize color properties, since we have to wait to
+    // have a sketch object (in setup(), draw(), or an event-handling function)
+    // to generate valid colors that p5 can draw with.
 
     // navigation state
     index = 0
 
     // palette colors
-    bgColor: p5.Color | undefined = undefined
-    textColor: p5.Color | undefined = undefined
-    outlineColor: p5.Color | undefined = undefined
+    bgColor = P5Visualizer.INVALID_COLOR
+    textColor = P5Visualizer.INVALID_COLOR
+    outlineColor = P5Visualizer.INVALID_COLOR
 
     checkParameters() {
         const status = super.checkParameters()
@@ -141,7 +142,7 @@ integer.)_
         // For an animated visualizer, painting the background is often the
         // first drawing step in each frame. It wipes out the previous frame,
         // leaving a blank canvas to draw on
-        sketch.background(this.bgColor as p5.Color)
+        sketch.background(this.bgColor)
 
         // === Chaining operations ===
         // Each sketch operation returns a reference to the sketch, so you can
@@ -150,8 +151,8 @@ integer.)_
         // print the current entry
         const element = this.seq.getElement(this.index)
         sketch
-            .fill(this.textColor as p5.Color)
-            .stroke(this.outlineColor as p5.Color)
+            .fill(this.textColor)
+            .stroke(this.outlineColor)
             .text(element.toString(), 0, 0)
 
         // draw a progress bar
@@ -165,10 +166,10 @@ integer.)_
             .noStroke()
             .fill(255, 128 + 128 * progress, 0)
             .rect(0, 0, progress * barLen, barWidth)
-            .fill(this.textColor as p5.Color)
+            .fill(this.textColor)
             .rect(progress * barLen, 0, (1 - progress) * barLen, barWidth)
             .noFill()
-            .stroke(this.outlineColor as p5.Color)
+            .stroke(this.outlineColor)
             .rect(0, 0, barLen, barWidth)
 
         // Stop the animation loop

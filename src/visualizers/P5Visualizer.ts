@@ -46,6 +46,17 @@ export abstract class P5Visualizer
      * visualizer is supplied by a static member called `visualizationName`.
      */
     static visualizationName = 'abstract P5-based Visualizer'
+
+    /* A convenience HACK so that visualizer writers can initialize
+       p5 color properties without a sketch. Don't try to draw with this!
+       TODO: replace with a safe-to-use black or white, or at least an
+       object that throws an understandable instead of cryptic error
+       if p5 tries to draw with it, e.g.
+       `Attempt for p5 to use INVALID_COLOR; please initialize your
+       color from a sketch object.`
+    */
+    static INVALID_COLOR = {} as p5.Color
+
     visualization(): string {
         return (
             Object.getPrototypeOf(this).constructor.visualizationName

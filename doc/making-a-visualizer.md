@@ -256,7 +256,7 @@ source file. That makes it easy to find.
 
 When a visualizer is ready for Numberscope users, place the file containing
 its class definition and export module in the folder `src/visualizers`. When
-the Frontscope client runs, it'll find your visualizer and compile it at
+the frontscope client runs, it'll find your visualizer and compile it at
 runtime.
 
 The visualizers in `src/visualizers` can be tested with the usual
