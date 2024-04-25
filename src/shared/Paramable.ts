@@ -110,11 +110,13 @@ export interface ParamableInterface {
     validate(): ValidationStatus
 
     /**
-     * assignParameters() should copy the value property of each item in
-     * params to its proper place to be used in the implementing object.
-     * (Typically, to top-level properties of the object.) Implementations
-     * should not use the values directly from the params object, because
-     * parameters should only be used when validate() succeeds.
+     * assignParameters() should copy the `value` property of each item in
+     * `params` to the place where the implementing object will access it.
+     * Typically, that means copying to top-level properties of the object. The
+     * implementing object should only use parameter values supplied by
+     * assignParameters(), because these have been vetted with a validate()
+     * call. In contrast, values taken directly from `params` are unvalidated,
+     * and they can change from valid to invalid at any time.
      */
     assignParameters(): void
 

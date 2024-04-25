@@ -309,9 +309,11 @@ expects.
    parameter values are sensible.
 6. `assignParameters()`: Copy the `value` property of each item in `params` to
    the place where the implementing object will access it. Typically, that
-   means copying to top-level properties of the object. Implementations
-   shouldn't access values directly from the `params` object, because
-   parameters should only be used when `validate()` succeeds.
+   means copying to top-level properties of the object. The implementing
+   object should only use parameter values supplied by `assignParameters()`,
+   because these have been vetted with a `validate()` call. In contrast,
+   values taken directly from `params` are unvalidated, and they can change
+   from valid to invalid at any time.
 7. `refreshParams()`: Copy the current working values of the parameters back
    into the `value` properties in the `params` object, so they can be
    reflected in the parameter UI. This method is used by visualizers that
