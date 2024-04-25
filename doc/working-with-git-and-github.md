@@ -97,12 +97,17 @@ interface.)
 
 When all of those changes look right, click the big green button at the top
 right that says "Create Pull Request". This click will take you to the "Open a
-Pull Request" form. There are just two boxes you need to fill out here. The
-first is the title. GitHub will have filled in something based on the content
-of your branch. It should be in the "semantic commit message" format linked in
-the [commit](#commit-changes) section, and it should summarize the overall
-effect of your PR on the Numberscope system. So if you don't like what GitHub
-filled in, improve it before you submit.
+Pull Request" form. (Note that the first time you push a branch to git, the
+response message actually includes a quick direct link to thisform; you can
+save that away and use it later, instead of navigating through GitHub's web
+interface.)
+
+There are just two boxes you need to fill out on the form to open a pull
+request. The first is the title. GitHub will have filled in something based on
+the content of your branch. It should be in the "semantic commit message"
+format linked in the [commit](#commit-changes) section, and it should
+summarize the overall effect of your PR on the Numberscope system. So if you
+don't like what GitHub filled in, improve it before you submit.
 
 The other box is the commit description. It is prefilled with a statement you
 need to agree to -- read it over carefully to make sure you agree before you
