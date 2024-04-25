@@ -31,11 +31,9 @@ and load it when you call the usual `npm run dev`. For details, see
 
 Each visualizer has its documentation woven into the source code, using
 special `/** md`&nbsp;…&nbsp;`**/` comments that are automatically compiled
-into a
-[documentation page](https://numberscope.colorado.edu/doc/src/visualizers/Differences/).
-We have some [conventions](#how-to-document-your-visualizer) for what the
-documentation comments should include and where in the source code they should
-go.
+into a [documentation page](../src/visualizers/Differences.md). We have some
+[conventions](#how-to-document-your-visualizer) for what the documentation
+comments should include and where in the source code they should go.
 
 ### p5 visualizers
 
