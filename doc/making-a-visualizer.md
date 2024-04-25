@@ -308,9 +308,10 @@ expects.
 
 1. `name`
 2. `description`
-3. `isValid`: A boolean that is used to determine if the visualizer is ready
-   to draw. Generally this will be set automatically based on what you return
-   from the `checkParameters` method (see below).
+3. `isValid`: A boolean that says whether the current set of parameter values
+   is self-consistent and safe to use. Generally, this will be set
+   automatically based on the output of `checkParameters()`, which is
+   mentioned in the description of `validate()` below.
 4. `params`: The engine expects all visualizers to have parameters that can be
    set by the user, though these parameters can be empty. This `params`
    property is an object mapping parameter names to (plain) objects that
