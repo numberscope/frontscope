@@ -21,7 +21,7 @@ applies to other repos as well.)
 2. [Clone your fork of numberscope/frontscope](./doc/working-with-git-and-github.md#clone-a-repo).
 3. [Create a branch for your contribution](./doc/working-with-git-and-github.md#create-a-branch).
 4. If you are unfamiliar with them or would like a refresher,
-   [read about basic Git operations](./doc/working-with-git-and-github.md#basic-git-operations).
+   [read about basic Git operations](./doc/working-with-git-and-github.md#basic-operations).
 5. [Push your branch to GitHub](./doc/working-with-git-and-github.md#push-a-branch).
 6. [Read Numberscope's coding principles guide](./doc/code-principles.md).
 7. [Read Numberscope's style guide](./doc/code-style.md). You should also
@@ -75,9 +75,9 @@ is ready to be reviewed by someone at Numberscope, follow these steps:
    numberscope/frontscope and click "Sync fork" (see the picture below).
    ![A screenshot of the Sync fork option](./doc/img/sync-fork.png) Another
    way to do this is to
-   [add numberscope/frontscope as a remote](./doc/gitting-it-right.md#add-a-remote)
+   [add numberscope/frontscope as a remote](./doc/working-with-git-and-github.md#add-a-remote)
    and
-   [sync your fork with the remote original](./doc/gitting-it-right.md#sync-local-fork-with-remote-original).
+   [sync your fork with the remote original](./doc/working-with-git-and-github.md#sync-local-fork-with-remote-original).
 3. Navigate to the numberscope/frontscope repository. If your fork is synced
    up with the main numberscope/frontscope repository correctly, you should
    see a button (see the image below) that says "Compare & pull request".
