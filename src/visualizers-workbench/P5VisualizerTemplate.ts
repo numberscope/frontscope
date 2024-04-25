@@ -21,7 +21,7 @@ import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 
 [<img
   src="../../assets/img/Entries/1729.png"
-  width=700
+  width=500
   style="margin-left: 1em; margin-right: 0.5em"
 />](../../assets/img/Entries/1729.png)
 
