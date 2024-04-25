@@ -308,32 +308,40 @@ expects.
 
 1. `name`
 2. `description`
-3. `isValid`: A boolean that says whether the current set of parameter values
-   is self-consistent and safe to use. Generally, this will be set
-   automatically based on the output of `checkParameters()`, which is
+3. `isValid`: A boolean that says whether the current configuration of
+   parameter values is self-consistent and safe to use. Generally, this will
+   be set automatically based on the output of `checkParameters()`, which is
    mentioned in the description of `validate()` below.
-4. `params`: The engine expects all visualizers to have parameters that can be
-   set by the user, though these parameters can be empty. This `params`
-   property is an object mapping parameter names to (plain) objects that
-   satisfy the `ParamInterface` -- basically, they describe the parameter,
-   giving whether it is required, how it should be labeled and presented in
-   the UI, and so on.
-5. `validate()`: Return a `ValidationStatus` object that indicates to the
-   engine that the visualizer is valid. The engine will call `validate` before
-   it calls `initialize`, and it will only proceed if the `isValid` property
-   of the `ValidationStatus` object is `true`. Otherwise, it will display the
-   error. Generally speaking, the framework takes care of these bookkeeping
-   details, and you can just implement the `checkParameters()` method, which
-   only has to return a `ValidationStatus` that indicates whether the
-   parameter values are sensible.
+4. `params`: A parameterizable object has to come with a set of user-facing
+   parameters—even if the set is empty. The `params` property is an object
+   mapping parameter names to parameter objects—that is, (plain) objects
+   implementing the parameter interface (`ParamInterface`). A parameter object
+   describes how a parameter should appear in the UI, what kind of values it
+   can take, whether it's required, and so on.
+5. `validate()`: Check whether the current configuration of parameter values
+   is valid, and call the `assignParameters()` method below if so. Return a
+   `ValidationStatus` object that tells the engine whether the check and
+   assignment succeeded. Whenever the engine wants to load a parameter
+   configuration into a parameterizable object, it will use `validate()` to do
+   so. If it gets back a `ValidationStatus` with `isValid = true`, it will
+   proceed with whatever it is doing. If it gets a status with
+   `isValid = false`, it will will stop what it is doing and help the user fix
+   the problem by displaying any error messages the status carries. Most
+   parameterizable objects will extend `Paramable` and use its default
+   implementation of `validate()`. This implementation checks parameter
+   validity by calling the `checkParameters()` method, which just has to
+   return a `ValidationStatus` that says whether the parameters are valid. The
+   default implementation then handles all the other responsibilities of
+   `validate()`.
 6. `assignParameters()`: Copy the `value` property of each item in `params` to
    the place where the implementing object will access it. Typically, that
    means copying to top-level properties of the object. The implementing
    object should only use parameter values supplied by `assignParameters()`,
-   because these have been vetted with a `validate()` call. In contrast,
-   values taken directly from `params` are unvalidated, and they can change
-   from valid to invalid at any time.
+   because these have been vetted by `validate()`. In contrast, values taken
+   directly from `params` are unvalidated, and they can change from valid to
+   invalid at any time.
 7. `refreshParams()`: Copy the current working values of the parameters back
    into the `value` properties in the `params` object, so they can be
-   reflected in the parameter UI. This method is used by visualizers that
-   change their own parameters while they're running.
+   reflected in the parameter UI. This method is used by objects that can
+   update their own parameters, rather than just having parameters assigned
+   through the standard parameter UI.
