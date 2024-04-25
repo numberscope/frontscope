@@ -10,10 +10,11 @@
 -->
 
 In the guide to [making a visualizer](making-a-visualizer.md), we saw how to
-extend the [`P5Visualizer`](making-a-visualizer.md#p5-visualizers) base class.
-Now, let's take a peek at how a base class works internally. This page will be
-most useful to you if you want to write a new base class, or to build a
-visualizer so different from anything else that it shouldn't have a base
+extend the
+[`P5Visualizer`](making-a-visualizer.md#making-a-p5-visualizer-in-detail) base
+class. Now, let's take a peek at how a base class works internally. This page
+will be most useful to you if you want to write a new base class, or to build
+a visualizer so different from anything else that it shouldn't have a base
 class. However, you can also use this knowledge to override the default
 behavior of a base class you're extending. By overriding methods like
 `inhabit()`, `show()`, `stop()`, and `depart()`, you can customize your

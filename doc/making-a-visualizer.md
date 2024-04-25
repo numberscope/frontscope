@@ -275,7 +275,7 @@ and compile it at runtime.
 The visualizers in `src/visualizers` will appear as options when you start
 Numberscope with `npm run dev` as usual.
 
-As discussed [earlier](#test-your-visualizer-on-the-workbench), visualizers
+As discussed [earlier](#develop-your-visualizer-on-the-workbench), visualizers
 that aren't ready for Numberscope users should go in
 `src/visualizers-workbench`. You can load them to see how they work by running
 with `npm run dev:workbench`.
