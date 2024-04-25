@@ -66,9 +66,9 @@ property that describes how the parameters should appear in the UI. Look in
 `src/shared/Paramable.ts`, or in other visualizers, to learn about the options
 you can set in the `params` property.
 
--   **p5 Visualizer Template:** `stepSize = 1`.
--   **Differences:** `n = 20`, `levels = 5`. The parameters are refreshed in
-    the in the `inhabit()` method.
+-   **p5 Template:** `stepSize`.
+-   **Differences:** `n`, `levels`. The parameters are refreshed in the in the
+    `inhabit()` method.
 
 #### 💡️ Other top-level properties _(often used)_
 
@@ -82,7 +82,7 @@ like:
 
 By convention, we list these properties after the `params` property.
 
--   **p5 Visualizer Template:** `index`, `flash`.
+-   **p5 Template:** `index`.
 -   **Differences:** `first`.
 
 #### 💡️ Check parameters _(often used)_
@@ -97,9 +97,10 @@ validation in [`setup()`](#bulb-set-up-the-visualizer-often-used), as
 described below, but you won't be able to prompt the user for corrections at
 that point.
 
--   **p5 Visualizer Template:** Make sure that the step size is positive.
--   **Differences:** Make sure that the number of terms is at least the number
-    of levels.
+-   **p5 Template:** Make sure that the step size is positive.
+-   **Differences:** Make sure that the number of terms is positive or zero,
+    the number of levels is positive, and the number of terms is at least the
+    number of levels.
 
 #### 🔩️ Inhabit a page element _(advanced)_
 
@@ -112,7 +113,7 @@ canvases.
 You can access the attached sequence here, but we recommend doing that in
 `setup()` instead.
 
--   **p5 Visualizer Template:** Go to the beginning of the sequence.
+-   **p5 Template:** Go to the beginning of the sequence.
 -   **Differences:** Fill in the default value of the `levels` property in
     case it was left unset in the parameters dialog. Do a consistency check
     between the sequence being visualized and the parameters.
@@ -166,10 +167,11 @@ waste time re-drawing the same picture dozens of times per second. If the
 visualization is only static temporarily, you can call `loop()` to re-start
 the animation loop whenever you need to.
 
--   **p5 Visualizer Template:** Only loop while animating the white flash that
-    indicates an index change.
--   **Differences:** Draw the whole visualization in one frame, and then call
-    `noLoop()` to stop the animation loop.
+-   **p5 Template:** Stop the animation loop at the end of each frame. Only
+    start it again when the user steps to a different sequence entry,
+    requiring the picture to be re-drawn.
+-   **Differences:** Draw the whole visualization in one frame, and then stop
+    the animation loop.
 
 #### 💡️ Respond to user interactions _(often used)_
 
@@ -252,4 +254,38 @@ that aren't ready for Numberscope users should go in
 
 ### How to document your visualizer
 
-_Explain documentation conventions here._
+The p5 Template visualizer and the Differences visualizer both follow our
+documentation conventions.
+
+#### Name, thumbnail, and description
+
+In a documentation block just before the visualizer class definition, put a
+level-1 heading with the visualizer's name, followed by a thumbnail image and
+a description.
+
+To make the thumbnail, take a screenshot of your visualizer and put it in the
+`src/assets/img<VisualzierName>` directory. Set the `width` property in the
+`img` tag so that the image displays with a height of 320&nbsp;px or less.
+(You'll have to calculate the necessary width; setting the `height` property
+won't work.) Put the image tag inside a link to the image file.
+
+Below the thumbnail, describe what the visualizer does.
+
+### Parameters
+
+In a documentation block just before definition of `params`, put "Parameters"
+in a level-2 heading. Inside the definition of `params`, just before each the
+parameter's key, put a documentation block that displays like this:
+
+> **Parameter name:** Description of the parameter. _(Type and constraints.)_
+
+### Controls
+
+In a documentation block just before the first event handling method, put
+"Controls" in a level-2 heading. Display control information like this:
+
+> **Key or gesture:** Description of effect.
+
+You can organize the control documentation comments in whatever way makes the
+most sense. If possible, order the event handling methods so that most
+controls can be documented near the method that implements them.
