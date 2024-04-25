@@ -195,6 +195,59 @@ something unexpected has happened. The first is with the
 throw an error. If it's not caught anywhere else, the visualizer framework
 will show it in an error dialog.
 
+### Where to put your visualizer
+
+When a visualizer is ready for Numberscope users, place the file containing
+its class definition and export module in the folder `src/visualizers`. When
+the Frontscope client runs, it'll find your visualizer and compile it at
+runtime.
+
+The visualizers in `src/visualizers` can be tested with the usual
+`npm run dev` call.
+
+As discussed [earlier](#test-your-visualizer-on-the-workbench), visualizers
+that aren't ready for Numberscope users should go in
+`src/visualizers-workbench`. You can load them for testing by calling
+`npm run dev:workbench`.
+
+### How to document your visualizer
+
+The p5 Template visualizer and the Differences visualizer both follow our
+documentation conventions.
+
+#### Name, thumbnail, and description
+
+In a documentation block just before the visualizer class definition, put a
+level-1 heading with the visualizer's name, followed by a thumbnail image and
+a description.
+
+To make the thumbnail, take a screenshot of your visualizer and put it in the
+`src/assets/img<VisualzierName>` directory. Set the `width` property in the
+`img` tag so that the image displays with a height of 320&nbsp;px or less.
+(You'll have to calculate the necessary width; setting the `height` property
+won't work.) Put the image tag inside a link to the image file.
+
+Below the thumbnail, describe what the visualizer does.
+
+#### Parameters
+
+In a documentation block just before definition of `params`, put "Parameters"
+in a level-2 heading. Inside the definition of `params`, just before each the
+parameter's key, put a documentation block that displays like this:
+
+> **Parameter name:** Description of the parameter. _(Type and constraints.)_
+
+#### Controls
+
+In a documentation block just before the first event handling method, put
+"Controls" in a level-2 heading. Display control information like this:
+
+> **Key or gesture:** Description of effect.
+
+You can organize the control documentation comments in whatever way makes the
+most sense. If possible, order the event handling methods so that most
+controls can be documented near the method that implements them.
+
 ### Abstract visualizers
 
 Now that we've seen how to extend the [`P5Visualizer`](#p5-visualizers) base
@@ -212,12 +265,6 @@ class, or to build a visualizer without one, you'll have to implement these
 interfaces yourself. That means your visualizer class has to include the
 following data and methods, and they have to behave in the way the engine
 expects.
-
-<!-- There is significant redundancy between the following and the contents
-     of Paramable and VisualizerInterface. Ideally, it would be sorted into
-     those two sources, and extracted from the relevant source files, to
-     better obey the principle of documentation alongside relevant code.
--->
 
 #### The visualizer interface
 
@@ -269,56 +316,3 @@ expects.
    into the `value` properties in the `params` object, so they can be
    reflected in the parameter UI. This method is used by visualizers that
    change their own parameters while they're running.
-
-### Where to put your visualizer
-
-When a visualizer is ready for Numberscope users, place the file containing
-its class definition and export module in the folder `src/visualizers`. When
-the Frontscope client runs, it'll find your visualizer and compile it at
-runtime.
-
-The visualizers in `src/visualizers` can be tested with the usual
-`npm run dev` call.
-
-As discussed [earlier](#test-your-visualizer-on-the-workbench), visualizers
-that aren't ready for Numberscope users should go in
-`src/visualizers-workbench`. You can load them for testing by calling
-`npm run dev:workbench`.
-
-### How to document your visualizer
-
-The p5 Template visualizer and the Differences visualizer both follow our
-documentation conventions.
-
-#### Name, thumbnail, and description
-
-In a documentation block just before the visualizer class definition, put a
-level-1 heading with the visualizer's name, followed by a thumbnail image and
-a description.
-
-To make the thumbnail, take a screenshot of your visualizer and put it in the
-`src/assets/img<VisualzierName>` directory. Set the `width` property in the
-`img` tag so that the image displays with a height of 320&nbsp;px or less.
-(You'll have to calculate the necessary width; setting the `height` property
-won't work.) Put the image tag inside a link to the image file.
-
-Below the thumbnail, describe what the visualizer does.
-
-### Parameters
-
-In a documentation block just before definition of `params`, put "Parameters"
-in a level-2 heading. Inside the definition of `params`, just before each the
-parameter's key, put a documentation block that displays like this:
-
-> **Parameter name:** Description of the parameter. _(Type and constraints.)_
-
-### Controls
-
-In a documentation block just before the first event handling method, put
-"Controls" in a level-2 heading. Display control information like this:
-
-> **Key or gesture:** Description of effect.
-
-You can organize the control documentation comments in whatever way makes the
-most sense. If possible, order the event handling methods so that most
-controls can be documented near the method that implements them.
