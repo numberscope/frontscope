@@ -41,15 +41,14 @@ Numberscope, you'll move it to `src/visualizers`. Then frontscope will notice
 and load it when you call the usual `npm run dev`. For details, see
 [below](#where-to-put-your-visualizer).
 
-Even after it's accepted into Numberscope, like a work of art, no Visualizer
-is ever really complete. Even the humble behavior of the template visualizer
-you will read about below could be extended: it has a progress bar that
-changes less and less with each step to cope with infinite sequences, but you
-could change that behavior when it is viewing a finite sequence; or you could
-add a "mouse-over" on the progress bar that shows the current index; or ...
-the possibilities are endless. Hence, we invite you to try your hand at
-extending or enhancing existing Visualizers as well. For now, let's return to
-the process of creating something new based on p5.
+A visualizer, like a work of art, is never really finished—even when it's
+accepted into Numberscope. Even the humble template visualizer discussed below
+could be extended. You could shorten the infinite progress bar for finite
+sequences, allow fast navigation by holding down arrow keys, add a progress
+bar mouse-over that shows the index… the possibilities are endless. We invite
+you to try extending or enhancing existing Visualizers as well as building
+your own. For now, though, let's return to the process of making a new
+visualizer based on p5.
 
 ## Making a p5 visualizer, in detail
 
