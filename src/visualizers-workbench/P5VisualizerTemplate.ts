@@ -62,6 +62,7 @@ integer.)_
     // placeholder value
     bgColor: p5.Color | undefined = undefined
     textColor: p5.Color | undefined = undefined
+    outlineColor: p5.Color | undefined = undefined
 
     checkParameters() {
         const status = super.checkParameters()
@@ -88,12 +89,10 @@ integer.)_
         // initialize palette colors, chosen from the Numberscope site palette
         this.bgColor = sketch.color(206, 212, 218)
         this.textColor = sketch.color(128, 159, 255)
-        const outlineColor = sketch.color(51, 51, 255)
+        this.outlineColor = sketch.color(51, 51, 255)
 
-        // set the stroke color and text alignment, which won't change from
-        // frame to frame. each setting method returns a reference to the
-        // sketch, so you can chain the methods as shown here
-        sketch.stroke(outlineColor).textAlign(sketch.CENTER, sketch.CENTER)
+        // set the text alignment, which won't change from frame to frame
+        sketch.textAlign(sketch.CENTER, sketch.CENTER)
 
         // start at the beginning of the sequence
         this.index = this.seq.first
@@ -125,19 +124,36 @@ integer.)_
         // frame and leaving a blank canvas to draw on
         sketch.background(this.bgColor as p5.Color)
 
-        // print the current entry
+        // print the current entry. each drawing, setting, and transformation
+        // method returns a reference to the sketch, so you can chain calls as
+        // shown here
         const element = this.seq.getElement(this.index)
-        sketch.fill(this.textColor as p5.Color).text(element.toString(), 0, 0)
-
-        // draw a progress bar. drawing methods can be chained, just like
-        // setting methods
-        const progress = 1 - 7 / (7 + Math.sqrt(this.index - this.seq.first))
-        const barLength = 0.6 * smallDim
         sketch
-            .fill(255, 128 + 128 * progress, 0)
+            .fill(this.textColor as p5.Color)
+            .stroke(this.outlineColor as p5.Color)
+            .text(element.toString(), 0, 0)
+
+        // draw a progress bar
+        const barScale = 7
+        const sqrtDist = Math.sqrt(this.index - this.seq.first)
+        const progress = 1 - barScale / (barScale + sqrtDist)
+        const barLength = 0.6 * smallDim
+        const barHeight = 0.02 * smallDim
+        sketch
             .translate(-0.5 * barLength, 0.2 * smallDim)
-            .line(0, 0, barLength, 0)
-            .circle(progress * barLength, 0, 0.02 * smallDim)
+            .noStroke()
+            .fill(255, 128 + 128 * progress, 0)
+            .rect(0, 0, progress * barLength, barHeight)
+            .fill(this.textColor as p5.Color)
+            .rect(
+                progress * barLength,
+                0,
+                (1 - progress) * barLength,
+                barHeight
+            )
+            .noFill()
+            .stroke(this.outlineColor as p5.Color)
+            .rect(0, 0, barLength, barHeight)
 
         // stop the animation loop
         sketch.noLoop()
