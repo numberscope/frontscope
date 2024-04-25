@@ -51,7 +51,7 @@ class P5VisualizerTemplate extends P5Visualizer {
     params = {
         /** md
 - **Step size:** How far to step when the user presses an arrow key. _(Positive
-integer.)_
+  integer.)_
          **/
         stepSize: {
             value: this.stepSize, // === Default value ===

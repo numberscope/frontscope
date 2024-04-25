@@ -32,7 +32,7 @@ class Differences extends P5Visualizer {
     params = {
         /** md
 - **Entries in top row:** How many sequence entries to display in the top
-row. _(Positive integer or zero. Zero means all available entries.)_
+  row. _(Positive integer or zero. Zero means all available entries.)_
          **/
         n: {
             value: this.n,
@@ -42,7 +42,7 @@ row. _(Positive integer or zero. Zero means all available entries.)_
         },
         /** md
 - **Number of rows:** How many rows to produce. _(Positive integer, no larger
-than the number of entries in the top row.)_
+  than 'Entries in top row.')_
          **/
         levels: {
             value: this.levels,
