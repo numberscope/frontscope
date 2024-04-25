@@ -218,19 +218,18 @@ that aren't ready for Numberscope users should go in
 The p5 Template visualizer and the Differences visualizer both follow our
 documentation conventions.
 
-#### Name, thumbnail, and description
+#### Name, sample image, and description
 
 In a documentation block just before the visualizer class definition, put a
-level-1 heading with the visualizer's name, followed by a thumbnail image and
-a description.
+level-1 heading with the visualizer's name, followed by a sample image and a
+description.
 
-To make the thumbnail, take a screenshot of your visualizer and put it in the
-`src/assets/img<VisualzierName>` directory. Set the `width` property in the
-`img` tag so that the image displays with a height of 320&nbsp;px or less.
-(You'll have to calculate the necessary width; setting the `height` property
-won't work.) Put the image tag inside a link to the image file.
+To make the sample image, take a screenshot of your visualizer and put it in
+the `src/assets/img<VisualizerName>` directory. Add the image to the
+documentation page as shown in the examples, using the `width` property for
+scaling.
 
-Below the thumbnail, describe what the visualizer does.
+Below the sample image, describe what the visualizer does.
 
 #### Parameters
 
