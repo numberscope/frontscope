@@ -67,8 +67,8 @@ property that describes how the parameters should appear in the UI. Look in
 you can set in the `params` property.
 
 -   **p5 Template:** `stepSize`.
--   **Differences:** `n`, `levels`. The parameters are refreshed in the in the
-    `inhabit()` method.
+-   **Differences:** `n`, `levels`. This visualizer uses `refreshParams()`
+    when it auto-fills the optional parameter `levels`.
 
 #### 💡️ Other top-level properties _(often used)_
 
@@ -111,12 +111,8 @@ up to `super.inhabit()`, which does the behind-the-scenes work of managing p5
 canvases.
 
 You can access the attached sequence here, but we recommend doing that in
-`setup()` instead.
-
--   **p5 Template:** Go to the beginning of the sequence.
--   **Differences:** Fill in the default value of the `levels` property in
-    case it was left unset in the parameters dialog. Do a consistency check
-    between the sequence being visualized and the parameters.
+`setup()` instead. Neither the p5 Template visualizer nor the Differences
+visualizer implement `inhabit()`.
 
 #### 💡️ Set up the visualizer _(often used)_
 
@@ -132,6 +128,12 @@ must appear in every p5 setup function.
 
 When `setup()` is called, the visualizer will always be attached to a
 sequence, so you can do sequence-dependent validation and initialization here.
+
+-   **p5 Template:** Go to the beginning of the sequence. Create palette
+    colors. Set text alignment.
+-   **Differences:** Fill in the default value of the `levels` property if it
+    was left unset in the parameters dialog. Do a consistency check between
+    the sequence being visualized and the parameters.
 
 #### 🔩️ Show or stop the visualization; depart from a page element _(advanced)_
 
@@ -195,9 +197,21 @@ will show it in an error dialog.
 
 ### Abstract visualizers
 
-Every visualizer needs to implement the interface defined in
-`VisualizerInterface.ts`, which specifies the basic expectations of a
-visualizer. This interface includes the following data and methods.
+Now that we've seen how to extend the [`P5Visualizer`](#p5-visualizers) base
+class, let's take a peek at how the base class works internally. This section
+will be most useful to you if you want to write a new base class, or to build
+a visualizer so different from anything else that it shouldn't have a base
+class.
+
+Behind the scenes, a visualizer base class is an implementation of the
+visualizer interface (`VisualizerInterface`). To support parameters, the base
+class also has to implement the parameterizable object interface
+(`ParamableInterface`). These interfaces are defined in
+`VisualizerInterface.ts` and `Paramable.ts`, respectively. To write a new base
+class, or to build a visualizer without one, you'll have to implement these
+interfaces yourself. That means your visualizer class has to include the
+following data and methods, and they have to behave in the way the engine
+expects.
 
 <!-- There is significant redundancy between the following and the contents
      of Paramable and VisualizerInterface. Ideally, it would be sorted into
@@ -205,22 +219,39 @@ visualizer. This interface includes the following data and methods.
      better obey the principle of documentation alongside relevant code.
 -->
 
-1. `isValid`: A boolean that is used to determine if the visualizer is ready
+#### The visualizer interface
+
+1. `visualization()`: Returns a string saying what type of visualizer this is.
+   Typically, each base class chooses its own fixed return value, which all
+   its descendants inherit.
+2. `view(seq)`: Load the given sequence into the visualizer, where the drawing
+   operations in later function calls will be able to access them. This method
+   should not do any drawing.
+3. `inhabit(element)`: Insert a view of the the visualizer into the given
+   `HTMLElement`. This element is typically a `div` whose size is already set
+   up to comprise the available space for visualization. The `inhabit()`
+   method should not do any drawing.
+4. `show()`: Start or resume display of the visualization.
+5. `stop()`: Pause display of the visualization. Don't erase any visualization
+   produced so far or otherwise clean up the visualizer.
+6. `depart()`: Throw out the visualization, release its resources, remove its
+   injected DOM elements, and do any other required cleanup. After this call,
+   the visualizer must support `inhabit()` being called again, perhaps with a
+   different div, to re-initialize the visualization.
+
+#### The paramable interface
+
+1. `name`
+2. `description`
+3. `isValid`: A boolean that is used to determine if the visualizer is ready
    to draw. Generally this will be set automatically based on what you return
    from the `checkParameters` method (see below).
-2. `params`: The engine expects all visualizers to have parameters that can be
+4. `params`: The engine expects all visualizers to have parameters that can be
    set by the user, though these parameters can be empty. This `params`
    property is an object mapping parameter names to (plain) objects that
    satisfy the `ParamInterface` -- basically, they describe the parameter,
    giving whether it is required, how it should be labeled and presented in
    the UI, and so on.
-3. `view(seq)`: Load the given sequence into the visualizer, where the drawing
-   operations in later function calls will be able to access them. This method
-   should not do any drawing.
-4. `inhabit(element)`: Insert a view of the the visualizer into the given
-   `HTMLElement`. This element is typically a `div` whose size is already set
-   up to comprise the available space for visualization. The `inhabit()`
-   method should not do any drawing.
 5. `validate()`: Return a `ValidationStatus` object that indicates to the
    engine that the visualizer is valid. The engine will call `validate` before
    it calls `initialize`, and it will only proceed if the `isValid` property
@@ -229,13 +260,15 @@ visualizer. This interface includes the following data and methods.
    details, and you can just implement the `checkParameters()` method, which
    only has to return a `ValidationStatus` that indicates whether the
    parameter values are sensible.
-6. `show()`: Start or resume display of the visualization.
-7. `stop()`: Pause display of the visualization. Don't erase any visualization
-   produced so far or otherwise clean up the visualizer.
-8. `depart()`: Throw out the visualization, release its resources, remove its
-   injected DOM elements, and do any other required cleanup. After this call,
-   the visualizer must support `inhabit()` being called again, perhaps with a
-   different div, to re-initialize the visualization.
+6. `assignParameters()`: Copy the `value` property of each item in `params` to
+   the place where the implementing object will access it. Typically, that
+   means copying to top-level properties of the object. Implementations
+   shouldn't access values directly from the `params` object, because
+   parameters should only be used when `validate()` succeeds.
+7. `refreshParams()`: Copy the current working values of the parameters back
+   into the `value` properties in the `params` object, so they can be
+   reflected in the parameter UI. This method is used by visualizers that
+   change their own parameters while they're running.
 
 ### Where to put your visualizer
 

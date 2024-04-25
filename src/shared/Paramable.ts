@@ -112,10 +112,9 @@ export interface ParamableInterface {
     /**
      * assignParameters() should copy the value property of each item in
      * params to its proper place to be used in the implementing object.
-     * (Typically, to top-level properties of the object.) The reason that
-     * implementations should not used the values directly from the params
-     * object is that they should only be used in a state when validate()
-     * is succeeding.
+     * (Typically, to top-level properties of the object.) Implementations
+     * should not use the values directly from the params object, because
+     * parameters should only be used when validate() succeeds.
      */
     assignParameters(): void
 
