@@ -164,7 +164,7 @@ class P5VisualizerTemplate extends P5Visualizer {
         sketch
             .translate(-0.5 * barLen, 0.2 * smallDim)
             .noStroke()
-            .fill(255, 128 + 128 * progress, 0)
+            .fill(255, 128 + 128 * progress, 0) // orange -> yellow as we go
             .rect(0, 0, progress * barLen, barWidth)
             .fill(this.textColor)
             .rect(progress * barLen, 0, (1 - progress) * barLen, barWidth)

@@ -1,6 +1,9 @@
-## Building a Visualizer
+# Building a Visualizer
 
-### Get started
+We'll start with a general outline of creating visualizers, and then provide
+some detailed examples and guidance.
+
+## An overview of the process
 
 #### Grab a template for your chosen graphics framework
 
@@ -45,10 +48,10 @@ changes less and less with each step to cope with infinite sequences, but you
 could change that behavior when it is viewing a finite sequence; or you could
 add a "mouse-over" on the progress bar that shows the current index; or ...
 the possibilities are endless. Hence, we invite you to try your hand at
-extending or enhancing existing Visualizers as well. For now, let's turn to
-looking at the process of creating something new based on p5, in more detail.
+extending or enhancing existing Visualizers as well. For now, let's return to
+the process of creating something new based on p5.
 
-### p5 visualizers
+## Making a p5 visualizer, in detail
 
 A good way to start a p5 visualizer is to copy and modify one of the basic
 examples in the `src/visualizers-workbench` directory:
@@ -262,17 +265,17 @@ event handling methods if possible.
 The `VisualizerExportModule` block should be the last thing in the visualizer
 source file. That makes it easy to find.
 
-### Where to put your visualizer
+## Where to put your visualizer
 
-When a visualizer is ready for Numberscope users, place the file containing
-its class definition and export module in the folder `src/visualizers`. When
-the frontscope client runs, it'll find your visualizer and compile it at
-runtime.
+However you made it, when a visualizer is ready for Numberscope users, place
+the file containing its class definition and export module in the folder
+`src/visualizers`. When the frontscope client runs, it'll find your visualizer
+and compile it at runtime.
 
-The visualizers in `src/visualizers` can be tested with the usual
-`npm run dev` call.
+The visualizers in `src/visualizers` will appear as options when you start
+Numberscope with `npm run dev` as usual.
 
 As discussed [earlier](#test-your-visualizer-on-the-workbench), visualizers
 that aren't ready for Numberscope users should go in
-`src/visualizers-workbench`. You can load them for testing by calling
-`npm run dev:workbench`.
+`src/visualizers-workbench`. You can load them to see how they work by running
+with `npm run dev:workbench`.
