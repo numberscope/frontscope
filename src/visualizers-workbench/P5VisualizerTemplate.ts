@@ -106,7 +106,7 @@ class P5VisualizerTemplate extends P5Visualizer {
         this.textColor = sketch.color(128, 159, 255)
         this.outlineColor = sketch.color(51, 51, 255)
 
-        // set the text alignment, which won't change from frame to frame
+        // displayed entry always centered
         sketch.textAlign(sketch.CENTER, sketch.CENTER)
 
         // start at the beginning of the sequence
@@ -172,7 +172,12 @@ class P5VisualizerTemplate extends P5Visualizer {
             .stroke(this.outlineColor)
             .rect(0, 0, barLen, barWidth)
 
-        // Stop the animation loop
+        // === Stopping the animation loop ===
+        // If your visualization is completely drawn and won't
+        // need to change in future frames if there are no interaction events
+        // (i.e., you're not animating anything or drawing progressively),
+        // prevent the browser from using excess processor effort by stopping
+        // the drawing loop:
         sketch.noLoop()
     }
 
@@ -205,11 +210,14 @@ class P5VisualizerTemplate extends P5Visualizer {
             this.index -= this.stepSize
         }
 
-        // make sure we haven't stepped out of bounds
+        // stay within sequence bounds
         if (this.index < this.seq.first || this.index > this.seq.last) {
             this.index = oldIndex
         } else {
-            // restart the animation loop to print the new entry
+            // === Restarting the animation loop ===
+            // If your visualizer finished drawing for a while and so
+            // called noLoop(), but an event changes what needs to be
+            // displayed, make sure to restart by calling loop().
             sketch.loop()
         }
     }
