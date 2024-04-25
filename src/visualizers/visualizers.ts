@@ -1,7 +1,7 @@
 import type {VisualizerExportModule} from './VisualizerInterface'
 
 // import each module in the current directory with a .ts file extension. if
-// Frontscope is running in workbench mode, also load each module in the
+// frontscope is running in workbench mode, also load each module in the
 // neighboring `visualizers-workbench` directory with a .ts extension.
 //
 // we're making a separate call to `import.meta.glob()` in each condition

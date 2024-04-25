@@ -2,7 +2,7 @@
 
 ### Get started
 
-#### Choose a graphics framework
+#### Grab a template for your chosen graphics framework
 
 The easiest way to build a visualizer is to extend a pre-made visualizer base
 class, which automatically sets up a graphics framework for you to use. Right
@@ -12,28 +12,31 @@ now, there's only one base class available:
     [**p5.js**](https://p5js.org/learn/) library for graphics and user
     interaction.
 
+For a quick start, copy and modify the template file for your chosen
+framework, which you can find in `src/visualizers-workbench`.
+
 If you want to use a new graphics framework, you'll need to write your own
-implementation of the [visualizer interface](#abstract-visualizers).
+implementation of the [visualizer interface](behind-the-scenes.md).
 
-#### Test your visualizer on the workbench
-
-While you're working on a visualizer, we recommend keeping it in the
-`src/visualizers-workbench` directory, where Frontscope typically won't notice
-it. To load it, run Frontscope in "workbench mode" by calling
-`npm run dev:workbench`.
-
-When you're ready to propose your visualizer as an official part of
-Numberscope, you'll move it to `src/visualizers`. Then Frontscope will notice
-and load it when you call the usual `npm run dev`. For details, see
-[below](#where-to-put-your-visualizer).
-
-#### Document your visualizer
+#### Document as you write
 
 Each visualizer has its documentation woven into the source code, using
 special `/** md`&nbsp;…&nbsp;`**/` comments that are automatically compiled
 into a [documentation page](../src/visualizers/Differences.md). We have some
 [conventions](#how-to-document-your-visualizer) for what the documentation
 comments should include and where in the source code they should go.
+
+#### Develop your visualizer on the workbench
+
+While you're working on a visualizer, we recommend keeping it in the
+`src/visualizers-workbench` directory, where frontscope typically won't notice
+it. To load it, run frontscope in "workbench mode" by calling
+`npm run dev:workbench`.
+
+When you're ready to propose your visualizer as an official part of
+Numberscope, you'll move it to `src/visualizers`. Then frontscope will notice
+and load it when you call the usual `npm run dev`. For details, see
+[below](#where-to-put-your-visualizer).
 
 ### p5 visualizers
 
@@ -139,7 +142,7 @@ sequence, so you can do sequence-dependent validation and initialization here.
 #### 🔩️ Show or stop the visualization; depart from a page element _(advanced)_
 
 You shouldn't need to implement `show()`, `stop()`, or `depart()`. You can
-learn about them from the [visualizer interface](#abstract-visualizers)
+learn about them from the [visualizer interface](behind-the-scenes.md)
 documentation, and from how they're implemented in the `P5Visualizer` base
 class.
 
@@ -196,21 +199,6 @@ something unexpected has happened. The first is with the
 throw an error. If it's not caught anywhere else, the visualizer framework
 will show it in an error dialog.
 
-### Where to put your visualizer
-
-When a visualizer is ready for Numberscope users, place the file containing
-its class definition and export module in the folder `src/visualizers`. When
-the Frontscope client runs, it'll find your visualizer and compile it at
-runtime.
-
-The visualizers in `src/visualizers` can be tested with the usual
-`npm run dev` call.
-
-As discussed [earlier](#test-your-visualizer-on-the-workbench), visualizers
-that aren't ready for Numberscope users should go in
-`src/visualizers-workbench`. You can load them for testing by calling
-`npm run dev:workbench`.
-
 ### How to document your visualizer
 
 The p5 Template visualizer and the Differences visualizer both follow our
@@ -266,85 +254,17 @@ event handling methods if possible.
 The `VisualizerExportModule` block should be the last thing in the visualizer
 source file. That makes it easy to find.
 
-### Abstract visualizers
+### Where to put your visualizer
 
-Now that we've seen how to extend the [`P5Visualizer`](#p5-visualizers) base
-class, let's take a peek at how the base class works internally. This section
-will be most useful to you if you want to write a new base class, or to build
-a visualizer so different from anything else that it shouldn't have a base
-class. However, you can also use this knowledge to override the default
-behavior of a base class you're extending. By overriding methods like
-`inhabit()`, `show()`, `stop()`, and `depart()`, you can customize your
-visualizer's behavior more deeply than usual.
+When a visualizer is ready for Numberscope users, place the file containing
+its class definition and export module in the folder `src/visualizers`. When
+the Frontscope client runs, it'll find your visualizer and compile it at
+runtime.
 
-Behind the scenes, a visualizer base class is an implementation of the
-visualizer interface (`VisualizerInterface`). To support parameters, the base
-class also has to implement the parameterizable object interface
-(`ParamableInterface`). These interfaces are defined in
-`VisualizerInterface.ts` and `Paramable.ts`, respectively. To write a new base
-class, or to build a visualizer without one, you'll have to implement these
-interfaces yourself. That means your visualizer class has to include the
-following data and methods, and they have to behave in the way the engine
-expects.
+The visualizers in `src/visualizers` can be tested with the usual
+`npm run dev` call.
 
-#### The visualizer interface
-
-1. `visualization()`: Returns a string saying what type of visualizer this is.
-   Typically, each base class chooses its own fixed return value, which all
-   its descendants inherit.
-2. `view(seq)`: Load the given sequence into the visualizer, where the drawing
-   operations in later function calls will be able to access them. This method
-   should not do any drawing.
-3. `inhabit(element)`: Insert a view of the the visualizer into the given
-   `HTMLElement`. This element is typically a `div` whose size is already set
-   up to comprise the available space for visualization. The `inhabit()`
-   method should not do any drawing.
-4. `show()`: Start or resume display of the visualization.
-5. `stop()`: Pause display of the visualization. Don't erase any visualization
-   produced so far or otherwise clean up the visualizer.
-6. `depart()`: Throw out the visualization, release its resources, remove its
-   injected DOM elements, and do any other required cleanup. After this call,
-   the visualizer must support `inhabit()` being called again, perhaps with a
-   different div, to re-initialize the visualization.
-
-#### The paramable interface
-
-1. `name`
-2. `description`
-3. `isValid`: A boolean that says whether the current configuration of
-   parameter values is self-consistent and safe to use. Generally, this will
-   be set automatically based on the output of `checkParameters()`, which is
-   mentioned in the description of `validate()` below.
-4. `params`: A parameterizable object has to come with a set of user-facing
-   parameters—even if the set is empty. The `params` property is an object
-   mapping parameter names to parameter objects—that is, (plain) objects
-   implementing the parameter interface (`ParamInterface`). A parameter object
-   describes how a parameter should appear in the UI, what kind of values it
-   can take, whether it's required, and so on.
-5. `validate()`: Check whether the current configuration of parameter values
-   is valid, and call the `assignParameters()` method below if so. Return a
-   `ValidationStatus` object that tells the engine whether the check and
-   assignment succeeded. Whenever the engine wants to load a parameter
-   configuration into a parameterizable object, it will use `validate()` to do
-   so. If it gets back a `ValidationStatus` with `isValid = true`, it will
-   proceed with whatever it is doing. If it gets a status with
-   `isValid = false`, it will will stop what it is doing and help the user fix
-   the problem by displaying any error messages the status carries. Most
-   parameterizable objects will extend `Paramable` and use its default
-   implementation of `validate()`. This implementation checks parameter
-   validity by calling the `checkParameters()` method, which just has to
-   return a `ValidationStatus` that says whether the parameters are valid. The
-   default implementation then handles all the other responsibilities of
-   `validate()`.
-6. `assignParameters()`: Copy the `value` property of each item in `params` to
-   the place where the implementing object will access it. Typically, that
-   means copying to top-level properties of the object. The implementing
-   object should only use parameter values supplied by `assignParameters()`,
-   because these have been vetted by `validate()`. In contrast, values taken
-   directly from `params` are unvalidated, and they can change from valid to
-   invalid at any time.
-7. `refreshParams()`: Copy the current working values of the parameters back
-   into the `value` properties in the `params` object, so they can be
-   reflected in the parameter UI. This method is used by objects that can
-   update their own parameters, rather than just having parameters assigned
-   through the standard parameter UI.
+As discussed [earlier](#test-your-visualizer-on-the-workbench), visualizers
+that aren't ready for Numberscope users should go in
+`src/visualizers-workbench`. You can load them for testing by calling
+`npm run dev:workbench`.
