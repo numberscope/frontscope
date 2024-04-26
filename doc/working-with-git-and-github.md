@@ -10,6 +10,7 @@ Contents
     -   [Add changes](#add-changes)
     -   [Commit changes](#commit-changes)
     -   [Push changes](#push-changes)
+    -   [Submit a pull request](#submit-a-pull-request)
 -   [Advanced operations](#advanced-operations)
     -   [Stash your changes](#stash-your-changes)
     -   [Unstash your changes](#unstash-your-changes)
@@ -46,9 +47,9 @@ command:
 git commit -m "put your commit message here"
 ```
 
-It's best to write your commit message in the
-[imperative](https://en.wikipedia.org/wiki/Imperative_mood) and keep it
-shorter than 50 characters.
+You should write your commit messages according to the "semantic commit
+message"
+[guidelines](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716).
 
 ### Push changes
 
@@ -63,6 +64,75 @@ version on GitHub) or to "store" your photo, issue the following command:
 ```sh
 git push
 ```
+
+### Submit a pull request
+
+Once you have a branch in working order that implements one new feature or
+fixes one bug or otherwise changes Numberscope in a coherent way, and that
+branch is pushed to your fork in the state you want to propose for inclusion
+in Numberscope, the first thing to do is to carefully go through the
+[pull request checklist](pull-request-checklist.md).
+
+Presuming that you have satisfied all of the guidelines in that file, it's
+time to submit a pull request (PR). To do so, go to your fork on the GitHub
+website, and select your branch in the dropdown list on near the top left.
+Then in the bar just below that dropdown list, you should see information on
+how your branch compares with the current "main" branch of Numberscope, in
+terms of the number of commits it is "ahead" of main (i.e., has added since
+the last common commit to main) and the number of commits "behind" main (i.e.,
+the number of commits added in main since the last common commit). Ideally,
+your branch is not behind main at all; otherwise, maybe some of those commits
+in main might affect the changes you were working on. So if you see any
+commits behind main, you might want to go back to your working copy and
+[sync your local fork with remote original](#sync-local-fork-with-remote-original)
+and rebase your branch on the current version of main.
+
+In any case, when you are satisfied your branch is ready to submit as a PR,
+you will notice that report of the number of commits ahead or behind main is
+actually a link. Click on that link, and you will reach a page that shows the
+relevant commits and all of the changes that have been made in your branch.
+Look these over one last time to make sure they are the changes you intend. If
+not, go back to your branch and fix up whatever was awry and push it again.
+
+When all of those changes look right, click the big green button at the top
+right that says "Create Pull Request". This click will take you to the "Open a
+Pull Request" form. (Note that the first time you push a branch to git, the
+response message actually includes a quick direct link to this form; you can
+save that away and use it later, instead of navigating through GitHub's web
+interface.)
+
+There are just two boxes you need to fill out on the form to open a pull
+request. The first is the title. GitHub will have filled in something based on
+the content of your branch. It should be in the "semantic commit message"
+format linked in the [commit](#commit-changes) section, and it should
+summarize the overall effect of your PR on the Numberscope system. So if you
+don't like what GitHub filled in, improve it before you submit.
+
+The other box is the commit description. It is prefilled with a statement you
+need to agree to -- read it over carefully to make sure you agree before you
+submit. It may also have some description extracted from your branch. If so,
+and you like the looks of that, you can just delete the
+`\<Please provide a high-level description of your PR.\>` placeholder and you
+are good to go. If not, replace that placeholder with a more detailed but
+still brief explanation of the reason, purpose, and content of your PR. If it
+takes care of any of the outstanding issues concerning Numberscope listed on
+the GitHub site for Numberscope, include at the bottom on a separate line the
+statement `Resolves #999.` (with the actual issue number in place of 999).
+
+When you are happy with the title, description, and changes made in your PR,
+and you agree with the statement that was pre-filled in the description (which
+you should leave in the description to record your agreement), you can click
+the green "Create pull request" at the bottom right corner of the description
+box. You _should_ leave the box labeled "Allow edits and access to secrets by
+maintainers" checked. Don't worry, there aren't any secrets associated with
+the Numberscope project, so you are not giving us your bank account numbers or
+anything like that.
+
+With this click, your pull request should actually truly be created, and show
+up on the [pull request list](https://github.com/numberscope/frontscope/pulls)
+in the main GitHub page for Numberscope. The maintainers of Numberscope will
+automatically be notified of your proposed code and will get back to you about
+your ideas. Thank you for submitting your work to Numberscope!
 
 ## Advanced operations
 

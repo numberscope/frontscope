@@ -23,7 +23,7 @@ import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
   src="../../assets/img/Entries/1729.png"
   width=500
   style="margin-left: 1em; margin-right: 0.5em"
-/>](../../assets/img/Entries/1729.png)
+/>](../assets/img/Entries/1729.png)
 
 This visualizer allows you to step back and forth through a sequence, showing
 each entry as a written number.

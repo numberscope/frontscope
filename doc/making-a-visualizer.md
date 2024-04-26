@@ -11,7 +11,7 @@ The easiest way to build a visualizer is to extend a pre-made visualizer base
 class, which automatically sets up a graphics framework for you to use. Right
 now, there's only one base class available:
 
--   [`P5Visualizer`](#p5-visualizers) uses the
+-   [`P5Visualizer`](#making-a-p5-visualizer-in-detail) uses the
     [**p5.js**](https://p5js.org/learn/) library for graphics and user
     interaction.
 
@@ -109,9 +109,8 @@ invalid ones.
 
 Your validation can't depend on the sequence, because there might not be any
 sequence loaded when the validation check runs. You can do sequence-dependent
-validation in [`setup()`](#bulb-set-up-the-visualizer-often-used), as
-described below, but you won't be able to prompt the user for corrections at
-that point.
+validation in [`setup()`](#set-up-the-visualizer-often-used), as described
+below, but you won't be able to prompt the user for corrections at that point.
 
 -   **p5 Template:** Make sure that the step size is positive.
 -   **Differences:** Make sure that the number of terms is positive or zero,
