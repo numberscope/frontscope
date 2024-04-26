@@ -10,6 +10,7 @@ Contents
     -   [Add changes](#add-changes)
     -   [Commit changes](#commit-changes)
     -   [Push changes](#push-changes)
+    -   [Submit a pull request](#submit-a-pull-request)
 -   [Advanced operations](#advanced-operations)
     -   [Stash your changes](#stash-your-changes)
     -   [Unstash your changes](#unstash-your-changes)
@@ -69,17 +70,20 @@ git push
 Once you have a branch in working order that implements one new feature or
 fixes one bug or otherwise changes Numberscope in a coherent way, and that
 branch is pushed to your fork in the state you want to propose for inclusion
-in Numberscope, it's time to submit a pull request (PR). To do so, go to your
-fork on the GitHub website, and select your branch in the dropdown list on
-near the top left. Then in the bar just below that dropdown list, you should
-see information on how your branch compares with the current "main" branch of
-Numberscope, in terms of the number of commits it is "ahead" of main (i.e.,
-has added since the last common commit to main) and the number of commits
-"behind" main (i.e., the number of commits added in main since the last common
-commit). Ideally, your branch is not behind main at all; otherwise, maybe some
-of those commits in main might affect the changes you were working on. So if
-you see any commits behind main, you might want to go back to your working
-copy and
+in Numberscope, the first thing to do is to carefully go through the
+[pull request checklist](pull-request-checklist.md).
+
+Presuming that you have satisfied all of the guidelines in that file, it's
+time to submit a pull request (PR). To do so, go to your fork on the GitHub
+website, and select your branch in the dropdown list on near the top left.
+Then in the bar just below that dropdown list, you should see information on
+how your branch compares with the current "main" branch of Numberscope, in
+terms of the number of commits it is "ahead" of main (i.e., has added since
+the last common commit to main) and the number of commits "behind" main (i.e.,
+the number of commits added in main since the last common commit). Ideally,
+your branch is not behind main at all; otherwise, maybe some of those commits
+in main might affect the changes you were working on. So if you see any
+commits behind main, you might want to go back to your working copy and
 [sync your local fork with remote original](#sync-local-fork-with-remote-original)
 and rebase your branch on the current version of main.
 
@@ -90,15 +94,10 @@ relevant commits and all of the changes that have been made in your branch.
 Look these over one last time to make sure they are the changes you intend. If
 not, go back to your branch and fix up whatever was awry and push it again.
 
-(Note that the first time you push a branch to git, the response message
-actually includes a quick direct link to this comparison page; you can save
-that away and use it later, instead of navigating through GitHub's web
-interface.)
-
 When all of those changes look right, click the big green button at the top
 right that says "Create Pull Request". This click will take you to the "Open a
 Pull Request" form. (Note that the first time you push a branch to git, the
-response message actually includes a quick direct link to thisform; you can
+response message actually includes a quick direct link to this form; you can
 save that away and use it later, instead of navigating through GitHub's web
 interface.)
 
