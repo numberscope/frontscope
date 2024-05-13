@@ -78,6 +78,10 @@ class ModFill extends P5Visualizer {
             this.sketch.noLoop()
         }
     }
+
+    requestedAspectRatio(): number | undefined {
+        return undefined
+    }
 }
 
 export const exportModule = new VisualizerExportModule(

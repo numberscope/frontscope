@@ -883,6 +883,10 @@ earlier ones that use the _same_ style.)
                 this.y += this.scalingFactor
         }
     }
+
+    requestedAspectRatio(): number | undefined {
+        return undefined
+    }
 }
 
 export const exportModule = new VisualizerExportModule(
