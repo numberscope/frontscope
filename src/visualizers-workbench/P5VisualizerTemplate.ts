@@ -228,6 +228,16 @@ class P5VisualizerTemplate extends P5Visualizer {
             sketch.loop()
         }
     }
+
+    // === Aspect ratios ===
+    // If this visualizer would like a canvas with a particular aspect ratio,
+    // such can be requested here. A value of `undefined` indicates no desired
+    // aspect ratio, but a number greater than 0 can be used instead if a
+    // specific aspect ratio is desired. A number smaller than 1 indicates
+    // taller-than-wide, and the opposite for a number larger than 1.
+    requestedAspectRatio(): number | undefined {
+        return undefined
+    }
 }
 /** md
 ## The "sequence progress bar"

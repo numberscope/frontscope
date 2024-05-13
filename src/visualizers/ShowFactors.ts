@@ -83,6 +83,10 @@ class ShowFactors extends P5Visualizer {
         }
         sketch.noLoop()
     }
+
+    requestedAspectRatio(): number | undefined {
+        return undefined
+    }
 }
 
 export const exportModule = new VisualizerExportModule(
