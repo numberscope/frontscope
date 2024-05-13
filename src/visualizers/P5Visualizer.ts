@@ -242,4 +242,6 @@ export abstract class P5Visualizer
        visualizer to depart a div that it's not inhabiting, or to inhabit
        a div that it's already inhabiting, nothing will happen.
     */
+
+    abstract requestedAspectRatio(): number | undefined
 }

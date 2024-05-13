@@ -455,6 +455,10 @@ class Chaos extends P5Visualizer {
         // stop drawing if we exceed decreed terms
         if (this.myIndex > this.last) sketch.noLoop()
     }
+
+    requestedAspectRatio(): number | undefined {
+        return undefined
+    }
 }
 
 export const exportModule = new VisualizerExportModule(

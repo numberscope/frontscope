@@ -123,14 +123,9 @@ implemented visualizers.
             },
         },
         data: function () {
-            const visualizers = []
-            const sequences = []
-            for (const vizKey in VISUALIZERS) {
-                visualizers.push(VISUALIZERS[vizKey])
-            }
-            for (const seqKey in SEQUENCES) {
-                sequences.push(SEQUENCES[seqKey])
-            }
+            const visualizers = Object.values(VISUALIZERS)
+            const sequences = Object.values(SEQUENCES)
+
             const state = {
                 visualizers: visualizers,
                 sequences: sequences,
