@@ -1,7 +1,7 @@
 import HomeOld from '../views/Home.vue'
 import ScopeOld from '../views/Scope.vue'
 import HomeNew from '../views-new/Home.vue'
-import ScopeNew from '../views-new/Home.vue'
+import ScopeNew from '../views-new/Scope.vue'
 import {createRouter, createWebHistory} from 'vue-router'
 
 const views =
