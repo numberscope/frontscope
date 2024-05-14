@@ -1,0 +1,32 @@
+# Official framework image. Look for the different tagged releases at:
+# https://hub.docker.com/r/library/node/tags/
+image: nikolaik/python-nodejs:python3.12-nodejs22
+
+# This folder is cached between builds
+# https://docs.gitlab.com/ee/ci/yaml/index.html#cache
+cache:
+  paths:
+    - node_modules/
+    - ~/.cache/pip/
+
+stages:          # List of stages for jobs, and their order of execution
+  - build
+  - test
+
+build-job:       # This job runs in the build stage, which runs first.
+  stage: build
+  script:
+    - npm install
+    - npm run build
+
+unit-test-job:   # This job runs in the test stage.
+  stage: test    # It only starts when the job in the build stage completes successfully.
+  script:
+    - npm install
+    - npm run test:unit
+
+lint-test-job:   # This job also runs in the test stage.
+  stage: test    # It can run at the same time as unit-test-job (in parallel).
+  script:
+    - npm install
+    - npm run lint:check
