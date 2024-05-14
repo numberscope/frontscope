@@ -85,6 +85,9 @@ export interface ParamInterface {
 
     // Additional explanation text to display:
     description?: string
+
+    // Option to hide the description in a tooltip:
+    hideDescription?: boolean
 }
 
 export interface ParamableInterface {
