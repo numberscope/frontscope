@@ -400,10 +400,6 @@ The default value is 25.
 
         return colorAll
     }
-
-    requestedAspectRatio(): number | undefined {
-        return undefined
-    }
 }
 
 export const exportModule = new VisualizerExportModule(

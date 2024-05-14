@@ -159,10 +159,6 @@ class Turtle extends P5Visualizer {
         this.sketch.line(oldX, oldY, this.X, this.Y)
         if (this.currentIndex > this.seq.last) this.sketch.noLoop()
     }
-
-    requestedAspectRatio(): number | undefined {
-        return undefined
-    }
 }
 
 export const exportModule = new VisualizerExportModule(
