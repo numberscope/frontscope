@@ -113,10 +113,6 @@ class ShiftCompare extends P5Visualizer {
 
         sketch.image(this.img, 0, 0) // Display image to screen.
     }
-
-    requestedAspectRatio(): number | undefined {
-        return undefined
-    }
 }
 
 export const exportModule = new VisualizerExportModule(
