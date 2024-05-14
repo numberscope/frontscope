@@ -385,10 +385,6 @@ class FactorHistogram extends P5Visualizer {
             sketch.noLoop()
         }
     }
-
-    requestedAspectRatio(): number | undefined {
-        return undefined
-    }
 }
 
 /** md

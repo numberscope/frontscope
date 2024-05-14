@@ -243,5 +243,7 @@ export abstract class P5Visualizer
        a div that it's already inhabiting, nothing will happen.
     */
 
-    abstract requestedAspectRatio(): number | undefined
+    requestedAspectRatio(): number | undefined {
+        return undefined
+    }
 }
