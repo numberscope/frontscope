@@ -14,6 +14,7 @@
 
 <style>
     :root {
+        /* Legacy variables. Remove when new site is stable */
         --ns-foreground: #2c3e50;
         --ns-navigation-foreground: white;
         --ns-navigation-background: #809fff;
@@ -25,7 +26,6 @@
         display: flex;
         flex-direction: column;
         min-height: calc(100vh - var(--ns-footer-height));
-        font-family: Arial, Helvetica, sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         color: var(--ns-foreground);
