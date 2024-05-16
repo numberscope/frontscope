@@ -1,6 +1,6 @@
 <template>
+    <NavBar />
     <main>
-        <NavBar />
         <RouterView />
     </main>
     <Footer />
@@ -17,6 +17,7 @@
     * {
         box-sizing: border-box;
         font-family: var(--ns-font-main);
+        color: var(--ns-color-black);
     }
 
     html,
@@ -45,6 +46,23 @@
         --ns-color-light: #b5b5b5;
         --ns-color-grey: #636363;
         --ns-color-black: #2f2f2f;
+
+        /* Breakpoint widths 
+        Default styles should be for vertical mobile devices
+        (devices narrower than --ns-breakpoint-mobile)
+
+        Small devices (landscape phones)
+        @media (min-width: var(--ns-breakpoint-mobile)) { ... }
+
+        Medium devices (tablets)
+        @media (min-width: var(--ns-breakpoint-tablet)) { ... }
+
+        // Large devices (desktops)
+        @media (min-width: var(--ns-breakpoint-desktop)) { ... }
+        */
+        --ns-breakpoint-mobile: 580px;
+        --ns-breakpoint-tablet: 800px;
+        --ns-breakpoint-desktop: 1200px;
     }
 
     /* Display font */
