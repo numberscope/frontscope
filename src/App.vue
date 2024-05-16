@@ -12,29 +12,50 @@
     import {RouterView} from 'vue-router'
 </script>
 
+<!-- Global styles. This style tag is explicitly unscoped. -->
 <style>
+    * {
+        box-sizing: border-box;
+        font-family: var(--ns-font-main);
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
     :root {
-        /* Legacy variables. Remove when new site is stable */
-        --ns-foreground: #2c3e50;
-        --ns-navigation-foreground: white;
-        --ns-navigation-background: #809fff;
-        --ns-information-foreground: white;
-        --ns-information-background: #3333ff;
-        --ns-footer-height: 9ex;
+        /* Font sizes */
+        --ns-size-body: 12px;
+        --ns-size-display: 24px;
+        --ns-size-heading: 16px;
+        --ns-size-subheading: 12px;
+        --ns-size-mini: 10px;
+        --ns-size-heading-2: 14px;
+        --ns-size-title: 24px;
+
+        /* Fonts */
+        --ns-font-display: 'Infinity', sans-serif;
+        --ns-font-main: 'Inter', sans-serif;
+
+        /* Colors */
+        --ns-color-primary: #809fff;
+        --ns-color-white: #ffffff;
+        --ns-color-light: #b5b5b5;
+        --ns-color-grey: #636363;
+        --ns-color-black: #2f2f2f;
     }
-    main {
-        display: flex;
-        flex-direction: column;
-        min-height: calc(100vh - var(--ns-footer-height));
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        color: var(--ns-foreground);
+
+    /* Display font */
+    @font-face {
+        font-family: 'Infinity';
+        src: url('/src/assets/fonts/infinity/Infinity.ttf');
     }
-    nav {
-        padding: 30px;
-    }
-    nav a {
-        font-weight: bold;
-        color: var(--ns-foreground);
+
+    /* Body font */
+    @font-face {
+        font-family: 'Inter';
+        src: url('/src/assets/fonts/inter/Inter-VariableFont_slnt\,wght.ttf');
     }
 </style>

@@ -24,8 +24,8 @@
         VisualizerInterface,
         VisualizerExportModule,
     } from '@/visualizers/VisualizerInterface'
-    import VizSelector from '../components/ToolSelector.vue'
-    import SeqVizParamsModal from '../components/SeqVizParamsModal.vue'
+    import VizSelector from './ToolSelector.vue'
+    import SeqVizParamsModal from './SeqVizParamsModal.vue'
     import type {SequenceInterface} from '../sequences/SequenceInterface'
     import {SequenceDefault} from '../sequences/SequenceDefault'
     export default defineComponent({

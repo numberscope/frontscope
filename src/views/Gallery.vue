@@ -1,6 +1,6 @@
 <template>
     <div>
-        <p>Home page will be here</p>
+        <p>Gallery page will be here</p>
         <!-- Insert HTML here -->
     </div>
 </template>

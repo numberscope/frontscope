@@ -1,4 +1,4 @@
-import Home from '../Home.vue'
+import Home from '../Gallery.vue'
 import {expect, test} from 'vitest'
 import {mount} from '@vue/test-utils'
 

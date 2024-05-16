@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import {RouterLink} from 'vue-router'
-    import LogoWithMicroscope from '../../assets/img/LogoWithMicroscope.png'
+    import LogoWithMicroscope from '../../assets/img/logo.svg'
 </script>
 
 <template>
