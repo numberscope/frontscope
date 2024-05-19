@@ -2,6 +2,7 @@ import HomeOld from '../views/Home.vue'
 import ScopeOld from '../views/Scope.vue'
 import HomeNew from '../views-new/Home.vue'
 import ScopeNew from '../views-new/Scope.vue'
+import Gallery from '../views-new/Gallery.vue'
 import {createRouter, createWebHistory} from 'vue-router'
 
 const views =
@@ -10,11 +11,13 @@ const views =
               // New views go here
               home: HomeNew,
               scope: ScopeNew,
+              gallery: Gallery,
           }
         : {
               // Old views go here
               home: HomeOld,
               scope: ScopeOld,
+              gallery: Gallery,
           }
 
 const router = createRouter({
@@ -29,6 +32,11 @@ const router = createRouter({
             path: '/scope',
             name: 'scope',
             component: views['scope'],
+        },
+        {
+            path: '/gallery',
+            name: 'gallery',
+            component: views['gallery'],
         },
     ],
 })
