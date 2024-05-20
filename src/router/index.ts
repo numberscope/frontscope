@@ -1,5 +1,6 @@
 import Gallery from '../views/Gallery.vue'
 import Scope from '../views/Scope.vue'
+import DragAndDrop from '../views/DragAndDrop.vue'
 import {createRouter, createWebHistory} from 'vue-router'
 
 const router = createRouter({
@@ -14,6 +15,11 @@ const router = createRouter({
             path: '/gallery',
             name: 'gallery',
             component: Gallery,
+        },
+        {
+            path: '/dragAndDrop',
+            name: 'dragAndDrop',
+            component: DragAndDrop,
         },
     ],
 })
