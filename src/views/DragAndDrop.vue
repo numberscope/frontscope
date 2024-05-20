@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-    import Tab from '@/components_old/Tab.vue'
+    import Tab from '@/components/Tab.vue'
     import interact from 'interactjs'
 
     // enable draggables to be dropped into this
@@ -72,3 +72,4 @@
         top: 500px;
     }
 </style>
+@/components/Tab.vue
