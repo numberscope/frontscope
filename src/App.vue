@@ -1,19 +1,31 @@
 <template>
-    <NavBar />
-    <main>
-        <RouterView />
-    </main>
-    <Footer />
+    <div id="container">
+        <NavBar />
+        <main>
+            <RouterView />
+        </main>
+        <!-- <Footer /> -->
+    </div>
 </template>
 
 <script setup lang="ts">
-    import Footer from './views/minor/Footer.vue'
+    // import Footer from './views/minor/Footer.vue'
     import NavBar from './views/minor/NavBar.vue'
     import {RouterView} from 'vue-router'
 </script>
 
 <!-- Global styles. This style tag is explicitly unscoped. -->
 <style>
+    #container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+
+        main {
+            flex-grow: 1;
+        }
+    }
+
     * {
         box-sizing: border-box;
         font-family: var(--ns-font-main);
