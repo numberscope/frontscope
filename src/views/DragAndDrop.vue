@@ -7,13 +7,25 @@
             <div
                 id="left-dropzone-container"
                 class="dropzone-container empty">
-                <div id="top-left-dropzone" class="dropzone empty"></div>
-                <div id="bottom-left-dropzone" class="dropzone empty"></div>
+                <div
+                    id="top-left-dropzone"
+                    class="dropzone empty"
+                    dropzone="top-left"></div>
+                <div
+                    id="bottom-left-dropzone"
+                    class="dropzone empty"
+                    dropzone="bottom-left"></div>
             </div>
             <div id="canvas-container"></div>
             <div id="right-dropzone-container" class="dropzone-container">
-                <div id="top-right-dropzone" class="dropzone"></div>
-                <div id="bottom-right-dropzone" class="dropzone"></div>
+                <div
+                    id="top-right-dropzone"
+                    class="dropzone"
+                    dropzone="top-right"></div>
+                <div
+                    id="bottom-right-dropzone"
+                    class="dropzone"
+                    dropzone="bottom-right"></div>
             </div>
         </div>
     </div>
@@ -111,6 +123,7 @@
                 dropzone.classList.remove('drop-hover')
                 dropzoneContainer.classList.remove('empty')
                 tab.classList.add('docked')
+                tab.setAttribute('docked', dropzone.getAttribute('dropzone'))
 
                 positionAndSizeTab(tab, dropzone)
             }

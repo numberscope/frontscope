@@ -2,18 +2,35 @@
     import interact from 'interactjs'
 
     // every element with draggable class can be dragged
-    interact('.resize').resizable({
+    interact('.tab').resizable({
         // no inertia for resizing (better imo)
         inertia: false,
         // not sure if we want horizontal resizing or not,
         // maybe we even want resizing to be only available from the bottom
-        edges: {left: false, right: false, bottom: true, top: false},
+        edges: {
+            left: false,
+            right: false,
+            bottom: '.tab:not(.docked) .resize',
+            top: false,
+        },
 
         listeners: {
-            move(event) {
-                const target = event.target
+            start() {
+                document.body.style.userSelect = 'none'
+            },
 
-                target.style.height = event.rect.height + 'px'
+            end() {
+                document.body.style.userSelect = 'auto'
+            },
+
+            move(event) {
+                const tab = event.target
+
+                if (
+                    tab instanceof HTMLElement
+                    && !tab.classList.contains('docked')
+                )
+                    tab.style.height = event.rect.height + 'px'
             },
         },
         modifiers: [
@@ -24,7 +41,7 @@
 
             // minimum size
             interact.modifiers.restrictSize({
-                min: {width: 0, height: 1},
+                min: {width: 0, height: 128},
             }),
         ],
     })
@@ -98,20 +115,28 @@
 </script>
 
 <template>
-    <div class="resize">
+    <div class="tab">
         <div class="drag"></div>
         <div class="content">
             <p>parameters and stuff would go here</p>
         </div>
+        <div class="resize"></div>
     </div>
 </template>
 
 <style scoped lang="scss">
-    .resize {
+    .tab {
         border: 1px solid var(--ns-color-black);
         width: 300px;
         height: 200px;
         z-index: 999;
+    }
+
+    .resize {
+        height: 16px;
+        width: 100%;
+        position: absolute;
+        bottom: 0;
     }
 
     // The drag element is actually underneath the entire window
