@@ -5,8 +5,7 @@
     interact('.tab').resizable({
         // no inertia for resizing (better imo)
         inertia: false,
-        // not sure if we want horizontal resizing or not,
-        // maybe we even want resizing to be only available from the bottom
+        // Only want bootom resizing and only when the tab isn't docked
         edges: {
             left: false,
             right: false,
@@ -55,6 +54,10 @@
                 document.body.style.userSelect = 'none'
             },
             move: dragMoveListener,
+
+            // This function is called when a user stops dragging a tab
+            // It checks whether the tab is docked, and if it is, returns
+            // it to its place.
             end: (event: Interact.InteractEvent) => {
                 document.body.style.userSelect = 'auto'
 

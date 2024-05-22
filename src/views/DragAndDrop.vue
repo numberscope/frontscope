@@ -3,6 +3,13 @@
         <tab id="sequenceTab" class="tab docked" docked="top-right" />
         <tab id="visualiserTab" class="tab docked" docked="bottom-right" />
 
+        <!-- 
+            The dropzone ids must remain like "[position]-dropzone"
+            where [position] is the same as the dropzone attribute.
+
+            This is because the dropzones are looked up by id in the
+            tab management code.
+        -->
         <div id="main">
             <div
                 id="left-dropzone-container"
@@ -36,6 +43,7 @@
     import interact from 'interactjs'
     import {onMounted} from 'vue'
 
+    // Assigns a dropzone's position and size to a tab
     function positionAndSizeTab(tab: HTMLElement, dropzone: HTMLElement) {
         const dropzoneRect = dropzone.getBoundingClientRect()
 
@@ -47,6 +55,8 @@
         tab.setAttribute('data-y', dropzoneRect.top.toString())
     }
 
+    // This function makes sure that the tabs remain in their docked position
+    // when the window is resized
     function positionAndSizeAllTabs() {
         document.querySelectorAll('.tab').forEach((tab: Element) => {
             if (!(tab instanceof HTMLElement)) return
@@ -91,6 +101,10 @@
                 && dropzoneContainer instanceof HTMLElement
                 && tab.classList.contains('docked')
             ) {
+                // Both individual dropzones and their containers have an
+                // empty class. It exists to make the dropzones not occupy
+                // any space when they are empty. The classes must always be
+                // updated with any changes to the tab state.
                 dropzone.classList.add('empty')
                 tab.classList.remove('docked')
                 tab.setAttribute('docked', 'none')
