@@ -1,34 +1,13 @@
 <template>
-    <div class="col-4-sm">
-        <div class="card" style="width: 18rem">
-            <div class="card-body">
-                <h5 class="card-title">
-                    {{ `${card.name}` }}
-                </h5>
-                <p class="card-text">
-                    Display {{ seq.name }}
-                    visualization.
-                </p>
-                <div class="card-preview" :id="cid"></div>
-                <div class="card-buttons">
-                    <a
-                        v-on:click="
-                            $emit('drawSpecimen', {seq: seq, viz: viz})
-                        "
-                        href="#"
-                        class="btn btn-primary mr-2">
-                        Draw
-                    </a>
-                    <a
-                        v-on:click="
-                            $emit('removeSpecimen', {seq: seq, viz: viz})
-                        "
-                        href="#"
-                        class="btn btn-danger">
-                        Remove
-                    </a>
-                </div>
-            </div>
+    <div class="card-body">
+        <div class="card-preview" :id="cid"></div>
+        <div class="card-title-box">
+            <h5 class="card-title">
+                {{ `${cardName}` }}
+            </h5>
+            <p class="card-text">
+                {{ seqName }}
+            </p>
         </div>
     </div>
 </template>
@@ -38,21 +17,10 @@
     let cid_count = 0
     export default defineComponent({
         name: 'SpecimenCard',
-        mounted() {
-            this.seq.initialize()
-            this.viz.view(this.seq)
-            this.viz.inhabit(document.getElementById(this.cid) as HTMLElement)
-            this.viz.show()
-            setTimeout(() => this.viz.stop(), 500)
-        },
-        beforeUnmount() {
-            this.viz.depart(document.getElementById(this.cid) as HTMLElement)
-        },
         methods: {},
         props: {
-            seq: {type: Object, required: true},
-            viz: {type: Object, required: true},
-            card: {type: Object, required: true},
+            seqName: {type: String, required: true},
+            cardName: {type: String, required: true},
             cid: {
                 type: String,
                 default: function () {
@@ -64,16 +32,40 @@
 </script>
 
 <style scoped>
-    .card {
-        margin: 1em;
-        min-height: 350px;
-    }
     .card-body {
+        width: 216px;
+        border: 1px solid var(--ns-color-black);
         display: flex;
         flex-direction: column;
+        align-items: center;
     }
     .card-preview {
-        flex: 1;
+        width: 200px;
+        height: 200px;
+        margin: 8px;
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .card-title-box {
         width: 100%;
+        border-top: 1px solid var(--ns-color-black);
+        align-items: left;
+        text-align: left;
+    }
+    .card-title {
+        font-size: 14px;
+        font-weight: var(--ns-font-weight-medium);
+        margin-left: 8px;
+        margin-bottom: 2px;
+        margin-top: 8px;
+    }
+    .card-text {
+        font-size: 12px;
+        margin-top: 2px;
+        margin-left: 8px;
+        margin-bottom: 8px;
+        color: #6c757d;
     }
 </style>

@@ -47,6 +47,9 @@
         --ns-color-grey: #636363;
         --ns-color-black: #2f2f2f;
 
+        /* Bolditude */
+        --ns-font-weight-medium: 500;
+
         /* Breakpoint widths 
         Default styles should be for vertical mobile devices
         (devices narrower than --ns-breakpoint-mobile)
