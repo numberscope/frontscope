@@ -1,16 +1,36 @@
 <template>
     <div id="gallery-content">
-        <div id="title-bar">
-            <div id="titles">
-                <h2 id="title">Specimen gallery</h2>
-                <p id="visualizer-name-mobile">Self similarity telescope</p>
+        <div id="header-mobile">
+            <div>
+                <h2>Specimen gallery</h2>
+                <h3>Self similarity telescope</h3>
             </div>
-            <div id="change-button"></div>
+            <div type="button" id="change-button">
+                <img :src="swap" alt="Swap icon" id="change-icon" />
+                <p id="change-text">Change Visualizer</p>
+            </div>
         </div>
 
-        <div class="visualizer-bar">
-            <p class="visualizer-name">Self similarity telescope</p>
-            <div class="arrow"></div>
+        <h1 id="header">Specimen gallery</h1>
+
+        <div type="button" class="visualizer-bar">
+            <h2>Self similarity telescope</h2>
+            <img :src="arrow" alt="Arrow up" />
+        </div>
+        <div class="gallery">
+            <div class="specimen"></div>
+            <div class="specimen"></div>
+            <div class="specimen"></div>
+            <div class="specimen"></div>
+            <div class="specimen"></div>
+            <div class="specimen"></div>
+            <div class="specimen"></div>
+            <div class="specimen"></div>
+        </div>
+
+        <div type="button" class="visualizer-bar">
+            <h2>Self similarity telescope</h2>
+            <img :src="arrow" alt="Arrow up" />
         </div>
         <div class="gallery">
             <div class="specimen"></div>
@@ -25,76 +45,101 @@
     </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+    import swap from '../assets/img/icons/swap.svg'
+    import arrow from '../assets/img/icons/arrow.svg'
+</script>
 
 <style>
     p,
-    h2 {
+    h1,
+    h2,
+    h3 {
         margin: 0;
     }
-    #gallery-content {
-        margin: 30px 20px;
+    h1 {
+        font-size: 24pt;
+    }
+    h2 {
+        font-size: 16pt;
+    }
+    h3 {
+        font-size: 12pt;
     }
 
-    #title-bar {
+    #gallery-content {
+        margin: 16px;
+    }
+
+    #header-mobile {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 30px;
+        margin: 8px 0;
     }
     #change-button {
-        width: 100px;
-        height: 100px;
-        background-color: #000000;
+        max-width: 100px;
+        width: min-content;
+    }
+    #change-icon {
+        display: block;
+        margin: auto;
+    }
+    #change-text {
+        font-size: 10pt;
+        text-align: center;
+    }
+
+    #header {
+        display: none;
     }
 
     .visualizer-bar {
         display: none;
     }
-    .arrow {
-        width: 30px;
-        height: 30px;
-        background-color: #000000;
-    }
 
     .gallery {
-        display: grid;
-        column-gap: 30px;
-        row-gap: 30px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-top: 29px;
+        gap: 29px;
     }
 
     .specimen {
-        width: 100%;
-        height: 300px;
+        width: 216px;
+        height: 268px;
         background-color: #000000;
+        flex-grow: 1;
     }
 
-    @media only screen and (min-width: 1200px) {
+    @media only screen and (min-width: 480px) {
         #gallery-content {
-            margin: 30px auto;
+            margin: 32px auto;
+            padding: 0 16px;
+            max-width: 1000px;
+            width: 100%;
         }
 
-        #visualizer-name-mobile,
-        #change-button {
+        #header-mobile {
             display: none;
+        }
+
+        #header {
+            display: block;
+            margin-bottom: 16px;
         }
 
         .visualizer-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-        }
-        .visualizer-name {
-            font-size: 1.5rem;
+            margin-bottom: 16px;
         }
 
         .gallery {
-            grid-template-columns: repeat(4, max-content);
-        }
-
-        .specimen {
-            width: 250px;
+            gap: 16px;
+            margin: 0 0 16px 0;
         }
     }
 </style>
