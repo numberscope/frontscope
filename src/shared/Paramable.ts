@@ -1,4 +1,6 @@
 import {ValidationStatus} from './ValidationStatus'
+import typeFunctions, {ParamType} from './ParamType'
+
 /**
  * The following collection of properties specifies how a given parameter
  * should be displayed in the user interface (UI), and provides a location
@@ -10,8 +12,11 @@ export interface ParamInterface {
      * The UI will determine what sort of control to use
      * from the type of the value property of each param (a checkbox
      * for boolean, textbox for string, etc.)
-     * Note that some specialized controls can be selected, or the
-     * actual type may be overriden, by the forceType property below.
+     * While any type can be inputted into this field as an initial value,
+     * it will likely be converted into a string upon being edited by the UI
+     * or validated by the Paramable API. This value represents what is
+     * currently present in the UI input, and is not a realized value of
+     * the parameter for the correct type.
      * Simultaneously, the initial contents of the `value` property gives
      * the default for this parameter; and new tentative settings for this
      * parameter from the UI will initially be stored in `value` for
@@ -19,22 +24,14 @@ export interface ParamInterface {
      * implementing class).
      */
     value: unknown
-    /* An optional property adjusting or refining the type detected from the
-     * initial setting of the `value` property. Typically, this is used to
-     * select a more specialized interface for the parameter, from one of the
-     * following conventional values of that `forceType` may be given:
-     * -  color: Uses a color picker in the UI, and sets the `value` as
-     *    the string `#RRGGBB` hexadecimal color specifier.
-     * -  integer: Used for when the value is a `number` but the UI should
-     *    enforce that only an integer be stored in it.
-     * One other possible use of `forceType` is to initialize the input field
-     * to a string that doesn't actually correspond to a valid value for that
-     * type. For example, currently the only way to initialize a `number`
-     * input field to be blank is to initially set the `value` property
-     * to the empty string (marked as type `string | number`) and also
-     * set `forceType` to `'number'`.
+    /* Previously an optional value, this field is now required for the sake
+     * of being explicit and ensuring type consistency for Paramable objects.
+     * Defines the type of this parameter as will be reflected by the type
+     * of its realized value and the type of input field in the UI. Rather
+     * than being a string, the value of this field is one of an enum of
+     * supported types by the Paramable system and UI components.
      */
-    forceType?: string
+    type: ParamType
     /* If the value is an element of an Enum, typescript/Vue unfortunately
      * cannot extract the list of all of the possible enumerated values
      * (so that the UI can create a dropdown select box). So in that case,
@@ -88,6 +85,20 @@ export interface ParamInterface {
 
     // Option to hide the description in a tooltip:
     hideDescription?: boolean
+
+    /* An independent validation function, which may validate the value of
+     * this parameter irrespective of the values of other parameters. The
+     * advantage of using this over the aggregate validation function within
+     * `ParamableInterface` is that it runs only when this parameter is updated,
+     * and provides more tailored error messages that appear at the site of
+     * the parameter, rather than above/below the entire list of parameters.
+     * It is also more flexible than the aggregate validation function, working
+     * even when the values of other parameters are currently invalid.
+     * It takes in a realized value of this parameter and returns a validation
+     * status. If this function is not implemented, it assumes that the
+     * parameter must always be valid.
+     */
+    validate?(value: unknown): ValidationStatus
 }
 
 export interface ParamableInterface {
@@ -103,15 +114,15 @@ export interface ParamableInterface {
     params: {[key: string]: ParamInterface}
 
     /**
-     * validate is called as soon as the user has set the values of the
-     * parameters. It should check that all of the parameters are sensible
-     * (properly formatted, in range, etc). When validation succeeds,
-     * it's an appropriate opportunity to assignParameters()
-     * @returns {ValidationStatus}
-     *     whether the validation succeeded, along with any messages if not
+     * An aggregate validation function for the `ParamableInterface`. This
+     * function is expected to validate any interdependent constraints of
+     * the parameters (independent parameter validations should occur in
+     * their own validation functions). This function is less flexible than
+     * the independent validation functions, as it can only be run when
+     * all parameters are in an independently valid state.
+     * @return the result of the validation
      */
     validate(): ValidationStatus
-
     /**
      * assignParameters() should copy the `value` property of each item in
      * `params` to the place where the implementing object will access it.
@@ -154,20 +165,29 @@ export class Paramable implements ParamableInterface {
      * checkParameters() instead.
      */
     validate(): ValidationStatus {
-        const status = this.checkParameters()
-        this.isValid = status.isValid
-        if (this.isValid) {
-            this.assignParameters()
+        const realParams: {[key: string]: unknown} = {}
+        for (const prop in this.params) {
+            if (!Object.prototype.hasOwnProperty.call(this.params, prop))
+                continue
+            const p = this.params[prop]
+            if (typeof p.value !== 'string') p.value = `${p.value}`
+
+            realParams[prop] = typeFunctions[p.type].realize(
+                p.value as string
+            )
         }
-        return status
+        return this.checkParameters(realParams)
     }
     /**
-     * checkParameters should check that all parameters are well-formed,
-     * in-range, etc.
-     * @returns {ValidationStatus}
+     * Performs the same purpose as `validate()`, but takes as a parameter
+     * a list of realized values of the parameters, so that the function doesn't
+     * have to do this itself. This function should always be the one overloaded
+     * by classes which extend `Paramable`, and not `validate()`
+     * @param _params the list of realized parameter values to be validated
+     * @return the result of the validation
      */
-    checkParameters(): ValidationStatus {
-        return new ValidationStatus(true)
+    checkParameters(_params: {[key: string]: unknown}): ValidationStatus {
+        return ValidationStatus.ok()
     }
     /**
      * assignParameters() copies parameters into top-level properties. It
@@ -176,22 +196,16 @@ export class Paramable implements ParamableInterface {
      */
     assignParameters(): void {
         for (const prop in this.params) {
-            if (!Object.prototype.hasOwnProperty.call(this, prop)) continue
-            const param = this.params[prop].value
-            const paramType = typeof param
+            if (!Object.prototype.hasOwnProperty.call(this.params, prop))
+                continue
+            const param = this.params[prop]
             const me = this as Record<string, unknown>
-            const myType = typeof me[prop]
-            if (paramType === myType) {
-                me[prop] = this.params[prop].value
-            } else if (myType === 'number' && param === '') {
-                me[prop] = 0
-            } else {
-                throw Error(
-                    `figure out ${this.params[prop].value} (`
-                        + `${typeof this.params[prop].value}) `
-                        + `to ${typeof me[prop]}`
-                )
-            }
+            if (typeof param.value !== 'string')
+                param.value = `${param.value}`
+
+            me[prop] = typeFunctions[param.type].realize(
+                param.value as string
+            )
         }
     }
     /**
@@ -205,7 +219,8 @@ export class Paramable implements ParamableInterface {
         const me = this as Record<string, unknown>
         for (const prop in this.params) {
             if (!Object.prototype.hasOwnProperty.call(this, prop)) continue
-            this.params[prop].value = me[prop]
+            const param = this.params[prop]
+            param.value = typeFunctions[param.type].derealize(me[prop])
         }
     }
 }

@@ -100,7 +100,7 @@
                         activeSeq.constructorOrSequence as SequenceInterface
                 }
                 const validationResult = this.liveSequence.validate()
-                if (validationResult.isValid) {
+                if (validationResult.isValid()) {
                     this.errors = []
                     this.closeParamsModal()
                     this.liveSequence.initialize()
@@ -111,7 +111,7 @@
             },
             createInstance: function () {
                 const validationResult = this.liveSequence.validate()
-                if (validationResult.isValid) {
+                if (validationResult.isValid()) {
                     this.errors = []
                     this.closeParamsModal()
                     this.liveSequence.initialize()

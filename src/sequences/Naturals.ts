@@ -1,5 +1,6 @@
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {Cached} from './Cached'
+import {ParamType} from '../shared/ParamType'
 
 /**
  *
@@ -14,6 +15,7 @@ class Naturals extends Cached {
     params = {
         includeZero: {
             value: this.includeZero,
+            type: ParamType.BOOLEAN,
             displayName: 'Include Zero',
             required: false,
         },
