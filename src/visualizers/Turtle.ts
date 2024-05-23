@@ -1,6 +1,7 @@
 import p5 from 'p5'
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {ParamType} from '../shared/ParamType'
 
 /** md
 # Turtle Visualizer
@@ -37,6 +38,7 @@ class Turtle extends P5Visualizer {
          **/
         domain: {
             value: this.domain,
+            type: ParamType.BIGINT_ARRAY,
             displayName: 'Sequence Domain',
             required: true,
             description: '(comma-separated list of values)',
@@ -48,6 +50,7 @@ class Turtle extends P5Visualizer {
          **/
         range: {
             value: this.range,
+            type: ParamType.NUMBER_ARRAY,
             displayName: 'Angles',
             required: true,
             description: '(comma-separated list of values in degrees)',
@@ -57,7 +60,7 @@ class Turtle extends P5Visualizer {
          **/
         stepSize: {
             value: this.stepSize,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Step Size',
             required: true,
         },
@@ -66,6 +69,7 @@ class Turtle extends P5Visualizer {
          **/
         start: {
             value: this.start,
+            type: ParamType.VECTOR,
             displayName: 'Start',
             required: true,
             description: 'coordinates of the point where drawing will start',
@@ -75,7 +79,7 @@ class Turtle extends P5Visualizer {
          **/
         strokeWeight: {
             value: this.strokeWeight,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Stroke Width',
             required: true,
         },
@@ -84,7 +88,7 @@ class Turtle extends P5Visualizer {
          **/
         bgColor: {
             value: this.bgColor,
-            forceType: 'color',
+            type: ParamType.COLOR,
             displayName: 'Background Color',
             required: false,
         },
@@ -93,7 +97,7 @@ class Turtle extends P5Visualizer {
          **/
         strokeColor: {
             value: this.strokeColor,
-            forceType: 'color',
+            type: ParamType.COLOR,
             displayName: 'Stroke Color',
             required: false,
         },
@@ -104,17 +108,16 @@ class Turtle extends P5Visualizer {
     private X = 0
     private Y = 0
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: {[key: string]: unknown}) {
+        const status = super.checkParameters(params)
 
         if (
-            this.params.domain.value.length != this.params.range.value.length
-        ) {
-            status.isValid = false
-            status.errors.push(
+            (params.domain as bigint[]).length
+            != (params.range as number[]).length
+        )
+            status.addError(
                 'Domain and range must have the same number of entries'
             )
-        }
 
         return status
     }

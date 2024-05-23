@@ -1,0 +1,141 @@
+<template>
+    <div>
+        <p>{{ title }}</p>
+        <p>{{ paramable.name }}</p>
+        <p>{{ paramable.description }}</p>
+        <div v-for="(hierarchy, name) in sortedParams" v-bind:key="name">
+            <ParamField
+                v-bind:param="hierarchy.param"
+                v-bind:paramName="name as string"
+                v-bind:status="paramStatuses[name]"
+                @updateParam="updateParam(name as string, $event)" />
+            <div class="sub-param-box">
+                <div
+                    v-for="(subParam, subName) in hierarchy.children"
+                    v-bind:key="subName">
+                    <ParamField
+                        v-if="checkDependencyPredicate(subParam)"
+                        v-bind:param="subParam"
+                        v-bind:paramName="subName as string"
+                        v-bind:status="paramStatuses[subName]"
+                        @updateParam="
+                            updateParam(subName as string, $event)
+                        " />
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script lang="ts">
+    import {defineComponent} from 'vue'
+    import type {
+        ParamInterface,
+        ParamableInterface,
+    } from '../shared/Paramable'
+    import typeFunctions from '../shared/ParamType'
+    import {ValidationStatus} from '../shared/ValidationStatus'
+    import ParamField from './ParamField.vue'
+
+    interface ParamHierarchy {
+        param: ParamInterface
+        children: {[key: string]: ParamInterface}
+    }
+
+    export default defineComponent({
+        name: 'ParamEditor',
+        props: {
+            title: {type: String, required: true},
+            paramable: {
+                type: Object as () => ParamableInterface,
+                required: true,
+            },
+        },
+        components: {
+            ParamField,
+        },
+        data() {
+            const paramStatuses: {[key: string]: ValidationStatus} = {}
+            const status = ValidationStatus.ok()
+
+            Object.keys(this.paramable.params).forEach(
+                key => (paramStatuses[key] = ValidationStatus.ok())
+            )
+
+            const sortedParams: {[key: string]: ParamHierarchy} = {}
+            Object.keys(this.paramable.params).forEach(key => {
+                const param = this.paramable.params[key]
+                if (!param.visibleDependency)
+                    sortedParams[key] = {param, children: {}}
+            })
+            Object.keys(this.paramable.params).forEach(key => {
+                const param = this.paramable.params[key]
+                if (param.visibleDependency)
+                    sortedParams[param.visibleDependency].children[key] =
+                        param
+            })
+
+            return {paramStatuses, status, sortedParams}
+        },
+        created() {
+            Object.keys(this.paramable.params).forEach(key =>
+                this.validateIndependent(key)
+            )
+            this.validateAggregate()
+        },
+        methods: {
+            updateParam(paramName: string, value: string) {
+                const param = this.paramable.params[paramName]
+                param.value = value
+
+                this.validateIndependent(paramName)
+                if (this.validateAggregate())
+                    this.paramable.assignParameters()
+            },
+            validateIndependent(paramName: string): boolean {
+                const param = this.paramable.params[paramName]
+                const value = `${param.value}`
+
+                let paramStatus = typeFunctions[param.type].validate(value)
+                if (paramStatus.isValid())
+                    paramStatus =
+                        param.validate !== undefined
+                            ? param.validate(
+                                  typeFunctions[param.type].realize(value)
+                              )
+                            : ValidationStatus.ok()
+
+                this.paramStatuses[paramName] = paramStatus
+                return paramStatus.isValid()
+            },
+            validateAggregate() {
+                const statusValues = Object.keys(this.paramStatuses).map(
+                    key => this.paramStatuses[key]
+                )
+                if (statusValues.every(status => status.isValid())) {
+                    this.status = this.paramable.validate()
+                    return this.status.isValid()
+                } else return false
+            },
+            checkDependencyPredicate(param: ParamInterface): boolean {
+                if (!this.paramStatuses[param.visibleDependency!].isValid())
+                    return false
+                const parent = this.paramable.params[param.visibleDependency!]
+                const v = typeFunctions[parent.type].realize(
+                    `${parent.value}`
+                )
+                if (param.visiblePredicate)
+                    return param.visiblePredicate(v as never)
+                else return param.visibleValue! === v
+            },
+        },
+    })
+</script>
+
+<style scoped lang="scss">
+    .sub-param-box {
+        border-left: 1px solid var(--ns-color-black);
+        margin-left: 8px;
+        padding-left: 8px;
+    }
+</style>

@@ -1,5 +1,6 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
+import {ParamType} from '../shared/ParamType'
 
 /** md
 # Show Factors Visualizer
@@ -24,7 +25,7 @@ class ShowFactors extends P5Visualizer {
          **/
         start: {
             value: this.start,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'First index to show',
             required: true,
         },
@@ -33,7 +34,7 @@ class ShowFactors extends P5Visualizer {
          **/
         end: {
             value: this.end,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Last index to show',
             required: true,
         },

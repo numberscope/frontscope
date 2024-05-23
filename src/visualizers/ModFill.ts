@@ -3,6 +3,7 @@ import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {P5Visualizer} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type p5 from 'p5'
+import {ParamType} from '../shared/ParamType'
 
 /** md
 # Mod Fill Visualizer
@@ -29,6 +30,7 @@ class ModFill extends P5Visualizer {
         // note will be small enough to fit in a `number` when we need it to.
         modDimension: {
             value: this.modDimension,
+            type: ParamType.BIGINT,
             displayName: 'Mod dimension',
             required: true,
         },
@@ -38,13 +40,11 @@ class ModFill extends P5Visualizer {
     rectHeight = 0
     i = 0
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: {[key: string]: unknown}) {
+        const status = super.checkParameters(params)
 
-        if (this.params.modDimension.value <= 0n) {
-            status.isValid = false
+        if ((params.modDimension as bigint) <= 0n)
             status.errors.push('Mod dimension must be positive')
-        }
 
         return status
     }

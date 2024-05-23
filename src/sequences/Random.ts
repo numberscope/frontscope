@@ -1,6 +1,7 @@
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {Cached} from './Cached'
 import simpleFactor from './simpleFactor'
+import {ParamType} from '../shared/ParamType'
 
 /**
  *
@@ -18,13 +19,13 @@ class Random extends Cached {
     params = {
         min: {
             value: this.min,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Minimum value attainable',
             required: true,
         },
         max: {
             value: this.max,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Maximum value attainable',
             required: true,
         },
@@ -38,13 +39,11 @@ class Random extends Cached {
         super(sequenceID)
     }
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: {[key: string]: unknown}) {
+        const status = super.checkParameters(params)
 
-        if (this.params.max.value < this.params.min.value) {
-            status.isValid = false
-            status.errors.push('The max value cannot be less than the min.')
-        }
+        if ((params.max as number) < (params.min as number))
+            status.addError('The max value cannot be less than the min.')
 
         return status
     }

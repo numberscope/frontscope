@@ -13,6 +13,7 @@
 //
 // These comments get compiled into the Visualizer's user guide page.
 
+import {ParamType} from '../shared/ParamType'
 import {P5Visualizer} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 
@@ -55,7 +56,7 @@ class P5VisualizerTemplate extends P5Visualizer {
          **/
         stepSize: {
             value: this.stepSize, // === Default value ===
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Step size',
             required: true,
         },
@@ -78,14 +79,12 @@ class P5VisualizerTemplate extends P5Visualizer {
     textColor = P5Visualizer.INVALID_COLOR
     outlineColor = P5Visualizer.INVALID_COLOR
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: {[key: string]: unknown}) {
+        const status = super.checkParameters(params)
 
         // make sure the step size is positive
-        if (this.params.stepSize.value <= 0) {
-            status.isValid = false
-            status.errors.push('Step size must be positive')
-        }
+        if ((params.stepSize as number) <= 0)
+            status.addError('Step size must be positive')
 
         return status
     }
