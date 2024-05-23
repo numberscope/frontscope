@@ -9,13 +9,13 @@
                 v-bind:checked="param.value === 'true'"
                 v-on:input="updateBoolean($event)" />
             <input
-                v-if="param.type === ParamType.COLOR"
+                v-else-if="param.type === ParamType.COLOR"
                 type="color"
                 v-bind:id="paramName"
                 v-bind:value="`${param.value}`"
                 v-on:input="updateString($event)" />
             <select
-                v-if="param.type === ParamType.ENUM"
+                v-else-if="param.type === ParamType.ENUM"
                 v-bind:id="paramName"
                 v-bind:value="`${param.value}`"
                 v-on:input="updateString($event)">
@@ -40,6 +40,12 @@
                 <div class="desc-tooltip-text">{{ param.description }}</div>
             </div>
         </div>
+        <p
+            class="error-field"
+            v-for="error in status.errors"
+            v-bind:key="error">
+            {{ error }}
+        </p>
         <p v-if="param.hideDescription && param.description">
             {{ param.description }}
         </p>
@@ -97,7 +103,7 @@
     })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
     .input-container {
         display: flex;
         flex-direction: row;

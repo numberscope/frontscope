@@ -71,11 +71,10 @@ export interface ParamInterface {
      *  with a distinctive appearance when they are visible.
      */
     visibleDependency?: string
-    /* Note that the visibleValue property does not actually need to be
-     * declared in TypeScript, as it is only accessed via plain JavaScript
-     * in Vue.
+    /* The visible value property applies only if `visiblePredicate` is
+     * undefined.
      */
-    // visibleValue: any
+    visibleValue?: unknown
     // Since functions are contravariant in their argument types,
     // `never` below allows the predicate to take any argument type.
     visiblePredicate?: (dependency: never) => boolean
