@@ -1,8 +1,8 @@
 <template>
     <div>
         <p>{{ title }}</p>
-        <p v-if="subtitle">{{ subtitle }}</p>
-        <p v-if="description">{{ description }}</p>
+        <p>{{ paramable.name }}</p>
+        <p>{{ paramable.description }}</p>
         <div v-for="(hierarchy, name) in sortedParams" v-bind:key="name">
             <ParamField
                 v-bind:param="hierarchy.param"
@@ -46,8 +46,6 @@
         name: 'ParamEditor',
         props: {
             title: {type: String, required: true},
-            subtitle: {type: String, required: false},
-            description: {type: String, required: false},
             paramable: {
                 type: Object as () => ParamableInterface,
                 required: true,
