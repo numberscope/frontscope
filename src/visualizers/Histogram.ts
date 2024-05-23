@@ -1,5 +1,6 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
+import {ParamType} from '../shared/ParamType'
 
 /** md
 # Factor Histogram
@@ -42,7 +43,7 @@ class FactorHistogram extends P5Visualizer {
          **/
         binSize: {
             value: this.binSize,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Bin Size',
             required: true,
         },
@@ -53,7 +54,7 @@ class FactorHistogram extends P5Visualizer {
          **/
         firstIndex: {
             value: '' as string | number,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'First Index',
             required: false,
         },
@@ -65,7 +66,7 @@ class FactorHistogram extends P5Visualizer {
          **/
         terms: {
             value: this.terms,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Number of Terms',
             required: true,
         },
@@ -77,19 +78,17 @@ class FactorHistogram extends P5Visualizer {
          **/
         mouseOver: {
             value: this.mouseOver,
-            forceType: 'boolean',
+            type: ParamType.INTEGER,
             displayName: 'Mouse Over',
             required: true,
         },
     }
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: {[key: string]: unknown}) {
+        const status = super.checkParameters(params)
 
-        if (this.params.binSize.value < 1) {
-            status.isValid = false
-            status.errors.push('Bin Size can not be less than 1')
-        }
+        if ((params.binSize as number) < 1)
+            status.addError('Bin Size can not be less than 1')
 
         return status
     }

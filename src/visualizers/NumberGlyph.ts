@@ -4,6 +4,7 @@ import type {SequenceInterface} from '../sequences/SequenceInterface'
 //import type {Factorization} from '../sequences/SequenceInterface'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import * as math from 'mathjs'
+import {ParamType} from '../shared/ParamType'
 
 /** md
 
@@ -70,7 +71,7 @@ only attempt to show the available terms.
 **/
         n: {
             value: this.n,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Number of Terms',
             required: true,
         },
@@ -82,7 +83,7 @@ options for the glyph generation function.
 **/
         customize: {
             value: this.customize,
-            forceType: 'boolean',
+            type: ParamType.BOOLEAN,
             displayName: 'Customize Glyphs',
             required: true,
         },
@@ -102,6 +103,7 @@ The default value is `log(max(abs(n),2)^x) % 25`.
 **/
         formula: {
             value: this.formula,
+            type: ParamType.STRING,
             displayName: 'Growth Function',
             description: "A function in 'n' (term) and 'x' (growth variable)",
             visibleDependency: 'customize',
@@ -125,7 +127,7 @@ The default value is 25.
 **/
         brightCap: {
             value: this.brightCap,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Brightness Adjustment',
             description:
                 'Smaller values make brighter glyphs with decreased variation',
@@ -162,19 +164,18 @@ The default value is 25.
         this.evaluator = math.compile(this.formula)
     }
 
-    checkParameters() {
+    checkParameters(params: {[key: string]: unknown}) {
         // code currently re-used from SequenceFormula.ts
-        const status = super.checkParameters()
+        const status = super.checkParameters(params)
 
         let parsetree = undefined
         try {
-            parsetree = math.parse(this.params.formula.value)
+            parsetree = math.parse(params.formula as string)
         } catch (err: unknown) {
-            status.isValid = false
-            status.errors.push(
-                'Could not parse formula: ' + this.params.formula.value
+            status.addError(
+                'Could not parse formula: ' + params.formula,
+                (err as Error).message
             )
-            status.errors.push((err as Error).message)
             return status
         }
         const othersymbs = parsetree.filter(
@@ -185,7 +186,6 @@ The default value is 25.
                 && node.name !== 'x'
         )
         if (othersymbs.length > 0) {
-            status.isValid = false
             status.errors.push(
                 "Only 'n' and 'x' may occur as a free variable in formula.",
                 `Please remove '${(othersymbs[0] as math.SymbolNode).name}'`

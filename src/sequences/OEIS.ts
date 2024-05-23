@@ -5,6 +5,7 @@ import {Cached} from './Cached'
 import {alertMessage} from '../shared/alertMessage'
 
 import axios from 'axios'
+import {ParamType} from '../shared/ParamType'
 
 /**
  *
@@ -22,10 +23,21 @@ export default class OEIS extends Cached {
     givenName = ''
     modulus = 0n
     params = {
-        oeisId: {value: '', displayName: 'OEIS ID', required: true},
-        givenName: {value: '', displayName: 'Name', required: false},
+        oeisId: {
+            value: '',
+            type: ParamType.STRING,
+            displayName: 'OEIS ID',
+            required: true,
+        },
+        givenName: {
+            value: '',
+            type: ParamType.STRING,
+            displayName: 'Name',
+            required: false,
+        },
         cacheBlock: {
             value: this.cacheBlock,
+            type: ParamType.INTEGER,
             displayName: 'Number of Elements',
             required: false,
             description:
@@ -33,6 +45,7 @@ export default class OEIS extends Cached {
         },
         modulus: {
             value: this.modulus,
+            type: ParamType.BIGINT,
             displayName: 'Modulus',
             required: false,
             description:
@@ -129,28 +142,26 @@ export default class OEIS extends Cached {
         }
     }
 
-    checkParameters(): ValidationStatus {
-        const status = super.checkParameters()
+    checkParameters(params: {[key: string]: unknown}): ValidationStatus {
+        const status = super.checkParameters(params)
 
         if (
-            this.params.oeisId.value.length !== 7
-            || (this.params.oeisId.value[0] !== 'A'
-                && this.params.oeisId.value[0] !== 'a')
+            (params.oeisId as string).length !== 7
+            || ((params.oeisId as string)[0] !== 'A'
+                && (params.oeisId as string)[0] !== 'a')
         ) {
-            status.errors.push('OEIS IDs are of form Annnnnn')
+            status.addError('OEIS IDs are of form Annnnnn')
         }
-        if (typeof this.params.cacheBlock.value === 'number') {
+        if (typeof params.cacheBlock === 'number') {
             if (
-                this.params.cacheBlock.value < 0
+                params.cacheBlock < 0
                 || !Number.isInteger(this.params.cacheBlock.value)
             ) {
-                status.errors.push(
+                status.addError(
                     'Number of elements must be a positive integer.'
                 )
             }
         }
-
-        if (status.errors.length > 0) status.isValid = false
 
         return status
     }
