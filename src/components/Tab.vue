@@ -1,5 +1,6 @@
 <script setup lang="ts">
     import interact from 'interactjs'
+    import {positionAndSizeTab} from '@/views/DragAndDrop.vue'
 
     // every element with draggable class can be dragged
     interact('.tab').resizable({
@@ -33,7 +34,7 @@
             },
         },
         modifiers: [
-            // keep the edges inside the parent
+            // keep the edges inside the screen
             interact.modifiers.restrictEdges({
                 outer: '#speciment-container',
             }),
@@ -70,14 +71,7 @@
                 )
                 if (!(dropzone instanceof HTMLElement)) return
 
-                const dropzoneRect = dropzone.getBoundingClientRect()
-
-                tab.style.top = dropzoneRect.top + 'px'
-                tab.style.left = dropzoneRect.left + 'px'
-                tab.style.height = dropzoneRect.height + 'px'
-
-                tab.setAttribute('data-x', dropzoneRect.left.toString())
-                tab.setAttribute('data-y', dropzoneRect.top.toString())
+                positionAndSizeTab(tab, dropzone)
             },
         },
     })
@@ -98,11 +92,11 @@
                 parseFloat(target.getAttribute('data-y') || '0') + event.dy
 
             const boundedX = Math.max(
-                Math.min(x, containerRect.right - targetRect.width),
+                Math.min(x, containerRect.width - targetRect.width),
                 0
             )
             const boundedY = Math.max(
-                Math.min(y, containerRect.bottom - targetRect.height),
+                Math.min(y, containerRect.height - targetRect.height),
                 0
             )
 
@@ -121,7 +115,7 @@
     <div class="tab">
         <div class="drag"></div>
         <div class="content">
-            <p>parameters and stuff would go here</p>
+            <slot></slot>
         </div>
         <div class="resize"></div>
     </div>
