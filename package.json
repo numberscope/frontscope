@@ -87,6 +87,7 @@
     "dependencies": {
         "bigint-isqrt": "^0.3.2",
         "bigint-mod-arith": "^3.3.1",
+        "interactjs": "^1.10.27",
         "p5": "^1.9.2",
         "vue": "^3.4.24",
         "vue-router": "^4.3.2"
@@ -114,6 +115,7 @@
         "prettier": "^3.2.5",
         "prettier-eslint": "^16.3.0",
         "prettier-eslint-cli": "^8.0.1",
+        "sass": "^1.77.2",
         "typescript": "^5.4.5",
         "vite": "^5.2.10",
         "vitest": "^1.5.0",
