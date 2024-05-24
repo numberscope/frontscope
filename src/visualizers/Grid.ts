@@ -420,7 +420,10 @@ const propertyIndicatorFunction: {
 }
 
 class Grid extends P5Visualizer {
-    static visualizationName = 'Grid'
+    name = 'Grid'
+    description =
+        'Puts numbers in a grid, '
+        + 'highlighting cells based on various properties'
 
     // Grid variables
     amountOfNumbers = 4096
@@ -895,7 +898,8 @@ earlier ones that use the _same_ style.)
 
 export const exportModule = new VisualizerExportModule(
     Grid,
-    'Puts numbers in a grid, highlighting cells based on various properties'
+    Grid.prototype.name,
+    Grid.prototype.description
 )
 
 /** md

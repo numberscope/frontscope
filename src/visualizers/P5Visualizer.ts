@@ -57,12 +57,6 @@ export abstract class P5Visualizer
     */
     static INVALID_COLOR = {} as p5.Color
 
-    visualization(): string {
-        return (
-            Object.getPrototypeOf(this).constructor.visualizationName
-            || 'monkeypod'
-        )
-    }
     within?: HTMLElement
     get sketch(): p5 {
         if (!this._sketch) {

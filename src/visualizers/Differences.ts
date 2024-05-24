@@ -21,7 +21,10 @@ difference of.
 **/
 
 class Differences extends P5Visualizer {
-    static visualizationName = 'Differences'
+    name = 'Differences'
+    description =
+        'Produces a table of differences '
+        + 'between consecutive entries, potentially iterated several times'
 
     // parameters
     n = 20
@@ -136,6 +139,6 @@ class Differences extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     Differences,
-    'Produces a table of differences between consecutive entries, '
-        + 'potentially iterated several times'
+    Differences.prototype.name,
+    Differences.prototype.description
 )

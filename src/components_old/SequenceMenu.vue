@@ -33,10 +33,7 @@
     import SeqSelector from './SeqSelector.vue'
     import SeqGetter from './SeqGetter.vue'
     import SeqVizParamsModal from './SeqVizParamsModal.vue'
-    import type {
-        SequenceInterface,
-        SequenceConstructor,
-    } from '../sequences/SequenceInterface'
+    import type {SequenceInterface} from '../sequences/SequenceInterface'
     import {
         SequenceExportModule,
         SequenceExportKind,
@@ -68,8 +65,7 @@
                 if (seq.kind == SequenceExportKind.INSTANCE) {
                     this.$emit('createSeq', this.liveSequence)
                 } else {
-                    const constructor =
-                        seq.constructorOrSequence as SequenceConstructor
+                    const constructor = seq.sequence
                     this.liveSequence = new constructor(this.sequences.length)
                     this.openParamsModal()
                 }
@@ -84,8 +80,7 @@
                 )
             },
             loadSeq: function (seq: SequenceExportModule) {
-                const constructor =
-                    seq.constructorOrSequence as SequenceConstructor
+                const constructor = seq.sequence
                 this.liveSequence = new constructor(this.sequences.length)
                 this.loadingInstance = true
                 this.openParamsModal()
@@ -96,8 +91,7 @@
             ) {
                 if (isInstance) {
                     // instances are already constructed
-                    this.liveSequence =
-                        activeSeq.constructorOrSequence as SequenceInterface
+                    this.liveSequence = new activeSeq.sequence(0)
                 }
                 const validationResult = this.liveSequence.validate()
                 if (validationResult.isValid()) {

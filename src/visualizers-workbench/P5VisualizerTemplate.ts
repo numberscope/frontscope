@@ -37,7 +37,8 @@ required and commonly used features._
 class P5VisualizerTemplate extends P5Visualizer {
     // === Visualizer name ===
     // Appears in the visualizer list and bundle card titles
-    static visualizationName = 'Entries (p5 Template)'
+    name = 'Entries (p5 Template)'
+    description = 'Step through entries one at a time'
 
     // === Parameters ===
     // Top-level properties that the user can choose while creating the
@@ -255,5 +256,6 @@ because infinity is, well, infinitely far away!
 // export module constructor
 export const exportModule = new VisualizerExportModule(
     P5VisualizerTemplate,
-    'Step through entries one at a time'
+    P5VisualizerTemplate.prototype.name,
+    P5VisualizerTemplate.prototype.description
 )

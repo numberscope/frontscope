@@ -83,6 +83,7 @@ class Formula extends Cached {
 
 export const exportModule = new SequenceExportModule(
     Formula,
-    'Sequence by Formula',
+    Formula.prototype.name,
+    Formula.prototype.description,
     SequenceExportKind.FAMILY
 )

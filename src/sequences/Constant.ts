@@ -42,6 +42,7 @@ class Constant extends SequenceDefault {
 
 export const exportModule = new SequenceExportModule(
     Constant,
-    'Constant Sequence',
+    Constant.prototype.name,
+    Constant.prototype.description,
     SequenceExportKind.FAMILY
 )

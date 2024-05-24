@@ -62,6 +62,7 @@ class Random extends Cached {
 
 export const exportModule = new SequenceExportModule(
     Random,
-    'Random Integers in Range',
+    Random.prototype.name,
+    Random.prototype.description,
     SequenceExportKind.FAMILY
 )
