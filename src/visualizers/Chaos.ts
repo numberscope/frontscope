@@ -101,6 +101,7 @@ class Chaos extends P5Visualizer {
             from: ColorStyle,
             displayName: 'Color dots by',
             required: true,
+            description: 'The way the dots should be colored',
         },
         gradientLength: {
             value: this.gradientLength,

@@ -1,8 +1,8 @@
 <template>
     <div>
-        <p>{{ title }}</p>
-        <p>{{ paramable.name }}</p>
-        <p>{{ paramable.description }}</p>
+        <h1>{{ title }}</h1>
+        <span class="subheading">{{ paramable.name }}</span>
+        <p class="description">{{ paramable.description }}</p>
         <div v-for="(hierarchy, name) in sortedParams" v-bind:key="name">
             <ParamField
                 v-bind:param="hierarchy.param"
@@ -133,6 +133,21 @@
 </script>
 
 <style scoped lang="scss">
+    h1 {
+        font-size: 16px;
+        margin-bottom: 0;
+    }
+
+    .subheading {
+        color: var(--ns-color-grey);
+        font-size: 14px;
+    }
+
+    .description {
+        font-size: 12px;
+        margin-bottom: 32px;
+    }
+
     .sub-param-box {
         border-left: 1px solid var(--ns-color-black);
         margin-left: 8px;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import interact from 'interactjs'
-    import {positionAndSizeTab} from '@/views/DragAndDrop.vue'
+    import {positionAndSizeTab} from '../views/Scope.vue'
 
     // every element with draggable class can be dragged
     interact('.tab').resizable({
@@ -152,5 +152,7 @@
         background-color: var(--ns-color-white);
         width: 100%;
         height: calc(100% - 16px);
+        overflow-y: scroll;
+        overflow-x: hidden;
     }
 </style>
