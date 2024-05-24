@@ -101,13 +101,10 @@
     import ParamEditor from '@/components/ParamEditor.vue'
     import vizMODULES from '@/visualizers/visualizers'
     import {exportModule} from '@/sequences/Constant'
-    import type {SequenceConstructor} from '@/sequences/SequenceInterface'
     import {reactive} from 'vue'
 
     const paramable = reactive(
-        new vizMODULES['Chaos'].visualizer(
-            new (exportModule.constructorOrSequence as SequenceConstructor)(0)
-        )
+        new vizMODULES['Chaos'].visualizer(new exportModule.sequence(0))
     )
 
     // This function makes sure that the tabs remain in their docked position
