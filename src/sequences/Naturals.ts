@@ -48,6 +48,7 @@ class Naturals extends Cached {
 
 export const exportModule = new SequenceExportModule(
     Naturals,
-    'Natural Numbers',
+    Naturals.prototype.name,
+    Naturals.prototype.description,
     SequenceExportKind.FAMILY
 )

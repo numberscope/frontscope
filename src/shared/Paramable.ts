@@ -194,6 +194,9 @@ export class Paramable implements ParamableInterface {
      * only be called when isValid is true.
      */
     assignParameters(): void {
+        const props: string[] = []
+        const changed: string[] = []
+
         for (const prop in this.params) {
             if (!Object.prototype.hasOwnProperty.call(this.params, prop))
                 continue
@@ -208,8 +211,13 @@ export class Paramable implements ParamableInterface {
             )
             me[prop] = newValue
 
-            if (oldValue !== newValue) this.parameterChanged(prop)
+            props.push(prop)
+            if (oldValue !== newValue) changed.push(prop)
         }
+
+        if (changed.length < props.length)
+            for (const prop in changed) this.parameterChanged(prop)
+        else this.parameterChanged('all')
     }
     /**
      * refreshParams() copies the current values of top-level properties into
@@ -230,6 +238,9 @@ export class Paramable implements ParamableInterface {
      * parameterChanged() is called whenever the value of a particular parameter
      * is changed. By default, this does nothing, but may be overriden to
      * perform any kind of update action for that given parameter.
+     *
+     * Note that if all parameters have changed at once, this function will only
+     * be called a single time with the name value 'all'
      * @param _name the name of the parameter which has been changed
      */
     parameterChanged(_name: string): void {

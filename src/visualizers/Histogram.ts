@@ -27,7 +27,10 @@ have a corresponding value of Omega.
 **/
 
 class FactorHistogram extends P5Visualizer {
-    static visualizationName = 'Factor Histogram'
+    name = 'Factor Histogram'
+    description =
+        'Displays a histogram of the '
+        + 'number of prime factors of a sequence'
 
     binSize = 1
     terms = 100
@@ -393,5 +396,6 @@ _Originally contributed by Devlin Costello._
 
 export const exportModule = new VisualizerExportModule(
     FactorHistogram,
-    'Displays a histogram of the number of prime factors of a sequence'
+    FactorHistogram.prototype.name,
+    FactorHistogram.prototype.description
 )

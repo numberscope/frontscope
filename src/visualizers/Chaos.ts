@@ -50,7 +50,8 @@ enum ColorStyle {
 // circles fade to the outside
 
 class Chaos extends P5Visualizer {
-    static visualizationName = 'Chaos'
+    name = 'Chaos'
+    description = 'Chaos game played using a sequence to select moves'
     corners = 4
     frac = 0.5
     walkers = 1
@@ -460,5 +461,6 @@ class Chaos extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     Chaos,
-    'Chaos game played using a sequence to select moves'
+    Chaos.prototype.name,
+    Chaos.prototype.description
 )

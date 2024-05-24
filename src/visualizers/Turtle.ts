@@ -18,7 +18,11 @@ straight segment. It displays the resulting polygonal path.
 // Turtle needs work
 // Throwing the same error on previous Numberscope website
 class Turtle extends P5Visualizer {
-    static visualizationName = 'Turtle'
+    name = 'Turtle'
+    description =
+        'Use a sequence to steer a virtual '
+        + 'turtle that leaves a visible trail'
+
     private rotMap = new Map<string, number>()
     domain = [0n, 1n, 2n, 3n, 4n]
     range = [30, 45, 60, 90, 120]
@@ -166,5 +170,6 @@ class Turtle extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     Turtle,
-    'Use a sequence to steer a virtual turtle that leaves a visible trail'
+    Turtle.prototype.name,
+    Turtle.prototype.description
 )
