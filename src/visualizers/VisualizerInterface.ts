@@ -60,6 +60,12 @@ export interface VisualizerInterface extends ParamableInterface {
      * @param element HTMLElement The DOM node the visualizer was inhabit()ing
      */
     depart(element: HTMLElement): void
+    /**
+     * Resets the internal state of the visualizer interface. This should ensure
+     * that when the visualizer continues to draw, it does so from the
+     * beginning.
+     */
+    reset(): void
 
     /**
      * Provides a way for visualizers to request a specific aspect ratio for

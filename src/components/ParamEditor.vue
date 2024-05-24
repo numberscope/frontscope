@@ -109,13 +109,18 @@
                 return paramStatus.isValid()
             },
             validateAggregate() {
+                const paramable = this.paramable
                 const statusValues = Object.keys(this.paramStatuses).map(
                     key => this.paramStatuses[key]
                 )
                 if (statusValues.every(status => status.isValid())) {
-                    this.status = this.paramable.validate()
+                    this.status = paramable.validate()
+                    paramable.isValid = this.status.isValid()
                     return this.status.isValid()
-                } else return false
+                } else {
+                    paramable.isValid = false
+                    return false
+                }
             },
             checkDependencyPredicate(param: ParamInterface): boolean {
                 if (!this.paramStatuses[param.visibleDependency!].isValid())
