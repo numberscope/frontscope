@@ -202,9 +202,13 @@ export class Paramable implements ParamableInterface {
             if (typeof param.value !== 'string')
                 param.value = `${param.value}`
 
-            me[prop] = typeFunctions[param.type].realize(
+            const oldValue = me[prop]
+            const newValue = typeFunctions[param.type].realize(
                 param.value as string
             )
+            me[prop] = newValue
+
+            if (oldValue !== newValue) this.parameterChanged(prop)
         }
     }
     /**
@@ -221,5 +225,14 @@ export class Paramable implements ParamableInterface {
             const param = this.params[prop]
             param.value = typeFunctions[param.type].derealize(me[prop])
         }
+    }
+    /**
+     * parameterChanged() is called whenever the value of a particular parameter
+     * is changed. By default, this does nothing, but may be overriden to
+     * perform any kind of update action for that given parameter.
+     * @param _name the name of the parameter which has been changed
+     */
+    parameterChanged(_name: string): void {
+        return
     }
 }

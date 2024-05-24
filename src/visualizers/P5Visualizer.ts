@@ -156,6 +156,7 @@ export abstract class P5Visualizer
      */
     view(seq: SequenceInterface): void {
         this.seq = seq
+        this.reset()
     }
 
     /**
@@ -242,6 +243,17 @@ export abstract class P5Visualizer
        visualizer to depart a div that it's not inhabiting, or to inhabit
        a div that it's already inhabiting, nothing will happen.
     */
+
+    parameterChanged(_name: string): void {
+        this.reset()
+    }
+
+    reset(): void {
+        if (!this._sketch) {
+            throw 'Attempt to reset a P5 visualizer that is not on view.'
+        }
+        this._sketch.clear()
+    }
 
     requestedAspectRatio(): number | undefined {
         return undefined
