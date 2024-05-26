@@ -62,6 +62,12 @@
 </template>
 
 <script lang="ts">
+    /**
+     * Positions a tab to be inside a dropzone
+     * Resizes the tab to be the same size as the dropzone
+     * @param tab The HTML container that the draggable tab lives in
+     * @param dropzone The dropzone the tab is docked to
+     */
     export function positionAndSizeTab(
         tab: HTMLElement,
         dropzone: HTMLElement
@@ -78,6 +84,12 @@
         tab.setAttribute('data-y', y.toString())
     }
 
+    /**
+     * Translates global (viewport) coordinates into coordinates in
+     * the specimen container.
+     * @param x x coordinate
+     * @param y y coordinate
+     */
     export function translateCoords(
         x: number,
         y: number
@@ -96,6 +108,25 @@
 
         return {x, y}
     }
+
+    /**
+     * Places every docked tab back in its position and size.
+     * Doesn't affect non-docked tabs.
+     * Used when the window is resized.
+     */
+    function positionAndSizeAllTabs(): void {
+        document.querySelectorAll('.tab').forEach((tab: Element) => {
+            if (!(tab instanceof HTMLElement)) return
+            if (tab.getAttribute('docked') === 'none') return
+
+            const dropzone = document.querySelector(
+                '#' + tab.getAttribute('docked') + '-dropzone'
+            )
+            if (!(dropzone instanceof HTMLElement)) return
+
+            positionAndSizeTab(tab, dropzone)
+        })
+    }
 </script>
 
 <script setup lang="ts">
@@ -112,22 +143,6 @@
     const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
 
     const specimen = reactive(new Specimen(visualizer, sequence))
-
-    // This function makes sure that the tabs remain in their docked position
-    // when the window is resized
-    function positionAndSizeAllTabs(): void {
-        document.querySelectorAll('.tab').forEach((tab: Element) => {
-            if (!(tab instanceof HTMLElement)) return
-            if (tab.getAttribute('docked') === 'none') return
-
-            const dropzone = document.querySelector(
-                '#' + tab.getAttribute('docked') + '-dropzone'
-            )
-            if (!(dropzone instanceof HTMLElement)) return
-
-            positionAndSizeTab(tab, dropzone)
-        })
-    }
 
     onMounted(() => {
         positionAndSizeAllTabs()
