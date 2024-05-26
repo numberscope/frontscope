@@ -1,9 +1,9 @@
 <template>
     <div>
         <div class="error-box" v-if="!status.isValid()">
-            <span v-for="error in status.errors" v-bind:key="error">
+            <p v-for="error in status.errors" v-bind:key="error">
                 {{ error }}
-            </span>
+            </p>
         </div>
         <h1>{{ title }}</h1>
         <span class="subheading">{{ paramable.name }}</span>
@@ -164,5 +164,17 @@
         border-left: 1px solid var(--ns-color-black);
         margin-left: 8px;
         padding-left: 8px;
+    }
+
+    .error-box {
+        border: 1px solid #ff2222;
+        background: var(--ns-color-white);
+        padding: 2px 8px;
+    }
+
+    .error-box p {
+        font-size: var(--ns-size-body);
+        margin: 8px 0;
+        color: red;
     }
 </style>

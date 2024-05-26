@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="margin-bottom: 32px">
         <p
             v-if="!param.hideDescription && param.description"
             class="param-description">
@@ -49,7 +49,7 @@
             </div>
         </div>
         <p
-            class="error-field"
+            class="error-message"
             v-for="error in status.errors"
             v-bind:key="error">
             {{ error }}
@@ -154,12 +154,15 @@
         display: flex;
         flex-direction: row;
         position: relative;
-
-        margin-bottom: 32px;
     }
 
     .error-field {
         color: red;
+    }
+
+    .error-message {
+        color: red;
+        font-size: var(--ns-size-body);
     }
 
     .desc-tooltip {
