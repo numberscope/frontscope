@@ -97,12 +97,6 @@ export abstract class P5Visualizer
             // oops, already inhabiting somewhere else; depart there
             this.depart(this.within)
         }
-        if (!this.isValid) {
-            throw (
-                'The visualizer is not valid. '
-                + 'Run validate and address any errors.'
-            )
-        }
         this.within = element
         this._sketch = new p5(sketch => {
             this._sketch = sketch // must assign here,  as setup is called
@@ -243,10 +237,10 @@ export abstract class P5Visualizer
     }
 
     reset(): void {
-        if (!this._sketch) {
-            throw 'Attempt to reset a P5 visualizer that is not on view.'
-        }
-        this._sketch.clear()
+        if (!this._sketch) return
+        const element = this.within!
+        this.depart(element)
+        this.inhabit(element)
     }
 
     requestedAspectRatio(): number | undefined {

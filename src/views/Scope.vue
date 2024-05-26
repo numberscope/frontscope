@@ -1,10 +1,14 @@
 <template>
     <div id="specimen-container">
         <tab id="sequenceTab" class="tab docked" docked="top-right">
-            This is placeholder text
+            <ParamEditor
+                title="Sequence"
+                :paramable="specimen.getSequence()" />
         </tab>
         <tab id="visualiserTab" class="tab docked" docked="bottom-right">
-            <ParamEditor title="Visualizer" :paramable="paramable" />
+            <ParamEditor
+                title="Visualizer"
+                :paramable="specimen.getVisualizer()" />
         </tab>
 
         <!-- 
@@ -100,12 +104,14 @@
     import {onMounted} from 'vue'
     import ParamEditor from '@/components/ParamEditor.vue'
     import vizMODULES from '@/visualizers/visualizers'
-    import {exportModule} from '@/sequences/Constant'
+    import {exportModule} from '@/sequences/Naturals'
     import {reactive} from 'vue'
+    import {Specimen} from '@/shared/Specimen'
 
-    const paramable = reactive(
-        new vizMODULES['Chaos'].visualizer(new exportModule.sequence(0))
-    )
+    const sequence = new exportModule.sequence(0)
+    const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
+
+    const specimen = reactive(new Specimen(visualizer, sequence))
 
     // This function makes sure that the tabs remain in their docked position
     // when the window is resized
@@ -129,6 +135,7 @@
         window.addEventListener('resize', () => {
             positionAndSizeAllTabs()
         })
+        specimen.setup(document.getElementById('canvas-container')!)
     })
 
     // enable draggables to be dropped into this
@@ -262,7 +269,6 @@
     }
 
     #canvas-container {
-        background-color: #cbe7ff;
         flex-grow: 1;
     }
 

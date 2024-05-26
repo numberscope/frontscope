@@ -9,31 +9,38 @@ import type {SequenceInterface} from '../sequences/SequenceInterface'
 export class Specimen {
     private visualizer: VisualizerInterface
     private sequence: SequenceInterface
-    private location: HTMLElement
+    private location?: HTMLElement
+    private isSetup: boolean = false
 
     /**
-     * Constructs a new specimen from a visualizer, a sequence, and an
-     * HTML element to inhabit. It is not important that the visualizer
+     * Constructs a new specimen from a visualizer, and a sequence
+     * It is not important that the visualizer
      * is constructed with the same sequence as the one passed to this
      * constructor, because the visualizer will be automatically set
      * to view the specimen's visualizer in this constructor.
      * @param visualizer the specimen's visualizer
      * @param sequence the specimen's sequence
-     * @param location the HTML element to inhabit
      */
     constructor(
         visualizer: VisualizerInterface,
-        sequence: SequenceInterface,
-        location: HTMLElement
+        sequence: SequenceInterface
     ) {
         this.visualizer = visualizer
         this.sequence = sequence
+    }
+    /**
+     * Call this as soon after construction as possible once the HTML
+     * element has been mounted
+     */
+    setup(location: HTMLElement) {
         this.location = location
-
         this.visualizer.view(this.sequence)
         this.visualizer.inhabit(this.location)
-        this.visualizer.reset()
-        this.visualizer.show()
+
+        setTimeout(() => {
+            this.visualizer.show()
+        }, 10)
+        this.isSetup = true
     }
     /**
      * Returns the specimen's visualizer
@@ -54,10 +61,7 @@ export class Specimen {
      */
     setVisualizer(visualizer: VisualizerInterface) {
         this.visualizer = visualizer
-        this.visualizer.view(this.sequence)
-        this.visualizer.inhabit(this.location)
-        this.visualizer.reset()
-        this.visualizer.show()
+        if (this.isSetup) this.setup(this.location!)
     }
     /**
      * Assigns a new sequence to this specimen and updates the visualizer
@@ -86,8 +90,7 @@ export class Specimen {
         // TODO
         return new Specimen(
             null as unknown as VisualizerInterface,
-            null as unknown as SequenceInterface,
-            null as unknown as HTMLElement
+            null as unknown as SequenceInterface
         )
     }
 }

@@ -80,6 +80,15 @@ class ModFill extends P5Visualizer {
             this.sketch.noLoop()
         }
     }
+
+    reset() {
+        super.reset()
+
+        this.rectWidth = this.sketch.width / Number(this.modDimension)
+        this.rectHeight = this.sketch.height / Number(this.modDimension)
+        this.sketch.noStroke()
+        this.i = this.seq.first
+    }
 }
 
 export const exportModule = new VisualizerExportModule(
