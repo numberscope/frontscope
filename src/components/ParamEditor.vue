@@ -1,5 +1,10 @@
 <template>
     <div>
+        <div class="error-box" v-if="!status.isValid()">
+            <span v-for="error in status.errors" v-bind:key="error">
+                {{ error }}
+            </span>
+        </div>
         <h1>{{ title }}</h1>
         <span class="subheading">{{ paramable.name }}</span>
         <p class="description">{{ paramable.description }}</p>
@@ -89,8 +94,10 @@
                 param.value = value
 
                 this.validateIndependent(paramName)
-                if (this.validateAggregate())
+                if (this.validateAggregate()) {
                     this.paramable.assignParameters()
+                    this.$emit('changed')
+                }
             },
             validateIndependent(paramName: string): boolean {
                 const param = this.paramable.params[paramName]
