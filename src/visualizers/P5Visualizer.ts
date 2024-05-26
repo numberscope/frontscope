@@ -144,7 +144,12 @@ export abstract class P5Visualizer
      */
     view(seq: SequenceInterface): void {
         this.seq = seq
-        this.reset()
+        if (!this._sketch) return
+        const element = this.within!
+        this.stop()
+        this.depart(element)
+        this.inhabit(element)
+        this.show()
     }
 
     /**
@@ -233,14 +238,12 @@ export abstract class P5Visualizer
     */
 
     parameterChanged(_name: string): void {
-        this.reset()
-    }
-
-    reset(): void {
         if (!this._sketch) return
         const element = this.within!
+        this.stop()
         this.depart(element)
         this.inhabit(element)
+        this.show()
     }
 
     requestedAspectRatio(): number | undefined {

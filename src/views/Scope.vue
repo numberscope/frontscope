@@ -3,7 +3,8 @@
         <tab id="sequenceTab" class="tab docked" docked="top-right">
             <ParamEditor
                 title="Sequence"
-                :paramable="specimen.getSequence()" />
+                :paramable="specimen.getSequence()"
+                @changed="() => specimen.updateSequence()" />
         </tab>
         <tab id="visualiserTab" class="tab docked" docked="bottom-right">
             <ParamEditor
@@ -135,7 +136,7 @@
     import {onMounted} from 'vue'
     import ParamEditor from '@/components/ParamEditor.vue'
     import vizMODULES from '@/visualizers/visualizers'
-    import {exportModule} from '@/sequences/Naturals'
+    import {exportModule} from '@/sequences/Formula'
     import {reactive} from 'vue'
     import {Specimen} from '@/shared/Specimen'
 

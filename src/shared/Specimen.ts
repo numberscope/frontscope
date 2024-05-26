@@ -72,6 +72,13 @@ export class Specimen {
         this.visualizer.view(this.sequence)
     }
     /**
+     * Ensures that the visualizer is aware that the sequence has been
+     * updated.
+     */
+    updateSequence() {
+        this.visualizer.view(this.sequence)
+    }
+    /**
      * Converts the specimen to a URL as a way of saving all information
      * about the specimen.
      * @return the specimen URL as a string
