@@ -157,7 +157,17 @@ export abstract class P5Visualizer
      * All it has to do is call draw, since p5 calls setup for us.
      */
     show(): void {
-        this._sketch?.draw()
+        if (this._canvas) this._sketch?.draw()
+        else {
+            // If the rendering context is not yet ready, start an interval
+            // that waits until the canvas is ready and shows when finished
+            const interval = setInterval(() => {
+                if (this._canvas) {
+                    clearInterval(interval)
+                    this._sketch?.draw()
+                }
+            }, 5)
+        }
     }
 
     /**
