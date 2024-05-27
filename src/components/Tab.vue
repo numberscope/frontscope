@@ -51,8 +51,9 @@
         autoScroll: false,
 
         listeners: {
-            start: () => {
+            start: (event: Interact.InteractEvent) => {
                 document.body.style.userSelect = 'none'
+                event.target.parentElement!.style.zIndex += 10
             },
             move: dragMoveListener,
 
@@ -126,7 +127,7 @@
         border: 1px solid var(--ns-color-black);
         width: 300px;
         height: 200px;
-        z-index: 999;
+        z-index: 50;
     }
 
     .resize {

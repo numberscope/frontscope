@@ -141,7 +141,7 @@
     import {Specimen} from '@/shared/Specimen'
 
     const sequence = new exportModule.sequence(0)
-    const visualizer = new vizMODULES['Chaos'].visualizer(sequence)
+    const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
 
     const specimen = reactive(new Specimen(visualizer, sequence))
 
@@ -278,7 +278,7 @@
 
 <style scoped lang="scss">
     #specimen-container {
-        height: 100%;
+        height: calc(100vh - 54px);
         position: relative;
     }
     #main {
