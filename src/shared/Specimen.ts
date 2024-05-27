@@ -39,8 +39,8 @@ export class Specimen {
 
         setTimeout(() => {
             this.visualizer.show()
+            this.isSetup = true
         }, 10)
-        this.isSetup = true
     }
     /**
      * Returns the specimen's visualizer
