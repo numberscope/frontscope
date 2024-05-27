@@ -36,11 +36,8 @@ export class Specimen {
         this.location = location
         this.visualizer.view(this.sequence)
         this.visualizer.inhabit(this.location)
-
-        setTimeout(() => {
-            this.visualizer.show()
-            this.isSetup = true
-        }, 10)
+        this.visualizer.show()
+        this.isSetup = true
     }
     /**
      * Returns the specimen's visualizer
