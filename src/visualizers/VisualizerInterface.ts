@@ -60,4 +60,18 @@ export interface VisualizerInterface extends ParamableInterface {
      * @param element HTMLElement The DOM node the visualizer was inhabit()ing
      */
     depart(element: HTMLElement): void
+
+    /**
+     * Provides a way for visualizers to request a specific aspect ratio for
+     * its canvas. This aspect ratio is specified as a positive n > 0 where
+     * n = width/height, meaning:
+     *  0 < n < 1:  The canvas is taller than it is wide
+     *  n = 1:      The canvas is a square
+     *  n > 1:      The canvas is wider than it is tall
+     * If the visualizer does not wish to request a specific aspect ratio and
+     * will instead work with whatever is given, this function may return
+     * `undefined` instead.
+     * @return the aspect ratio requested by the visualizer, or undefined if any
+     */
+    requestedAspectRatio(): number | undefined
 }

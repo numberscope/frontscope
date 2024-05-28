@@ -242,4 +242,13 @@ export abstract class P5Visualizer
        visualizer to depart a div that it's not inhabiting, or to inhabit
        a div that it's already inhabiting, nothing will happen.
     */
+
+    /* By default, a P5 visualizer returns undefined from this function,
+     * meaning it will not request an aspect ratio and instead be given a
+     * canvas of any arbitrary width and height. Visualizers can override
+     * this to request a specific aspect ratio.
+     */
+    requestedAspectRatio(): number | undefined {
+        return undefined
+    }
 }
