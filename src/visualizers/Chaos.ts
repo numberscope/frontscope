@@ -123,7 +123,7 @@ class Chaos extends P5Visualizer {
             visibleValue: ColorStyle.Highlighting_one_walker,
         },
         first: {
-            value: '' as string | number,
+            value: 0,
             type: ParamType.INTEGER,
             displayName: 'Starting index',
             required: false,
@@ -133,7 +133,7 @@ class Chaos extends P5Visualizer {
                 + 'at the first valid index.',
         },
         last: {
-            value: '' as string | number,
+            value: 1000,
             type: ParamType.INTEGER,
             displayName: 'Ending index',
             required: false,

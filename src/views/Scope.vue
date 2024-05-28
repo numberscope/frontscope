@@ -141,17 +141,21 @@
     import {Specimen} from '@/shared/Specimen'
 
     const sequence = new exportModule.sequence(0)
-    const visualizer = new vizMODULES['Chaos'].visualizer(sequence)
+    const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
 
     const specimen = reactive(new Specimen(visualizer, sequence))
 
     onMounted(() => {
+        const specimenContainer = document.getElementById(
+            'specimen-container'
+        )!
+        const canvasContainer = document.getElementById('canvas-container')!
         positionAndSizeAllTabs()
 
         window.addEventListener('resize', () => {
             positionAndSizeAllTabs()
         })
-        specimen.setup(document.getElementById('canvas-container')!)
+        specimen.setup(canvasContainer)
     })
 
     // enable draggables to be dropped into this
@@ -182,7 +186,6 @@
                 // updated with any changes to the tab state.
 
                 dropzone.classList.add('empty')
-                console.log(dropzone)
                 tab.classList.remove('docked')
                 tab.setAttribute('docked', 'none')
 
@@ -190,7 +193,6 @@
                     dropzoneContainer.querySelectorAll('.empty').length == 2
                 ) {
                     dropzoneContainer.classList.add('empty')
-                    console.log('bassl')
                 }
             }
         },
@@ -276,7 +278,7 @@
 
 <style scoped lang="scss">
     #specimen-container {
-        height: 100%;
+        height: calc(100vh - 54px);
         position: relative;
     }
     #main {
@@ -285,7 +287,9 @@
     }
 
     #canvas-container {
-        flex-grow: 1;
+        flex: 1;
+        position: relative;
+        overflow: hidden;
     }
 
     .dropzone-container {
