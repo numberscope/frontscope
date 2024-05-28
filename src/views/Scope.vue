@@ -261,7 +261,6 @@
                 }
             },
         },
-
         modifiers: [
             // keep the edges inside the screen
             interact.modifiers.restrictEdges({
