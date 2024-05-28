@@ -16,10 +16,12 @@
 
         listeners: {
             start() {
+                // prevent text selection
                 document.body.style.userSelect = 'none'
             },
 
             end() {
+                // allow text selection
                 document.body.style.userSelect = 'auto'
             },
 
