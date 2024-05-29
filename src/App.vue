@@ -14,18 +14,6 @@
 
 <!-- Global styles. This style tag is explicitly unscoped. -->
 <style>
-    * {
-        box-sizing: border-box;
-        font-family: var(--ns-font-main);
-        color: var(--ns-color-black);
-    }
-
-    html,
-    body {
-        margin: 0;
-        padding: 0;
-    }
-
     :root {
         /* Font sizes */
         --ns-size-body: 12px;
@@ -60,12 +48,24 @@
         Medium devices (tablets)
         @media (min-width: var(--ns-breakpoint-tablet)) { ... }
 
-        // Large devices (desktops)
+        Large devices (desktops)
         @media (min-width: var(--ns-breakpoint-desktop)) { ... }
         */
         --ns-breakpoint-mobile: 580px;
         --ns-breakpoint-tablet: 800px;
         --ns-breakpoint-desktop: 1200px;
+    }
+
+    * {
+        box-sizing: border-box;
+        font-family: var(--ns-font-main);
+        color: var(--ns-color-black);
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
     }
 
     /* Display font */

@@ -3,7 +3,7 @@
         <div class="card-preview" :id="cid"></div>
         <div class="card-title-box">
             <h5 class="card-title">
-                {{ `${cardName}` }}
+                {{ cardName }}
             </h5>
             <p class="card-text">
                 {{ seqName }}
@@ -17,7 +17,6 @@
     let cid_count = 0
     export default defineComponent({
         name: 'SpecimenCard',
-        methods: {},
         props: {
             seqName: {type: String, required: true},
             cardName: {type: String, required: true},
