@@ -4,9 +4,9 @@
 
     // every element with draggable class can be dragged
     interact('.tab').resizable({
-        // no inertia for resizing (better imo)
+        // no inertia for resizing
         inertia: false,
-        // Only want bootom resizing and only when the tab isn't docked
+        // Only want bottom resizing and only when the tab isn't docked
         edges: {
             left: false,
             right: false,

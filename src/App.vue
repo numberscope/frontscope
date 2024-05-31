@@ -4,12 +4,10 @@
         <main>
             <RouterView />
         </main>
-        <!-- <Footer /> -->
     </div>
 </template>
 
 <script setup lang="ts">
-    // import Footer from './views/minor/Footer.vue'
     import NavBar from './views/minor/NavBar.vue'
     import {RouterView} from 'vue-router'
 </script>
