@@ -62,7 +62,8 @@ export interface VisualizerInterface extends ParamableInterface {
 
     /**
      * Provides a way for visualizers to request a specific aspect ratio for
-     * its canvas. This aspect ratio is specified as a positive n > 0 where:
+     * its canvas. This aspect ratio is specified as a positive n > 0 where
+     * n = width/height, meaning:
      *  0 < n < 1:  The canvas is taller than it is wide
      *  n = 1:      The canvas is a square
      *  n > 1:      The canvas is wider than it is tall
