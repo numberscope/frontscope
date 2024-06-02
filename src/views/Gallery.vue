@@ -7,7 +7,7 @@
             </div>
             <div type="button" id="change-button">
                 <img :src="swap" alt="Swap icon" id="change-icon" />
-                <p id="change-text">Change Visualizer</p>
+                <p id="change-text">Select Visualizer</p>
             </div>
         </div>
 
