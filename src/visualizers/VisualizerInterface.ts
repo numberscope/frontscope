@@ -7,26 +7,25 @@ interface VisualizerConstructor {
      * @param seq SequenceInterface The initial sequence to visualize
      */
     new (seq: SequenceInterface): VisualizerInterface
-    visualizationName: string
 }
 
 export class VisualizerExportModule {
+    visualizer: VisualizerConstructor
     name: string
     description: string
-    visualizer: VisualizerConstructor
 
-    constructor(viz: VisualizerConstructor, description: string) {
-        this.name = viz.visualizationName
+    constructor(
+        viz: VisualizerConstructor,
+        name: string,
+        description: string
+    ) {
         this.visualizer = viz
+        this.name = name
         this.description = description
     }
 }
 
 export interface VisualizerInterface extends ParamableInterface {
-    /* Returns a string identifying what sort of Visualizer this is
-     * (typically would depend only on the class of the Visualizer)
-     */
-    visualization(): string
     /**
      * Change the sequence the visualizer is showing.
      */
@@ -63,7 +62,8 @@ export interface VisualizerInterface extends ParamableInterface {
 
     /**
      * Provides a way for visualizers to request a specific aspect ratio for
-     * its canvas. This aspect ratio is specified as a positive n > 0 where:
+     * its canvas. This aspect ratio is specified as a positive n > 0 where
+     * n = width/height, meaning:
      *  0 < n < 1:  The canvas is taller than it is wide
      *  n = 1:      The canvas is a square
      *  n > 1:      The canvas is wider than it is tall

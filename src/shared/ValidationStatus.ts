@@ -32,22 +32,22 @@ export class ValidationStatus {
     /**
      * Returns a `ValidationStatus` in an invalid state with an appropriate
      * error message.
-     * @param error the error message
+     * @param error the error message(s)
      * @returns the resulting `ValidationStatus`
      */
-    static error(error: string): ValidationStatus {
-        return new ValidationStatus([error])
+    static error(...errors: string[]): ValidationStatus {
+        return new ValidationStatus(errors)
     }
     /**
      * Returns a `ValidationStatus` which is valid if the given predicate
-     * is false, but invalid with an appropriate error message if the given
+     * is false, but invalid with appropriate error messages if the given
      * predicate is true.
      * @param pred the predicate to check against
-     * @param error the error message if the predicate succeedes
+     * @param errors the error message(s) if the predicate succeedes
      * @return the resulting `ValidationStatus`
      */
-    static errorIf(pred: boolean, error: string): ValidationStatus {
-        if (pred) return this.error(error)
+    static errorIf(pred: boolean, ...errors: string[]): ValidationStatus {
+        if (pred) return this.error(...errors)
         else return this.ok()
     }
 }

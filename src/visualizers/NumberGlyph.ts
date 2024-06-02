@@ -52,7 +52,10 @@ exceeds \( 2^{53}-1 \) to be 0.
  **/
 
 class NumberGlyph extends P5Visualizer {
-    static visualizationName = 'Number Glyphs'
+    name = 'Number Glyphs'
+    description =
+        'Map entries to colorful glyphs '
+        + 'using their magnitudes and prime factors'
     n = 64
     customize = false
     brightCap = 25
@@ -404,7 +407,8 @@ The default value is 25.
 
 export const exportModule = new VisualizerExportModule(
     NumberGlyph,
-    'Map entries to colorful glyphs using their magnitudes and prime factors'
+    NumberGlyph.prototype.name,
+    NumberGlyph.prototype.description
 )
 
 /** md

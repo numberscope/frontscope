@@ -94,17 +94,20 @@ export enum SequenceExportKind {
  *
  */
 export class SequenceExportModule {
-    constructorOrSequence: SequenceConstructor | SequenceInterface
+    sequence: SequenceConstructor
     name: string
+    description: string
     kind: SequenceExportKind
 
     constructor(
-        sequence: SequenceConstructor | SequenceInterface,
+        sequence: SequenceConstructor,
         name: string,
+        description: string,
         kind: SequenceExportKind
     ) {
-        this.constructorOrSequence = sequence
+        this.sequence = sequence
         this.name = name
+        this.description = description
         this.kind = kind
     }
 }

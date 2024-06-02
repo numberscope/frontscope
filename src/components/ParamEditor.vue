@@ -1,8 +1,13 @@
 <template>
     <div>
-        <p>{{ title }}</p>
-        <p>{{ paramable.name }}</p>
-        <p>{{ paramable.description }}</p>
+        <div class="error-box" v-if="!status.isValid()">
+            <p v-for="error in status.errors" v-bind:key="error">
+                {{ error }}
+            </p>
+        </div>
+        <h1>{{ title }}</h1>
+        <span class="subheading">{{ paramable.name }}</span>
+        <p class="description">{{ paramable.description }}</p>
         <div v-for="(hierarchy, name) in sortedParams" v-bind:key="name">
             <ParamField
                 v-bind:param="hierarchy.param"
@@ -89,8 +94,10 @@
                 param.value = value
 
                 this.validateIndependent(paramName)
-                if (this.validateAggregate())
+                if (this.validateAggregate()) {
                     this.paramable.assignParameters()
+                    this.$emit('changed')
+                }
             },
             validateIndependent(paramName: string): boolean {
                 const param = this.paramable.params[paramName]
@@ -109,13 +116,18 @@
                 return paramStatus.isValid()
             },
             validateAggregate() {
+                const paramable = this.paramable
                 const statusValues = Object.keys(this.paramStatuses).map(
                     key => this.paramStatuses[key]
                 )
                 if (statusValues.every(status => status.isValid())) {
-                    this.status = this.paramable.validate()
+                    this.status = paramable.validate()
+                    paramable.isValid = this.status.isValid()
                     return this.status.isValid()
-                } else return false
+                } else {
+                    paramable.isValid = false
+                    return false
+                }
             },
             checkDependencyPredicate(param: ParamInterface): boolean {
                 if (!this.paramStatuses[param.visibleDependency!].isValid())
@@ -133,9 +145,36 @@
 </script>
 
 <style scoped lang="scss">
+    h1 {
+        font-size: 16px;
+        margin-bottom: 0;
+    }
+
+    .subheading {
+        color: var(--ns-color-grey);
+        font-size: 14px;
+    }
+
+    .description {
+        font-size: 12px;
+        margin-bottom: 32px;
+    }
+
     .sub-param-box {
         border-left: 1px solid var(--ns-color-black);
         margin-left: 8px;
         padding-left: 8px;
+    }
+
+    .error-box {
+        border: 1px solid #ff2222;
+        background: var(--ns-color-white);
+        padding: 2px 8px;
+    }
+
+    .error-box p {
+        font-size: var(--ns-size-body);
+        margin: 8px 0;
+        color: red;
     }
 </style>

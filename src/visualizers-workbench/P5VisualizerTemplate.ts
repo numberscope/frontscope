@@ -37,7 +37,8 @@ required and commonly used features._
 class P5VisualizerTemplate extends P5Visualizer {
     // === Visualizer name ===
     // Appears in the visualizer list and bundle card titles
-    static visualizationName = 'Entries (p5 Template)'
+    name = 'Entries (p5 Template)'
+    description = 'Step through entries one at a time'
 
     // === Parameters ===
     // Top-level properties that the user can choose while creating the
@@ -232,11 +233,10 @@ class P5VisualizerTemplate extends P5Visualizer {
     // If this visualizer would like a canvas with a particular aspect ratio,
     // such can be requested here. A value of `undefined` indicates no desired
     // aspect ratio, but a number greater than 0 can be used instead if a
-    // specific aspect ratio is desired. A number smaller than 1 indicates
-    // taller-than-wide, and the opposite for a number larger than 1.
-    requestedAspectRatio(): number | undefined {
-        return undefined
-    }
+    // specific aspect ratio is desired. The aspect ratio is defined as:
+    // width / height
+    // requestedAspectRatio(): number | undefined {
+    // }
 }
 /** md
 ## The "sequence progress bar"
@@ -255,5 +255,6 @@ because infinity is, well, infinitely far away!
 // export module constructor
 export const exportModule = new VisualizerExportModule(
     P5VisualizerTemplate,
-    'Step through entries one at a time'
+    P5VisualizerTemplate.prototype.name,
+    P5VisualizerTemplate.prototype.description
 )
