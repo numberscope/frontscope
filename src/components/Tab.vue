@@ -115,9 +115,12 @@
     function minMaxWindow(event: MouseEvent) {
         const tab = (event.currentTarget as HTMLElement).closest('.tab')
         if (!(tab instanceof HTMLElement)) return
+
         const content = tab.querySelector('.content')
         if (!(content instanceof HTMLElement)) return
 
+        // if the tab is docked, don't minimize
+        if (tab.classList.contains('docked')) return
         // If the tab is minimized, maximize it
         if (tab.classList.contains('minimized')) {
             tab.style.height = '500px'
