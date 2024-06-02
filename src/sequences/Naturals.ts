@@ -1,4 +1,4 @@
-import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
+import {SequenceExportModule} from './SequenceInterface'
 import {Cached} from './Cached'
 import {ParamType} from '../shared/ParamType'
 
@@ -46,9 +46,4 @@ class Naturals extends Cached {
     }
 }
 
-export const exportModule = new SequenceExportModule(
-    Naturals,
-    Naturals.prototype.name,
-    Naturals.prototype.description,
-    SequenceExportKind.FAMILY
-)
+export const exportModule = SequenceExportModule.family(Naturals)

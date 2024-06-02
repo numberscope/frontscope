@@ -7,8 +7,8 @@ import type {SequenceInterface} from '../sequences/SequenceInterface'
  * Specimens can be converted to and from URLs so that they can be saved.
  */
 export class Specimen {
-    private visualizer: VisualizerInterface
-    private sequence: SequenceInterface
+    private _visualizer: VisualizerInterface
+    private _sequence: SequenceInterface
     private location?: HTMLElement
     private isSetup: boolean = false
 
@@ -25,8 +25,8 @@ export class Specimen {
         visualizer: VisualizerInterface,
         sequence: SequenceInterface
     ) {
-        this.visualizer = visualizer
-        this.sequence = sequence
+        this._visualizer = visualizer
+        this._sequence = sequence
     }
     /**
      * Call this as soon after construction as possible once the HTML
@@ -34,38 +34,38 @@ export class Specimen {
      */
     setup(location: HTMLElement) {
         this.location = location
-        this.visualizer.view(this.sequence)
-        this.visualizer.inhabit(this.location)
-        this.visualizer.show()
+        this._visualizer.view(this._sequence)
+        this._visualizer.inhabit(this.location)
+        this._visualizer.show()
         this.isSetup = true
     }
     /**
      * Returns the specimen's visualizer
      */
-    getVisualizer(): VisualizerInterface {
-        return this.visualizer
+    get visualizer(): VisualizerInterface {
+        return this._visualizer
     }
     /**
      * Returns the specimen's sequence
      */
-    getSequence(): SequenceInterface {
-        return this.sequence
+    get sequence(): SequenceInterface {
+        return this._sequence
     }
     /**
      * Assigns a new visualizer to this specimen and updates its sequence
      * to match the specimen. It also ensures this visualizer inhabits
      * the correct HTML element and begins to render.
      */
-    setVisualizer(visualizer: VisualizerInterface) {
-        this.visualizer = visualizer
+    set visualizer(visualizer: VisualizerInterface) {
+        this._visualizer = visualizer
         if (this.isSetup) this.setup(this.location!)
     }
     /**
      * Assigns a new sequence to this specimen and updates the visualizer
      * to reflect this change in the render.
      */
-    setSequence(sequence: SequenceInterface) {
-        this.sequence = sequence
+    set sequence(sequence: SequenceInterface) {
+        this._sequence = sequence
         this.visualizer.view(this.sequence)
     }
     /**

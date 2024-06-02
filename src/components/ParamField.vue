@@ -6,8 +6,8 @@
             {{ param.description }}
         </p>
         <div class="input-container">
-            <label
-                >{{ param.displayName }}
+            <label>
+                {{ param.displayName }}
                 <input
                     v-if="param.type === ParamType.BOOLEAN"
                     type="checkbox"
@@ -43,7 +43,7 @@
 
             <div
                 class="desc-tooltip"
-                v-if="!param.hideDescription && param.description">
+                v-if="param.hideDescription && param.description">
                 <span class="material-icons-sharp">help</span>
                 <div class="desc-tooltip-text">{{ param.description }}</div>
             </div>

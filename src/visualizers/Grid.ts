@@ -896,11 +896,7 @@ earlier ones that use the _same_ style.)
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    Grid,
-    Grid.prototype.name,
-    Grid.prototype.description
-)
+export const exportModule = new VisualizerExportModule(Grid)
 
 /** md
 

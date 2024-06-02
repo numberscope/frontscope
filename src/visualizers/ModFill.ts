@@ -82,8 +82,4 @@ class ModFill extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    ModFill,
-    ModFill.prototype.name,
-    ModFill.prototype.description
-)
+export const exportModule = new VisualizerExportModule(ModFill)

@@ -87,8 +87,4 @@ class ShowFactors extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    ShowFactors,
-    ShowFactors.prototype.name,
-    ShowFactors.prototype.description
-)
+export const exportModule = new VisualizerExportModule(ShowFactors)

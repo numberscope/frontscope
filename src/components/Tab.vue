@@ -1,3 +1,13 @@
+<template>
+    <div class="tab">
+        <div class="drag"></div>
+        <div class="content">
+            <slot></slot>
+        </div>
+        <div class="resize"></div>
+    </div>
+</template>
+
 <script setup lang="ts">
     import interact from 'interactjs'
     import {positionAndSizeTab} from '../views/Scope.vue'
@@ -111,16 +121,6 @@
         }
     }
 </script>
-
-<template>
-    <div class="tab">
-        <div class="drag"></div>
-        <div class="content">
-            <slot></slot>
-        </div>
-        <div class="resize"></div>
-    </div>
-</template>
 
 <style scoped lang="scss">
     .tab {

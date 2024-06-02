@@ -6,15 +6,58 @@ import p5 from 'p5'
  * type checker
  */
 export enum ParamType {
+    /**
+     * A true or false value, realized as a `boolean`, and rendered as a
+     * checkbox in the parameter UI.
+     */
     BOOLEAN,
+    /**
+     * A color value, realized as a hex code string, and rendered as a
+     * color picker in the parameter UI.
+     */
     COLOR,
+    /**
+     * A floating point numerical value, realized as a `number`, and
+     * rendered as a standard input field in the parameter UI.
+     */
     NUMBER,
+    /**
+     * An integer numerical value, realized as a `number`, and rendered
+     * as a standard input field in the parameter UI.
+     */
     INTEGER,
+    /**
+     * An integer numerical value, realized as a `bigint`, and rendered
+     * as a standard input field in the parameter UI.
+     */
     BIGINT,
+    /**
+     * An enum value, i.e. one of a list of options. Realized as a
+     * number, and rendered as a drop down menu in the parameter UI.
+     */
     ENUM,
+    /**
+     * A regular string value. Realized as `string` and rendered as
+     * a standard input field in the parameter UI.
+     */
     STRING,
+    /**
+     * An array of numbers realized as a `number[]`. It is rendered
+     * as a standard input field, but is expected to take the form
+     * of a comma separated list of floating point numbers.
+     */
     NUMBER_ARRAY,
+    /**
+     * An array of integers realized as a `bigint[]`. It is rendered
+     * as a standard input field, but is expected to take the form
+     * of a comma separated list of integers.
+     */
     BIGINT_ARRAY,
+    /**
+     * A two-element vector, realized as `p5.Vector`. It is rendered
+     * as a standard input field, but is expected to take the form
+     * of two floating point numbers separated by a comma.
+     */
     VECTOR,
 }
 /**

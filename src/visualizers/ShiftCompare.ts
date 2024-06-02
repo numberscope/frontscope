@@ -119,8 +119,4 @@ class ShiftCompare extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    ShiftCompare,
-    ShiftCompare.prototype.name,
-    ShiftCompare.prototype.description
-)
+export const exportModule = new VisualizerExportModule(ShiftCompare)

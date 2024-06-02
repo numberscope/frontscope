@@ -168,8 +168,4 @@ class Turtle extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    Turtle,
-    Turtle.prototype.name,
-    Turtle.prototype.description
-)
+export const exportModule = new VisualizerExportModule(Turtle)

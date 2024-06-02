@@ -24,12 +24,11 @@ export interface ParamInterface {
      * implementing class).
      */
     value: unknown
-    /* Previously an optional value, this field is now required for the sake
-     * of being explicit and ensuring type consistency for Paramable objects.
-     * Defines the type of this parameter as will be reflected by the type
-     * of its realized value and the type of input field in the UI. Rather
-     * than being a string, the value of this field is one of an enum of
-     * supported types by the Paramable system and UI components.
+    /* This field is required for the sake of being explicit and ensuring type
+     * consistency for Paramable objects. Defines the type of this parameter as
+     * will be reflected by the type of its realized value and the type of input
+     * field in the UI. This field is specified as a `ParamType`, which is an
+     * enum of all supported parameter types by the parameter UI.
      */
     type: ParamType
     /* If the value is an element of an Enum, typescript/Vue unfortunately
@@ -169,7 +168,8 @@ export class Paramable implements ParamableInterface {
             if (!Object.prototype.hasOwnProperty.call(this.params, prop))
                 continue
             const p = this.params[prop]
-            if (typeof p.value !== 'string') p.value = `${p.value}`
+            if (typeof p.value !== 'string')
+                p.value = typeFunctions[p.type].derealize(p.value)
 
             realParams[prop] = typeFunctions[p.type].realize(
                 p.value as string
@@ -203,7 +203,7 @@ export class Paramable implements ParamableInterface {
             const param = this.params[prop]
             const me = this as Record<string, unknown>
             if (typeof param.value !== 'string')
-                param.value = `${param.value}`
+                param.value = typeFunctions[param.type].derealize(param.value)
 
             const oldValue = me[prop]
             const newValue = typeFunctions[param.type].realize(
@@ -217,7 +217,7 @@ export class Paramable implements ParamableInterface {
 
         if (changed.length < props.length)
             for (const prop in changed) this.parameterChanged(prop)
-        else this.parameterChanged('all')
+        else this.parameterChanged('#all')
     }
     /**
      * refreshParams() copies the current values of top-level properties into
@@ -240,7 +240,7 @@ export class Paramable implements ParamableInterface {
      * perform any kind of update action for that given parameter.
      *
      * Note that if all parameters have changed at once, this function will only
-     * be called a single time with the name value 'all'
+     * be called a single time with the name value '#all'
      * @param _name the name of the parameter which has been changed
      */
     parameterChanged(_name: string): void {

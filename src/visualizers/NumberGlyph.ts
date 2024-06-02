@@ -405,11 +405,7 @@ The default value is 25.
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    NumberGlyph,
-    NumberGlyph.prototype.name,
-    NumberGlyph.prototype.description
-)
+export const exportModule = new VisualizerExportModule(NumberGlyph)
 
 /** md
 

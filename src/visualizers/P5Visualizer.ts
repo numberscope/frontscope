@@ -144,12 +144,7 @@ export abstract class P5Visualizer
      */
     view(seq: SequenceInterface): void {
         this.seq = seq
-        if (!this._sketch) return
-        const element = this.within!
-        this.stop()
-        this.depart(element)
-        this.inhabit(element)
-        this.show()
+        this.reset()
     }
 
     /**
@@ -157,6 +152,11 @@ export abstract class P5Visualizer
      * All it has to do is call draw, since p5 calls setup for us.
      */
     show(): void {
+        // In the event that the rendering context isn't ready, this value
+        // represents how long in milliseconds we should wait before trying
+        // again
+        const displayTimeout = 5
+
         if (this._canvas) this._sketch?.draw()
         else {
             // If the rendering context is not yet ready, start an interval
@@ -166,7 +166,7 @@ export abstract class P5Visualizer
                     clearInterval(interval)
                     this._sketch?.draw()
                 }
-            }, 5)
+            }, displayTimeout)
         }
     }
 
@@ -248,12 +248,7 @@ export abstract class P5Visualizer
     */
 
     parameterChanged(_name: string): void {
-        if (!this._sketch) return
-        const element = this.within!
-        this.stop()
-        this.depart(element)
-        this.inhabit(element)
-        this.show()
+        this.reset()
     }
 
     /* By default, a P5 visualizer returns undefined from this function,
@@ -263,5 +258,20 @@ export abstract class P5Visualizer
      */
     requestedAspectRatio(): number | undefined {
         return undefined
+    }
+
+    /* If the visualizer is currently being displayed, we reset the display
+     * by stopping the visualizer, re-inhabiting the element, and showing
+     * it again. In other words, a hard reset. If a visualizer wishes to
+     * have any of its internal state be reset during a hard reset event,
+     * it should override this function.
+     */
+    reset() {
+        if (!this._sketch) return
+        const element = this.within!
+        this.stop()
+        this.depart(element)
+        this.inhabit(element)
+        this.show()
     }
 }

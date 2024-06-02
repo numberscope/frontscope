@@ -1,4 +1,4 @@
-import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
+import {SequenceExportModule} from './SequenceInterface'
 import {ParamType} from '../shared/ParamType'
 import {Cached} from './Cached'
 import simpleFactor from './simpleFactor'
@@ -81,9 +81,4 @@ class Formula extends Cached {
     }
 }
 
-export const exportModule = new SequenceExportModule(
-    Formula,
-    Formula.prototype.name,
-    Formula.prototype.description,
-    SequenceExportKind.FAMILY
-)
+export const exportModule = SequenceExportModule.family(Formula)

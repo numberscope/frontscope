@@ -1,4 +1,4 @@
-import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
+import {SequenceExportModule} from './SequenceInterface'
 import {Cached} from './Cached'
 import simpleFactor from './simpleFactor'
 import {ParamType} from '../shared/ParamType'
@@ -48,6 +48,11 @@ class Random extends Cached {
         return status
     }
 
+    initialize() {
+        super.initialize()
+        this.name = `Random integers ${this.min} to ${this.max}`
+    }
+
     calculate(_n: number) {
         // create a random integer between min and max inclusive
         return BigInt(
@@ -60,9 +65,4 @@ class Random extends Cached {
     }
 }
 
-export const exportModule = new SequenceExportModule(
-    Random,
-    Random.prototype.name,
-    Random.prototype.description,
-    SequenceExportKind.FAMILY
-)
+export const exportModule = SequenceExportModule.family(Random)

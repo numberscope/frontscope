@@ -394,8 +394,4 @@ class FactorHistogram extends P5Visualizer {
 _Originally contributed by Devlin Costello._
  **/
 
-export const exportModule = new VisualizerExportModule(
-    FactorHistogram,
-    FactorHistogram.prototype.name,
-    FactorHistogram.prototype.description
-)
+export const exportModule = new VisualizerExportModule(FactorHistogram)

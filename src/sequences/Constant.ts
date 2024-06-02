@@ -1,4 +1,4 @@
-import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
+import {SequenceExportModule} from './SequenceInterface'
 import {SequenceDefault} from './SequenceDefault'
 import {ParamType} from '../shared/ParamType'
 
@@ -40,9 +40,4 @@ class Constant extends SequenceDefault {
     }
 }
 
-export const exportModule = new SequenceExportModule(
-    Constant,
-    Constant.prototype.name,
-    Constant.prototype.description,
-    SequenceExportKind.FAMILY
-)
+export const exportModule = SequenceExportModule.family(Constant)

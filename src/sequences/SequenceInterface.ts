@@ -62,7 +62,16 @@ export interface SequenceInterface extends ParamableInterface {
 }
 
 export interface SequenceConstructor {
+    /**
+     * Constructs a sequence.
+     * @param sequenceID the ID of the sequence
+     */
     new (sequenceID: number): SequenceInterface
+    /**
+     * The prototype of the sequence, used to extract name and description
+     * fields.
+     */
+    prototype: SequenceInterface
 }
 
 /**
@@ -74,11 +83,10 @@ export interface SequenceConstructor {
  *
  */
 export enum SequenceExportKind {
-    GETTER, // Produces new INSTANCES for the SequenceMenu; always
-    // listed at the bottom of the SequenceMenu
     FAMILY, // A single entry in the SequenceMenu that needs parameters
     // whenever used
-    INSTANCE, // A single sequence in the SequenceMenu, added by a FACTORY
+    INSTANCE, // A single sequence in the SequenceMenu, generally imported
+    // by OEIS
 }
 /**
  *
@@ -94,20 +102,50 @@ export enum SequenceExportKind {
  *
  */
 export class SequenceExportModule {
-    sequence: SequenceConstructor
+    sequenceOrConstructor: SequenceConstructor | SequenceInterface
     name: string
     description: string
     kind: SequenceExportKind
 
-    constructor(
-        sequence: SequenceConstructor,
+    private constructor(
+        sequenceOrConstructor: SequenceConstructor | SequenceInterface,
         name: string,
         description: string,
         kind: SequenceExportKind
     ) {
-        this.sequence = sequence
+        this.sequenceOrConstructor = sequenceOrConstructor
         this.name = name
         this.description = description
         this.kind = kind
+    }
+
+    /**
+     * Constructs a `SequenceExportModule` representing a family of sequences
+     * constructed and tweaked using parameters.
+     * @param constructor the constructor for the family of sequences
+     * @return an appropriate sequence export module
+     */
+    static family(constructor: SequenceConstructor): SequenceExportModule {
+        return new SequenceExportModule(
+            constructor,
+            constructor.prototype.name,
+            constructor.prototype.description,
+            SequenceExportKind.FAMILY
+        )
+    }
+
+    /**
+     * Constructs a `SequenceExportModule` representing a specific live
+     * sequence.
+     * @param sequence the live sequence
+     * @return an appropriate sequence export module
+     */
+    static instance(sequence: SequenceInterface): SequenceExportModule {
+        return new SequenceExportModule(
+            sequence,
+            sequence.name,
+            sequence.description,
+            SequenceExportKind.INSTANCE
+        )
     }
 }

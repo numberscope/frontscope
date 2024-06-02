@@ -137,8 +137,4 @@ class Differences extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    Differences,
-    Differences.prototype.name,
-    Differences.prototype.description
-)
+export const exportModule = new VisualizerExportModule(Differences)

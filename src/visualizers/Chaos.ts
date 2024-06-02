@@ -459,8 +459,4 @@ class Chaos extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    Chaos,
-    Chaos.prototype.name,
-    Chaos.prototype.description
-)
+export const exportModule = new VisualizerExportModule(Chaos)

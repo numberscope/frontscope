@@ -3,13 +3,13 @@
         <tab id="sequenceTab" class="tab docked" docked="top-right">
             <ParamEditor
                 title="Sequence"
-                :paramable="specimen.getSequence()"
+                :paramable="specimen.sequence"
                 @changed="() => specimen.updateSequence()" />
         </tab>
         <tab id="visualiserTab" class="tab docked" docked="bottom-right">
             <ParamEditor
                 title="Visualizer"
-                :paramable="specimen.getVisualizer()" />
+                :paramable="specimen.visualizer" />
         </tab>
 
         <!-- 
@@ -136,11 +136,13 @@
     import {onMounted} from 'vue'
     import ParamEditor from '@/components/ParamEditor.vue'
     import vizMODULES from '@/visualizers/visualizers'
-    import {exportModule} from '@/sequences/Formula'
+    import {exportModule} from '@/sequences/Random'
     import {reactive} from 'vue'
     import {Specimen} from '@/shared/Specimen'
+    import type {SequenceConstructor} from '@/sequences/SequenceInterface'
 
-    const sequence = new exportModule.sequence(0)
+    const sequence =
+        new (exportModule.sequenceOrConstructor as SequenceConstructor)(0)
     const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
 
     const specimen = reactive(new Specimen(visualizer, sequence))
