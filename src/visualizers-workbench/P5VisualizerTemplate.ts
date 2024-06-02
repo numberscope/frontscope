@@ -253,8 +253,4 @@ because infinity is, well, infinitely far away!
 // Putting this at the end of the source file makes it easy for other people
 // to find. Put the visualizer class and a short description string into the
 // export module constructor
-export const exportModule = new VisualizerExportModule(
-    P5VisualizerTemplate,
-    P5VisualizerTemplate.prototype.name,
-    P5VisualizerTemplate.prototype.description
-)
+export const exportModule = new VisualizerExportModule(P5VisualizerTemplate)
