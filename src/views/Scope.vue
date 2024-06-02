@@ -149,6 +149,29 @@
             positionAndSizeTab(tab, dropzone)
         })
     }
+    // selects a tab
+    export function selectTab(tab: HTMLElement): void {
+        deselectTab()
+        const drag = tab.querySelector('.drag')
+        if (!(drag instanceof HTMLElement)) return
+
+        drag.classList.add('selected')
+        drag.style.backgroundColor = 'var(--ns-color-primary)'
+        tab.style.zIndex = '100'
+    }
+    // deselects all tabs
+    export function deselectTab(): void {
+        const tabs = document.querySelectorAll('.tab')
+        tabs.forEach(tab => {
+            if (tab instanceof HTMLElement) {
+                const drag = tab.querySelector('.drag')
+                if (!(drag instanceof HTMLElement)) return
+                drag.classList.remove('selected')
+                drag.style.backgroundColor = 'var(--ns-color-black)'
+                tab.style.zIndex = '1'
+            }
+        })
+    }
 </script>
 
 <script setup lang="ts">

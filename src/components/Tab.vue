@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import interact from 'interactjs'
-    import {positionAndSizeTab} from '../views/Scope.vue'
+    import {positionAndSizeTab, selectTab} from '../views/Scope.vue'
 
     // every element with draggable class can be dragged
     interact('.tab').resizable({
@@ -32,7 +32,8 @@
                     tab instanceof HTMLElement
                     && !tab.classList.contains('docked')
                 )
-                    tab.style.height = event.rect.height + 'px'
+                    selectTab(tab)
+                tab.style.height = event.rect.height + 'px'
             },
         },
         modifiers: [
@@ -53,9 +54,8 @@
         autoScroll: false,
 
         listeners: {
-            start: (event: Interact.InteractEvent) => {
+            start: () => {
                 document.body.style.userSelect = 'none'
-                event.target.parentElement!.style.zIndex += 10
             },
             move: dragMoveListener,
 
@@ -86,6 +86,8 @@
             target instanceof HTMLElement
             && container instanceof HTMLElement
         ) {
+            selectTab(target)
+
             const containerRect = container.getBoundingClientRect()
             const targetRect = target.getBoundingClientRect()
             // keep position in attributes
@@ -116,6 +118,8 @@
         const tab = (event.currentTarget as HTMLElement).closest('.tab')
         if (!(tab instanceof HTMLElement)) return
 
+        selectTab(tab)
+
         const content = tab.querySelector('.content')
         if (!(content instanceof HTMLElement)) return
 
@@ -130,7 +134,7 @@
         }
         // If the tab is maximized, minimize it
         else {
-            tab.style.height = '30px'
+            tab.style.height = '90px'
             content.style.overflowY = 'hidden'
             tab.classList.add('minimized')
         }
@@ -139,6 +143,8 @@
         const tab = (event.currentTarget as HTMLElement).closest('.tab')
         if (!(tab instanceof HTMLElement)) return
         if (tab.classList.contains('docked')) return
+
+        selectTab(tab)
 
         const firstDropzone = document.querySelector('#top-right-dropzone')
         const secondDropzone = document.querySelector(
@@ -157,10 +163,18 @@
             positionAndSizeTab(tab, secondDropzone)
         }
     }
+    // select the tab when it is clicked
+    function selected(event: MouseEvent) {
+        console.log('selected')
+        const tab = (event.currentTarget as HTMLElement).closest('.tab')
+        if (!(tab instanceof HTMLElement)) return
+
+        selectTab(tab)
+    }
 </script>
 
 <template>
-    <div class="tab">
+    <div class="tab" @click="selected">
         <div class="drag">
             <div class="buttons">
                 <span
