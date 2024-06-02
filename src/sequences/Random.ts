@@ -48,11 +48,6 @@ class Random extends Cached {
         return status
     }
 
-    initialize() {
-        super.initialize()
-        this.name = `Random integers ${this.min} to ${this.max}`
-    }
-
     calculate(_n: number) {
         // create a random integer between min and max inclusive
         return BigInt(
@@ -67,6 +62,7 @@ class Random extends Cached {
 
 export const exportModule = new SequenceExportModule(
     Random,
-    'Random Integers in Range',
+    Random.prototype.name,
+    Random.prototype.description,
     SequenceExportKind.FAMILY
 )

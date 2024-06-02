@@ -50,7 +50,8 @@ enum ColorStyle {
 // circles fade to the outside
 
 class Chaos extends P5Visualizer {
-    static visualizationName = 'Chaos'
+    name = 'Chaos'
+    description = 'Chaos game played using a sequence to select moves'
     corners = 4
     frac = 0.5
     walkers = 1
@@ -101,6 +102,7 @@ class Chaos extends P5Visualizer {
             from: ColorStyle,
             displayName: 'Color dots by',
             required: true,
+            description: 'The way the dots should be colored',
         },
         gradientLength: {
             value: this.gradientLength,
@@ -121,7 +123,7 @@ class Chaos extends P5Visualizer {
             visibleValue: ColorStyle.Highlighting_one_walker,
         },
         first: {
-            value: '' as string | number,
+            value: 0,
             type: ParamType.INTEGER,
             displayName: 'Starting index',
             required: false,
@@ -131,7 +133,7 @@ class Chaos extends P5Visualizer {
                 + 'at the first valid index.',
         },
         last: {
-            value: '' as string | number,
+            value: 1000,
             type: ParamType.INTEGER,
             displayName: 'Ending index',
             required: false,
@@ -459,5 +461,6 @@ class Chaos extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     Chaos,
-    'Chaos game played using a sequence to select moves'
+    Chaos.prototype.name,
+    Chaos.prototype.description
 )

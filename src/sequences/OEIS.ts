@@ -178,6 +178,7 @@ export default class OEIS extends Cached {
 
 export const exportModule = new SequenceExportModule(
     OEIS,
-    'Add OEIS Sequence',
+    OEIS.prototype.name,
+    OEIS.prototype.description,
     SequenceExportKind.GETTER
 )

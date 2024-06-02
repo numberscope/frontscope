@@ -7,26 +7,25 @@ interface VisualizerConstructor {
      * @param seq SequenceInterface The initial sequence to visualize
      */
     new (seq: SequenceInterface): VisualizerInterface
-    visualizationName: string
 }
 
 export class VisualizerExportModule {
+    visualizer: VisualizerConstructor
     name: string
     description: string
-    visualizer: VisualizerConstructor
 
-    constructor(viz: VisualizerConstructor, description: string) {
-        this.name = viz.visualizationName
+    constructor(
+        viz: VisualizerConstructor,
+        name: string,
+        description: string
+    ) {
         this.visualizer = viz
+        this.name = name
         this.description = description
     }
 }
 
 export interface VisualizerInterface extends ParamableInterface {
-    /* Returns a string identifying what sort of Visualizer this is
-     * (typically would depend only on the class of the Visualizer)
-     */
-    visualization(): string
     /**
      * Change the sequence the visualizer is showing.
      */

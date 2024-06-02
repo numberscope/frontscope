@@ -66,6 +66,7 @@
         flex-direction: column;
         padding: 8px 16px 8px 16px;
         border-bottom: 1px solid var(--ns-color-black);
+        height: auto;
 
         #navbar-main {
             display: flex;
@@ -114,11 +115,12 @@
         }
     }
 
-    @media (min-width: 900px) {
+    @media (min-width: 700px) {
         nav {
             justify-content: space-between;
             align-items: center;
             flex-direction: row;
+            height: 54px;
             #navbar-main {
                 #navbar-toggler {
                     display: none;

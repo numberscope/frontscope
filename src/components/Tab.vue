@@ -1,12 +1,12 @@
 <script setup lang="ts">
     import interact from 'interactjs'
-    import {positionAndSizeTab} from '@/views/DragAndDrop.vue'
+    import {positionAndSizeTab} from '../views/Scope.vue'
 
     // every element with draggable class can be dragged
     interact('.tab').resizable({
-        // no inertia for resizing (better imo)
+        // no inertia for resizing
         inertia: false,
-        // Only want bootom resizing and only when the tab isn't docked
+        // Only want bottom resizing and only when the tab isn't docked
         edges: {
             left: false,
             right: false,
@@ -16,10 +16,12 @@
 
         listeners: {
             start() {
+                // prevent text selection
                 document.body.style.userSelect = 'none'
             },
 
             end() {
+                // allow text selection
                 document.body.style.userSelect = 'auto'
             },
 
@@ -51,8 +53,9 @@
         autoScroll: false,
 
         listeners: {
-            start: () => {
+            start: (event: Interact.InteractEvent) => {
                 document.body.style.userSelect = 'none'
+                event.target.parentElement!.style.zIndex += 10
             },
             move: dragMoveListener,
 
@@ -126,7 +129,7 @@
         border: 1px solid var(--ns-color-black);
         width: 300px;
         height: 200px;
-        z-index: 999;
+        z-index: 50;
     }
 
     .resize {
@@ -152,5 +155,7 @@
         background-color: var(--ns-color-white);
         width: 100%;
         height: calc(100% - 16px);
+        overflow-y: scroll;
+        overflow-x: hidden;
     }
 </style>

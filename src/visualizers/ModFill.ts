@@ -20,7 +20,9 @@ occur by watching the order the cells are filled in as the diagram is drawn.
 **/
 
 class ModFill extends P5Visualizer {
-    static visualizationName = 'Mod Fill'
+    name = 'Mod Fill'
+    description =
+        'A triangular grid showing which ' + 'residues occur, to each modulus'
     modDimension = 10n
     params = {
         /** md
@@ -82,5 +84,6 @@ class ModFill extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     ModFill,
-    'A triangular grid showing which residues occur, to each modulus'
+    ModFill.prototype.name,
+    ModFill.prototype.description
 )
