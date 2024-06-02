@@ -12,7 +12,7 @@
                     class="material-icons-sharp"
                     >swap_horiz</span
                 >
-                <p id="change-text">Change Visualizer</p>
+                <p id="change-text">Select Visualizer</p>
             </div>
         </div>
 
