@@ -73,6 +73,7 @@
         tab: HTMLElement,
         dropzone: HTMLElement
     ): void {
+        const dropzoneContainer = dropzone.parentElement?.parentElement
         const dropzoneRect = dropzone.getBoundingClientRect()
 
         const {x, y} = translateCoords(dropzoneRect.x, dropzoneRect.y)
@@ -83,6 +84,26 @@
 
         tab.setAttribute('data-x', x.toString())
         tab.setAttribute('data-y', y.toString())
+
+        // The tab is no longer minimized
+        tab.classList.remove('minimized')
+
+        if (
+            tab instanceof HTMLElement
+            && dropzoneContainer instanceof HTMLElement
+            && dropzone instanceof HTMLElement
+            && dropzone.classList.contains('empty')
+        ) {
+            dropzone.classList.remove('empty')
+            dropzone.classList.remove('drop-hover')
+            dropzoneContainer.classList.remove('empty')
+            tab.classList.add('docked')
+            const dropzoneAttribute = dropzone.getAttribute('dropzone')
+            if (dropzoneAttribute !== null) {
+                tab.setAttribute('docked', dropzoneAttribute)
+            }
+            positionAndSizeTab(tab, dropzone)
+        }
     }
 
     /**
@@ -202,6 +223,9 @@
             const tab = event.relatedTarget.parentElement
             const dropzone = event.target
             const dropzoneContainer = dropzone.parentElement.parentElement
+
+            // The tab is no longer minimized
+            tab.classList.remove('minimized')
 
             if (
                 tab instanceof HTMLElement

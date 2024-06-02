@@ -112,11 +112,66 @@
             target.setAttribute('data-y', boundedY.toString())
         }
     }
+    function minMaxWindow(event: MouseEvent) {
+        const tab = (event.currentTarget as HTMLElement).closest('.tab')
+        if (!(tab instanceof HTMLElement)) return
+        const content = tab.querySelector('.content')
+        if (!(content instanceof HTMLElement)) return
+
+        // If the tab is minimized, maximize it
+        if (tab.classList.contains('minimized')) {
+            tab.style.height = '500px'
+            content.style.overflowY = 'scroll'
+            tab.classList.remove('minimized')
+            return
+        }
+        // If the tab is maximized, minimize it
+        else {
+            tab.style.height = '30px'
+            content.style.overflowY = 'hidden'
+            tab.classList.add('minimized')
+        }
+    }
+    function dockWindow(event: MouseEvent) {
+        const tab = (event.currentTarget as HTMLElement).closest('.tab')
+        if (!(tab instanceof HTMLElement)) return
+        if (tab.classList.contains('docked')) return
+
+        const firstDropzone = document.querySelector('#top-right-dropzone')
+        const secondDropzone = document.querySelector(
+            '#bottom-right-dropzone'
+        )
+
+        if (!(firstDropzone instanceof HTMLElement)) return
+        if (!(secondDropzone instanceof HTMLElement)) return
+
+        // if top right dropzone is empty, dock there
+        if (firstDropzone.classList.contains('empty')) {
+            positionAndSizeTab(tab, firstDropzone)
+        }
+        // otherwise dock in the bottom right dropzone
+        else {
+            positionAndSizeTab(tab, secondDropzone)
+        }
+    }
 </script>
 
 <template>
     <div class="tab">
-        <div class="drag"></div>
+        <div class="drag">
+            <div class="buttons">
+                <span
+                    class="minimize material-icons-sharp"
+                    @click="minMaxWindow">
+                    minimize
+                </span>
+                <span
+                    class="docking material-icons-sharp"
+                    @click="dockWindow">
+                    dock
+                </span>
+            </div>
+        </div>
         <div class="content">
             <slot></slot>
         </div>
@@ -125,6 +180,20 @@
 </template>
 
 <style scoped lang="scss">
+    .buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        padding-right: 8px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+    .minimize,
+    .docking {
+        cursor: pointer;
+        color: var(--ns-color-white);
+        font-size: 12px;
+    }
     .tab {
         border: 1px solid var(--ns-color-black);
         width: 300px;
