@@ -36,7 +36,9 @@
                     tab instanceof HTMLElement
                     && !tab.classList.contains('docked')
                 )
+                    // select the tab when it is resized
                     selectTab(tab)
+                // update the classlist with "minimized" if the height is less or equal than 110
                 tab.style.height = event.rect.height + 'px'
                 if (event.rect.height <= 110) {
                     tab.classList.add('minimized')
@@ -132,10 +134,12 @@
         const content = tab.querySelector('.content')
         if (!(content instanceof HTMLElement)) return
 
-        // if the tab is docked, don't minimize
+        // if the tab is docked, we have a different behavior
         if (tab.classList.contains('docked')) {
+            // vertical and horizontal position of the tab (eg. top-right, where vert is top and side is right)
             const vert = tab.getAttribute('docked')?.split('-')[0]
             const side = tab.getAttribute('docked')?.split('-')[1]
+            // get the correct dropzone wrapper
             const dropzoneWrapper = tab.parentElement?.querySelector(
                 '#' + side + '-dropzone-container'
             )?.firstChild
@@ -143,6 +147,7 @@
 
             if (dropzoneWrapper instanceof HTMLElement) {
                 if (tab.classList.contains('minimized')) {
+                    // if we want to maximize top tab, set height of wrapper to 400px, if we want to maximize bottom tab, set height (of top tab wrapper) to 100% - 400px
                     if (vert === 'top') {
                         dropzoneWrapper.style.height = '400px'
                     } else {
@@ -150,8 +155,10 @@
                     }
                     content.style.overflowY = 'scroll'
                     tab.classList.remove('minimized')
+                    // update the size and position of all tabs
                     positionAndSizeAllTabs()
                 } else {
+                    // if we want to minimize top tab, set height of wrapper to 110px, if we want to minimize bottom tab, set height (of top tab wrapper) to 100% - 90px
                     if (vert === 'top') {
                         dropzoneWrapper.style.height = '110px'
                     } else {
@@ -161,6 +168,7 @@
                     console.log('minimized')
                     tab.classList.add('minimized')
                     dropzoneWrapper.classList.add('resized')
+                    // update the size and position of all tabs
                     positionAndSizeAllTabs()
                 }
             }
@@ -183,18 +191,22 @@
     function dockWindow(event: MouseEvent) {
         const tab = (event.currentTarget as HTMLElement).closest('.tab')
         if (!(tab instanceof HTMLElement)) return
+        // if the tab is docked, different behavior
         if (tab.classList.contains('docked')) {
+            // get the last undocked position of the tab
             const x =
                 (tab.getAttribute('last-coords-x') || 0).toString() + 'px'
             const y =
                 (tab.getAttribute('last-coords-y') || 0).toString() + 'px'
 
+            // move the tab to the last undocked position
             tab.style.left = x
             tab.style.top = y
             // update attributes
             tab.setAttribute('data-x', x)
             tab.setAttribute('data-y', y)
 
+            // update the classlist with "docked" if the tab is docked
             const dropzone = document.querySelector(
                 '#' + tab.getAttribute('docked') + '-dropzone'
             )
@@ -205,15 +217,11 @@
                 && dropzoneContainer instanceof HTMLElement
                 && tab.classList.contains('docked')
             ) {
-                // Both individual dropzones and their containers have an
-                // empty class. It exists to make the dropzones not occupy
-                // any space when they are empty. The classes must always be
-                // updated with any changes to the tab state.
-
+                // update classlists when undocking
                 dropzone.classList.add('empty')
                 tab.classList.remove('docked')
                 tab.setAttribute('docked', 'none')
-
+                // if both dropzones are empty, make the dropzone container empty aswell
                 if (
                     dropzoneContainer.querySelectorAll('.empty').length == 2
                 ) {
@@ -225,9 +233,11 @@
 
         selectTab(tab)
 
+        // get current position
         const x = parseFloat(tab.getAttribute('data-x') || '0')
         const y = parseFloat(tab.getAttribute('data-y') || '0')
 
+        // save current position before docking
         tab.setAttribute('last-coords-x', x.toString())
         tab.setAttribute('last-coords-y', y.toString())
 

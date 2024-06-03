@@ -82,6 +82,7 @@
         tab.style.left = x + 'px'
         tab.style.height = dropzoneRect.height + 'px'
 
+        // update the classlist with "minimized" if the height is less or equal than 110
         if (dropzoneRect.height <= 110) {
             tab.classList.add('minimized')
         } else {
