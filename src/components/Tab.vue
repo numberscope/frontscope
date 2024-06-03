@@ -1,6 +1,10 @@
 <script setup lang="ts">
     import interact from 'interactjs'
-    import {positionAndSizeTab, selectTab} from '../views/Scope.vue'
+    import {
+        positionAndSizeTab,
+        positionAndSizeAllTabs,
+        selectTab,
+    } from '../views/Scope.vue'
 
     // every element with draggable class can be dragged
     interact('.tab').resizable({
@@ -34,6 +38,11 @@
                 )
                     selectTab(tab)
                 tab.style.height = event.rect.height + 'px'
+                if (event.rect.height <= 110) {
+                    tab.classList.add('minimized')
+                } else {
+                    tab.classList.remove('minimized')
+                }
             },
         },
         modifiers: [
@@ -44,7 +53,7 @@
 
             // minimum size
             interact.modifiers.restrictSize({
-                min: {width: 0, height: 128},
+                min: {width: 0, height: 90},
             }),
         ],
     })
@@ -124,10 +133,42 @@
         if (!(content instanceof HTMLElement)) return
 
         // if the tab is docked, don't minimize
-        if (tab.classList.contains('docked')) return
+        if (tab.classList.contains('docked')) {
+            const vert = tab.getAttribute('docked')?.split('-')[0]
+            const side = tab.getAttribute('docked')?.split('-')[1]
+            const dropzoneWrapper = tab.parentElement?.querySelector(
+                '#' + side + '-dropzone-container'
+            )?.firstChild
+            if (!(dropzoneWrapper instanceof HTMLElement)) return
+
+            if (dropzoneWrapper instanceof HTMLElement) {
+                if (tab.classList.contains('minimized')) {
+                    if (vert === 'top') {
+                        dropzoneWrapper.style.height = '400px'
+                    } else {
+                        dropzoneWrapper.style.height = 'calc(100% - 400px)'
+                    }
+                    content.style.overflowY = 'scroll'
+                    tab.classList.remove('minimized')
+                    positionAndSizeAllTabs()
+                } else {
+                    if (vert === 'top') {
+                        dropzoneWrapper.style.height = '110px'
+                    } else {
+                        dropzoneWrapper.style.height = 'calc(100% - 90px)'
+                    }
+                    content.style.overflowY = 'hidden'
+                    console.log('minimized')
+                    tab.classList.add('minimized')
+                    dropzoneWrapper.classList.add('resized')
+                    positionAndSizeAllTabs()
+                }
+            }
+            return
+        }
         // If the tab is minimized, maximize it
         if (tab.classList.contains('minimized')) {
-            tab.style.height = '500px'
+            tab.style.height = '400px'
             content.style.overflowY = 'scroll'
             tab.classList.remove('minimized')
             return
@@ -142,9 +183,53 @@
     function dockWindow(event: MouseEvent) {
         const tab = (event.currentTarget as HTMLElement).closest('.tab')
         if (!(tab instanceof HTMLElement)) return
-        if (tab.classList.contains('docked')) return
+        if (tab.classList.contains('docked')) {
+            const x =
+                (tab.getAttribute('last-coords-x') || 0).toString() + 'px'
+            const y =
+                (tab.getAttribute('last-coords-y') || 0).toString() + 'px'
+
+            tab.style.left = x
+            tab.style.top = y
+            // update attributes
+            tab.setAttribute('data-x', x)
+            tab.setAttribute('data-y', y)
+
+            const dropzone = document.querySelector(
+                '#' + tab.getAttribute('docked') + '-dropzone'
+            )
+            const dropzoneContainer = dropzone?.parentElement?.parentElement
+            if (
+                tab instanceof HTMLElement
+                && dropzone instanceof HTMLElement
+                && dropzoneContainer instanceof HTMLElement
+                && tab.classList.contains('docked')
+            ) {
+                // Both individual dropzones and their containers have an
+                // empty class. It exists to make the dropzones not occupy
+                // any space when they are empty. The classes must always be
+                // updated with any changes to the tab state.
+
+                dropzone.classList.add('empty')
+                tab.classList.remove('docked')
+                tab.setAttribute('docked', 'none')
+
+                if (
+                    dropzoneContainer.querySelectorAll('.empty').length == 2
+                ) {
+                    dropzoneContainer.classList.add('empty')
+                }
+            }
+            return
+        }
 
         selectTab(tab)
+
+        const x = parseFloat(tab.getAttribute('data-x') || '0')
+        const y = parseFloat(tab.getAttribute('data-y') || '0')
+
+        tab.setAttribute('last-coords-x', x.toString())
+        tab.setAttribute('last-coords-y', y.toString())
 
         const firstDropzone = document.querySelector('#top-right-dropzone')
         const secondDropzone = document.querySelector(
@@ -174,7 +259,7 @@
 </script>
 
 <template>
-    <div class="tab" @click="selected">
+    <div class="tab" @click="selected" last-coords-x="0" last-coords-y="0">
         <div class="drag">
             <div class="buttons">
                 <span
@@ -183,9 +268,9 @@
                     minimize
                 </span>
                 <span
-                    class="docking material-icons-sharp"
+                    class="docking material-symbols-sharp"
                     @click="dockWindow">
-                    dock
+                    dock_to_right
                 </span>
             </div>
         </div>

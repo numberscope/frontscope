@@ -82,11 +82,14 @@
         tab.style.left = x + 'px'
         tab.style.height = dropzoneRect.height + 'px'
 
+        if (dropzoneRect.height <= 110) {
+            tab.classList.add('minimized')
+        } else {
+            tab.classList.remove('minimized')
+        }
+
         tab.setAttribute('data-x', x.toString())
         tab.setAttribute('data-y', y.toString())
-
-        // The tab is no longer minimized
-        tab.classList.remove('minimized')
 
         if (
             tab instanceof HTMLElement
@@ -102,7 +105,6 @@
             if (dropzoneAttribute !== null) {
                 tab.setAttribute('docked', dropzoneAttribute)
             }
-            positionAndSizeTab(tab, dropzone)
         }
     }
 
@@ -136,7 +138,7 @@
      * Doesn't affect non-docked tabs.
      * Used when the window is resized.
      */
-    function positionAndSizeAllTabs(): void {
+    export function positionAndSizeAllTabs(): void {
         document.querySelectorAll('.tab').forEach((tab: Element) => {
             if (!(tab instanceof HTMLElement)) return
             if (tab.getAttribute('docked') === 'none') return
@@ -247,9 +249,6 @@
             const dropzone = event.target
             const dropzoneContainer = dropzone.parentElement.parentElement
 
-            // The tab is no longer minimized
-            tab.classList.remove('minimized')
-
             if (
                 tab instanceof HTMLElement
                 && dropzoneContainer instanceof HTMLElement
@@ -301,7 +300,7 @@
                     dropzoneWrapper.style.height =
                         Math.min(
                             event.rect.height,
-                            dropContRect.height - 144
+                            dropContRect.height - 90
                         ) + 'px'
                     dropzoneWrapper.classList.add('resized')
                     positionAndSizeAllTabs()
@@ -317,7 +316,7 @@
 
             // minimum size
             interact.modifiers.restrictSize({
-                min: {width: 0, height: 128},
+                min: {width: 0, height: 90},
             }),
         ],
     })
@@ -368,7 +367,7 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            max-height: calc(100% - 128px);
+            max-height: calc(100% - 90px);
 
             &.resized {
                 flex-grow: unset;
