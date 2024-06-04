@@ -2,29 +2,30 @@ import {SequenceExportModule} from './SequenceInterface'
 import {SequenceDefault} from './SequenceDefault'
 import {ParamType} from '../shared/ParamType'
 
+const paramDesc = {
+    constant: {
+        default: 0n,
+        type: ParamType.BIGINT,
+        displayName: 'Constant Value',
+        required: true,
+    },
+} as const
+
 /**
  *
  * @class Constant
  * Extends the sequenceClassDefault, by changing the parameter schema
  * and reimplementing the getElement function.
  */
-class Constant extends SequenceDefault {
+class Constant extends SequenceDefault<typeof paramDesc> {
     name = 'Constant Sequence'
     description = 'A sequence with the same value for all nonnegative indices'
-    constant = 0n
-    params = {
-        constant: {
-            value: this.constant,
-            type: ParamType.BIGINT,
-            displayName: 'Constant Value',
-            required: true,
-        },
-    }
+    constant = paramDesc.constant.default
     first = 0
     last = Infinity
 
     constructor(sequenceID: number) {
-        super(sequenceID)
+        super(paramDesc, sequenceID)
     }
 
     initialize() {

@@ -1,5 +1,6 @@
 import {ValidationStatus} from './ValidationStatus'
 import typeFunctions, {ParamType} from './ParamType'
+import type {RealizedParamType} from './ParamType'
 
 /**
  * The following collection of properties specifies how a given parameter
@@ -7,30 +8,21 @@ import typeFunctions, {ParamType} from './ParamType'
  * for communicating tentative values of the parameter back to the
  * implementation.
  */
-export interface ParamInterface {
-    /* The value property is the primary one, and may be of any type.
-     * The UI will determine what sort of control to use
-     * from the type of the value property of each param (a checkbox
-     * for boolean, textbox for string, etc.)
-     * While any type can be inputted into this field as an initial value,
-     * it will likely be converted into a string upon being edited by the UI
-     * or validated by the Paramable API. This value represents what is
-     * currently present in the UI input, and is not a realized value of
-     * the parameter for the correct type.
-     * Simultaneously, the initial contents of the `value` property gives
-     * the default for this parameter; and new tentative settings for this
-     * parameter from the UI will initially be stored in `value` for
-     * validation (before being copied into top-level properties of the
-     * implementing class).
+export interface ParamInterface<T extends ParamType> {
+    /* The default property specifies the default value that this parameter
+     * will take in the UI when the paramable is loaded into the UI. This
+     * value is not updated as the user changes the value of the parameter,
+     * as the intermediate values are stored as strings in `Paramable`, and
+     * the realized values are stored as top level properties.
      */
-    value: unknown
+    default: RealizedParamType[T]
     /* This field is required for the sake of being explicit and ensuring type
      * consistency for Paramable objects. Defines the type of this parameter as
      * will be reflected by the type of its realized value and the type of input
      * field in the UI. This field is specified as a `ParamType`, which is an
      * enum of all supported parameter types by the parameter UI.
      */
-    type: ParamType
+    type: T
     /* If the value is an element of an Enum, typescript/Vue unfortunately
      * cannot extract the list of all of the possible enumerated values
      * (so that the UI can create a dropdown select box). So in that case,
@@ -41,7 +33,9 @@ export interface ParamInterface {
     // The main label of the control for this param; can depend on
     // visibleDependency:
     displayName: string | ((dependency: never) => string)
-    // whether the parameter must be specified
+    // Whether the parameter must be specified. When this is set to false,
+    // a blank input in the UI will use the `default` property instead of
+    // displaying an error to the user.
     required: boolean
     /* If you want the control for this parameter only to be visible when
      * some other parameter has a specific value (because it is otherwise
@@ -96,10 +90,28 @@ export interface ParamInterface {
      * status. If this function is not implemented, it assumes that the
      * parameter must always be valid.
      */
-    validate?(value: unknown): ValidationStatus
+    validate?(value: RealizedParamType[T]): ValidationStatus
 }
 
-export interface ParamableInterface {
+export type ParamTypeChoices = {[key: string]: ParamType}
+export type ParamDescription<TC extends ParamTypeChoices> = {
+    [K in keyof TC]: ParamInterface<TC[K]>
+}
+export type GenericParamDescription = ParamDescription<ParamTypeChoices>
+
+export type ExtractParamChoices<PD extends GenericParamDescription> = {
+    [K in keyof PD]: PD[K]['type']
+}
+
+export type ParamValues<PD extends GenericParamDescription> =
+    PD extends ParamDescription<ExtractParamChoices<PD>>
+        ? {[K in keyof PD]: RealizedParamType[ExtractParamChoices<PD>[K]]}
+        : never
+export type TentativeParamValues<PD extends GenericParamDescription> = {
+    [K in keyof PD]: string
+}
+
+export interface ParamableInterface<PD extends GenericParamDescription> {
     name: string
     description: string
     isValid: boolean
@@ -109,8 +121,14 @@ export interface ParamableInterface {
      * paramable object, and the values should be objects implementing the
      * the ParamInterface as described above.
      */
-    params: {[key: string]: ParamInterface}
-
+    params: PD
+    /**
+     * A set of tentative (unrealized) values of the parameters. These values
+     * are always strings, and reflect what the user has currently entered into
+     * the input fields. `assignParameters()` will realize these values and copy
+     * them into top-level properties.
+     */
+    tentativeValues: TentativeParamValues<PD>
     /**
      * An aggregate validation function for the `ParamableInterface`. This
      * function is expected to validate any interdependent constraints of
@@ -131,7 +149,6 @@ export interface ParamableInterface {
      * and they can change from valid to invalid at any time.
      */
     assignParameters(): void
-
     /**
      * refreshParams() should copy the current working values of all of the
      * params back into the value properties in the params object, in case
@@ -141,17 +158,58 @@ export interface ParamableInterface {
     refreshParams(): void
 }
 
+/* A helper function to realize all parameters given a parameter description
+ * and a list of tentative string values
+ */
+function realizeAll<PD extends GenericParamDescription>(
+    desc: PD,
+    tentative: TentativeParamValues<PD>
+): ParamValues<PD> {
+    const params: (keyof PD)[] = Object.keys(desc)
+    const realized: Record<keyof PD, unknown> = Object.fromEntries(
+        params.map(p => [p, undefined])
+    ) as Record<keyof PD, unknown>
+    for (const param of params) {
+        if (!desc[param].required && tentative[param] === '')
+            realized[param] = desc[param].default
+        else
+            realized[param] = typeFunctions[desc[param].type].realize(
+                tentative[param]
+            )
+    }
+    return realized as ParamValues<PD>
+}
+
 /**
  * @class Paramable
  * a generic implementation of a class with parameters to be exposed in the UI
  * Designed to be used as a common base class for such classes.
  */
-export class Paramable implements ParamableInterface {
+export class Paramable<PD extends GenericParamDescription>
+    implements ParamableInterface<PD>
+{
     name = 'Paramable'
     description = 'A class which can have parameters set'
-    params: {[key: string]: ParamInterface} = {}
+    params: PD
+    tentativeValues: TentativeParamValues<PD>
     isValid = false
 
+    constructor(params: PD) {
+        this.params = params
+
+        const tentativeValues: Partial<TentativeParamValues<PD>> = {}
+        for (const prop in params) {
+            if (!Object.prototype.hasOwnProperty.call(params, prop)) continue
+
+            const param = params[prop]
+            // Because of how function types are unioned, we have to circumvent
+            // typescript a little bit
+            tentativeValues[prop] = typeFunctions[param.type].derealize(
+                param.default as never
+            )
+        }
+        this.tentativeValues = tentativeValues as TentativeParamValues<PD>
+    }
     /**
      * All implementations based on this default delegate the checking of
      * parameters to the checkParameters() method.
@@ -163,19 +221,9 @@ export class Paramable implements ParamableInterface {
      * checkParameters() instead.
      */
     validate(): ValidationStatus {
-        const realParams: {[key: string]: unknown} = {}
-        for (const prop in this.params) {
-            if (!Object.prototype.hasOwnProperty.call(this.params, prop))
-                continue
-            const p = this.params[prop]
-            if (typeof p.value !== 'string')
-                p.value = typeFunctions[p.type].derealize(p.value)
-
-            realParams[prop] = typeFunctions[p.type].realize(
-                p.value as string
-            )
-        }
-        return this.checkParameters(realParams)
+        return this.checkParameters(
+            realizeAll(this.params, this.tentativeValues)
+        )
     }
     /**
      * Performs the same purpose as `validate()`, but takes as a parameter
@@ -185,7 +233,7 @@ export class Paramable implements ParamableInterface {
      * @param _params the list of realized parameter values to be validated
      * @return the result of the validation
      */
-    checkParameters(_params: {[key: string]: unknown}): ValidationStatus {
+    checkParameters(_params: ParamValues<PD>): ValidationStatus {
         return ValidationStatus.ok()
     }
     /**
@@ -194,25 +242,20 @@ export class Paramable implements ParamableInterface {
      * only be called when isValid is true.
      */
     assignParameters(): void {
+        const realized = realizeAll(this.params, this.tentativeValues)
+
         const props: string[] = []
         const changed: string[] = []
-
-        for (const prop in this.params) {
-            if (!Object.prototype.hasOwnProperty.call(this.params, prop))
+        for (const prop in realized) {
+            if (!Object.prototype.hasOwnProperty.call(realized, prop))
                 continue
-            const param = this.params[prop]
+
             const me = this as Record<string, unknown>
-            if (typeof param.value !== 'string')
-                param.value = typeFunctions[param.type].derealize(param.value)
-
-            const oldValue = me[prop]
-            const newValue = typeFunctions[param.type].realize(
-                param.value as string
-            )
-            me[prop] = newValue
-
             props.push(prop)
-            if (oldValue !== newValue) changed.push(prop)
+            if (realized[prop] !== me[prop]) {
+                me[prop] = realized[prop]
+                changed.push(prop)
+            }
         }
 
         if (changed.length < props.length)
@@ -227,11 +270,14 @@ export class Paramable implements ParamableInterface {
      * to keep the values reflected correctly in the UI.
      */
     refreshParams(): void {
-        const me = this as Record<string, unknown>
+        const me = this as unknown as ParamValues<PD>
         for (const prop in this.params) {
             if (!Object.prototype.hasOwnProperty.call(this, prop)) continue
             const param = this.params[prop]
-            param.value = typeFunctions[param.type].derealize(me[prop])
+            // Circumventing typescript a bit as we do above
+            this.tentativeValues[prop] = typeFunctions[param.type].derealize(
+                me[prop] as never
+            )
         }
     }
     /**

@@ -12,18 +12,18 @@
                     v-if="param.type === ParamType.BOOLEAN"
                     type="checkbox"
                     v-bind:id="paramName"
-                    v-bind:checked="param.value === 'true'"
+                    v-bind:checked="value === 'true'"
                     v-on:input="updateBoolean($event)" />
                 <input
                     v-else-if="param.type === ParamType.COLOR"
                     type="color"
                     v-bind:id="paramName"
-                    v-bind:value="`${param.value}`"
+                    v-bind:value="value"
                     v-on:input="updateString($event)" />
                 <select
                     v-else-if="param.type === ParamType.ENUM"
                     v-bind:id="paramName"
-                    v-bind:value="`${param.value}`"
+                    v-bind:value="value"
                     v-on:input="updateString($event)">
                     <option
                         v-for="(value, name) in getEnumeration(param.from)"
@@ -37,7 +37,7 @@
                     type="text"
                     v-bind:id="paramName"
                     v-bind:class="!status.isValid() ? 'error-field' : ''"
-                    v-bind:value="`${param.value}`"
+                    v-bind:value="value"
                     v-on:input="updateString($event)" />
             </label>
 
@@ -67,7 +67,11 @@
         name: 'ParamField',
         props: {
             param: {
-                type: Object as () => ParamInterface,
+                type: Object as () => ParamInterface<ParamType>,
+                required: true,
+            },
+            value: {
+                type: String,
                 required: true,
             },
             paramName: {type: String, required: true},

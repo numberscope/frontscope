@@ -6,6 +6,37 @@ import {alertMessage} from '../shared/alertMessage'
 
 import axios from 'axios'
 import {ParamType} from '../shared/ParamType'
+import type {ParamValues} from '@/shared/Paramable'
+
+const paramDesc = {
+    oeisId: {
+        default: '',
+        type: ParamType.STRING,
+        displayName: 'OEIS ID',
+        required: true,
+    },
+    givenName: {
+        default: '',
+        type: ParamType.STRING,
+        displayName: 'Name',
+        required: false,
+    },
+    cacheBlock: {
+        default: 1000,
+        type: ParamType.INTEGER,
+        displayName: 'Number of Elements',
+        required: false,
+        description: 'How many elements to try to fetch from the database.',
+    },
+    modulus: {
+        default: 0n,
+        type: ParamType.BIGINT,
+        displayName: 'Modulus',
+        required: false,
+        description:
+            'If nonzero, take the residue of each element to this modulus.',
+    },
+} as const
 
 /**
  *
@@ -14,47 +45,18 @@ import {ParamType} from '../shared/ParamType'
  * the Flask backend.
  *
  */
-export default class OEIS extends Cached {
+export default class OEIS extends Cached<typeof paramDesc> {
     name = 'OEIS Sequence Template'
     description = 'Factory for obtaining sequences from the OEIS'
     oeisSeq = true
-    cacheBlock = 1000
-    oeisId = ''
-    givenName = ''
-    modulus = 0n
-    params = {
-        oeisId: {
-            value: '',
-            type: ParamType.STRING,
-            displayName: 'OEIS ID',
-            required: true,
-        },
-        givenName: {
-            value: '',
-            type: ParamType.STRING,
-            displayName: 'Name',
-            required: false,
-        },
-        cacheBlock: {
-            value: this.cacheBlock,
-            type: ParamType.INTEGER,
-            displayName: 'Number of Elements',
-            required: false,
-            description:
-                'How many elements to try to fetch from the database.',
-        },
-        modulus: {
-            value: this.modulus,
-            type: ParamType.BIGINT,
-            displayName: 'Modulus',
-            required: false,
-            description:
-                'If nonzero, take the residue of each element to this modulus.',
-        },
-    }
+    cacheBlock = paramDesc.cacheBlock.default as number
+    oeisId = paramDesc.oeisId.default as string
+    givenName = paramDesc.oeisId.default as string
+    modulus = paramDesc.modulus.default as bigint
 
     constructor(sequenceID: number) {
-        super(sequenceID) // Don't know the index range yet, will fill in later
+        super(paramDesc, sequenceID)
+        // Don't know the index range yet, will fill in later
     }
 
     /* Unlike the base Cached sequence class, we grab the entire sequence
@@ -142,20 +144,19 @@ export default class OEIS extends Cached {
         }
     }
 
-    checkParameters(params: {[key: string]: unknown}): ValidationStatus {
+    checkParameters(params: ParamValues<typeof paramDesc>): ValidationStatus {
         const status = super.checkParameters(params)
 
         if (
-            (params.oeisId as string).length !== 7
-            || ((params.oeisId as string)[0] !== 'A'
-                && (params.oeisId as string)[0] !== 'a')
+            params.oeisId.length !== 7
+            || (params.oeisId[0] !== 'A' && params.oeisId[0] !== 'a')
         ) {
             status.addError('OEIS IDs are of form Annnnnn')
         }
         if (typeof params.cacheBlock === 'number') {
             if (
                 params.cacheBlock < 0
-                || !Number.isInteger(this.params.cacheBlock.value)
+                || !Number.isInteger(params.cacheBlock)
             ) {
                 status.addError(
                     'Number of elements must be a positive integer.'

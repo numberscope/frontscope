@@ -1,4 +1,7 @@
-import type {ParamableInterface} from '../shared/Paramable'
+import type {
+    GenericParamDescription,
+    ParamableInterface,
+} from '../shared/Paramable'
 /**
  * Interface for Sequence classes.
  * Every sequence class must implement these properties and functions
@@ -6,7 +9,8 @@ import type {ParamableInterface} from '../shared/Paramable'
  */
 export type Factorization = [bigint, bigint][] | null
 
-export interface SequenceInterface extends ParamableInterface {
+export interface SequenceInterface<PD extends GenericParamDescription>
+    extends ParamableInterface<PD> {
     sequenceID: number
 
     /**
@@ -66,12 +70,12 @@ export interface SequenceConstructor {
      * Constructs a sequence.
      * @param sequenceID the ID of the sequence
      */
-    new (sequenceID: number): SequenceInterface
+    new (sequenceID: number): SequenceInterface<GenericParamDescription>
     /**
      * The prototype of the sequence, used to extract name and description
      * fields.
      */
-    prototype: SequenceInterface
+    prototype: SequenceInterface<GenericParamDescription>
 }
 
 /**
@@ -102,13 +106,17 @@ export enum SequenceExportKind {
  *
  */
 export class SequenceExportModule {
-    sequenceOrConstructor: SequenceConstructor | SequenceInterface
+    sequenceOrConstructor:
+        | SequenceConstructor
+        | SequenceInterface<GenericParamDescription>
     name: string
     description: string
     kind: SequenceExportKind
 
     private constructor(
-        sequenceOrConstructor: SequenceConstructor | SequenceInterface,
+        sequenceOrConstructor:
+            | SequenceConstructor
+            | SequenceInterface<GenericParamDescription>,
         name: string,
         description: string,
         kind: SequenceExportKind
@@ -140,7 +148,9 @@ export class SequenceExportModule {
      * @param sequence the live sequence
      * @return an appropriate sequence export module
      */
-    static instance(sequence: SequenceInterface): SequenceExportModule {
+    static instance(
+        sequence: SequenceInterface<GenericParamDescription>
+    ): SequenceExportModule {
         return new SequenceExportModule(
             sequence,
             sequence.name,

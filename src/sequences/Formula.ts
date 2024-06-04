@@ -3,6 +3,16 @@ import {ParamType} from '../shared/ParamType'
 import {Cached} from './Cached'
 import simpleFactor from './simpleFactor'
 import * as math from 'mathjs'
+import type {ParamValues} from '@/shared/Paramable'
+
+const paramDesc = {
+    formula: {
+        default: 'n',
+        type: ParamType.STRING,
+        displayName: 'Formula',
+        required: true,
+    },
+} as const
 
 /**
  *
@@ -12,18 +22,10 @@ import * as math from 'mathjs'
  * those are both arbitrary choices; we might at some point want to allow
  * either to be tailored.
  */
-class Formula extends Cached {
+class Formula extends Cached<typeof paramDesc> {
     name = 'Formula: empty'
     description = 'A sequence defined by a formula in n'
-    formula = 'n'
-    params = {
-        formula: {
-            value: this.formula,
-            type: ParamType.STRING,
-            displayName: 'Formula',
-            required: true,
-        },
-    }
+    formula = paramDesc.formula.default
 
     private evaluator: math.EvalFunction
 
@@ -32,21 +34,22 @@ class Formula extends Cached {
      * @param {*} sequenceID the sequence identifier of the sequence
      */
     constructor(sequenceID: number) {
-        super(sequenceID)
+        super(paramDesc, sequenceID)
         // It is mandatory to initialize the `evaluator` property here,
         // so just use a simple dummy formula until the user provides one.
         this.evaluator = math.compile(this.formula)
     }
 
-    checkParameters(params: {[key: string]: unknown}) {
+    checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
+        params.formula
 
         let parsetree = undefined
         try {
-            parsetree = math.parse(params.formula as string)
+            parsetree = math.parse(params.formula)
         } catch (err: unknown) {
             status.addError(
-                ('Could not parse formula: ' + params.formula) as string,
+                'Could not parse formula: ' + params.formula,
                 (err as Error).message
             )
             return status

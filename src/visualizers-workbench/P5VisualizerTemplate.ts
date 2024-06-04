@@ -13,9 +13,11 @@
 //
 // These comments get compiled into the Visualizer's user guide page.
 
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '../shared/ParamType'
 import {P5Visualizer} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import type {SequenceInterface} from '@/sequences/SequenceInterface'
 
 /** md
 # Entries (p5 Template)
@@ -34,7 +36,20 @@ the p5.js library. It includes explanatory comments and minimal examples of
 required and commonly used features._
 **/
 
-class P5VisualizerTemplate extends P5Visualizer {
+const paramDesc = {
+    /** md
+- **Step size:** How far to step when the user presses an arrow key. _(Positive
+integer.)_
+     **/
+    stepSize: {
+        default: 1, // === Default value ===
+        type: ParamType.INTEGER,
+        displayName: 'Step size',
+        required: true,
+    },
+} as const
+
+class P5VisualizerTemplate extends P5Visualizer<typeof paramDesc> {
     // === Visualizer name ===
     // Appears in the visualizer list and bundle card titles
     name = 'Entries (p5 Template)'
@@ -45,23 +60,7 @@ class P5VisualizerTemplate extends P5Visualizer {
     // visualizer bundle. If a parameter is meant to have a default value, we
     // conventionally use that as the initial value, so we can refer to it when
     // we set the default value below
-    stepSize = 1
-
-    /** md
-## Parameters
-    **/
-    params = {
-        /** md
-- **Step size:** How far to step when the user presses an arrow key. _(Positive
-  integer.)_
-         **/
-        stepSize: {
-            value: this.stepSize, // === Default value ===
-            type: ParamType.INTEGER,
-            displayName: 'Step size',
-            required: true,
-        },
-    }
+    stepSize = paramDesc.stepSize.default as number
 
     // === Internal properties ===
     // Top-level properties that are set and updated while the visualizer is
@@ -80,11 +79,15 @@ class P5VisualizerTemplate extends P5Visualizer {
     textColor = P5Visualizer.INVALID_COLOR
     outlineColor = P5Visualizer.INVALID_COLOR
 
-    checkParameters(params: {[key: string]: unknown}) {
+    constructor(seq: SequenceInterface<GenericParamDescription>) {
+        super(paramDesc, seq)
+    }
+
+    checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
         // make sure the step size is positive
-        if ((params.stepSize as number) <= 0)
+        if (params.stepSize <= 0)
             status.addError('Step size must be positive')
 
         return status

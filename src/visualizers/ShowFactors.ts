@@ -1,6 +1,8 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
 import {ParamType} from '../shared/ParamType'
+import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import type {GenericParamDescription} from '@/shared/Paramable'
 
 /** md
 # Show Factors Visualizer
@@ -13,34 +15,39 @@ the sequence, and below each term, its prime factors.
 ## Parameters
 **/
 
-class ShowFactors extends P5Visualizer {
+const paramDesc = {
+    /** md
+- start: The index of the first entry to display
+     **/
+    start: {
+        default: 1,
+        type: ParamType.INTEGER,
+        displayName: 'First index to show',
+        required: true,
+    },
+    /** md
+- end: The index of the last entry to display
+     **/
+    end: {
+        default: 20,
+        type: ParamType.INTEGER,
+        displayName: 'Last index to show',
+        required: true,
+    },
+} as const
+
+class ShowFactors extends P5Visualizer<typeof paramDesc> {
     name = 'Show Factors'
     description = 'Produces a table of factors of a sequence'
 
-    start = 1
-    end = 20
+    start = paramDesc.start.default as number
+    end = paramDesc.end.default as number
 
-    params = {
-        /** md
-- start: The index of the first entry to display
-         **/
-        start: {
-            value: this.start,
-            type: ParamType.INTEGER,
-            displayName: 'First index to show',
-            required: true,
-        },
-        /** md
-- end: The index of the last entry to display
-         **/
-        end: {
-            value: this.end,
-            type: ParamType.INTEGER,
-            displayName: 'Last index to show',
-            required: true,
-        },
-    }
     first = 0
+
+    constructor(seq: SequenceInterface<GenericParamDescription>) {
+        super(paramDesc, seq)
+    }
 
     draw() {
         const sketch = this.sketch

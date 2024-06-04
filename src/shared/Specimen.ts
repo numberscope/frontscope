@@ -1,5 +1,6 @@
 import type {VisualizerInterface} from '../visualizers/VisualizerInterface'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
+import type {GenericParamDescription} from './Paramable'
 
 /**
  * This class represents a specimen, containing a visualizer,
@@ -7,8 +8,8 @@ import type {SequenceInterface} from '../sequences/SequenceInterface'
  * Specimens can be converted to and from URLs so that they can be saved.
  */
 export class Specimen {
-    private _visualizer: VisualizerInterface
-    private _sequence: SequenceInterface
+    private _visualizer: VisualizerInterface<GenericParamDescription>
+    private _sequence: SequenceInterface<GenericParamDescription>
     private location?: HTMLElement
     private isSetup: boolean = false
 
@@ -22,8 +23,8 @@ export class Specimen {
      * @param sequence the specimen's sequence
      */
     constructor(
-        visualizer: VisualizerInterface,
-        sequence: SequenceInterface
+        visualizer: VisualizerInterface<GenericParamDescription>,
+        sequence: SequenceInterface<GenericParamDescription>
     ) {
         this._visualizer = visualizer
         this._sequence = sequence
@@ -42,13 +43,13 @@ export class Specimen {
     /**
      * Returns the specimen's visualizer
      */
-    get visualizer(): VisualizerInterface {
+    get visualizer(): VisualizerInterface<GenericParamDescription> {
         return this._visualizer
     }
     /**
      * Returns the specimen's sequence
      */
-    get sequence(): SequenceInterface {
+    get sequence(): SequenceInterface<GenericParamDescription> {
         return this._sequence
     }
     /**
@@ -56,7 +57,7 @@ export class Specimen {
      * to match the specimen. It also ensures this visualizer inhabits
      * the correct HTML element and begins to render.
      */
-    set visualizer(visualizer: VisualizerInterface) {
+    set visualizer(visualizer: VisualizerInterface<GenericParamDescription>) {
         this._visualizer = visualizer
         if (this.isSetup) this.setup(this.location!)
     }
@@ -64,7 +65,7 @@ export class Specimen {
      * Assigns a new sequence to this specimen and updates the visualizer
      * to reflect this change in the render.
      */
-    set sequence(sequence: SequenceInterface) {
+    set sequence(sequence: SequenceInterface<GenericParamDescription>) {
         this._sequence = sequence
         this.visualizer.view(this.sequence)
     }
@@ -93,8 +94,8 @@ export class Specimen {
     static fromURL(_url: string): Specimen {
         // TODO
         return new Specimen(
-            null as unknown as VisualizerInterface,
-            null as unknown as SequenceInterface
+            null as unknown as VisualizerInterface<GenericParamDescription>,
+            null as unknown as SequenceInterface<GenericParamDescription>
         )
     }
 }

@@ -1,5 +1,5 @@
 import type {VisualizerInterface} from './VisualizerInterface'
-import {Paramable} from '../shared/Paramable'
+import {Paramable, type GenericParamDescription} from '../shared/Paramable'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {CachingError} from '../sequences/Cached'
 import p5 from 'p5'
@@ -7,7 +7,7 @@ import p5 from 'p5'
 // Ugh, the gyrations we go through to keep TypeScript happy
 // while only listing the p5 methods once:
 
-class WithP5 extends Paramable {
+class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
     deviceMoved() {}
     deviceShaken() {}
     deviceTurned() {}
@@ -28,16 +28,20 @@ class WithP5 extends Paramable {
     windowResized() {}
 }
 
-type P5Methods = Exclude<keyof WithP5, keyof Paramable>
-const dummyWithP5 = new WithP5()
-const p5methods: P5Methods[] = Object.getOwnPropertyNames(
-    Object.getPrototypeOf(dummyWithP5)
-).filter(name => name != 'constructor') as P5Methods[]
+type P5Methods<PD extends GenericParamDescription> = Exclude<
+    keyof WithP5<PD>,
+    keyof Paramable<PD>
+>
+const dummyWithP5 = new WithP5<GenericParamDescription>({})
+const p5methods: P5Methods<GenericParamDescription>[] =
+    Object.getOwnPropertyNames(Object.getPrototypeOf(dummyWithP5)).filter(
+        name => name != 'constructor'
+    ) as P5Methods<GenericParamDescription>[]
 
 // Base class for implementing Visualizers that use p5.js
-export abstract class P5Visualizer
-    extends WithP5
-    implements VisualizerInterface
+export abstract class P5Visualizer<PD extends GenericParamDescription>
+    extends WithP5<PD>
+    implements VisualizerInterface<PD>
 {
     private _sketch?: p5
     private _canvas?: p5.Renderer
@@ -70,14 +74,14 @@ export abstract class P5Visualizer
         }
         return this._canvas
     }
-    seq: SequenceInterface
+    seq: SequenceInterface<GenericParamDescription>
 
     /***
      * Create a P5-based visualizer
      * @param seq SequenceInterface  The initial sequence to draw
      */
-    constructor(seq: SequenceInterface) {
-        super()
+    constructor(params: PD, seq: SequenceInterface<GenericParamDescription>) {
+        super(params)
         this.seq = seq
     }
 
@@ -142,7 +146,7 @@ export abstract class P5Visualizer
      * Change the sequence being shown by the visualizer
      * @param seq SequenceInterface  The sequence to show
      */
-    view(seq: SequenceInterface): void {
+    view(seq: SequenceInterface<GenericParamDescription>): void {
         this.seq = seq
         this.reset()
     }

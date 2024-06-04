@@ -2,24 +2,25 @@ import {SequenceExportModule} from './SequenceInterface'
 import {Cached} from './Cached'
 import {ParamType} from '../shared/ParamType'
 
+const paramDesc = {
+    includeZero: {
+        default: false,
+        type: ParamType.BOOLEAN,
+        displayName: 'Include Zero',
+        required: false,
+    },
+} as const
+
 /**
  *
  * @class Naturals
  * extends Cached with a very simple calculate, mostly by way of an
  * example of using Cached.
  */
-class Naturals extends Cached {
+class Naturals extends Cached<typeof paramDesc> {
     name = 'Natural Numbers'
     description = 'A sequence of the natural numbers'
-    includeZero = false
-    params = {
-        includeZero: {
-            value: this.includeZero,
-            type: ParamType.BOOLEAN,
-            displayName: 'Include Zero',
-            required: false,
-        },
-    }
+    includeZero = paramDesc.includeZero.default
     private begin = 1
 
     /**
@@ -27,7 +28,7 @@ class Naturals extends Cached {
      * @param {*} sequenceID the sequence identifier of the sequence
      */
     constructor(sequenceID: number) {
-        super(sequenceID)
+        super(paramDesc, sequenceID)
     }
 
     initialize() {

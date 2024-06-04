@@ -61,10 +61,25 @@ export enum ParamType {
     VECTOR,
 }
 /**
+ * A mapping of the parameter types to their realized TypeScript types
+ */
+export type RealizedParamType = {
+    [ParamType.BOOLEAN]: boolean
+    [ParamType.COLOR]: string
+    [ParamType.NUMBER]: number
+    [ParamType.INTEGER]: number
+    [ParamType.BIGINT]: bigint
+    [ParamType.ENUM]: number
+    [ParamType.STRING]: string
+    [ParamType.NUMBER_ARRAY]: number[]
+    [ParamType.BIGINT_ARRAY]: bigint[]
+    [ParamType.VECTOR]: p5.Vector
+}
+/**
  * `ParamTypeFunctions` contains information about validation and to/from
  * string conversion for supported parameter types
  */
-export interface ParamTypeFunctions {
+export interface ParamTypeFunctions<T> {
     /**
      * Validates a particular input string for a given parameter type,
      * returning a `ValidationStatus` as a result
@@ -80,17 +95,19 @@ export interface ParamTypeFunctions {
      * @param value the string input value to be converted
      * @return the realized input value
      */
-    realize(value: string): unknown
+    realize(value: string): T
     /**
      * Performs the inverse of `realize(...)`, converting the parameter
      * value back into a string to be placed into an input field.
      * @param value the parameter value to be converted back into a string
      * @return the derealized parameter value
      */
-    derealize(value: unknown): string
+    derealize(value: T): string
 }
 
-const typeFunctions: {[key in ParamType]: ParamTypeFunctions} = {
+const typeFunctions: {
+    [K in ParamType]: ParamTypeFunctions<RealizedParamType[K]>
+} = {
     [ParamType.BOOLEAN]: {
         validate: value =>
             ValidationStatus.errorIf(
@@ -118,7 +135,7 @@ const typeFunctions: {[key in ParamType]: ParamTypeFunctions} = {
                 'Input must be a number'
             ),
         realize: value => parseFloat(value),
-        derealize: value => `${value}`,
+        derealize: value => (Number.isNaN(value) ? '' : `${value}`),
     },
     [ParamType.INTEGER]: {
         validate: value =>
@@ -127,7 +144,7 @@ const typeFunctions: {[key in ParamType]: ParamTypeFunctions} = {
                 'Input must be an integer'
             ),
         realize: value => parseInt(value),
-        derealize: value => `${value}`,
+        derealize: value => (Number.isNaN(value) ? '' : `${value}`),
     },
     [ParamType.BIGINT]: {
         validate: value =>

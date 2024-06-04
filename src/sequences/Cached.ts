@@ -1,5 +1,6 @@
 import type {Factorization} from './SequenceInterface'
 import {SequenceDefault} from './SequenceDefault'
+import type {GenericParamDescription} from '@/shared/Paramable'
 
 const min = Math.min
 const max = Math.max
@@ -30,7 +31,9 @@ export class CachingError extends Error {
  * calculate() will never be called on the same input more than once.
  *
  */
-export class Cached extends SequenceDefault {
+export class Cached<
+    PD extends GenericParamDescription,
+> extends SequenceDefault<PD> {
     name = 'Cached Base'
     description = 'A base class for cached sequences'
     protected cache: bigint[] = []
@@ -54,12 +57,13 @@ export class Cached extends SequenceDefault {
      *     specifies how many values to put in cache at each fill (128)
      */
     constructor(
+        params: PD,
         sequenceID: number,
         first?: number,
         last?: number,
         cacheBlock?: number
     ) {
-        super(sequenceID)
+        super(params, sequenceID)
         this.first = first ?? 0
         this.last = last ?? Infinity
         this.cacheBlock = cacheBlock ?? 128
