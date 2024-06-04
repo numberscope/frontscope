@@ -35,15 +35,17 @@
                 if (
                     tab instanceof HTMLElement
                     && !tab.classList.contains('docked')
-                )
+                ) {
                     // select the tab when it is resized
                     selectTab(tab)
-                // update the classlist with "minimized" if the height is less or equal than 110
-                tab.style.height = event.rect.height + 'px'
-                if (event.rect.height <= 110) {
-                    tab.classList.add('minimized')
-                } else {
-                    tab.classList.remove('minimized')
+                    // update the classlist with "minimized"
+                    // if the height is less or equal than 110
+                    tab.style.height = event.rect.height + 'px'
+                    if (event.rect.height <= 110) {
+                        tab.classList.add('minimized')
+                    } else {
+                        tab.classList.remove('minimized')
+                    }
                 }
             },
         },
@@ -136,7 +138,8 @@
 
         // if the tab is docked, we have a different behavior
         if (tab.classList.contains('docked')) {
-            // vertical and horizontal position of the tab (eg. top-right, where vert is top and side is right)
+            // vertical and horizontal position of the tab
+            // (eg. top-right, where vert is top and side is right)
             const vert = tab.getAttribute('docked')?.split('-')[0]
             const side = tab.getAttribute('docked')?.split('-')[1]
             // get the correct dropzone wrapper
@@ -147,7 +150,10 @@
 
             if (dropzoneWrapper instanceof HTMLElement) {
                 if (tab.classList.contains('minimized')) {
-                    // if we want to maximize top tab, set height of wrapper to 400px, if we want to maximize bottom tab, set height (of top tab wrapper) to 100% - 400px
+                    // if we want to maximize top tab,
+                    // set height of wrapper to 400px,
+                    // if we want to maximize bottom tab,
+                    // set height (of top tab wrapper) to 100% - 400px
                     if (vert === 'top') {
                         dropzoneWrapper.style.height = '400px'
                     } else {
@@ -158,7 +164,10 @@
                     // update the size and position of all tabs
                     positionAndSizeAllTabs()
                 } else {
-                    // if we want to minimize top tab, set height of wrapper to 110px, if we want to minimize bottom tab, set height (of top tab wrapper) to 100% - 90px
+                    // if we want to minimize top tab,
+                    // set height of wrapper to 110px,
+                    // if we want to minimize bottom tab,
+                    // set height (of top tab wrapper) to 100% - 90px
                     if (vert === 'top') {
                         dropzoneWrapper.style.height = '110px'
                     } else {
@@ -221,7 +230,8 @@
                 dropzone.classList.add('empty')
                 tab.classList.remove('docked')
                 tab.setAttribute('docked', 'none')
-                // if both dropzones are empty, make the dropzone container empty aswell
+                // if both dropzones are empty,
+                // make the dropzone container empty aswell
                 if (
                     dropzoneContainer.querySelectorAll('.empty').length == 2
                 ) {
