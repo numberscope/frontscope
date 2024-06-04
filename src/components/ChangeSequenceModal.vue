@@ -1,10 +1,12 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+    import {showChangeModal} from '@/shared/showChangeModal'
+</script>
 
 <template>
-    <div id="background">
+    <div id="background" @click.self="showChangeModal.close">
         <div id="modal">
             <div id="bar">
-                <div id="cross"></div>
+                <div id="cross" @click="showChangeModal.close"></div>
             </div>
 
             <div id="content">
@@ -113,13 +115,14 @@
         float: right;
         margin-top: 4px;
         margin-right: 4px;
+        cursor: pointer;
     }
 
     #content {
         padding: 32px;
         display: flex;
         flex-direction: column;
-        height: 100%;
+        height: 623px;
     }
 
     #search {
@@ -135,6 +138,6 @@
         flex-wrap: wrap;
         overflow: auto;
         flex: 1;
-        gap: 10px;
+        gap: 16px;
     }
 </style>

@@ -5,8 +5,15 @@
                 {{ error }}
             </p>
         </div>
-        <h1>{{ title }}</h1>
-        <span class="subheading">{{ paramable.name }}</span>
+
+        <div id="title-bar">
+            <div>
+                <h1>{{ title }}</h1>
+                <span class="subheading">{{ paramable.name }}</span>
+            </div>
+            <ChangeButton></ChangeButton>
+        </div>
+
         <p class="description">{{ paramable.description }}</p>
         <div v-for="(hierarchy, name) in sortedParams" v-bind:key="name">
             <ParamField
@@ -41,6 +48,7 @@
     import typeFunctions from '../shared/ParamType'
     import {ValidationStatus} from '../shared/ValidationStatus'
     import ParamField from './ParamField.vue'
+    import ChangeButton from '@/components/ChangeButton.vue'
 
     interface ParamHierarchy {
         param: ParamInterface
@@ -57,6 +65,7 @@
             },
         },
         components: {
+            ChangeButton,
             ParamField,
         },
         data() {
@@ -146,8 +155,8 @@
 
 <style scoped lang="scss">
     h1 {
+        margin: 0;
         font-size: 16px;
-        margin-bottom: 0;
     }
 
     .subheading {
@@ -176,5 +185,11 @@
         font-size: var(--ns-size-body);
         margin: 8px 0;
         color: red;
+    }
+
+    #title-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 </style>

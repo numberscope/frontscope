@@ -1,6 +1,6 @@
 <template>
     <div id="container">
-        <ChangeSequenceModal></ChangeSequenceModal>
+        <ChangeSequenceModal v-show="showChangeModal.show" />
         <NavBar />
         <main>
             <RouterView />
@@ -14,6 +14,7 @@
     import NavBar from './views/minor/NavBar.vue'
     import {RouterView} from 'vue-router'
     import ChangeSequenceModal from '@/components/ChangeSequenceModal.vue'
+    import {showChangeModal} from '@/shared/showChangeModal'
 </script>
 
 <!-- Global styles. This style tag is explicitly unscoped. -->
@@ -81,12 +82,12 @@
     /* Display font */
     @font-face {
         font-family: 'Infinity';
-        src: url('/src/assets/fonts/infinity/Infinity.ttf');
+        src: url('../src/assets/fonts/infinity/Infinity.ttf');
     }
 
     /* Body font */
     @font-face {
         font-family: 'Inter';
-        src: url('/src/assets/fonts/inter/Inter-VariableFont_slnt\,wght.ttf');
+        src: url('../src/assets/fonts/inter/Inter-VariableFont_slnt,wght.ttf');
     }
 </style>
