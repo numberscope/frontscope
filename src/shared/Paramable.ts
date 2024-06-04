@@ -97,16 +97,27 @@ export type ParamTypeChoices = {[key: string]: ParamType}
 export type ParamDescription<TC extends ParamTypeChoices> = {
     [K in keyof TC]: ParamInterface<TC[K]>
 }
+/* Represents a fully generic parameter description. Paramable interfaces
+ * should contain such a parameter description.
+ */
 export type GenericParamDescription = ParamDescription<ParamTypeChoices>
 
 export type ExtractParamChoices<PD extends GenericParamDescription> = {
     [K in keyof PD]: PD[K]['type']
 }
 
+/* Represents a mapping of all realized values from a parameter description.
+ * That is, contains the full set of parameters with their appropriate
+ * types.
+ */
 export type ParamValues<PD extends GenericParamDescription> =
     PD extends ParamDescription<ExtractParamChoices<PD>>
         ? {[K in keyof PD]: RealizedParamType[ExtractParamChoices<PD>[K]]}
         : never
+/* Represents a mapping of all tentative (non-realized) values from a
+ * parameter description. In essence, a mapping of all parameter names
+ * to string values.
+ */
 export type TentativeParamValues<PD extends GenericParamDescription> = {
     [K in keyof PD]: string
 }
