@@ -1,5 +1,6 @@
 <template>
     <div id="container">
+        <ChangeSequenceModal></ChangeSequenceModal>
         <NavBar />
         <main>
             <RouterView />
@@ -12,6 +13,7 @@
     // import Footer from './views/minor/Footer.vue'
     import NavBar from './views/minor/NavBar.vue'
     import {RouterView} from 'vue-router'
+    import ChangeSequenceModal from '@/components/ChangeSequenceModal.vue'
 </script>
 
 <!-- Global styles. This style tag is explicitly unscoped. -->
