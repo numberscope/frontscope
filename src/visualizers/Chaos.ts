@@ -2,6 +2,7 @@ import p5 from 'p5'
 import {modulo} from '../shared/math'
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
+import {ParamType} from '../shared/ParamType'
 
 /** md
 # Chaos Visualizer
@@ -49,7 +50,8 @@ enum ColorStyle {
 // circles fade to the outside
 
 class Chaos extends P5Visualizer {
-    static visualizationName = 'Chaos'
+    name = 'Chaos'
+    description = 'Chaos game played using a sequence to select moves'
     corners = 4
     frac = 0.5
     walkers = 1
@@ -67,7 +69,7 @@ class Chaos extends P5Visualizer {
     params = {
         corners: {
             value: this.corners,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Number of corners',
             required: true,
             description:
@@ -76,6 +78,7 @@ class Chaos extends P5Visualizer {
         },
         frac: {
             value: this.frac,
+            type: ParamType.NUMBER,
             displayName: 'Fraction to walk',
             required: true,
             description:
@@ -85,7 +88,7 @@ class Chaos extends P5Visualizer {
         },
         walkers: {
             value: this.walkers,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Number of walkers',
             required: true,
             description:
@@ -95,13 +98,15 @@ class Chaos extends P5Visualizer {
         },
         colorStyle: {
             value: this.colorStyle,
+            type: ParamType.ENUM,
             from: ColorStyle,
             displayName: 'Color dots by',
             required: true,
+            description: 'The way the dots should be colored',
         },
         gradientLength: {
             value: this.gradientLength,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Color cycling length',
             required: false,
             visibleDependency: 'colorStyle',
@@ -111,15 +116,15 @@ class Chaos extends P5Visualizer {
         },
         highlightWalker: {
             value: this.highlightWalker,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Number of walker to highlight',
             required: false,
             visibleDependency: 'colorStyle',
             visibleValue: ColorStyle.Highlighting_one_walker,
         },
         first: {
-            value: '' as string | number,
-            forceType: 'integer',
+            value: 0,
+            type: ParamType.INTEGER,
             displayName: 'Starting index',
             required: false,
             description:
@@ -128,8 +133,8 @@ class Chaos extends P5Visualizer {
                 + 'at the first valid index.',
         },
         last: {
-            value: '' as string | number,
-            forceType: 'integer',
+            value: 1000,
+            type: ParamType.INTEGER,
             displayName: 'Ending index',
             required: false,
             description:
@@ -139,11 +144,13 @@ class Chaos extends P5Visualizer {
         },
         dummyDotControl: {
             value: false,
+            type: ParamType.BOOLEAN,
             displayName: 'Show additional parameters for the dots ↴',
             required: false,
         },
         circSize: {
             value: this.circSize,
+            type: ParamType.NUMBER,
             displayName: 'Size (pixels)',
             required: true,
             visibleDependency: 'dummyDotControl',
@@ -151,6 +158,7 @@ class Chaos extends P5Visualizer {
         },
         alpha: {
             value: this.alpha,
+            type: ParamType.NUMBER,
             displayName: 'Alpha',
             required: true,
             description:
@@ -160,7 +168,7 @@ class Chaos extends P5Visualizer {
         },
         pixelsPerFrame: {
             value: this.pixelsPerFrame,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Dots to draw per frame',
             required: true,
             description: '(more = faster).',
@@ -169,11 +177,13 @@ class Chaos extends P5Visualizer {
         },
         showLabels: {
             value: this.showLabels,
+            type: ParamType.BOOLEAN,
             displayName: 'Label corners of polygon?',
             required: false,
         },
         darkMode: {
             value: this.darkMode,
+            type: ParamType.BOOLEAN,
             displayName: 'Use dark mode?',
             required: false,
             description: 'If checked, uses light colors on a dark background',
@@ -189,52 +199,44 @@ class Chaos extends P5Visualizer {
     // colour palette
     private currentPalette = new Palette()
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: {[key: string]: unknown}) {
+        const status = super.checkParameters(params)
 
-        const p = this.params
-        if (p.corners.value < 2) {
-            status.errors.push(
-                'The number of corners must be an integer > 1.'
-            )
+        if ((params.corners as number) < 2) {
+            status.addError('The number of corners must be an integer > 1.')
         }
-        if (p.frac.value < 0 || p.frac.value > 1) {
-            status.errors.push(
-                'The fraction must be between 0 and 1 inclusive.'
-            )
+        if ((params.frac as number) < 0 || (params.frac as number) > 1) {
+            status.addError('The fraction must be between 0 and 1 inclusive.')
         }
-        if (p.walkers.value < 1) {
-            status.errors.push(
+        if ((params.walkers as number) < 1) {
+            status.addError(
                 'The number of walkers must be a positive integer.'
             )
         }
-        if (p.gradientLength.value < 1) {
-            status.errors.push(
+        if ((params.gradientLength as number) < 1) {
+            status.addError(
                 'The colour cycle length must be a positive integer.'
             )
         }
         if (
-            p.highlightWalker.value < 0
-            || p.highlightWalker.value >= p.walkers.value
+            (params.highlightWalker as number) < 0
+            || (params.highlightWalker as number) >= (params.walkers as number)
         ) {
-            status.errors.push(
+            status.addError(
                 'The highlighted walker must be an integer '
                     + 'between 0 and one less than the number of walkers.'
             )
         }
-        if (p.circSize.value < 0) {
-            status.errors.push('The circle size must be positive.')
+        if ((params.circSize as number) < 0) {
+            status.addError('The circle size must be positive.')
         }
-        if (p.alpha.value < 0 || p.alpha.value > 1) {
-            status.errors.push('The alpha must be between 0 and 1 inclusive.')
+        if ((params.alpha as number) < 0 || (params.alpha as number) > 1) {
+            status.addError('The alpha must be between 0 and 1 inclusive.')
         }
-        if (p.pixelsPerFrame.value < 1) {
-            status.errors.push(
-                'The dots per frame must be a positive integer.'
-            )
+        if ((params.pixelsPerFrame as number) < 1) {
+            status.addError('The dots per frame must be a positive integer.')
         }
 
-        if (status.errors.length > 0) status.isValid = false
         return status
     }
 
@@ -459,5 +461,6 @@ class Chaos extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     Chaos,
-    'Chaos game played using a sequence to select moves'
+    Chaos.prototype.name,
+    Chaos.prototype.description
 )

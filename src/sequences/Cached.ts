@@ -178,4 +178,18 @@ export class Cached extends SequenceDefault {
     factor(_n: number, _v: bigint): Factorization {
         return null
     }
+
+    /**
+     * On a parameter change, we assume the sequence is now completely
+     * different. As a result, we want to reset the cache and reinitialize
+     * the sequence so that every element is recomputed when queried.
+     */
+    parameterChanged(_name: string): void {
+        this.ready = false
+        this.lastValueCached = this.first - 1
+        this.lastFactorCached = this.first - 1
+        this.cachingValuesTo = this.lastValueCached
+        this.cachingFactorsTo = this.lastFactorCached
+        this.initialize()
+    }
 }

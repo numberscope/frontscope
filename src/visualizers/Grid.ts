@@ -1,12 +1,13 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {P5Visualizer} from '@/visualizers/P5Visualizer'
-import {bigabs, floorSqrt, modulo} from '@/shared/math'
-import type {ParamInterface} from '@/shared/Paramable'
+import {bigabs, floorSqrt, modulo} from '../shared/math'
+import type {ParamInterface} from '../shared/Paramable'
 import type {
     SequenceInterface,
     Factorization,
 } from '@/sequences/SequenceInterface'
 import simpleFactor from '@/sequences/simpleFactor'
+import {ParamType} from '../shared/ParamType'
 
 /** md
 # Grid Visualizer
@@ -239,6 +240,7 @@ function getPropertyParams(index: number, prop: PropertyObject) {
     return {
         [`property${index}`]: {
             value: prop.property,
+            type: ParamType.ENUM,
             from: Property,
             displayName: `Property ${index + 1}`,
             required: false,
@@ -247,6 +249,7 @@ function getPropertyParams(index: number, prop: PropertyObject) {
         },
         [`prop${index}Vis`]: {
             value: prop.visualization,
+            type: ParamType.ENUM,
             from: PropertyVisualization,
             displayName: 'Display',
             required: false,
@@ -255,7 +258,7 @@ function getPropertyParams(index: number, prop: PropertyObject) {
         },
         [`prop${index}Color`]: {
             value: prop.color,
-            forceType: 'color',
+            type: ParamType.COLOR,
             displayName: 'Color',
             required: false,
             visibleDependency: `property${index}`,
@@ -263,6 +266,7 @@ function getPropertyParams(index: number, prop: PropertyObject) {
         },
         [`prop${index}Aux`]: {
             value: prop.aux,
+            type: ParamType.BIGINT,
             displayName: (d: Property) => propertyAuxName[Property[d]] || '',
             required: false,
             visibleDependency: `property${index}`,
@@ -416,7 +420,10 @@ const propertyIndicatorFunction: {
 }
 
 class Grid extends P5Visualizer {
-    static visualizationName = 'Grid'
+    name = 'Grid'
+    description =
+        'Puts numbers in a grid, '
+        + 'highlighting cells based on various properties'
 
     // Grid variables
     amountOfNumbers = 4096
@@ -469,6 +476,7 @@ section of the documentation.
          **/
         preset: {
             value: this.preset,
+            type: ParamType.ENUM,
             from: Preset,
             displayName: 'Presets',
             required: false,
@@ -485,6 +493,7 @@ property being tested.
          **/
         amountOfNumbers: {
             value: this.amountOfNumbers,
+            type: ParamType.NUMBER,
             displayName: 'Grid cells',
             required: false,
             description: 'Warning: display lags over 10,000 cells',
@@ -495,6 +504,7 @@ property being tested.
          **/
         startingIndex: {
             value: this.startingIndex,
+            type: ParamType.NUMBER,
             displayName: 'Starting Index',
             required: false,
             description: '',
@@ -510,6 +520,7 @@ property being tested.
          **/
         pathType: {
             value: this.pathType,
+            type: ParamType.ENUM,
             from: PathType,
             displayName: 'Path in grid',
             required: false,
@@ -523,7 +534,7 @@ even if you choose more.
          **/
         showNumbers: {
             value: this.showNumbers,
-            forceType: 'boolean',
+            type: ParamType.BOOLEAN,
             displayName: 'Show numbers',
             required: false,
             description: 'When true, grid is limited to 400 cells',
@@ -536,7 +547,7 @@ This parameter is only available when the "Show Numbers" parameter is checked.
          **/
         numberColor: {
             value: this.numberColor,
-            forceType: 'color',
+            type: ParamType.COLOR,
             displayName: 'Number color',
             required: false,
             visibleDependency: 'showNumbers',
@@ -548,7 +559,7 @@ This parameter is only available when the "Show Numbers" parameter is checked.
          **/
         backgroundColor: {
             value: this.backgroundColor,
-            forceType: 'color',
+            type: ParamType.COLOR,
             displayName: 'Background color',
             required: false,
         },
@@ -887,7 +898,8 @@ earlier ones that use the _same_ style.)
 
 export const exportModule = new VisualizerExportModule(
     Grid,
-    'Puts numbers in a grid, highlighting cells based on various properties'
+    Grid.prototype.name,
+    Grid.prototype.description
 )
 
 /** md

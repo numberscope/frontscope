@@ -1,5 +1,6 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
+import {ParamType} from '../shared/ParamType'
 
 const min = Math.min
 
@@ -20,7 +21,10 @@ difference of.
 **/
 
 class Differences extends P5Visualizer {
-    static visualizationName = 'Differences'
+    name = 'Differences'
+    description =
+        'Produces a table of differences '
+        + 'between consecutive entries, potentially iterated several times'
 
     // parameters
     n = 20
@@ -36,7 +40,7 @@ class Differences extends P5Visualizer {
          **/
         n: {
             value: this.n,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Entries in top row',
             required: true,
         },
@@ -46,7 +50,7 @@ class Differences extends P5Visualizer {
          **/
         levels: {
             value: this.levels,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Number of rows',
             required: false,
             description: 'If zero, defaults to the length of top row',
@@ -55,25 +59,15 @@ class Differences extends P5Visualizer {
 
     first = 0
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: {[key: string]: unknown}) {
+        const status = super.checkParameters(params)
 
-        if (this.params.levels.value < 1) {
-            status.isValid = false
-            status.errors.push('Number of rows must be positive')
-        }
-        if (this.params.n.value < 0) {
-            status.isValid = false
-            status.errors.push(
-                "Number of entries in top row can't be negative"
-            )
-        }
-        if (this.params.n.value < this.params.levels.value) {
-            status.isValid = false
-            status.errors.push(
-                "Number of rows can't exceed length of first row"
-            )
-        }
+        if ((params.levels as number) < 1)
+            status.addError('Number of rows must be positive')
+        if ((params.n as number) < 0)
+            status.addError("Number of entries in top row can't be negative")
+        if (this.params.n.value < this.params.levels.value)
+            status.addError("Number of rows can't exceed length of first row")
 
         return status
     }
@@ -145,6 +139,6 @@ class Differences extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     Differences,
-    'Produces a table of differences between consecutive entries, '
-        + 'potentially iterated several times'
+    Differences.prototype.name,
+    Differences.prototype.description
 )

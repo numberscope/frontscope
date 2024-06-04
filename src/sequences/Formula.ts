@@ -1,4 +1,5 @@
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
+import {ParamType} from '../shared/ParamType'
 import {Cached} from './Cached'
 import simpleFactor from './simpleFactor'
 import * as math from 'mathjs'
@@ -18,6 +19,7 @@ class Formula extends Cached {
     params = {
         formula: {
             value: this.formula,
+            type: ParamType.STRING,
             displayName: 'Formula',
             required: true,
         },
@@ -36,18 +38,17 @@ class Formula extends Cached {
         this.evaluator = math.compile(this.formula)
     }
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: {[key: string]: unknown}) {
+        const status = super.checkParameters(params)
 
         let parsetree = undefined
         try {
-            parsetree = math.parse(this.params.formula.value)
+            parsetree = math.parse(params.formula as string)
         } catch (err: unknown) {
-            status.isValid = false
-            status.errors.push(
-                'Could not parse formula: ' + this.params.formula.value
+            status.addError(
+                ('Could not parse formula: ' + params.formula) as string,
+                (err as Error).message
             )
-            status.errors.push((err as Error).message)
             return status
         }
         const othersymbs = parsetree.filter(
@@ -57,8 +58,7 @@ class Formula extends Cached {
                 && node.name !== 'n'
         )
         if (othersymbs.length > 0) {
-            status.isValid = false
-            status.errors.push(
+            status.addError(
                 "Only 'n' may occur as a free variable in formula.",
                 `Please remove '${(othersymbs[0] as math.SymbolNode).name}'`
             )
@@ -83,6 +83,7 @@ class Formula extends Cached {
 
 export const exportModule = new SequenceExportModule(
     Formula,
-    'Sequence by Formula',
+    Formula.prototype.name,
+    Formula.prototype.description,
     SequenceExportKind.FAMILY
 )

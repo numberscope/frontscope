@@ -54,7 +54,7 @@
             },
             createViz: function () {
                 const validationResult = this.livevisualizer.validate()
-                if (validationResult.isValid) {
+                if (validationResult.isValid()) {
                     this.errors = []
                     this.closeParamsModal()
                     this.$emit('createViz', this.livevisualizer)

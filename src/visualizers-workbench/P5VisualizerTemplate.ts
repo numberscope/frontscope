@@ -13,6 +13,7 @@
 //
 // These comments get compiled into the Visualizer's user guide page.
 
+import {ParamType} from '../shared/ParamType'
 import {P5Visualizer} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 
@@ -36,7 +37,8 @@ required and commonly used features._
 class P5VisualizerTemplate extends P5Visualizer {
     // === Visualizer name ===
     // Appears in the visualizer list and bundle card titles
-    static visualizationName = 'Entries (p5 Template)'
+    name = 'Entries (p5 Template)'
+    description = 'Step through entries one at a time'
 
     // === Parameters ===
     // Top-level properties that the user can choose while creating the
@@ -55,7 +57,7 @@ class P5VisualizerTemplate extends P5Visualizer {
          **/
         stepSize: {
             value: this.stepSize, // === Default value ===
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Step size',
             required: true,
         },
@@ -78,14 +80,12 @@ class P5VisualizerTemplate extends P5Visualizer {
     textColor = P5Visualizer.INVALID_COLOR
     outlineColor = P5Visualizer.INVALID_COLOR
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: {[key: string]: unknown}) {
+        const status = super.checkParameters(params)
 
         // make sure the step size is positive
-        if (this.params.stepSize.value <= 0) {
-            status.isValid = false
-            status.errors.push('Step size must be positive')
-        }
+        if ((params.stepSize as number) <= 0)
+            status.addError('Step size must be positive')
 
         return status
     }
@@ -233,11 +233,10 @@ class P5VisualizerTemplate extends P5Visualizer {
     // If this visualizer would like a canvas with a particular aspect ratio,
     // such can be requested here. A value of `undefined` indicates no desired
     // aspect ratio, but a number greater than 0 can be used instead if a
-    // specific aspect ratio is desired. A number smaller than 1 indicates
-    // taller-than-wide, and the opposite for a number larger than 1.
-    requestedAspectRatio(): number | undefined {
-        return undefined
-    }
+    // specific aspect ratio is desired. The aspect ratio is defined as:
+    // width / height
+    // requestedAspectRatio(): number | undefined {
+    // }
 }
 /** md
 ## The "sequence progress bar"
@@ -256,5 +255,6 @@ because infinity is, well, infinitely far away!
 // export module constructor
 export const exportModule = new VisualizerExportModule(
     P5VisualizerTemplate,
-    'Step through entries one at a time'
+    P5VisualizerTemplate.prototype.name,
+    P5VisualizerTemplate.prototype.description
 )

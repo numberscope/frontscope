@@ -1,5 +1,6 @@
 import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {SequenceDefault} from './SequenceDefault'
+import {ParamType} from '../shared/ParamType'
 
 /**
  *
@@ -14,6 +15,7 @@ class Constant extends SequenceDefault {
     params = {
         constant: {
             value: this.constant,
+            type: ParamType.BIGINT,
             displayName: 'Constant Value',
             required: true,
         },
@@ -40,6 +42,7 @@ class Constant extends SequenceDefault {
 
 export const exportModule = new SequenceExportModule(
     Constant,
-    'Constant Sequence',
+    Constant.prototype.name,
+    Constant.prototype.description,
     SequenceExportKind.FAMILY
 )

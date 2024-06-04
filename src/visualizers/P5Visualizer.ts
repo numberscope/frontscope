@@ -57,12 +57,6 @@ export abstract class P5Visualizer
     */
     static INVALID_COLOR = {} as p5.Color
 
-    visualization(): string {
-        return (
-            Object.getPrototypeOf(this).constructor.visualizationName
-            || 'monkeypod'
-        )
-    }
     within?: HTMLElement
     get sketch(): p5 {
         if (!this._sketch) {
@@ -102,12 +96,6 @@ export abstract class P5Visualizer
         if (this.within) {
             // oops, already inhabiting somewhere else; depart there
             this.depart(this.within)
-        }
-        if (!this.isValid) {
-            throw (
-                'The visualizer is not valid. '
-                + 'Run validate and address any errors.'
-            )
         }
         this.within = element
         this._sketch = new p5(sketch => {
@@ -156,6 +144,12 @@ export abstract class P5Visualizer
      */
     view(seq: SequenceInterface): void {
         this.seq = seq
+        if (!this._sketch) return
+        const element = this.within!
+        this.stop()
+        this.depart(element)
+        this.inhabit(element)
+        this.show()
     }
 
     /**
@@ -163,7 +157,17 @@ export abstract class P5Visualizer
      * All it has to do is call draw, since p5 calls setup for us.
      */
     show(): void {
-        this._sketch?.draw()
+        if (this._canvas) this._sketch?.draw()
+        else {
+            // If the rendering context is not yet ready, start an interval
+            // that waits until the canvas is ready and shows when finished
+            const interval = setInterval(() => {
+                if (this._canvas) {
+                    clearInterval(interval)
+                    this._sketch?.draw()
+                }
+            }, 5)
+        }
     }
 
     /**
@@ -243,6 +247,20 @@ export abstract class P5Visualizer
        a div that it's already inhabiting, nothing will happen.
     */
 
+    parameterChanged(_name: string): void {
+        if (!this._sketch) return
+        const element = this.within!
+        this.stop()
+        this.depart(element)
+        this.inhabit(element)
+        this.show()
+    }
+
+    /* By default, a P5 visualizer returns undefined from this function,
+     * meaning it will not request an aspect ratio and instead be given a
+     * canvas of any arbitrary width and height. Visualizers can override
+     * this to request a specific aspect ratio.
+     */
     requestedAspectRatio(): number | undefined {
         return undefined
     }

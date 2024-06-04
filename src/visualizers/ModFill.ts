@@ -3,6 +3,7 @@ import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {P5Visualizer} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type p5 from 'p5'
+import {ParamType} from '../shared/ParamType'
 
 /** md
 # Mod Fill Visualizer
@@ -19,7 +20,9 @@ occur by watching the order the cells are filled in as the diagram is drawn.
 **/
 
 class ModFill extends P5Visualizer {
-    static visualizationName = 'Mod Fill'
+    name = 'Mod Fill'
+    description =
+        'A triangular grid showing which ' + 'residues occur, to each modulus'
     modDimension = 10n
     params = {
         /** md
@@ -29,6 +32,7 @@ class ModFill extends P5Visualizer {
         // note will be small enough to fit in a `number` when we need it to.
         modDimension: {
             value: this.modDimension,
+            type: ParamType.BIGINT,
             displayName: 'Mod dimension',
             required: true,
         },
@@ -38,13 +42,11 @@ class ModFill extends P5Visualizer {
     rectHeight = 0
     i = 0
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: {[key: string]: unknown}) {
+        const status = super.checkParameters(params)
 
-        if (this.params.modDimension.value <= 0n) {
-            status.isValid = false
+        if ((params.modDimension as bigint) <= 0n)
             status.errors.push('Mod dimension must be positive')
-        }
 
         return status
     }
@@ -82,5 +84,6 @@ class ModFill extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     ModFill,
-    'A triangular grid showing which residues occur, to each modulus'
+    ModFill.prototype.name,
+    ModFill.prototype.description
 )

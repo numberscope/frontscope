@@ -1,5 +1,6 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
+import {ParamType} from '../shared/ParamType'
 
 /** md
 # Show Factors Visualizer
@@ -13,7 +14,8 @@ the sequence, and below each term, its prime factors.
 **/
 
 class ShowFactors extends P5Visualizer {
-    static visualizationName = 'Show Factors'
+    name = 'Show Factors'
+    description = 'Produces a table of factors of a sequence'
 
     start = 1
     end = 20
@@ -24,7 +26,7 @@ class ShowFactors extends P5Visualizer {
          **/
         start: {
             value: this.start,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'First index to show',
             required: true,
         },
@@ -33,7 +35,7 @@ class ShowFactors extends P5Visualizer {
          **/
         end: {
             value: this.end,
-            forceType: 'integer',
+            type: ParamType.INTEGER,
             displayName: 'Last index to show',
             required: true,
         },
@@ -87,5 +89,6 @@ class ShowFactors extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     ShowFactors,
-    'Produces a table of factors of a sequence'
+    ShowFactors.prototype.name,
+    ShowFactors.prototype.description
 )

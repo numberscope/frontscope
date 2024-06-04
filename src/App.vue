@@ -1,13 +1,15 @@
 <template>
-    <NavBar />
-    <main>
-        <RouterView />
-    </main>
-    <Footer />
+    <div id="container">
+        <NavBar />
+        <main>
+            <RouterView />
+        </main>
+        <!-- <Footer /> -->
+    </div>
 </template>
 
 <script setup lang="ts">
-    import Footer from './views/minor/Footer.vue'
+    // import Footer from './views/minor/Footer.vue'
     import NavBar from './views/minor/NavBar.vue'
     import {RouterView} from 'vue-router'
 </script>
@@ -54,6 +56,15 @@
         --ns-breakpoint-mobile: 580px;
         --ns-breakpoint-tablet: 800px;
         --ns-breakpoint-desktop: 1200px;
+    }
+
+    #container {
+        display: flex;
+        flex-direction: column;
+
+        main {
+            height: 100%;
+        }
     }
 
     * {
