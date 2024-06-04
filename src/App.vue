@@ -14,18 +14,6 @@
 
 <!-- Global styles. This style tag is explicitly unscoped. -->
 <style>
-    * {
-        box-sizing: border-box;
-        font-family: var(--ns-font-main);
-        color: var(--ns-color-black);
-    }
-
-    html,
-    body {
-        margin: 0;
-        padding: 0;
-    }
-
     :root {
         /* Font sizes */
         --ns-size-body: 12px;
@@ -50,7 +38,7 @@
         /* Bolditude */
         --ns-font-weight-medium: 500;
 
-        /* Breakpoint widths 
+        /* Breakpoint widths
         Default styles should be for vertical mobile devices
         (devices narrower than --ns-breakpoint-mobile)
 
@@ -66,6 +54,18 @@
         --ns-breakpoint-mobile: 580px;
         --ns-breakpoint-tablet: 800px;
         --ns-breakpoint-desktop: 1200px;
+    }
+
+    * {
+        box-sizing: border-box;
+        font-family: var(--ns-font-main);
+        color: var(--ns-color-black);
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
     }
 
     /* Display font */

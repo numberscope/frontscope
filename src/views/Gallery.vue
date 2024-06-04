@@ -54,7 +54,7 @@
     const cardName = 'Pinstripe'
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
     p,
     h1,
     h2,
