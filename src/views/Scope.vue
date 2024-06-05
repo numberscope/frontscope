@@ -63,6 +63,11 @@
 </template>
 
 <script lang="ts">
+    import {reactive} from 'vue'
+    import vizMODULES from '@/visualizers/visualizers'
+    import {Specimen} from '@/shared/Specimen'
+    import {exportModule} from '@/sequences/Formula'
+
     /**
      * Positions a tab to be inside a dropzone
      * Resizes the tab to be the same size as the dropzone
@@ -128,6 +133,10 @@
             positionAndSizeTab(tab, dropzone)
         })
     }
+
+    const sequence = new exportModule.sequence(0)
+    const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
+    export const specimen = reactive(new Specimen(visualizer, sequence))
 </script>
 
 <script setup lang="ts">
@@ -135,15 +144,6 @@
     import interact from 'interactjs'
     import {onMounted} from 'vue'
     import ParamEditor from '@/components/ParamEditor.vue'
-    import vizMODULES from '@/visualizers/visualizers'
-    import {exportModule} from '@/sequences/Formula'
-    import {reactive} from 'vue'
-    import {Specimen} from '@/shared/Specimen'
-
-    const sequence = new exportModule.sequence(0)
-    const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
-
-    const specimen = reactive(new Specimen(visualizer, sequence))
 
     onMounted(() => {
         const specimenContainer = document.getElementById(

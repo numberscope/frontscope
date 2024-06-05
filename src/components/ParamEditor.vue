@@ -11,7 +11,12 @@
                 <h1>{{ title }}</h1>
                 <span class="subheading">{{ paramable.name }}</span>
             </div>
-            <ChangeButton></ChangeButton>
+            <ChangeButton
+                :modal-type="ButtonType.Sequence"
+                v-if="title === 'Sequence'" />
+            <ChangeButton
+                :modal-type="ButtonType.Visualizer"
+                v-else-if="title === 'Visualizer'" />
         </div>
 
         <p class="description">{{ paramable.description }}</p>
@@ -42,13 +47,14 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import type {
-        ParamInterface,
         ParamableInterface,
+        ParamInterface,
     } from '../shared/Paramable'
     import typeFunctions from '../shared/ParamType'
     import {ValidationStatus} from '../shared/ValidationStatus'
     import ParamField from './ParamField.vue'
     import ChangeButton from '@/components/ChangeButton.vue'
+    import {ModalType} from '@/shared/modalType'
 
     interface ParamHierarchy {
         param: ParamInterface
@@ -68,28 +74,33 @@
             ChangeButton,
             ParamField,
         },
+        computed: {
+            paramStatuses() {
+                const paramStatuses: {[key: string]: ValidationStatus} = {}
+                Object.keys(this.paramable.params).forEach(
+                    key => (paramStatuses[key] = ValidationStatus.ok())
+                )
+                return paramStatuses
+            },
+            sortedParams() {
+                const sortedParams: {[key: string]: ParamHierarchy} = {}
+                Object.keys(this.paramable.params).forEach(key => {
+                    const param = this.paramable.params[key]
+                    if (!param.visibleDependency)
+                        sortedParams[key] = {param, children: {}}
+                })
+                Object.keys(this.paramable.params).forEach(key => {
+                    const param = this.paramable.params[key]
+                    if (param.visibleDependency)
+                        sortedParams[param.visibleDependency].children[key] =
+                            param
+                })
+                return sortedParams
+            },
+        },
         data() {
-            const paramStatuses: {[key: string]: ValidationStatus} = {}
             const status = ValidationStatus.ok()
-
-            Object.keys(this.paramable.params).forEach(
-                key => (paramStatuses[key] = ValidationStatus.ok())
-            )
-
-            const sortedParams: {[key: string]: ParamHierarchy} = {}
-            Object.keys(this.paramable.params).forEach(key => {
-                const param = this.paramable.params[key]
-                if (!param.visibleDependency)
-                    sortedParams[key] = {param, children: {}}
-            })
-            Object.keys(this.paramable.params).forEach(key => {
-                const param = this.paramable.params[key]
-                if (param.visibleDependency)
-                    sortedParams[param.visibleDependency].children[key] =
-                        param
-            })
-
-            return {paramStatuses, status, sortedParams}
+            return {status, ButtonType: ModalType}
         },
         created() {
             Object.keys(this.paramable.params).forEach(key =>

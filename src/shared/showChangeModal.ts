@@ -1,12 +1,15 @@
 import {reactive} from 'vue'
+import {ModalType} from '@/shared/modalType'
 
 /**
- * Stores a boolean which represents whether the modal
- * for changing sequences should be shown
+ * Stores variables that represent whether the modal
+ * for changing sequences or visualizers should be shown
  */
 export const showChangeModal = reactive({
     show: false,
-    open() {
+    modalType: ModalType.Sequence,
+    open(modalType: ModalType) {
+        this.modalType = modalType
         this.show = true
     },
     close() {

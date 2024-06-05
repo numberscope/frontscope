@@ -2,10 +2,22 @@
     import {showChangeModal} from '@/shared/showChangeModal'
 </script>
 
+<script lang="ts">
+    import {defineComponent, type PropType} from 'vue'
+    import type {ModalType} from '@/shared/modalType'
+
+    export default defineComponent({
+        name: 'ChangeButton',
+        props: {
+            modalType: {type: Number as PropType<ModalType>, required: true},
+        },
+    })
+</script>
+
 <template>
-    <div class="changeModalButton" @click="showChangeModal.open">
+    <div class="changeModalButton" @click="showChangeModal.open(modalType)">
         <img src="../assets/img/change.svg" alt="Change button" />
-        <p>Change Sequence</p>
+        <p>Change {{ modalType === 0 ? 'Sequence' : 'Visualizer' }}</p>
     </div>
 </template>
 

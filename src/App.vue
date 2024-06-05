@@ -1,6 +1,8 @@
 <template>
     <div id="container">
-        <ChangeSequenceModal v-show="showChangeModal.show" />
+        <ChangeModal
+            :modal-type="showChangeModal.modalType"
+            v-show="showChangeModal.show" />
         <NavBar />
         <main>
             <RouterView />
@@ -13,7 +15,7 @@
     // import Footer from './views/minor/Footer.vue'
     import NavBar from './views/minor/NavBar.vue'
     import {RouterView} from 'vue-router'
-    import ChangeSequenceModal from '@/components/ChangeSequenceModal.vue'
+    import ChangeModal from '@/components/ChangeModal.vue'
     import {showChangeModal} from '@/shared/showChangeModal'
 </script>
 
