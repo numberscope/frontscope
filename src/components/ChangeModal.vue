@@ -68,8 +68,8 @@
                         v-for="sequence in sequences"
                         :key="sequence.name"
                         @click="
-                            specimen.setSequence(sequence)
-                            showChangeModal.close()
+                            specimen.setSequence(sequence),
+                                showChangeModal.close()
                         ">
                         <h2>{{ sequence.name }}</h2>
                         <p>{{ sequence.description }}</p>
@@ -81,8 +81,8 @@
                         v-for="visualizer in visualizers"
                         :key="visualizer.name"
                         @click="
-                            specimen.setVisualizer(visualizer)
-                            showChangeModal.close()
+                            specimen.setVisualizer(visualizer),
+                                showChangeModal.close()
                         ">
                         <h2>{{ visualizer.name }}</h2>
                         <p>{{ visualizer.description }}</p>
