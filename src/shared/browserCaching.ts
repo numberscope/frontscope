@@ -1,5 +1,6 @@
 //Key of where the urls are saved, is arbitrary
 const cacheKey = 'savedUrls'
+const currentKey = 'currentKey'
 
 function getURLs(): string[] {
     // Retrieves the saved URLs from browser cache
@@ -13,6 +14,37 @@ function getURLs(): string[] {
     }
 
     return savedUrls
+}
+
+export function getCurrent(): string {
+    // Retrieves the saved URL in the current slot
+    const savedCurrent = localStorage.getItem(currentKey)
+
+    //Creates an empty saved URL in case the slot is somehow empty
+    let currentURL: string = ''
+
+    //Overrides the empty URL with whatever is in the memory
+    if (savedCurrent) {
+        currentURL = savedCurrent
+    }
+
+    return currentURL
+}
+
+export function setCurrent(url: string): void {
+    localStorage.setItem(currentKey, url)
+}
+
+export function getURLAt(idx: number): string {
+    const savedUrls = getURLs()
+
+    //Checks that the index is valid
+    if (idx >= 0 && idx < savedUrls.length) {
+        //Returns the URL stored at the position indicated
+        return savedUrls[idx]
+    } else {
+        throw new Error('Index out of bounds')
+    }
 }
 
 export function saveURL(url: string): void {
