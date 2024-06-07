@@ -301,21 +301,22 @@
 </template>
 
 <style scoped lang="scss">
+    // mobile styles
     .buttons {
         display: none;
     }
     .tab {
         width: 300px;
         height: fit-content;
-        z-index: 50;
     }
     .content {
         padding: 16px;
         width: 100%;
         overflow-y: scroll;
         overflow-x: hidden;
+        max-width: 500px;
     }
-
+    // desktop styles
     @media (min-width: 700px) {
         .buttons {
             display: flex;

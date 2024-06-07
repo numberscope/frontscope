@@ -326,6 +326,7 @@
 </script>
 
 <style scoped lang="scss">
+    // mobile styles
     #specimen-container {
         display: flex;
         flex-direction: column;
@@ -336,10 +337,10 @@
     .dropzone-container {
         display: none;
     }
-    .canvas-container {
+    #canvas-container {
         order: 1;
         border-bottom: 1px solid var(--ns-color-black);
-        min-height: fit-content;
+        min-height: 300px;
     }
     #sequenceTab {
         width: 100%;
@@ -355,8 +356,12 @@
         order: 3;
         border-bottom: 1px solid var(--ns-color-black);
     }
-
+    // desktop styles
     @media (min-width: 700px) {
+        #sequenceTab,
+        #visualiserTab {
+            width: 300px;
+        }
         #specimen-container {
             height: calc(100vh - 54px);
             position: relative;
@@ -367,6 +372,7 @@
         }
 
         #canvas-container {
+            order: unset;
             flex: 1;
             position: relative;
             overflow: hidden;
@@ -428,7 +434,9 @@
         }
 
         .tab {
+            width: 300px;
             position: absolute;
+            order: unset;
         }
     }
 </style>
