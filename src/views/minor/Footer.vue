@@ -24,7 +24,7 @@
 <style>
     footer {
         color: var(--ns-information-foreground);
-        background-color: var(--ns-information-background);
+        background-color: var(--ns-color-primary);
         height: var(--ns-footer-height);
         padding-top: 10px;
         width: 100%;

@@ -57,7 +57,7 @@
 
             // minimum size
             interact.modifiers.restrictSize({
-                min: {width: 0, height: 90},
+                min: {width: 700, height: 90},
             }),
         ],
     })
@@ -270,7 +270,6 @@
     }
     // select the tab when it is clicked
     function selected(event: MouseEvent) {
-        console.log('selected')
         const tab = (event.currentTarget as HTMLElement).closest('.tab')
         if (!(tab instanceof HTMLElement)) return
 
@@ -303,50 +302,67 @@
 
 <style scoped lang="scss">
     .buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        padding-right: 8px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-    }
-    .minimize,
-    .docking {
-        cursor: pointer;
-        color: var(--ns-color-white);
-        font-size: 12px;
+        display: none;
     }
     .tab {
-        border: 1px solid var(--ns-color-black);
         width: 300px;
-        height: 200px;
+        height: fit-content;
         z-index: 50;
     }
-
-    .resize {
-        height: 16px;
-        width: 100%;
-        position: absolute;
-        bottom: 0;
-    }
-
-    // The drag element is actually underneath the entire window
-    // This is so that dropping is more intuitive
-    .drag {
-        position: absolute;
-        height: 100%;
-        width: 100%;
-        background-color: var(--ns-color-black);
-    }
-
     .content {
         padding: 16px;
-        position: absolute;
-        top: 16px;
-        background-color: var(--ns-color-white);
         width: 100%;
-        height: calc(100% - 16px);
         overflow-y: scroll;
         overflow-x: hidden;
+    }
+
+    @media (min-width: 700px) {
+        .buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding-right: 8px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+        }
+        .minimize,
+        .docking {
+            cursor: pointer;
+            color: var(--ns-color-white);
+            font-size: 12px;
+        }
+        .tab {
+            border: 1px solid var(--ns-color-black);
+            width: 300px;
+            height: 200px;
+            z-index: 50;
+        }
+
+        .resize {
+            height: 16px;
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+        }
+
+        // The drag element is actually underneath the entire window
+        // This is so that dropping is more intuitive
+        .drag {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background-color: var(--ns-color-black);
+        }
+
+        .content {
+            padding: 16px;
+            position: absolute;
+            top: 16px;
+            background-color: var(--ns-color-white);
+            width: 100%;
+            height: calc(100% - 16px);
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
     }
 </style>
