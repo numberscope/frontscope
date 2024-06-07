@@ -203,7 +203,15 @@
         window.addEventListener('resize', () => {
             positionAndSizeAllTabs()
         })
+
         specimen.setup(canvasContainer)
+
+        setInterval(() => {
+            specimen.resized(
+                canvasContainer.clientWidth,
+                canvasContainer.clientHeight
+            )
+        }, 500)
     })
 
     // enable draggables to be dropped into this
@@ -337,6 +345,9 @@
         flex: 1;
         position: relative;
         overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .dropzone-container {

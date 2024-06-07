@@ -41,6 +41,7 @@ export abstract class P5Visualizer
 {
     private _sketch?: p5
     private _canvas?: p5.Renderer
+    private _size: {width: number; height: number}
 
     /* In the P5Visualizer hierarchy, the visualization() string of the
      * visualizer is supplied by a static member called `visualizationName`.
@@ -79,6 +80,7 @@ export abstract class P5Visualizer
     constructor(seq: SequenceInterface) {
         super()
         this.seq = seq
+        this._size = {width: 0, height: 0}
     }
 
     /***
@@ -91,12 +93,17 @@ export abstract class P5Visualizer
      * inhabit() method.
      * @param element HTMLElement  Where the visualizer should inject itself
      */
-    inhabit(element: HTMLElement): void {
+    inhabit(
+        element: HTMLElement,
+        size: {width: number; height: number}
+    ): void {
         if (this.within === element) return // already inhabiting there
         if (this.within) {
             // oops, already inhabiting somewhere else; depart there
             this.depart(this.within)
         }
+        this._size = size
+        console.log(size.width, size.height)
         this.within = element
         this._sketch = new p5(sketch => {
             this._sketch = sketch // must assign here,  as setup is called
@@ -148,7 +155,7 @@ export abstract class P5Visualizer
         const element = this.within!
         this.stop()
         this.depart(element)
-        this.inhabit(element)
+        this.inhabit(element, this._size)
         this.show()
     }
 
@@ -178,22 +185,14 @@ export abstract class P5Visualizer
     }
 
     /**
-     * Determining the maximum pixel width and height the containing
-     * element allows.
-     * @returns [number, number] Maximum width and height of inhabited element
-     */
-    measure(): [number, number] {
-        if (!this.within) return [0, 0]
-        return [this.within.clientWidth, this.within.clientHeight]
-    }
-
-    /**
      * The p5 setup for this visualizer. Note that derived Visualizers
      * _must_ call this first.
      */
     setup() {
-        const [w, h] = this.measure()
-        this._canvas = this.sketch.background('white').createCanvas(w, h)
+        console.log(this._size.width, this._size.height)
+        this._canvas = this.sketch
+            .background('white')
+            .createCanvas(this._size.width, this._size.height)
     }
 
     /**
@@ -203,17 +202,6 @@ export abstract class P5Visualizer
      * associated sequence/parameters.
      */
     abstract draw(): void
-
-    /**
-     * What to do when the window resizes
-     */
-    windowResized(): void {
-        if (!this._sketch) return
-        // Make sure the canvas isn't acting as a "strut" keeping the div big:
-        this._sketch.resizeCanvas(10, 10)
-        const [w, h] = this.measure()
-        this._sketch.resizeCanvas(w, h)
-    }
 
     /**
      * Get rid of the visualization altogether
@@ -252,7 +240,7 @@ export abstract class P5Visualizer
         const element = this.within!
         this.stop()
         this.depart(element)
-        this.inhabit(element)
+        this.inhabit(element, this._size)
         this.show()
     }
 
@@ -262,6 +250,6 @@ export abstract class P5Visualizer
      * this to request a specific aspect ratio.
      */
     requestedAspectRatio(): number | undefined {
-        return undefined
+        return 1.77
     }
 }
