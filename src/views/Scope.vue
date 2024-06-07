@@ -73,6 +73,7 @@
         tab: HTMLElement,
         dropzone: HTMLElement
     ): void {
+        const dropzoneContainer = dropzone.parentElement?.parentElement
         const dropzoneRect = dropzone.getBoundingClientRect()
 
         const {x, y} = translateCoords(dropzoneRect.x, dropzoneRect.y)
@@ -81,8 +82,32 @@
         tab.style.left = x + 'px'
         tab.style.height = dropzoneRect.height + 'px'
 
+        // update the classlist with "minimized"
+        // if the height is less or equal than 110
+        if (dropzoneRect.height <= 110) {
+            tab.classList.add('minimized')
+        } else {
+            tab.classList.remove('minimized')
+        }
+
         tab.setAttribute('data-x', x.toString())
         tab.setAttribute('data-y', y.toString())
+
+        if (
+            tab instanceof HTMLElement
+            && dropzoneContainer instanceof HTMLElement
+            && dropzone instanceof HTMLElement
+            && dropzone.classList.contains('empty')
+        ) {
+            dropzone.classList.remove('empty')
+            dropzone.classList.remove('drop-hover')
+            dropzoneContainer.classList.remove('empty')
+            tab.classList.add('docked')
+            const dropzoneAttribute = dropzone.getAttribute('dropzone')
+            if (dropzoneAttribute !== null) {
+                tab.setAttribute('docked', dropzoneAttribute)
+            }
+        }
     }
 
     /**
@@ -115,7 +140,7 @@
      * Doesn't affect non-docked tabs.
      * Used when the window is resized.
      */
-    function positionAndSizeAllTabs(): void {
+    export function positionAndSizeAllTabs(): void {
         document.querySelectorAll('.tab').forEach((tab: Element) => {
             if (!(tab instanceof HTMLElement)) return
             if (tab.getAttribute('docked') === 'none') return
@@ -126,6 +151,29 @@
             if (!(dropzone instanceof HTMLElement)) return
 
             positionAndSizeTab(tab, dropzone)
+        })
+    }
+    // selects a tab
+    export function selectTab(tab: HTMLElement): void {
+        deselectTab()
+        const drag = tab.querySelector('.drag')
+        if (!(drag instanceof HTMLElement)) return
+
+        drag.classList.add('selected')
+        drag.style.backgroundColor = 'var(--ns-color-primary)'
+        tab.style.zIndex = '100'
+    }
+    // deselects all tabs
+    export function deselectTab(): void {
+        const tabs = document.querySelectorAll('.tab')
+        tabs.forEach(tab => {
+            if (tab instanceof HTMLElement) {
+                const drag = tab.querySelector('.drag')
+                if (!(drag instanceof HTMLElement)) return
+                drag.classList.remove('selected')
+                drag.style.backgroundColor = 'var(--ns-color-black)'
+                tab.style.zIndex = '1'
+            }
         })
     }
 </script>
@@ -254,7 +302,7 @@
                     dropzoneWrapper.style.height =
                         Math.min(
                             event.rect.height,
-                            dropContRect.height - 144
+                            dropContRect.height - 90
                         ) + 'px'
                     dropzoneWrapper.classList.add('resized')
                     positionAndSizeAllTabs()
@@ -269,7 +317,7 @@
 
             // minimum size
             interact.modifiers.restrictSize({
-                min: {width: 0, height: 128},
+                min: {width: 0, height: 90},
             }),
         ],
     })
@@ -320,7 +368,7 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            max-height: calc(100% - 128px);
+            max-height: calc(100% - 90px);
 
             &.resized {
                 flex-grow: unset;
