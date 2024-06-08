@@ -1,12 +1,41 @@
-//Key of where the urls are saved, is arbitrary
-const cacheKey = 'savedUrls'
-const currentKey = 'currentKey'
+/* A "URLName" is a triple of strings,
+    The first string contains the specimen URL
+    The second string contains the specimen name
+    The third string contains the date on which it was last saved
+*/
 
-function getURLs(): string[] {
+// NON MEMORY RELATED HELPER FUNCTIONS
+interface URLName {
+    url: string
+    name: string
+    date: string
+}
+
+function getCurrentDate(): string {
+    const currentDate = new Date()
+    const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+    }
+    return new Intl.DateTimeFormat('en-US', options).format(currentDate)
+}
+
+//MEMORY RELATED HELPER FUNCTIONS AND VARIABLES
+
+//Key of where the URLNames are saved (is arbitrary)
+const cacheKey = 'savedSpecimens'
+const currentKey = 'currentSpecimen'
+
+function getURLNames(): URLName[] {
     // Retrieves the saved URLs from browser cache
     const savedUrlsJson = localStorage.getItem(cacheKey)
     // Creates empty savedUrls in case none is found in browser storage
-    let savedUrls: string[] = []
+    let savedUrls: URLName[] = []
 
     // Parses the saved URLs if they exist and overrides empty savedUrls
     if (savedUrlsJson) {
@@ -16,62 +45,108 @@ function getURLs(): string[] {
     return savedUrls
 }
 
-export function getCurrent(): string {
+//MAIN FUNCTIONS
+
+export function getCurrent(): URLName {
     // Retrieves the saved URL in the current slot
     const savedCurrent = localStorage.getItem(currentKey)
 
     //Creates an empty saved URL in case the slot is somehow empty
-    let currentURL: string = ''
+    let currentURLName: URLName = {url: '', name: '', date: ''}
 
     //Overrides the empty URL with whatever is in the memory
     if (savedCurrent) {
-        currentURL = savedCurrent
+        currentURLName = JSON.parse(savedCurrent)
     }
 
-    return currentURL
+    return currentURLName
 }
 
-export function setCurrent(url: string): void {
-    localStorage.setItem(currentKey, url)
+export function updateCurrent(url: string, name: string): void {
+    // Overrides url and name in the current slot
+    const current: URLName = getCurrent()
+    current.name = name
+    current.url = url
+    localStorage.setItem(currentKey, JSON.stringify(current))
 }
 
-export function getURLAt(idx: number): string {
-    const savedUrls = getURLs()
+export function getURLNameAt(idx: number): URLName {
+    const savedUrlNames = getURLNames()
 
     //Checks that the index is valid
-    if (idx >= 0 && idx < savedUrls.length) {
-        //Returns the URL stored at the position indicated
-        return savedUrls[idx]
+    if (idx >= 0 && idx < savedUrlNames.length) {
+        //Returns the URLNames stored at the position indicated
+        return savedUrlNames[idx]
     } else {
         throw new Error('Index out of bounds')
     }
 }
 
-export function saveURL(url: string): void {
-    const savedUrls = getURLs()
+export function getURLNameByName(name: string): URLName {
+    const savedUrlNames = getURLNames()
 
-    // Checks if the URL is already in the array
-    if (!savedUrls.includes(url)) {
-        // Appends the URL to the array
-        savedUrls.push(url)
+    // Finds the URLName that matches the given name
+    const urlName = savedUrlNames.find(urlName => urlName.name === name)
 
-        // Saves the updated array back to the browser cache
-        localStorage.setItem(cacheKey, JSON.stringify(savedUrls))
+    // Return the found URLName object or null if not found
+    if (urlName) {
+        return urlName
+    } else {
+        // Throws an error if that name is not assigned to any URLName
+        throw new Error('Name not found')
     }
 }
 
-export function deleteURL(url: string): void {
-    const savedUrls = getURLs()
+export function saveSpecimen(url: string, name: string): void {
+    const savedUrls = getURLNames()
+    let urlName = {url: url, name: name, date: getCurrentDate()}
+    let contains = false
 
-    // Checks if the URL is in the array
-    const urlIndex = savedUrls.indexOf(url)
-    if (urlIndex !== -1) {
-        // Removes the URL from the array
-        savedUrls.splice(urlIndex, 1)
+    //Checks if the URLName's name is contained in the array
+    try {
+        urlName = getURLNameByName(name)
+        contains = true
 
-        // Saves the updated array back to the browser cache
-        localStorage.setItem(cacheKey, JSON.stringify(savedUrls))
-    } else {
-        throw new Error('Cannot delete a specimen which is not stored.')
+        // TODO send warning
+    } catch (error) {
+        //If there is no name which matches, that is ok
     }
+
+    // Checks if the URLName is already in the array
+    if (!contains) {
+        // Appends the URL to the array
+        savedUrls.push(urlName)
+    } else {
+        // Searches for a URLName with a matching name, if it is found it is overriden
+        for (let i = 0; i < savedUrls.length; i++) {
+            if (savedUrls[i].name === name) {
+                savedUrls[i] = {url, name, date: getCurrentDate()}
+                break
+            }
+        }
+    }
+
+    // Saves the updated array back to the browser cache
+    localStorage.setItem(cacheKey, JSON.stringify(savedUrls))
+}
+
+export function deleteSpecimen(name: string): void {
+    const savedUrls = getURLNames()
+
+    // Finds the index of the URLName object with the matching name
+    const index = savedUrls.findIndex(urlName => urlName.name === name)
+
+    // If the URLName object is found, this removes it from the array
+    if (index !== -1) {
+        savedUrls.splice(index, 1)
+    }
+
+    // Saves the updated array back to the browser cache
+    localStorage.setItem(cacheKey, JSON.stringify(savedUrls))
+}
+
+export function openSpecimen(name: string): void {
+    const UrlName = getURLNameByName(name)
+
+    localStorage.setItem(currentKey, JSON.stringify(UrlName))
 }
