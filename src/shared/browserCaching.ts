@@ -117,7 +117,8 @@ export function saveSpecimen(url: string, name: string): void {
         // Appends the URL to the array
         savedUrls.push(urlName)
     } else {
-        // Searches for a URLName with a matching name, if it is found it is overriden
+        // Searches for a URLName with a matching name,
+        // if it is found it is overriden
         for (let i = 0; i < savedUrls.length; i++) {
             if (savedUrls[i].name === name) {
                 savedUrls[i] = {url, name, date: getCurrentDate()}
