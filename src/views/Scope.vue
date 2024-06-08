@@ -73,6 +73,8 @@
         tab: HTMLElement,
         dropzone: HTMLElement
     ): void {
+        if (window.innerWidth < 700) return
+
         const dropzoneContainer = dropzone.parentElement?.parentElement
         const dropzoneRect = dropzone.getBoundingClientRect()
 
@@ -317,84 +319,124 @@
 
             // minimum size
             interact.modifiers.restrictSize({
-                min: {width: 0, height: 90},
+                min: {width: 700, height: 90},
             }),
         ],
     })
 </script>
 
 <style scoped lang="scss">
+    // mobile styles
     #specimen-container {
-        height: calc(100vh - 54px);
-        position: relative;
-    }
-    #main {
-        display: flex;
-        height: 100%;
-    }
-
-    #canvas-container {
-        flex: 1;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .dropzone-container {
         display: flex;
         flex-direction: column;
-        width: 300px;
-        height: 100%;
-
-        &#right-dropzone-container {
-            right: 0;
-            top: 0;
+        min-height: fit-content;
+        padding-left: auto;
+        padding-right: auto;
+    }
+    .dropzone-container {
+        display: none;
+    }
+    #canvas-container {
+        order: 1;
+        border-bottom: 1px solid var(--ns-color-black);
+        height: 301px;
+    }
+    #sequenceTab {
+        width: 100%;
+        padding-left: auto;
+        padding-right: auto;
+        order: 2;
+        border-bottom: 1px solid var(--ns-color-black);
+    }
+    #visualiserTab {
+        width: 100%;
+        padding-left: auto;
+        padding-right: auto;
+        order: 3;
+        border-bottom: 1px solid var(--ns-color-black);
+    }
+    // desktop styles
+    @media (min-width: 700px) {
+        #sequenceTab,
+        #visualiserTab {
+            width: 300px;
+        }
+        #specimen-container {
+            height: calc(100vh - 54px);
+            position: relative;
+        }
+        #main {
+            display: flex;
+            height: 100%;
         }
 
-        &#left-dropzone-container {
-            left: 0;
-            top: 0;
+        #canvas-container {
+            order: unset;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
         }
 
-        &.empty {
-            position: absolute;
-            pointer-events: none;
-
-            .dropzone-resize.material-icons-sharp {
-                display: none;
-            }
-        }
-
-        .dropzone-size-wrapper {
-            flex-grow: 1;
+        .dropzone-container {
             display: flex;
             flex-direction: column;
-            max-height: calc(100% - 90px);
+            width: 300px;
+            height: 100%;
 
-            &.resized {
-                flex-grow: unset;
+            &#right-dropzone-container {
+                right: 0;
+                top: 0;
             }
 
-            .dropzone-resize {
-                height: 16px;
-                font-size: 16px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: ns-resize;
+            &#left-dropzone-container {
+                left: 0;
+                top: 0;
             }
 
-            .dropzone {
+            &.empty {
+                position: absolute;
+                pointer-events: none;
+
+                .dropzone-resize.material-icons-sharp {
+                    display: none;
+                }
+            }
+
+            .dropzone-size-wrapper {
                 flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                max-height: calc(100% - 90px);
 
-                &.drop-hover {
-                    background-color: var(--ns-color-primary);
-                    filter: brightness(120%);
+                &.resized {
+                    flex-grow: unset;
+                }
+
+                .dropzone-resize {
+                    height: 16px;
+                    font-size: 16px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    cursor: ns-resize;
+                }
+
+                .dropzone {
+                    flex-grow: 1;
+
+                    &.drop-hover {
+                        background-color: var(--ns-color-primary);
+                        filter: brightness(120%);
+                    }
                 }
             }
         }
-    }
 
-    .tab {
-        position: absolute;
+        .tab {
+            width: 300px;
+            position: absolute;
+            order: unset;
+        }
     }
 </style>
