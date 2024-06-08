@@ -11,7 +11,7 @@
                 title="Visualizer"
                 :paramable="specimen.getVisualizer()" />
         </tab>
-
+        <SpecimenBar class="specimen-bar" />
         <!-- 
             The dropzone ids must remain like "[position]-dropzone"
             where [position] is the same as the dropzone attribute.
@@ -189,7 +189,7 @@
     import {exportModule} from '@/sequences/Formula'
     import {reactive} from 'vue'
     import {Specimen} from '@/shared/Specimen'
-
+    import SpecimenBar from '@/components/SpecimenBar.vue'
     const sequence = new exportModule.sequence(0)
     const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
 
@@ -346,14 +346,20 @@
         width: 100%;
         padding-left: auto;
         padding-right: auto;
-        order: 2;
+        order: 3;
         border-bottom: 1px solid var(--ns-color-black);
     }
     #visualiserTab {
         width: 100%;
         padding-left: auto;
         padding-right: auto;
-        order: 3;
+        order: 4;
+        border-bottom: 1px solid var(--ns-color-black);
+    }
+    .specimen-bar {
+        order: 2;
+        padding-left: auto;
+        padding-right: auto;
         border-bottom: 1px solid var(--ns-color-black);
     }
     // desktop styles
@@ -361,6 +367,10 @@
         #sequenceTab,
         #visualiserTab {
             width: 300px;
+        }
+        .specimen-bar {
+            display: none;
+            border: 0px;
         }
         #specimen-container {
             height: calc(100vh - 54px);
