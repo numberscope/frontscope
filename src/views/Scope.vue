@@ -340,7 +340,7 @@
     #canvas-container {
         order: 1;
         border-bottom: 1px solid var(--ns-color-black);
-        min-height: 300px;
+        height: 301px;
     }
     #sequenceTab {
         width: 100%;
