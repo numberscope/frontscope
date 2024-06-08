@@ -27,7 +27,7 @@ for (const file in vizFiles) {
     // if it has an export module...
     if (mod.exportModule) {
         // add the export module to our object
-        vizMODULES[file.replace(/(\.\/|\.ts)/g, '')] = mod.exportModule
+        vizMODULES[mod.exportModule.name] = mod.exportModule
     }
 }
 

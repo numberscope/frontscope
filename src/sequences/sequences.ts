@@ -11,7 +11,7 @@ for (const file in seqFiles) {
     const mod = seqFiles[file] as {exportModule: SequenceExportModule}
     if (mod.exportModule) {
         // add the export module to our object
-        seqMODULES[file.replace(/(\.\/|\.ts)/g, '')] = mod.exportModule
+        seqMODULES[mod.exportModule.name] = mod.exportModule
     }
 }
 
