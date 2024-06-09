@@ -372,6 +372,8 @@
         }
 
         #canvas-container {
+            height: unset;
+
             order: unset;
             flex: 1;
             position: relative;
