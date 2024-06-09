@@ -15,7 +15,7 @@
 
 import {ParamType} from '../shared/ParamType'
 import {P5Visualizer} from '../visualizers/P5Visualizer'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
 
 /** md
 # Entries (p5 Template)

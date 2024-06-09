@@ -178,6 +178,12 @@ export abstract class P5Visualizer
     }
 
     /**
+     * Continue displaying the visualizer
+     */
+    continue(): void {
+        this._sketch?.loop()
+    }
+    /**
      * Determining the maximum pixel width and height the containing
      * element allows.
      * @returns [number, number] Maximum width and height of inhabited element

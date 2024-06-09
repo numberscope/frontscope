@@ -13,18 +13,40 @@
                 </div>
             </div>
         </div>
-        <div class="button material-icons-sharp">refresh</div>
-        <div class="button material-icons-sharp">pause</div>
+        <div class="button material-icons-sharp" @click="refresh">
+            refresh
+        </div>
+        <div class="button material-icons-sharp" @click="togglePause">
+            pause
+        </div>
         <div class="button material-icons-sharp">share</div>
     </div>
 </template>
 
-<script lang="ts">
-    import {defineComponent} from 'vue'
-
-    export default defineComponent({
-        name: 'SpecimenBar',
-    })
+<script setup lang="ts">
+    import {specimen} from '../views/Scope.vue'
+    import {visualizer} from '../views/Scope.vue'
+    // true if paused, false if playing
+    let paused = false
+    // refreshes the specimen
+    function refresh() {
+        specimen.updateSequence()
+        paused = false
+    }
+    // toggles the pause state
+    function togglePause() {
+        if (paused) {
+            // continue the visualizer
+            visualizer.continue()
+            paused = false
+            console.log('unpaused')
+        } else {
+            // pause the visualizer
+            visualizer.stop()
+            paused = true
+            console.log('paused')
+        }
+    }
 </script>
 <style>
     .specimen-bar {
@@ -57,6 +79,7 @@
     .button {
         border: 1px solid var(--ns-color-black);
         color: var(--ns-color-grey);
+        cursor: pointer;
     }
     select {
         border: 1px solid var(--ns-color-black);

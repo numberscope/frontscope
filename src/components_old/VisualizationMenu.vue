@@ -23,7 +23,7 @@
     import type {
         VisualizerInterface,
         VisualizerExportModule,
-    } from '@/visualizers/VisualizerInterface'
+    } from '../visualizers/VisualizerInterface'
     import VizSelector from './ToolSelector.vue'
     import SeqVizParamsModal from './SeqVizParamsModal.vue'
     import type {SequenceInterface} from '../sequences/SequenceInterface'

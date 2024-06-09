@@ -1,6 +1,6 @@
 import p5 from 'p5'
 import {P5Visualizer} from './P5Visualizer'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
 
 /** md

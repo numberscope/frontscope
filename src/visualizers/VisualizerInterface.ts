@@ -49,6 +49,10 @@ export interface VisualizerInterface extends ParamableInterface {
      */
     stop(): void
     /**
+     * Continue drawing the visualization
+     */
+    continue(): void
+    /**
      * Remove the visualization from a DOM element, release its resources, etc.
      * It is an error to call this if the visualization is not currently
      * inhabit()ing any element. If the visualization is currently

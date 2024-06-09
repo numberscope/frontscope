@@ -1,7 +1,7 @@
 import {modulo} from '../shared/math'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {P5Visualizer} from '../visualizers/P5Visualizer'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
 import type p5 from 'p5'
 import {ParamType} from '../shared/ParamType'
 

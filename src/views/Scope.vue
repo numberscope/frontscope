@@ -178,22 +178,24 @@
             }
         })
     }
+    // moved paramaters out of setup and into here
+    // because i need to access them from navBar.vue
+    const sequence = new exportModule.sequence(0)
+    export const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
+
+    export const specimen = reactive(new Specimen(visualizer, sequence))
 </script>
 
 <script setup lang="ts">
-    import Tab from '@/components/Tab.vue'
+    import Tab from '../components/Tab.vue'
     import interact from 'interactjs'
     import {onMounted} from 'vue'
-    import ParamEditor from '@/components/ParamEditor.vue'
-    import vizMODULES from '@/visualizers/visualizers'
-    import {exportModule} from '@/sequences/Formula'
+    import ParamEditor from '../components/ParamEditor.vue'
+    import vizMODULES from '../visualizers/visualizers'
+    import {exportModule} from '../sequences/Formula'
     import {reactive} from 'vue'
-    import {Specimen} from '@/shared/Specimen'
-    import SpecimenBar from '@/components/SpecimenBar.vue'
-    const sequence = new exportModule.sequence(0)
-    const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
-
-    const specimen = reactive(new Specimen(visualizer, sequence))
+    import {Specimen} from '../shared/Specimen'
+    import SpecimenBar from '../components/SpecimenBar.vue'
 
     onMounted(() => {
         const specimenContainer = document.getElementById(
