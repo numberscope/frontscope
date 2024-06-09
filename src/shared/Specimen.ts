@@ -117,20 +117,20 @@ export class Specimen {
             throw new Error('Invalid URL')
 
         // Load visualizer and sequence from names
-        const seqExportModule = seqMODULES[`${data['sequence']}`]
-        let sequence: SequenceInterface<GenericParamDescription>
+        const seqExportMod = seqMODULES[`${data['sequence']}`]
+        type SeqIntf = SequenceInterface<GenericParamDescription>
+        let sequence: SeqIntf
 
-        if (seqExportModule.kind === SequenceExportKind.INSTANCE)
-            sequence =
-                seqExportModule.sequenceOrConstructor as SequenceInterface<GenericParamDescription>
+        if (seqExportMod.kind === SequenceExportKind.INSTANCE)
+            sequence = seqExportMod.sequenceOrConstructor as SeqIntf
         else
             sequence =
-                new (seqExportModule.sequenceOrConstructor as SequenceConstructor)(
+                new (seqExportMod.sequenceOrConstructor as SequenceConstructor)(
                     0
                 )
 
-        const vizExportModule = vizMODULES[`${data['visualizer']}`]
-        const visualizer = new vizExportModule.visualizer(sequence)
+        const vizExportMod = vizMODULES[`${data['visualizer']}`]
+        const visualizer = new vizExportMod.visualizer(sequence)
 
         // Assign parameters to the visualizers and sequences
         loadFromBase64(`${data['sequenceParams']}`, sequence)
