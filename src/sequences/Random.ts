@@ -4,6 +4,11 @@ import simpleFactor from './simpleFactor'
 import {ParamType} from '../shared/ParamType'
 import type {ParamValues} from '@/shared/Paramable'
 
+const seqName = 'Random Integers in Range'
+const seqDescription =
+    'A sequence of integers chosen independently uniformly '
+    + 'from n to m inclusive.'
+
 const paramDesc = {
     min: {
         default: 0,
@@ -26,10 +31,8 @@ const paramDesc = {
  * Starts at index 0 and has no limit.
  */
 class Random extends Cached<typeof paramDesc> {
-    name = 'Random Integers in Range'
-    description =
-        'A sequence of integers chosen independently uniformly '
-        + 'from n to m inclusive.'
+    name = seqName
+    description = seqDescription
     min = paramDesc.min.default as number
     max = paramDesc.max.default as number
 
@@ -67,4 +70,8 @@ class Random extends Cached<typeof paramDesc> {
     }
 }
 
-export const exportModule = SequenceExportModule.family(Random)
+export const exportModule = SequenceExportModule.family(
+    Random,
+    seqName,
+    seqDescription
+)

@@ -36,6 +36,11 @@ the p5.js library. It includes explanatory comments and minimal examples of
 required and commonly used features._
 **/
 
+// === Visualizer name ===
+// Appears in the visualizer list and bundle card titles
+const vizName = 'Entries (p5 Template)'
+const vizDescription = 'Step through entries one at a time'
+
 const paramDesc = {
     /** md
 - **Step size:** How far to step when the user presses an arrow key. _(Positive
@@ -50,10 +55,8 @@ integer.)_
 } as const
 
 class P5VisualizerTemplate extends P5Visualizer<typeof paramDesc> {
-    // === Visualizer name ===
-    // Appears in the visualizer list and bundle card titles
-    name = 'Entries (p5 Template)'
-    description = 'Step through entries one at a time'
+    name = vizName
+    description = vizDescription
 
     // === Parameters ===
     // Top-level properties that the user can choose while creating the
@@ -256,4 +259,8 @@ because infinity is, well, infinitely far away!
 // Putting this at the end of the source file makes it easy for other people
 // to find. Put the visualizer class and a short description string into the
 // export module constructor
-export const exportModule = new VisualizerExportModule(P5VisualizerTemplate)
+export const exportModule = new VisualizerExportModule(
+    P5VisualizerTemplate,
+    vizName,
+    vizDescription
+)

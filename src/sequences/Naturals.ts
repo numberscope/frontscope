@@ -2,6 +2,9 @@ import {SequenceExportModule} from './SequenceInterface'
 import {Cached} from './Cached'
 import {ParamType} from '../shared/ParamType'
 
+const seqName = 'Natural Numbers'
+const seqDescription = 'A sequence of the natural numbers'
+
 const paramDesc = {
     includeZero: {
         default: false,
@@ -18,8 +21,8 @@ const paramDesc = {
  * example of using Cached.
  */
 class Naturals extends Cached<typeof paramDesc> {
-    name = 'Natural Numbers'
-    description = 'A sequence of the natural numbers'
+    name = seqName
+    description = seqDescription
     includeZero = paramDesc.includeZero.default
     private begin = 1
 
@@ -47,4 +50,8 @@ class Naturals extends Cached<typeof paramDesc> {
     }
 }
 
-export const exportModule = SequenceExportModule.family(Naturals)
+export const exportModule = SequenceExportModule.family(
+    Naturals,
+    seqName,
+    seqDescription
+)

@@ -47,6 +47,9 @@ enum ColorStyle {
     Highlighting_one_walker,
 }
 
+const vizName = 'Chaos'
+const vizDescription = 'Chaos game played using a sequence to select moves'
+
 const paramDesc = {
     corners: {
         default: 4,
@@ -176,8 +179,8 @@ const paramDesc = {
 // circles fade to the outside
 
 class Chaos extends P5Visualizer<typeof paramDesc> {
-    name = 'Chaos'
-    description = 'Chaos game played using a sequence to select moves'
+    name = vizName
+    description = vizDescription
     corners = 4
     frac = 0.5
     walkers = 1
@@ -459,4 +462,8 @@ class Chaos extends P5Visualizer<typeof paramDesc> {
     }
 }
 
-export const exportModule = new VisualizerExportModule(Chaos)
+export const exportModule = new VisualizerExportModule(
+    Chaos,
+    vizName,
+    vizDescription
+)

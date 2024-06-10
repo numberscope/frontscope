@@ -22,6 +22,11 @@ that each difference appears between and below the two numbers it's the
 difference of.
 **/
 
+const vizName = 'Differences'
+const vizDescription =
+    'Produces a table of differences '
+    + 'between consecutive entries, potentially iterated several times'
+
 const paramDesc = {
     /** md
 - **Entries in top row:** How many sequence entries to display in the top
@@ -47,10 +52,8 @@ than 'Entries in top row.')_
 } as const
 
 class Differences extends P5Visualizer<typeof paramDesc> {
-    name = 'Differences'
-    description =
-        'Produces a table of differences '
-        + 'between consecutive entries, potentially iterated several times'
+    name = vizName
+    description = vizDescription
 
     // parameters
     n = paramDesc.n.default as number
@@ -140,4 +143,8 @@ class Differences extends P5Visualizer<typeof paramDesc> {
     }
 }
 
-export const exportModule = new VisualizerExportModule(Differences)
+export const exportModule = new VisualizerExportModule(
+    Differences,
+    vizName,
+    vizDescription
+)

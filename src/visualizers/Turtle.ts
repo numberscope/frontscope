@@ -17,6 +17,11 @@ straight segment. It displays the resulting polygonal path.
 ## Parameters
 **/
 
+const vizName = 'Turtle'
+const vizDescription =
+    'Use a sequence to steer a virtual '
+    + 'turtle that leaves a visible trail'
+
 const paramDesc = {
     /** md
 - domain: A comma-separated list of all of the values that may occur in the
@@ -95,11 +100,8 @@ be the same length.
 // Turtle needs work
 // Throwing the same error on previous Numberscope website
 class Turtle extends P5Visualizer<typeof paramDesc> {
-    name = 'Turtle'
-    description =
-        'Use a sequence to steer a virtual '
-        + 'turtle that leaves a visible trail'
-
+    name = vizName
+    description = vizDescription
     private rotMap = new Map<string, number>()
     domain = [0n, 1n, 2n, 3n, 4n]
     range = [30, 45, 60, 90, 120]
@@ -171,4 +173,8 @@ class Turtle extends P5Visualizer<typeof paramDesc> {
     }
 }
 
-export const exportModule = new VisualizerExportModule(Turtle)
+export const exportModule = new VisualizerExportModule(
+    Turtle,
+    vizName,
+    vizDescription
+)

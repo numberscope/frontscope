@@ -8,6 +8,9 @@ import axios from 'axios'
 import {ParamType} from '../shared/ParamType'
 import type {ParamValues} from '@/shared/Paramable'
 
+const seqName = 'OEIS Sequence Template'
+const seqDescription = 'Factory for obtaining sequences from the OEIS'
+
 const paramDesc = {
     oeisId: {
         default: '',
@@ -46,8 +49,8 @@ const paramDesc = {
  *
  */
 export default class OEIS extends Cached<typeof paramDesc> {
-    name = 'OEIS Sequence Template'
-    description = 'Factory for obtaining sequences from the OEIS'
+    name = seqName
+    description = seqDescription
     oeisSeq = true
     cacheBlock = paramDesc.cacheBlock.default as number
     oeisId = paramDesc.oeisId.default as string
@@ -184,4 +187,8 @@ export default class OEIS extends Cached<typeof paramDesc> {
  * the sequence list. The UI for importing an OEIS sequence should not itself
  * be a sequence.
  */
-export const exportModule = SequenceExportModule.family(OEIS)
+export const exportModule = SequenceExportModule.family(
+    OEIS,
+    seqName,
+    seqDescription
+)

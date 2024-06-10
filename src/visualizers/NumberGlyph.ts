@@ -52,6 +52,11 @@ exceeds \( 2^{53}-1 \) to be 0.
 ### Parameters
  **/
 
+const vizName = 'Number Glyphs'
+const vizDescription =
+    'Map entries to colorful glyphs '
+    + 'using their magnitudes and prime factors'
+
 const paramDesc = {
     /** md
 ##### Number of Terms
@@ -132,10 +137,9 @@ The default value is 25.
 } as const
 
 class NumberGlyph extends P5Visualizer<typeof paramDesc> {
-    name = 'Number Glyphs'
-    description =
-        'Map entries to colorful glyphs '
-        + 'using their magnitudes and prime factors'
+    name = vizName
+    description = vizDescription
+
     n = 64
     customize = false
     brightCap = 25
@@ -406,7 +410,11 @@ class NumberGlyph extends P5Visualizer<typeof paramDesc> {
     }
 }
 
-export const exportModule = new VisualizerExportModule(NumberGlyph)
+export const exportModule = new VisualizerExportModule(
+    NumberGlyph,
+    vizName,
+    vizDescription
+)
 
 /** md
 

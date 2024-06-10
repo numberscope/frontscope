@@ -126,13 +126,19 @@ export class SequenceExportModule {
      * Constructs a `SequenceExportModule` representing a family of sequences
      * constructed and tweaked using parameters.
      * @param constructor the constructor for the family of sequences
+     * @param name the name of the family of sequences
+     * @param description a description of the family of sequences
      * @return an appropriate sequence export module
      */
-    static family(constructor: SequenceConstructor): SequenceExportModule {
+    static family(
+        constructor: SequenceConstructor,
+        name: string,
+        description: string
+    ): SequenceExportModule {
         return new SequenceExportModule(
             constructor,
-            new constructor(0).name,
-            new constructor(0).description,
+            name,
+            description,
             SequenceExportKind.FAMILY
         )
     }

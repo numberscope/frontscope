@@ -28,6 +28,10 @@ have a corresponding value of Omega.
 ## Parameters
 **/
 
+const vizName = 'Factor Histogram'
+const vizDescription =
+    'Displays a histogram of the ' + 'number of prime factors of a sequence'
+
 const paramDesc = {
     /** md
 - Bin Size: The size (number of Omega values) for each bin
@@ -77,10 +81,8 @@ the bin label (i.e., which Omega values are included).
 } as const
 
 class FactorHistogram extends P5Visualizer<typeof paramDesc> {
-    name = 'Factor Histogram'
-    description =
-        'Displays a histogram of the '
-        + 'number of prime factors of a sequence'
+    name = vizName
+    description = vizDescription
 
     binSize = 1
     terms = 100
@@ -400,4 +402,8 @@ class FactorHistogram extends P5Visualizer<typeof paramDesc> {
 _Originally contributed by Devlin Costello._
  **/
 
-export const exportModule = new VisualizerExportModule(FactorHistogram)
+export const exportModule = new VisualizerExportModule(
+    FactorHistogram,
+    vizName,
+    vizDescription
+)
