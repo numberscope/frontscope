@@ -55,6 +55,7 @@
         props: {
             title: {type: String, required: true},
             paramable: {
+                // eslint-disable-next-line max-len
                 type: Object as () => ParamableInterface<GenericParamDescription>,
                 required: true,
             },
