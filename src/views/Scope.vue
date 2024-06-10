@@ -4,12 +4,18 @@
             <ParamEditor
                 title="Sequence"
                 :paramable="specimen.sequence"
-                @changed="() => specimen.updateSequence()" />
+                @changed="
+                    () => {
+                        specimen.updateSequence()
+                        updateURL()
+                    }
+                " />
         </tab>
         <tab id="visualiserTab" class="tab docked" docked="bottom-right">
             <ParamEditor
                 title="Visualizer"
-                :paramable="specimen.visualizer" />
+                :paramable="specimen.visualizer"
+                @changed="() => updateURL()" />
         </tab>
 
         <!-- 
@@ -134,18 +140,28 @@
     import Tab from '@/components/Tab.vue'
     import interact from 'interactjs'
     import {onMounted} from 'vue'
+    import {useRoute, useRouter} from 'vue-router'
     import ParamEditor from '@/components/ParamEditor.vue'
-    import vizMODULES from '@/visualizers/visualizers'
-    import {exportModule} from '@/sequences/Random'
     import {reactive} from 'vue'
     import {Specimen} from '@/shared/Specimen'
-    import type {SequenceConstructor} from '@/sequences/SequenceInterface'
 
-    const sequence =
-        new (exportModule.sequenceOrConstructor as SequenceConstructor)(0)
-    const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
+    const router = useRouter()
+    const route = useRoute()
 
-    const specimen = reactive(new Specimen(visualizer, sequence))
+    const defaultSpecimen = new Specimen('Specimen', 'ModFill', 'Random')
+
+    const specimen = reactive(
+        typeof route.query.specimen === 'string'
+            ? Specimen.fromURL(route.query.specimen as string)
+            : defaultSpecimen
+    )
+
+    const updateURL = () =>
+        router.push({
+            query: {
+                specimen: specimen.toURL(),
+            },
+        })
 
     onMounted(() => {
         const specimenContainer = document.getElementById(

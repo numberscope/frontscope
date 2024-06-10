@@ -91,7 +91,8 @@
             Object.keys(this.paramable.params).forEach(key =>
                 this.validateIndependent(key)
             )
-            this.validateAggregate()
+            if (this.validateAggregate()) this.paramable.assignParameters()
+            this.$emit('changed')
         },
         methods: {
             updateParam(paramName: string, value: string) {

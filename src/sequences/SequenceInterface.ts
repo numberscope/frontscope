@@ -71,11 +71,6 @@ export interface SequenceConstructor {
      * @param sequenceID the ID of the sequence
      */
     new (sequenceID: number): SequenceInterface<GenericParamDescription>
-    /**
-     * The prototype of the sequence, used to extract name and description
-     * fields.
-     */
-    prototype: SequenceInterface<GenericParamDescription>
 }
 
 /**
@@ -136,8 +131,8 @@ export class SequenceExportModule {
     static family(constructor: SequenceConstructor): SequenceExportModule {
         return new SequenceExportModule(
             constructor,
-            constructor.prototype.name,
-            constructor.prototype.description,
+            new constructor(0).name,
+            new constructor(0).description,
             SequenceExportKind.FAMILY
         )
     }

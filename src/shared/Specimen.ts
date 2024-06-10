@@ -15,26 +15,35 @@ import vizMODULES from '../visualizers/visualizers'
  * Specimens can be converted to and from URLs so that they can be saved.
  */
 export class Specimen {
+    private _name: string
+    private _visualizerKey: string
+    private _sequenceKey: string
     private _visualizer: VisualizerInterface<GenericParamDescription>
     private _sequence: SequenceInterface<GenericParamDescription>
     private location?: HTMLElement
     private isSetup: boolean = false
 
     /**
-     * Constructs a new specimen from a visualizer, and a sequence
-     * It is not important that the visualizer
-     * is constructed with the same sequence as the one passed to this
-     * constructor, because the visualizer will be automatically set
-     * to view the specimen's visualizer in this constructor.
+     * Constructs a new specimen from a visualizer and a sequence.
+     * The string arguments passed in are expected to be keys
+     * for the visualizer/sequences' export modules.
+     * @param name the name of this specimen
      * @param visualizer the specimen's visualizer
      * @param sequence the specimen's sequence
      */
-    constructor(
-        visualizer: VisualizerInterface<GenericParamDescription>,
-        sequence: SequenceInterface<GenericParamDescription>
-    ) {
-        this._visualizer = visualizer
-        this._sequence = sequence
+    constructor(name: string, visualizerKey: string, sequenceKey: string) {
+        this._name = name
+        this._visualizerKey = visualizerKey
+        this._sequenceKey = sequenceKey
+        if (seqMODULES[sequenceKey].kind === SequenceExportKind.FAMILY)
+            this._sequence = new (seqMODULES[sequenceKey]
+                .sequenceOrConstructor as SequenceConstructor)(0)
+        else
+            this._sequence = seqMODULES[sequenceKey]
+                .sequenceOrConstructor as SequenceInterface<GenericParamDescription>
+        this._visualizer = new vizMODULES[visualizerKey].visualizer(
+            this._sequence
+        )
     }
     /**
      * Call this as soon after construction as possible once the HTML
@@ -46,6 +55,24 @@ export class Specimen {
         this._visualizer.inhabit(this.location)
         this._visualizer.show()
         this.isSetup = true
+    }
+    /**
+     * Returns the name of this specimen
+     */
+    get name(): string {
+        return this._name
+    }
+    /**
+     * Returns the key of the specimen's visualizer
+     */
+    get visualizerKey(): string {
+        return this._visualizerKey
+    }
+    /**
+     * Returns the key of the specimen's sequence
+     */
+    get sequenceKey(): string {
+        return this._sequenceKey
     }
     /**
      * Returns the specimen's visualizer
@@ -60,21 +87,50 @@ export class Specimen {
         return this._sequence
     }
     /**
+     * Assigns a new name to this specimen
+     */
+    set name(name: string) {
+        this._name = name
+    }
+    /**
      * Assigns a new visualizer to this specimen and updates its sequence
      * to match the specimen. It also ensures this visualizer inhabits
      * the correct HTML element and begins to render.
+     * @param visualizerKey the key of the desired visualizer's export module
      */
-    set visualizer(visualizer: VisualizerInterface<GenericParamDescription>) {
-        this._visualizer = visualizer
+    set visualizerKey(visualizerKey: string) {
+        this._visualizerKey = visualizerKey
+        this._visualizer = new vizMODULES[visualizerKey].visualizer(
+            this._sequence
+        )
         if (this.isSetup) this.setup(this.location!)
     }
     /**
      * Assigns a new sequence to this specimen and updates the visualizer
      * to reflect this change in the render.
+     * @param specimenKey the key of the desired sequence's export module
      */
-    set sequence(sequence: SequenceInterface<GenericParamDescription>) {
-        this._sequence = sequence
+    set sequenceKey(sequenceKey: string) {
+        this._sequenceKey = sequenceKey
+        if (seqMODULES[sequenceKey].kind === SequenceExportKind.FAMILY)
+            this._sequence = new (seqMODULES[sequenceKey]
+                .sequenceOrConstructor as SequenceConstructor)(0)
+        else
+            this._sequence = seqMODULES[sequenceKey]
+                .sequenceOrConstructor as SequenceInterface<GenericParamDescription>
         this.visualizer.view(this.sequence)
+    }
+    /**
+     * Exists for redundancy, same as set visualizerKey()
+     */
+    set visualizer(visualizerKey: string) {
+        this.visualizerKey = visualizerKey
+    }
+    /**
+     * Exists for redundancy, same as set sequenceKey()
+     */
+    set sequence(sequenceKey: string) {
+        this.sequenceKey = sequenceKey
     }
     /**
      * Ensures that the visualizer is aware that the sequence has been
@@ -90,9 +146,10 @@ export class Specimen {
      */
     toURL(): string {
         const data = {
-            sequence: this.sequence.name,
+            name: this.name,
+            sequence: this.sequenceKey,
             sequenceParams: toBase64(this.sequence),
-            visualizer: this.visualizer.name,
+            visualizer: this.visualizerKey,
             visualizerParams: toBase64(this.visualizer),
         }
 
@@ -109,7 +166,8 @@ export class Specimen {
 
         // Make sure URL is valid
         if (
-            !Object.prototype.hasOwnProperty.call(data, 'sequence')
+            !Object.prototype.hasOwnProperty.call(data, 'name')
+            || !Object.prototype.hasOwnProperty.call(data, 'sequence')
             || !Object.prototype.hasOwnProperty.call(data, 'sequenceParams')
             || !Object.prototype.hasOwnProperty.call(data, 'visualizer')
             || !Object.prototype.hasOwnProperty.call(data, 'visualizerParams')
@@ -117,25 +175,16 @@ export class Specimen {
             throw new Error('Invalid URL')
 
         // Load visualizer and sequence from names
-        const seqExportMod = seqMODULES[`${data['sequence']}`]
-        type SeqIntf = SequenceInterface<GenericParamDescription>
-        let sequence: SeqIntf
-
-        if (seqExportMod.kind === SequenceExportKind.INSTANCE)
-            sequence = seqExportMod.sequenceOrConstructor as SeqIntf
-        else
-            sequence =
-                new (seqExportMod.sequenceOrConstructor as SequenceConstructor)(
-                    0
-                )
-
-        const vizExportMod = vizMODULES[`${data['visualizer']}`]
-        const visualizer = new vizExportMod.visualizer(sequence)
+        const specimen = new Specimen(
+            `${data['name']}`,
+            `${data['visualizer']}`,
+            `${data['sequence']}`
+        )
 
         // Assign parameters to the visualizers and sequences
-        loadFromBase64(`${data['sequenceParams']}`, sequence)
-        loadFromBase64(`${data['visualizerParams']}`, visualizer)
+        loadFromBase64(`${data['sequenceParams']}`, specimen.sequence)
+        loadFromBase64(`${data['visualizerParams']}`, specimen.visualizer)
 
-        return new Specimen(visualizer, sequence)
+        return specimen
     }
 }

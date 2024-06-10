@@ -12,11 +12,6 @@ interface VisualizerConstructor {
     new (
         seq: SequenceInterface<GenericParamDescription>
     ): VisualizerInterface<GenericParamDescription>
-    /**
-     * The prototype of the visualizer interface, this is used to extract
-     * the name and description
-     */
-    prototype: VisualizerInterface<GenericParamDescription>
 }
 
 export class VisualizerExportModule {
@@ -26,8 +21,11 @@ export class VisualizerExportModule {
 
     constructor(viz: VisualizerConstructor) {
         this.visualizer = viz
-        this.name = viz.prototype.name
-        this.description = viz.prototype.description
+        const dummySeq: SequenceInterface<GenericParamDescription> =
+            null as unknown as SequenceInterface<GenericParamDescription>
+        // FIX DEZE SHIT
+        this.name = new viz(dummySeq).name
+        this.description = new viz(dummySeq).description
     }
 }
 
