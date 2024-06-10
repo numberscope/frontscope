@@ -13,11 +13,11 @@
 //
 // These comments get compiled into the Visualizer's user guide page.
 
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
 import {ParamType} from '../shared/ParamType'
 import {P5Visualizer} from '../visualizers/P5Visualizer'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
 # Entries (p5 Template)

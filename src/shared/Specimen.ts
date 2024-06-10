@@ -35,12 +35,13 @@ export class Specimen {
         this._name = name
         this._visualizerKey = visualizerKey
         this._sequenceKey = sequenceKey
+        type SeqIntf = SequenceInterface<GenericParamDescription>
         if (seqMODULES[sequenceKey].kind === SequenceExportKind.FAMILY)
             this._sequence = new (seqMODULES[sequenceKey]
                 .sequenceOrConstructor as SequenceConstructor)(0)
         else
             this._sequence = seqMODULES[sequenceKey]
-                .sequenceOrConstructor as SequenceInterface<GenericParamDescription>
+                .sequenceOrConstructor as SeqIntf
         this._visualizer = new vizMODULES[visualizerKey].visualizer(
             this._sequence
         )
@@ -112,12 +113,13 @@ export class Specimen {
      */
     set sequenceKey(sequenceKey: string) {
         this._sequenceKey = sequenceKey
+        type SeqIntf = SequenceInterface<GenericParamDescription>
         if (seqMODULES[sequenceKey].kind === SequenceExportKind.FAMILY)
             this._sequence = new (seqMODULES[sequenceKey]
                 .sequenceOrConstructor as SequenceConstructor)(0)
         else
             this._sequence = seqMODULES[sequenceKey]
-                .sequenceOrConstructor as SequenceInterface<GenericParamDescription>
+                .sequenceOrConstructor as SeqIntf
         this.visualizer.view(this.sequence)
     }
     /**

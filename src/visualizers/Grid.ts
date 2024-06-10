@@ -1,12 +1,12 @@
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import {P5Visualizer} from '@/visualizers/P5Visualizer'
+import {VisualizerExportModule} from './VisualizerInterface'
+import {P5Visualizer} from './P5Visualizer'
 import {bigabs, floorSqrt, modulo} from '../shared/math'
 import type {GenericParamDescription} from '../shared/Paramable'
 import type {
     SequenceInterface,
     Factorization,
-} from '@/sequences/SequenceInterface'
-import simpleFactor from '@/sequences/simpleFactor'
+} from '../sequences/SequenceInterface'
+import simpleFactor from '../sequences/simpleFactor'
 import {ParamType} from '../shared/ParamType'
 
 /** md

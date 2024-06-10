@@ -1,10 +1,10 @@
 import {modulo} from '../shared/math'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
-import {P5Visualizer} from '../visualizers/P5Visualizer'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {P5Visualizer} from './P5Visualizer'
+import {VisualizerExportModule} from './VisualizerInterface'
 import type p5 from 'p5'
 import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
 
 /** md
 # Mod Fill Visualizer

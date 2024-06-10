@@ -2,10 +2,10 @@ import p5 from 'p5'
 import {P5Visualizer} from './P5Visualizer'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 //import type {Factorization} from '../sequences/SequenceInterface'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from './VisualizerInterface'
 import * as math from 'mathjs'
 import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
 
 /** md
 

@@ -21,11 +21,8 @@ export class VisualizerExportModule {
 
     constructor(viz: VisualizerConstructor) {
         this.visualizer = viz
-        const dummySeq: SequenceInterface<GenericParamDescription> =
-            null as unknown as SequenceInterface<GenericParamDescription>
-        // FIX DEZE SHIT
-        this.name = new viz(dummySeq).name
-        this.description = new viz(dummySeq).description
+        this.name = viz.prototype.name
+        this.description = viz.prototype.description
     }
 }
 
