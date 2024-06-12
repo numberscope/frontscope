@@ -100,6 +100,13 @@ export class Specimen {
         this.visualizer.view(this.sequence)
     }
 
+    /**
+     * Calculates the size of the visualizer in its container.
+     * @param containerWidth width of the container
+     * @param containerHeight height of the container
+     * @param aspectRatio aspect ratio requested by visualizer
+     * @returns the size of the visualizer
+     */
     calculateSize(
         containerWidth: number,
         containerHeight: number,
