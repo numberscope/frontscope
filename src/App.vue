@@ -14,27 +14,6 @@
 
 <!-- Global styles. This style tag is explicitly unscoped. -->
 <style>
-    #container {
-        display: flex;
-        flex-direction: column;
-
-        main {
-            height: 100%;
-        }
-    }
-
-    * {
-        box-sizing: border-box;
-        font-family: var(--ns-font-main);
-        color: var(--ns-color-black);
-    }
-
-    html,
-    body {
-        margin: 0;
-        padding: 0;
-    }
-
     :root {
         /* Font sizes */
         --ns-size-body: 12px;
@@ -56,7 +35,10 @@
         --ns-color-grey: #636363;
         --ns-color-black: #2f2f2f;
 
-        /* Breakpoint widths 
+        /* Bolditude */
+        --ns-font-weight-medium: 500;
+
+        /* Breakpoint widths
         Default styles should be for vertical mobile devices
         (devices narrower than --ns-breakpoint-mobile)
 
@@ -72,6 +54,27 @@
         --ns-breakpoint-mobile: 580px;
         --ns-breakpoint-tablet: 800px;
         --ns-breakpoint-desktop: 1200px;
+    }
+
+    #container {
+        display: flex;
+        flex-direction: column;
+
+        main {
+            height: 100%;
+        }
+    }
+
+    * {
+        box-sizing: border-box;
+        font-family: var(--ns-font-main);
+        color: var(--ns-color-black);
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
     }
 
     /* Display font */
