@@ -13,19 +13,24 @@
                 </div>
             </div>
         </div>
-        <div class="button material-icons-sharp" @click="refresh">
+        <div
+            class="button material-icons-sharp"
+            @click="refresh"
+            @touch="refresh">
             refresh
         </div>
         <div
             id="pause-button"
             class="button material-icons-sharp"
-            @click="togglePause">
+            @click="togglePause"
+            @touch="togglePause">
             pause
         </div>
         <div
             id="share-button"
             class="button material-icons-sharp"
-            @click="shareUrl">
+            @click="shareUrl"
+            @touch="shareUrl">
             share
             <div class="copy-notification help-box">Copied to clipboard!</div>
         </div>
@@ -50,6 +55,7 @@
         const playButton = document.getElementById('pause-button')
         if (!(playButton instanceof HTMLElement)) return
         playButton.innerHTML = paused ? 'play_arrow' : 'pause'
+        console.log('updated buttons')
     }
     // toggles the pause state
     function togglePause() {
