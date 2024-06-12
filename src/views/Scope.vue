@@ -79,6 +79,9 @@
         tab: HTMLElement,
         dropzone: HTMLElement
     ): void {
+        if (window.innerWidth < 700) return
+
+        const dropzoneContainer = dropzone.parentElement?.parentElement
         const dropzoneRect = dropzone.getBoundingClientRect()
 
         const {x, y} = translateCoords(dropzoneRect.x, dropzoneRect.y)
@@ -87,8 +90,32 @@
         tab.style.left = x + 'px'
         tab.style.height = dropzoneRect.height + 'px'
 
+        // update the classlist with "minimized"
+        // if the height is less or equal than 110
+        if (dropzoneRect.height <= 110) {
+            tab.classList.add('minimized')
+        } else {
+            tab.classList.remove('minimized')
+        }
+
         tab.setAttribute('data-x', x.toString())
         tab.setAttribute('data-y', y.toString())
+
+        if (
+            tab instanceof HTMLElement
+            && dropzoneContainer instanceof HTMLElement
+            && dropzone instanceof HTMLElement
+            && dropzone.classList.contains('empty')
+        ) {
+            dropzone.classList.remove('empty')
+            dropzone.classList.remove('drop-hover')
+            dropzoneContainer.classList.remove('empty')
+            tab.classList.add('docked')
+            const dropzoneAttribute = dropzone.getAttribute('dropzone')
+            if (dropzoneAttribute !== null) {
+                tab.setAttribute('docked', dropzoneAttribute)
+            }
+        }
     }
 
     /**
@@ -121,7 +148,7 @@
      * Doesn't affect non-docked tabs.
      * Used when the window is resized.
      */
-    function positionAndSizeAllTabs(): void {
+    export function positionAndSizeAllTabs(): void {
         document.querySelectorAll('.tab').forEach((tab: Element) => {
             if (!(tab instanceof HTMLElement)) return
             if (tab.getAttribute('docked') === 'none') return
@@ -132,6 +159,29 @@
             if (!(dropzone instanceof HTMLElement)) return
 
             positionAndSizeTab(tab, dropzone)
+        })
+    }
+    // selects a tab
+    export function selectTab(tab: HTMLElement): void {
+        deselectTab()
+        const drag = tab.querySelector('.drag')
+        if (!(drag instanceof HTMLElement)) return
+
+        drag.classList.add('selected')
+        drag.style.backgroundColor = 'var(--ns-color-primary)'
+        tab.style.zIndex = '100'
+    }
+    // deselects all tabs
+    export function deselectTab(): void {
+        const tabs = document.querySelectorAll('.tab')
+        tabs.forEach(tab => {
+            if (tab instanceof HTMLElement) {
+                const drag = tab.querySelector('.drag')
+                if (!(drag instanceof HTMLElement)) return
+                drag.classList.remove('selected')
+                drag.style.backgroundColor = 'var(--ns-color-black)'
+                tab.style.zIndex = '1'
+            }
         })
     }
 </script>
@@ -173,7 +223,15 @@
         window.addEventListener('resize', () => {
             positionAndSizeAllTabs()
         })
+
         specimen.setup(canvasContainer)
+
+        setInterval(() => {
+            specimen.resized(
+                canvasContainer.clientWidth,
+                canvasContainer.clientHeight
+            )
+        }, 500)
     })
 
     // enable draggables to be dropped into this
@@ -272,7 +330,7 @@
                     dropzoneWrapper.style.height =
                         Math.min(
                             event.rect.height,
-                            dropContRect.height - 144
+                            dropContRect.height - 90
                         ) + 'px'
                     dropzoneWrapper.classList.add('resized')
                     positionAndSizeAllTabs()
@@ -287,13 +345,14 @@
 
             // minimum size
             interact.modifiers.restrictSize({
-                min: {width: 0, height: 128},
+                min: {width: 700, height: 90},
             }),
         ],
     })
 </script>
 
 <style scoped lang="scss">
+    // mobile styles
     #specimen-container {
         height: calc(100vh - 54px);
         position: relative;
@@ -307,64 +366,123 @@
         flex: 1;
         position: relative;
         overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .dropzone-container {
         display: flex;
         flex-direction: column;
-        width: 300px;
-        height: 100%;
-
-        &#right-dropzone-container {
-            right: 0;
-            top: 0;
+        min-height: fit-content;
+        padding-left: auto;
+        padding-right: auto;
+    }
+    .dropzone-container {
+        display: none;
+    }
+    #canvas-container {
+        order: 1;
+        border-bottom: 1px solid var(--ns-color-black);
+        height: 301px;
+    }
+    #sequenceTab {
+        width: 100%;
+        padding-left: auto;
+        padding-right: auto;
+        order: 2;
+        border-bottom: 1px solid var(--ns-color-black);
+    }
+    #visualiserTab {
+        width: 100%;
+        padding-left: auto;
+        padding-right: auto;
+        order: 3;
+        border-bottom: 1px solid var(--ns-color-black);
+    }
+    // desktop styles
+    @media (min-width: 700px) {
+        #sequenceTab,
+        #visualiserTab {
+            width: 300px;
+        }
+        #specimen-container {
+            height: calc(100vh - 54px);
+            position: relative;
+        }
+        #main {
+            display: flex;
+            height: 100%;
         }
 
-        &#left-dropzone-container {
-            left: 0;
-            top: 0;
+        #canvas-container {
+            height: unset;
+
+            order: unset;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
         }
 
-        &.empty {
-            position: absolute;
-            pointer-events: none;
-
-            .dropzone-resize.material-icons-sharp {
-                display: none;
-            }
-        }
-
-        .dropzone-size-wrapper {
-            flex-grow: 1;
+        .dropzone-container {
             display: flex;
             flex-direction: column;
-            max-height: calc(100% - 128px);
+            width: 300px;
+            height: 100%;
 
-            &.resized {
-                flex-grow: unset;
+            &#right-dropzone-container {
+                right: 0;
+                top: 0;
             }
 
-            .dropzone-resize {
-                height: 16px;
-                font-size: 16px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: ns-resize;
+            &#left-dropzone-container {
+                left: 0;
+                top: 0;
             }
 
-            .dropzone {
+            &.empty {
+                position: absolute;
+                pointer-events: none;
+
+                .dropzone-resize.material-icons-sharp {
+                    display: none;
+                }
+            }
+
+            .dropzone-size-wrapper {
                 flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                max-height: calc(100% - 90px);
 
-                &.drop-hover {
-                    background-color: var(--ns-color-primary);
-                    filter: brightness(120%);
+                &.resized {
+                    flex-grow: unset;
+                }
+
+                .dropzone-resize {
+                    height: 16px;
+                    font-size: 16px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    cursor: ns-resize;
+                }
+
+                .dropzone {
+                    flex-grow: 1;
+
+                    &.drop-hover {
+                        background-color: var(--ns-color-primary);
+                        filter: brightness(120%);
+                    }
                 }
             }
         }
-    }
 
-    .tab {
-        position: absolute;
+        .tab {
+            width: 300px;
+            position: absolute;
+            order: unset;
+        }
     }
 </style>
