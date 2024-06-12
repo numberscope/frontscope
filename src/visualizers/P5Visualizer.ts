@@ -92,6 +92,7 @@ export abstract class P5Visualizer
      * of the p5 object itself would need to implement an extended or replaced
      * inhabit() method.
      * @param element HTMLElement  Where the visualizer should inject itself
+     * @param size The width and height the visualizer should occupy
      */
     inhabit(
         element: HTMLElement,
@@ -103,7 +104,6 @@ export abstract class P5Visualizer
             this.depart(this.within)
         }
         this._size = size
-        console.log(size.width, size.height)
         this.within = element
         this._sketch = new p5(sketch => {
             this._sketch = sketch // must assign here,  as setup is called
@@ -189,7 +189,6 @@ export abstract class P5Visualizer
      * _must_ call this first.
      */
     setup() {
-        console.log(this._size.width, this._size.height)
         this._canvas = this.sketch
             .background('white')
             .createCanvas(this._size.width, this._size.height)

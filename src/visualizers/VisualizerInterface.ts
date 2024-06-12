@@ -42,8 +42,7 @@ export interface VisualizerInterface extends ParamableInterface {
      * size.
      * @param element HTMLElement The DOM node where the visualizer should
      *     insert itself.
-     * @param width The preferred width of the visualizer
-     * @param height The preferred height of the visualizer
+     * @param size The width and height the visualizer should occupy
      */
     inhabit(element: HTMLElement, size: {width: number; height: number}): void
     /**
