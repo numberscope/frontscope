@@ -25,10 +25,9 @@ const paramDesc = {
  * those are both arbitrary choices; we might at some point want to allow
  * either to be tailored.
  */
-class Formula extends Cached<typeof paramDesc> {
+class Formula extends Cached(paramDesc) {
     name = seqName
     description = seqDescription
-    formula = paramDesc.formula.default
 
     private evaluator: math.EvalFunction
 
@@ -37,7 +36,7 @@ class Formula extends Cached<typeof paramDesc> {
      * @param {*} sequenceID the sequence identifier of the sequence
      */
     constructor(sequenceID: number) {
-        super(paramDesc, sequenceID)
+        super(sequenceID)
         // It is mandatory to initialize the `evaluator` property here,
         // so just use a simple dummy formula until the user provides one.
         this.evaluator = math.compile(this.formula)

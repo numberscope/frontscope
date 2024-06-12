@@ -51,18 +51,15 @@ than 'Entries in top row.')_
     },
 } as const
 
-class Differences extends P5Visualizer<typeof paramDesc> {
+class Differences extends P5Visualizer(paramDesc) {
     name = vizName
     description = vizDescription
 
-    // parameters
-    n = paramDesc.n.default as number
-    levels = paramDesc.levels.default as number
-
     first = 0
+    levels = 5
 
     constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(paramDesc, seq)
+        super(seq)
     }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {

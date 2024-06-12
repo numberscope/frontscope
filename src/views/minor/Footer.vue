@@ -1,39 +1,55 @@
 <template>
     <footer class="text-center">
-        <p>
+        <img src="../../assets/img/logo_no_microscope.svg" />
+        <span>
             Thank you very much to
             <a href="/doc/doc/acknowledgments/index.html" class="footer-link">
                 those who made Numberscope possible</a
             >
             over the years!
-        </p>
-        <p>
-            <i class="bi bi-github"></i>&nbsp;
-            <a class="footer-link" href="https://github.com/numberscope"
-                >GitHub</a
-            >
-            <span id="linkSpacer"></span>
-            <i class="bi bi-twitter"></i>&nbsp;
-            <a class="footer-link" href="https://twitter.com/numberscoper"
-                >Twitter</a
-            >
-        </p>
+        </span>
+        <div>
+            <a class="footer-link" href="https://github.com/numberscope">
+                <img src="../../assets/img/icons/github-mark-white.svg" />
+            </a>
+            <a class="footer-link" href="https://twitter.com/numberscoper">
+                <img src="../../assets/img/icons/x_logo.svg" />
+            </a>
+        </div>
     </footer>
 </template>
 
-<style>
+<style lang="scss">
     footer {
-        color: var(--ns-information-foreground);
-        background-color: var(--ns-information-background);
+        background-color: var(--ns-color-primary);
         height: var(--ns-footer-height);
-        padding-top: 10px;
         width: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-evenly;
+        flex-wrap: wrap;
+        padding: 8px;
+        gap: 16px;
+
+        span {
+            color: var(--ns-color-white);
+        }
+
+        div {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
     }
-    footer p {
-        margin-bottom: 0.5rem;
-    }
+
     .footer-link {
-        color: orange;
+        color: #eeca84;
+        height: fit-content;
+
+        img {
+            height: 18px;
+        }
     }
     .footer-link:hover {
         color: white;

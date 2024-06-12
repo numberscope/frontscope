@@ -80,19 +80,14 @@ the bin label (i.e., which Omega values are included).
     },
 } as const
 
-class FactorHistogram extends P5Visualizer<typeof paramDesc> {
+class FactorHistogram extends P5Visualizer(paramDesc) {
     name = vizName
     description = vizDescription
-
-    binSize = 1
-    terms = 100
-    firstIndex = NaN
-    mouseOver = true
 
     binFactorArray: number[] = []
 
     constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(paramDesc, seq)
+        super(seq)
     }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {

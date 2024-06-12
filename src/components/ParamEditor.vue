@@ -50,14 +50,14 @@
         children: {[key: string]: ParamInterface<ParamType>}
     }
 
-    type NewParamable = () => ParamableInterface<GenericParamDescription>
+    type Paramable = () => ParamableInterface<GenericParamDescription>
 
     export default defineComponent({
         name: 'ParamEditor',
         props: {
             title: {type: String, required: true},
             paramable: {
-                type: Object as NewParamable,
+                type: Object as Paramable,
                 required: true,
             },
         },

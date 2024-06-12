@@ -30,18 +30,16 @@ const paramDesc = {
  * Creates a sequence of random integers in a specified range.
  * Starts at index 0 and has no limit.
  */
-class Random extends Cached<typeof paramDesc> {
+class Random extends Cached(paramDesc) {
     name = seqName
     description = seqDescription
-    min = paramDesc.min.default as number
-    max = paramDesc.max.default as number
 
     /**
      *Creates an instance of Random
      * @param {*} sequenceID the sequence identifier of the sequence
      */
     constructor(sequenceID: number) {
-        super(paramDesc, sequenceID)
+        super(sequenceID)
     }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {

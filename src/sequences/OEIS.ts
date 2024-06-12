@@ -48,17 +48,14 @@ const paramDesc = {
  * the Flask backend.
  *
  */
-export default class OEIS extends Cached<typeof paramDesc> {
+export default class OEIS extends Cached(paramDesc) {
     name = seqName
     description = seqDescription
+
     oeisSeq = true
-    cacheBlock = paramDesc.cacheBlock.default as number
-    oeisId = paramDesc.oeisId.default as string
-    givenName = paramDesc.oeisId.default as string
-    modulus = paramDesc.modulus.default as bigint
 
     constructor(sequenceID: number) {
-        super(paramDesc, sequenceID)
+        super(sequenceID)
         // Don't know the index range yet, will fill in later
     }
 
