@@ -55,6 +55,8 @@
         props: {
             title: {type: String, required: true},
             paramable: {
+                // This line cannot be broken into multiple lines
+                // eslint-disable-next-line max-len
                 type: Object as () => ParamableInterface<GenericParamDescription>,
                 required: true,
             },
