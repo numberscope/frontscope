@@ -31,14 +31,29 @@
                 Copied to clipboard!
             </div>
         </div>
-
         <div
             id="save-button"
             class="button material-icons-sharp"
-            @click="saveSpecimen">
+            @click="checkSave">
             save
             <div id="save-popup" class="notification help-box">
                 Saved to gallery!
+            </div>
+            <div id="overwrite-popup" class="notification help-box">
+                <div id="overwrite-text">
+                    You already have a specimen with the same name, do you
+                    want to overwrite it?
+                </div>
+                <div id="confirm-overwrite">
+                    <div class="overwrite-button" @click="saveSpecimen">
+                        yes
+                    </div>
+                    <div
+                        class="overwrite-button"
+                        v-on:click="removeOverwritePopup">
+                        no
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -47,7 +62,11 @@
 <script setup lang="ts">
     import {specimen} from '../views/Scope.vue'
     import {visualizer} from '../views/Scope.vue'
-    import {saveSpecimenToBrowser} from '../shared/browserCaching'
+    import {
+        saveSpecimenToBrowser,
+        getSIMByName,
+    } from '../shared/browserCaching'
+
     // true if paused, false if playing
     let paused = false
     // refreshes the specimen
@@ -98,8 +117,39 @@
             notification.style.opacity = '0'
         }, 2000)
     }
+    function checkSave() {
+        // get specimen name
+        const name = document.querySelector('input[type="text"]')
+        if (!(name instanceof HTMLInputElement)) return
+        const specimenName = name.value
+
+        try {
+            // check if specimen with that name already exists
+            // if it exists, we should ask the user if they want to overwrite it
+            getSIMByName(specimenName)
+            const overwrite = document.getElementById('overwrite-popup')
+            if (!(overwrite instanceof HTMLElement)) return
+            overwrite.style.visibility = 'visible'
+            overwrite.style.opacity = '1'
+        } catch (e) {
+            // not in database, so we can save it without repercussions
+            saveSpecimen()
+        }
+    }
+    function removeOverwritePopup() {
+        const overwrite = document.getElementById('overwrite-popup')
+        if (!(overwrite instanceof HTMLElement)) return
+        setTimeout(() => {
+            overwrite.style.visibility = 'hidden'
+            overwrite.style.opacity = '0'
+        }, 1)
+        console.log(overwrite)
+    }
+
     function saveSpecimen() {
-        // get url
+        //get rid of overwrite popup (if it is visible)
+        removeOverwritePopup()
+        // get specimen url
         const url = window.location.href
         // get specimen name
         const name = document.querySelector('input[type="text"]')
@@ -190,8 +240,34 @@
     #save-popup {
         translate: -210px 0px;
     }
+    #overwrite-popup {
+        translate: -210px 0px;
+    }
+    #confirm-overwrite {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        margin-left: 8px;
+        margin-right: 8px;
+    }
+    #overwrite-text {
+        color: var(--ns-color-grey);
+        margin-bottom: 8px;
+        margin-top: 0px;
+    }
+    .overwrite-button {
+        padding: 2px;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 16px;
+        border: 1px solid var(--ns-color-black);
+        color: var(--ns-color-grey);
+        cursor: pointer;
+        user-select: none;
+    }
     .help-box {
-        overflow: hidden;
+        line-height: normal;
+        text-wrap: wrap;
         visibility: hidden;
         width: 240px;
         background-color: var(--ns-color-white);
@@ -199,7 +275,7 @@
         text-align: left;
         border: 1px solid var(--ns-color-black);
         padding: 8px;
-        font-size: 12px;
+        font-size: 11px;
 
         position: absolute;
         z-index: 10000;
