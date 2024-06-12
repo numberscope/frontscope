@@ -18,14 +18,38 @@
             <span class="material-icons-sharp">keyboard_arrow_up</span>
         </div>
         <div class="gallery">
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
         </div>
 
         <div type="button" class="visualizer-bar">
@@ -33,14 +57,38 @@
             <span class="material-icons-sharp">keyboard_arrow_up</span>
         </div>
         <div class="gallery">
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
-            <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
+            <SpecimenCard
+                :specimenName="specimenName"
+                :vizName="vizName"
+                :seqName="sequenceName" />
         </div>
     </div>
 </template>
@@ -48,8 +96,9 @@
 <script setup lang="ts">
     import SpecimenCard from '../components/SpecimenCard.vue'
 
-    const sequenceName = '2-acid val of Z'
-    const cardName = 'Pinstripe'
+    const sequenceName = 'Random'
+    const specimenName = 'Specimen'
+    const vizName = 'Histogram'
 </script>
 
 <style scoped>

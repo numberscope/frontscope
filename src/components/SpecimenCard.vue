@@ -1,9 +1,12 @@
 <template>
     <div class="card-body">
-        <div class="card-preview" :id="cid"></div>
+        <div
+            class="card-preview"
+            :id="cid"
+            style="pointer-events: none"></div>
         <div class="card-title-box">
             <h5 class="card-title">
-                {{ cardName }}
+                {{ specimenName }}
             </h5>
             <p class="card-text">
                 {{ seqName }}
@@ -14,12 +17,16 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
+    import {positionAndSizeAllTabs} from '../views/Scope.vue'
+    import {Specimen} from '../shared/Specimen'
     let cid_count = 0
+
     export default defineComponent({
         name: 'SpecimenCard',
         props: {
+            specimenName: {type: String, required: true},
+            vizName: {type: String, required: true},
             seqName: {type: String, required: true},
-            cardName: {type: String, required: true},
             cid: {
                 type: String,
                 default: function () {
@@ -27,11 +34,24 @@
                 },
             },
         },
+        mounted() {
+            const specimen = new Specimen(
+                this.specimenName,
+                this.vizName,
+                this.seqName
+            )
+
+            const canvasContainer = document.getElementById('' + this.cid)
+            if (!(canvasContainer instanceof HTMLElement)) return
+
+            specimen.setup(canvasContainer)
+        },
     })
 </script>
 
 <style scoped>
     .card-body {
+        position: relative;
         width: 216px;
         border: 1px solid var(--ns-color-black);
         display: flex;
