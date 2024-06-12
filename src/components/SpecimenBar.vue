@@ -23,14 +23,14 @@
             id="pause-button"
             class="button material-icons-sharp"
             @click="togglePause"
-            @touch="togglePause">
+            @touchend="togglePause">
             pause
         </div>
         <div
             id="share-button"
             class="button material-icons-sharp"
             @click="shareUrl"
-            @touch="shareUrl">
+            @touchend="shareUrl">
             share
             <div class="copy-notification help-box">Copied to clipboard!</div>
         </div>
@@ -77,6 +77,7 @@
         const url = window.location.href
         //copy to clipboard
         navigator.clipboard.writeText(url)
+
         const notification = document.querySelector('.copy-notification')
         if (!(notification instanceof HTMLElement)) return
 
@@ -117,6 +118,7 @@
         }
     }
     .button {
+        min-width: 30px;
         text-align: center;
         width: 30px;
         height: 30px;
