@@ -31,11 +31,13 @@
                 Copied to clipboard!
             </div>
         </div>
-        <div
-            id="save-button"
-            class="button material-icons-sharp"
-            @click="checkSave">
-            save
+        <div>
+            <div
+                id="save-button"
+                class="button material-icons-sharp"
+                @click="checkSave()">
+                save
+            </div>
             <div id="save-popup" class="notification help-box">
                 Saved to gallery!
             </div>
@@ -50,7 +52,7 @@
                     </div>
                     <div
                         class="overwrite-button"
-                        v-on:click="removeOverwritePopup">
+                        @click="removeOverwritePopup">
                         no
                     </div>
                 </div>
@@ -142,8 +144,7 @@
         setTimeout(() => {
             overwrite.style.visibility = 'hidden'
             overwrite.style.opacity = '0'
-        }, 1)
-        console.log(overwrite)
+        }, 10)
     }
 
     function saveSpecimen() {
