@@ -8,7 +8,7 @@
 
             <div class="desc-tooltip">
                 <span class="help material-icons-sharp">help</span>
-                <div class="desc-tooltip-text">
+                <div class="desc-tooltip-text help-box">
                     You can enter the name you want to give this specimen
                 </div>
             </div>
@@ -17,12 +17,19 @@
             refresh
         </div>
         <div
-            id="#pause-button"
+            id="pause-button"
             class="button material-icons-sharp"
             @click="togglePause">
             pause
         </div>
-        <div class="button material-icons-sharp">share</div>
+        <div
+            id="share-button"
+            class="button material-icons-sharp"
+            @click="shareUrl">
+            share
+            <div class="copy-notification help-box">Copied to clipboard!</div>
+        </div>
+
         <div class="button material-icons-sharp">save</div>
     </div>
 </template>
@@ -39,7 +46,8 @@
         updateButtons()
     }
     function updateButtons() {
-        const playButton = document.getElementById('#pause-button')
+        // find the pause button and change the icon based on 'paused'.
+        const playButton = document.getElementById('pause-button')
         if (!(playButton instanceof HTMLElement)) return
         playButton.innerHTML = paused ? 'play_arrow' : 'pause'
     }
@@ -58,6 +66,22 @@
         }
         updateButtons()
     }
+    function shareUrl() {
+        //get url
+        const url = window.location.href
+        //copy to clipboard
+        navigator.clipboard.writeText(url)
+        const notification = document.querySelector('.copy-notification')
+        if (!(notification instanceof HTMLElement)) return
+
+        //show notification for 2 seconds
+        notification.style.visibility = 'visible'
+        notification.style.opacity = '1'
+        setTimeout(() => {
+            notification.style.visibility = 'hidden'
+            notification.style.opacity = '0'
+        }, 2000)
+    }
 </script>
 <style>
     .specimen-bar {
@@ -72,7 +96,6 @@
         font-size: 12px;
         width: 100%;
     }
-
     input {
         &[type='text'] {
             border: none;
@@ -93,19 +116,6 @@
         cursor: pointer;
         user-select: none;
     }
-    select {
-        border: 1px solid var(--ns-color-black);
-        background-color: var(--ns-color-white);
-        display: block;
-        width: 100%;
-        padding: 8px;
-        margin-top: 4px;
-
-        &:focus {
-            outline: 3px solid var(--ns-color-primary);
-            border: none;
-        }
-    }
     .help {
         color: var(--ns-color-black);
     }
@@ -121,7 +131,6 @@
         flex-direction: row;
         position: relative;
     }
-
     .desc-tooltip {
         position: absolute;
         display: inline-block;
@@ -129,8 +138,7 @@
         right: 4px;
         bottom: 4px;
     }
-
-    .desc-tooltip .desc-tooltip-text {
+    .help-box {
         visibility: hidden;
         width: 240px;
         background-color: var(--ns-color-white);
@@ -141,14 +149,14 @@
         font-size: 12px;
 
         position: absolute;
-        z-index: 1;
-        right: 0;
-        margin-left: -120px;
-
+        z-index: 10000;
         opacity: 0;
         transition:
             opacity 0.2s,
             visibility 0.2s;
+    }
+    .desc-tooltip .desc-tooltip-text {
+        right: 0;
     }
 
     .desc-tooltip:hover .desc-tooltip-text {
