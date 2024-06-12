@@ -6,7 +6,7 @@
                 <h3>Self similarity telescope</h3>
             </div>
             <div type="button" id="change-button">
-                <img :src="swap" alt="Swap icon" id="change-icon" />
+                <span class="material-icons-sharp">swap_horiz</span>
                 <p id="change-text">Select Visualizer</p>
             </div>
         </div>
@@ -15,7 +15,7 @@
 
         <div type="button" class="visualizer-bar">
             <h2>Self similarity telescope</h2>
-            <img :src="arrow" alt="Arrow up" />
+            <span class="material-icons-sharp">keyboard_arrow_up</span>
         </div>
         <div class="gallery">
             <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
@@ -30,7 +30,7 @@
 
         <div type="button" class="visualizer-bar">
             <h2>Self similarity telescope</h2>
-            <img :src="arrow" alt="Arrow up" />
+            <span class="material-icons-sharp">keyboard_arrow_up</span>
         </div>
         <div class="gallery">
             <SpecimenCard :seqName="sequenceName" :cardName="cardName" />
@@ -46,8 +46,6 @@
 </template>
 
 <script setup lang="ts">
-    import swap from '../assets/img/icons/swap.svg'
-    import arrow from '../assets/img/icons/arrow.svg'
     import SpecimenCard from '../components/SpecimenCard.vue'
 
     const sequenceName = '2-acid val of Z'
@@ -84,6 +82,9 @@
     #change-button {
         max-width: 100px;
         width: min-content;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     #change-icon {
         display: block;
