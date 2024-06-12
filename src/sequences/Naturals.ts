@@ -1,6 +1,18 @@
-import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
+import {SequenceExportModule} from './SequenceInterface'
 import {Cached} from './Cached'
 import {ParamType} from '../shared/ParamType'
+
+const seqName = 'Natural Numbers'
+const seqDescription = 'A sequence of the natural numbers'
+
+const paramDesc = {
+    includeZero: {
+        default: false,
+        type: ParamType.BOOLEAN,
+        displayName: 'Include Zero',
+        required: false,
+    },
+} as const
 
 /**
  *
@@ -8,18 +20,10 @@ import {ParamType} from '../shared/ParamType'
  * extends Cached with a very simple calculate, mostly by way of an
  * example of using Cached.
  */
-class Naturals extends Cached {
-    name = 'Natural Numbers'
-    description = 'A sequence of the natural numbers'
-    includeZero = false
-    params = {
-        includeZero: {
-            value: this.includeZero,
-            type: ParamType.BOOLEAN,
-            displayName: 'Include Zero',
-            required: false,
-        },
-    }
+class Naturals extends Cached(paramDesc) {
+    name = seqName
+    description = seqDescription
+
     private begin = 1
 
     /**
@@ -46,9 +50,8 @@ class Naturals extends Cached {
     }
 }
 
-export const exportModule = new SequenceExportModule(
+export const exportModule = SequenceExportModule.family(
     Naturals,
-    Naturals.prototype.name,
-    Naturals.prototype.description,
-    SequenceExportKind.FAMILY
+    seqName,
+    seqDescription
 )

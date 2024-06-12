@@ -1,5 +1,5 @@
-import Gallery from '../views/Gallery.vue'
 import Scope from '../views/Scope.vue'
+import Gallery from '../views/Gallery.vue'
 import {createRouter, createWebHistory} from 'vue-router'
 
 const router = createRouter({

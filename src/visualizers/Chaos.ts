@@ -1,8 +1,10 @@
 import p5 from 'p5'
 import {modulo} from '../shared/math'
-import {P5Visualizer} from './P5Visualizer'
+import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
+import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
 # Chaos Visualizer
@@ -32,8 +34,8 @@ class Palette {
             this.backgroundColor = sketch.color(hexBack)
             this.textColor = sketch.color(hexText)
         } else {
-            this.backgroundColor = P5Visualizer.INVALID_COLOR
-            this.textColor = P5Visualizer.INVALID_COLOR
+            this.backgroundColor = INVALID_COLOR
+            this.textColor = INVALID_COLOR
         }
     }
 }
@@ -45,150 +47,143 @@ enum ColorStyle {
     Highlighting_one_walker,
 }
 
+const vizName = 'Chaos'
+const vizDescription = 'Chaos game played using a sequence to select moves'
+
+const paramDesc = {
+    corners: {
+        default: 4,
+        type: ParamType.INTEGER,
+        displayName: 'Number of corners',
+        required: true,
+        description:
+            'The number of vertices of the polygon; this value is also '
+            + 'used as a modulus applied to the entries.',
+    },
+    frac: {
+        default: 0.5,
+        type: ParamType.NUMBER,
+        displayName: 'Fraction to walk',
+        required: true,
+        description:
+            'What fraction of the way each step takes you toward the '
+            + 'vertex specified by the entry. It should be a '
+            + 'value between 0 and 1 inclusive.',
+    },
+    walkers: {
+        default: 1,
+        type: ParamType.INTEGER,
+        displayName: 'Number of walkers',
+        required: true,
+        description:
+            'The number w of walkers. The sequence will be broken into '
+            + 'subsequences based on the residue mod w '
+            + 'of the index, each with a separate walker.',
+    },
+    colorStyle: {
+        default: ColorStyle.Walker,
+        type: ParamType.ENUM,
+        from: ColorStyle,
+        displayName: 'Color dots by',
+        required: true,
+        description: 'The way the dots should be colored',
+    },
+    gradientLength: {
+        default: 10000,
+        type: ParamType.INTEGER,
+        displayName: 'Color cycling length',
+        required: false,
+        visibleDependency: 'colorStyle',
+        visibleValue: ColorStyle.Index,
+        description:
+            'The number of entries before recycling the color sequence.',
+    },
+    highlightWalker: {
+        default: 0,
+        type: ParamType.INTEGER,
+        displayName: 'Number of walker to highlight',
+        required: false,
+        visibleDependency: 'colorStyle',
+        visibleValue: ColorStyle.Highlighting_one_walker,
+    },
+    first: {
+        default: NaN,
+        type: ParamType.INTEGER,
+        displayName: 'Starting index',
+        required: false,
+        description:
+            'Index of the first entry to use. If this is blank or less '
+            + 'than the first valid index, visualization will start '
+            + 'at the first valid index.',
+    },
+    last: {
+        default: NaN,
+        type: ParamType.INTEGER,
+        displayName: 'Ending index',
+        required: false,
+        description:
+            'Index of the last entry to use. If this is blank or greater '
+            + 'than the last valid index, visualization will end at the '
+            + 'last valid index.',
+    },
+    dummyDotControl: {
+        default: false,
+        type: ParamType.BOOLEAN,
+        displayName: 'Show additional parameters for the dots ↴',
+        required: false,
+    },
+    circSize: {
+        default: 1,
+        type: ParamType.NUMBER,
+        displayName: 'Size (pixels)',
+        required: true,
+        visibleDependency: 'dummyDotControl',
+        visibleValue: true,
+    },
+    alpha: {
+        default: 0.9,
+        type: ParamType.NUMBER,
+        displayName: 'Alpha',
+        required: true,
+        description:
+            'Alpha factor (from 0.0=transparent to 1.0=solid) of the dots.',
+        visibleDependency: 'dummyDotControl',
+        visibleValue: true,
+    },
+    pixelsPerFrame: {
+        default: 400,
+        type: ParamType.INTEGER,
+        displayName: 'Dots to draw per frame',
+        required: true,
+        description: '(more = faster).',
+        visibleDependency: 'dummyDotControl',
+        visibleValue: true,
+    },
+    showLabels: {
+        default: false,
+        type: ParamType.BOOLEAN,
+        displayName: 'Label corners of polygon?',
+        required: false,
+    },
+    darkMode: {
+        default: false,
+        type: ParamType.BOOLEAN,
+        displayName: 'Use dark mode?',
+        required: false,
+        description: 'If checked, uses light colors on a dark background',
+    },
+} as const
+
 // other ideas:  previous parts of the sequence fade over time,
 // or shrink over time;
 // circles fade to the outside
 
-class Chaos extends P5Visualizer {
-    name = 'Chaos'
-    description = 'Chaos game played using a sequence to select moves'
-    corners = 4
-    frac = 0.5
-    walkers = 1
-    colorStyle = ColorStyle.Walker
-    gradientLength = 10000
-    highlightWalker = 0
+class Chaos extends P5Visualizer(paramDesc) {
+    name = vizName
+    description = vizDescription
+
     first = NaN
     last = NaN
-    circSize = 1
-    alpha = 0.9
-    pixelsPerFrame = 400
-    showLabels = false
-    darkMode = false
-
-    params = {
-        corners: {
-            value: this.corners,
-            type: ParamType.INTEGER,
-            displayName: 'Number of corners',
-            required: true,
-            description:
-                'The number of vertices of the polygon; this value is also '
-                + 'used as a modulus applied to the entries.',
-        },
-        frac: {
-            value: this.frac,
-            type: ParamType.NUMBER,
-            displayName: 'Fraction to walk',
-            required: true,
-            description:
-                'What fraction of the way each step takes you toward the '
-                + 'vertex specified by the entry. It should be a '
-                + 'value between 0 and 1 inclusive.',
-        },
-        walkers: {
-            value: this.walkers,
-            type: ParamType.INTEGER,
-            displayName: 'Number of walkers',
-            required: true,
-            description:
-                'The number w of walkers. The sequence will be broken into '
-                + 'subsequences based on the residue mod w '
-                + 'of the index, each with a separate walker.',
-        },
-        colorStyle: {
-            value: this.colorStyle,
-            type: ParamType.ENUM,
-            from: ColorStyle,
-            displayName: 'Color dots by',
-            required: true,
-            description: 'The way the dots should be colored',
-        },
-        gradientLength: {
-            value: this.gradientLength,
-            type: ParamType.INTEGER,
-            displayName: 'Color cycling length',
-            required: false,
-            visibleDependency: 'colorStyle',
-            visibleValue: ColorStyle.Index,
-            description:
-                'The number of entries before recycling the color sequence.',
-        },
-        highlightWalker: {
-            value: this.highlightWalker,
-            type: ParamType.INTEGER,
-            displayName: 'Number of walker to highlight',
-            required: false,
-            visibleDependency: 'colorStyle',
-            visibleValue: ColorStyle.Highlighting_one_walker,
-        },
-        first: {
-            value: 0,
-            type: ParamType.INTEGER,
-            displayName: 'Starting index',
-            required: false,
-            description:
-                'Index of the first entry to use. If this is blank or less '
-                + 'than the first valid index, visualization will start '
-                + 'at the first valid index.',
-        },
-        last: {
-            value: 1000,
-            type: ParamType.INTEGER,
-            displayName: 'Ending index',
-            required: false,
-            description:
-                'Index of the last entry to use. If this is blank or greater '
-                + 'than the last valid index, visualization will end at the '
-                + 'last valid index.',
-        },
-        dummyDotControl: {
-            value: false,
-            type: ParamType.BOOLEAN,
-            displayName: 'Show additional parameters for the dots ↴',
-            required: false,
-        },
-        circSize: {
-            value: this.circSize,
-            type: ParamType.NUMBER,
-            displayName: 'Size (pixels)',
-            required: true,
-            visibleDependency: 'dummyDotControl',
-            visibleValue: true,
-        },
-        alpha: {
-            value: this.alpha,
-            type: ParamType.NUMBER,
-            displayName: 'Alpha',
-            required: true,
-            description:
-                'Alpha factor (from 0.0=transparent to 1.0=solid) of the dots.',
-            visibleDependency: 'dummyDotControl',
-            visibleValue: true,
-        },
-        pixelsPerFrame: {
-            value: this.pixelsPerFrame,
-            type: ParamType.INTEGER,
-            displayName: 'Dots to draw per frame',
-            required: true,
-            description: '(more = faster).',
-            visibleDependency: 'dummyDotControl',
-            visibleValue: true,
-        },
-        showLabels: {
-            value: this.showLabels,
-            type: ParamType.BOOLEAN,
-            displayName: 'Label corners of polygon?',
-            required: false,
-        },
-        darkMode: {
-            value: this.darkMode,
-            type: ParamType.BOOLEAN,
-            displayName: 'Use dark mode?',
-            required: false,
-            description: 'If checked, uses light colors on a dark background',
-        },
-    }
 
     // current state variables (used in setup and draw)
     private seqLength = 0
@@ -199,7 +194,11 @@ class Chaos extends P5Visualizer {
     // colour palette
     private currentPalette = new Palette()
 
-    checkParameters(params: {[key: string]: unknown}) {
+    constructor(seq: SequenceInterface<GenericParamDescription>) {
+        super(seq)
+    }
+
+    checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
         if ((params.corners as number) < 2) {
@@ -327,17 +326,11 @@ class Chaos extends P5Visualizer {
 
         // Adjust the starting and ending points if need be
         let adjusted = false
-        if (
-            typeof this.params.first.value === 'string'
-            || this.first < this.seq.first
-        ) {
+        if (Number.isNaN(this.first) || this.first < this.seq.first) {
             this.first = this.seq.first
             adjusted = true
         }
-        if (
-            typeof this.params.last.value === 'string'
-            || this.last > this.seq.last
-        ) {
+        if (Number.isNaN(this.last) || this.last > this.seq.last) {
             this.last = this.seq.last
             adjusted = true
         }
@@ -461,6 +454,6 @@ class Chaos extends P5Visualizer {
 
 export const exportModule = new VisualizerExportModule(
     Chaos,
-    Chaos.prototype.name,
-    Chaos.prototype.description
+    vizName,
+    vizDescription
 )
