@@ -239,8 +239,11 @@ export class Paramable<PD extends GenericParamDescription>
     /**
      * Performs the same purpose as `validate()`, but takes as a parameter
      * a list of realized values of the parameters, so that the function doesn't
-     * have to do this itself. This function should always be the one overloaded
-     * by classes which extend `Paramable`, and not `validate()`
+     * have to do this itself. Except in an extraordinary case in which a
+     * derived-class Paramable object needed to do some cross-parameter
+     * check based on the input strings as opposed to realized values, derived
+     * classes should essenitally always override this checkParameters() method,
+     * rather than `validate()`.
      * @param _params the list of realized parameter values to be validated
      * @return the result of the validation
      */
