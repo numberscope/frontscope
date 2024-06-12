@@ -89,7 +89,7 @@
         flex-direction: row;
         gap: 8px;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-end;
         padding: 8px;
     }
     label {
@@ -111,6 +111,12 @@
         }
     }
     .button {
+        text-align: center;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        vertical-align: middle;
+        font-size: 24px;
         border: 1px solid var(--ns-color-black);
         color: var(--ns-color-grey);
         cursor: pointer;
@@ -138,7 +144,11 @@
         right: 4px;
         bottom: 4px;
     }
+    .copy-notification {
+        translate: -210px 0px;
+    }
     .help-box {
+        overflow: hidden;
         visibility: hidden;
         width: 240px;
         background-color: var(--ns-color-white);
