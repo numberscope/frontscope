@@ -34,18 +34,17 @@ modulus to consider.
     },
 } as const
 
-class ModFill extends P5Visualizer<typeof paramDesc> {
+class ModFill extends P5Visualizer(paramDesc) {
     name = 'Mod Fill'
     description =
         'A triangular grid showing which ' + 'residues occur, to each modulus'
-    modDimension = paramDesc.modDimension.default as bigint
 
     rectWidth = 0
     rectHeight = 0
     i = 0
 
     constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(paramDesc, seq)
+        super(seq)
     }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {

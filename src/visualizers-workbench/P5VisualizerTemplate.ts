@@ -15,7 +15,7 @@
 
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '../shared/ParamType'
-import {P5Visualizer} from '../visualizers/P5Visualizer'
+import {P5Visualizer, INVALID_COLOR} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
 
@@ -49,18 +49,11 @@ integer.)_
     },
 } as const
 
-class P5VisualizerTemplate extends P5Visualizer<typeof paramDesc> {
+class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
     // === Visualizer name ===
     // Appears in the visualizer list and bundle card titles
     name = 'Entries (p5 Template)'
     description = 'Step through entries one at a time'
-
-    // === Parameters ===
-    // Top-level properties that the user can choose while creating the
-    // visualizer bundle. If a parameter is meant to have a default value, we
-    // conventionally use that as the initial value, so we can refer to it when
-    // we set the default value below
-    stepSize = paramDesc.stepSize.default as number
 
     // === Internal properties ===
     // Top-level properties that are set and updated while the visualizer is
@@ -75,12 +68,12 @@ class P5VisualizerTemplate extends P5Visualizer<typeof paramDesc> {
     index = 0
 
     // palette colors
-    bgColor = P5Visualizer.INVALID_COLOR
-    textColor = P5Visualizer.INVALID_COLOR
-    outlineColor = P5Visualizer.INVALID_COLOR
+    bgColor = INVALID_COLOR
+    textColor = INVALID_COLOR
+    outlineColor = INVALID_COLOR
 
     constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(paramDesc, seq)
+        super(seq)
     }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {

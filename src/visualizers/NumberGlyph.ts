@@ -131,15 +131,11 @@ The default value is 25.
     },
 } as const
 
-class NumberGlyph extends P5Visualizer<typeof paramDesc> {
+class NumberGlyph extends P5Visualizer(paramDesc) {
     name = 'Number Glyphs'
     description =
         'Map entries to colorful glyphs '
         + 'using their magnitudes and prime factors'
-    n = 64
-    customize = false
-    brightCap = 25
-    formula = 'log(max(abs(n),2)^x) % 25'
 
     private evaluator: math.EvalFunction
 
@@ -162,7 +158,7 @@ class NumberGlyph extends P5Visualizer<typeof paramDesc> {
     private initialRadius = 50 // size of dots
 
     constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(paramDesc, seq)
+        super(seq)
         // It is mandatory to initialize the `evaluator` property here,
         // so just use a simple dummy formula until the user provides one.
         this.evaluator = math.compile(this.formula)

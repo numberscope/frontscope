@@ -1,6 +1,6 @@
 import p5 from 'p5'
 import {modulo} from '../shared/math'
-import {P5Visualizer} from './P5Visualizer'
+import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
@@ -34,8 +34,8 @@ class Palette {
             this.backgroundColor = sketch.color(hexBack)
             this.textColor = sketch.color(hexText)
         } else {
-            this.backgroundColor = P5Visualizer.INVALID_COLOR
-            this.textColor = P5Visualizer.INVALID_COLOR
+            this.backgroundColor = INVALID_COLOR
+            this.textColor = INVALID_COLOR
         }
     }
 }
@@ -175,22 +175,11 @@ const paramDesc = {
 // or shrink over time;
 // circles fade to the outside
 
-class Chaos extends P5Visualizer<typeof paramDesc> {
+class Chaos extends P5Visualizer(paramDesc) {
     name = 'Chaos'
     description = 'Chaos game played using a sequence to select moves'
-    corners = 4
-    frac = 0.5
-    walkers = 1
-    colorStyle = ColorStyle.Walker
-    gradientLength = 10000
-    highlightWalker = 0
     first = NaN
     last = NaN
-    circSize = 1
-    alpha = 0.9
-    pixelsPerFrame = 400
-    showLabels = false
-    darkMode = false
 
     // current state variables (used in setup and draw)
     private seqLength = 0
@@ -202,7 +191,7 @@ class Chaos extends P5Visualizer<typeof paramDesc> {
     private currentPalette = new Palette()
 
     constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(paramDesc, seq)
+        super(seq)
     }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {

@@ -17,10 +17,9 @@ const paramDesc = {
  * extends Cached with a very simple calculate, mostly by way of an
  * example of using Cached.
  */
-class Naturals extends Cached<typeof paramDesc> {
+class Naturals extends Cached(paramDesc) {
     name = 'Natural Numbers'
     description = 'A sequence of the natural numbers'
-    includeZero = paramDesc.includeZero.default
     private begin = 1
 
     /**
@@ -28,7 +27,7 @@ class Naturals extends Cached<typeof paramDesc> {
      * @param {*} sequenceID the sequence identifier of the sequence
      */
     constructor(sequenceID: number) {
-        super(paramDesc, sequenceID)
+        super(sequenceID)
     }
 
     initialize() {

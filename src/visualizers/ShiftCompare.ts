@@ -35,17 +35,17 @@ const paramDesc = {
 
 // CAUTION: This is unstable with some sequences
 // Using it may crash your browser
-class ShiftCompare extends P5Visualizer<typeof paramDesc> {
+class ShiftCompare extends P5Visualizer(paramDesc) {
     name = 'Shift Compare'
     description =
         'A grid showing pairwise congruence '
         + 'of sequence entries, to some modulus'
 
     private img: p5.Image = new p5.Image(1, 1) // just a dummy
-    mod = paramDesc.mod.default as bigint
+    mod = 2n
 
     constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(paramDesc, seq)
+        super(seq)
     }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {

@@ -46,20 +46,17 @@ than 'Entries in top row.')_
     },
 } as const
 
-class Differences extends P5Visualizer<typeof paramDesc> {
+class Differences extends P5Visualizer(paramDesc) {
     name = 'Differences'
     description =
         'Produces a table of differences '
         + 'between consecutive entries, potentially iterated several times'
 
-    // parameters
-    n = paramDesc.n.default as number
-    levels = paramDesc.levels.default as number
-
     first = 0
+    levels = 5
 
     constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(paramDesc, seq)
+        super(seq)
     }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {

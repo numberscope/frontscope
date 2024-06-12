@@ -534,7 +534,7 @@ checked.
     },
 } as const
 
-class Grid extends P5Visualizer<typeof paramDesc> {
+class Grid extends P5Visualizer(paramDesc) {
     name = 'Grid'
     description =
         'Puts numbers in a grid, '
@@ -568,7 +568,7 @@ class Grid extends P5Visualizer<typeof paramDesc> {
     secondaryProperties: number[] = []
 
     constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(paramDesc, seq)
+        super(seq)
         /** md
 ### Property 1, 2, etc.:  Properties to display by coloring cells
 

@@ -50,14 +50,14 @@
         children: {[key: string]: ParamInterface<ParamType>}
     }
 
+    type Paramable = () => ParamableInterface<GenericParamDescription>
+
     export default defineComponent({
         name: 'ParamEditor',
         props: {
             title: {type: String, required: true},
             paramable: {
-                // This line cannot be broken into multiple lines
-                // eslint-disable-next-line max-len
-                type: Object as () => ParamableInterface<GenericParamDescription>,
+                type: Object as Paramable,
                 required: true,
             },
         },

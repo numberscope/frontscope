@@ -94,20 +94,13 @@ be the same length.
 
 // Turtle needs work
 // Throwing the same error on previous Numberscope website
-class Turtle extends P5Visualizer<typeof paramDesc> {
+class Turtle extends P5Visualizer(paramDesc) {
     name = 'Turtle'
     description =
         'Use a sequence to steer a virtual '
         + 'turtle that leaves a visible trail'
 
     private rotMap = new Map<string, number>()
-    domain = [0n, 1n, 2n, 3n, 4n]
-    range = [30, 45, 60, 90, 120]
-    stepSize = 20
-    start = new p5.Vector()
-    strokeWeight = 5
-    bgColor = '#666666'
-    strokeColor = '#ff0000'
 
     private currentIndex = 0
     private orientation = 0
@@ -115,7 +108,7 @@ class Turtle extends P5Visualizer<typeof paramDesc> {
     private Y = 0
 
     constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(paramDesc, seq)
+        super(seq)
     }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {

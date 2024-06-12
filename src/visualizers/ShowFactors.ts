@@ -36,17 +36,14 @@ const paramDesc = {
     },
 } as const
 
-class ShowFactors extends P5Visualizer<typeof paramDesc> {
+class ShowFactors extends P5Visualizer(paramDesc) {
     name = 'Show Factors'
     description = 'Produces a table of factors of a sequence'
-
-    start = paramDesc.start.default as number
-    end = paramDesc.end.default as number
 
     first = 0
 
     constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(paramDesc, seq)
+        super(seq)
     }
 
     draw() {
