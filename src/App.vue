@@ -4,14 +4,14 @@
         <main>
             <RouterView />
         </main>
-        <!-- <Footer /> -->
+        <Footer />
     </div>
 </template>
 
 <script setup lang="ts">
-    // import Footer from './views/minor/Footer.vue'
     import NavBar from './views/minor/NavBar.vue'
     import {RouterView} from 'vue-router'
+    import Footer from './views/minor/Footer.vue'
 </script>
 
 <!-- Global styles. This style tag is explicitly unscoped. -->
@@ -36,7 +36,6 @@
         margin: 0;
         padding: 0;
     }
-
     :root {
         /* Font sizes */
         --ns-size-body: 12px;
@@ -57,6 +56,9 @@
         --ns-color-light: #b5b5b5;
         --ns-color-grey: #636363;
         --ns-color-black: #2f2f2f;
+
+        /* Bolditude */
+        --ns-font-weight-medium: 500;
 
         /* Breakpoint widths 
         Default styles should be for vertical mobile devices

@@ -1,12 +1,17 @@
 import type {SequenceInterface} from '../sequences/SequenceInterface'
-import type {ParamableInterface} from '../shared/Paramable'
+import type {
+    GenericParamDescription,
+    ParamableInterface,
+} from '../shared/Paramable'
 
 interface VisualizerConstructor {
     /**
      * Constructs a visualizer
      * @param seq SequenceInterface The initial sequence to visualize
      */
-    new (seq: SequenceInterface): VisualizerInterface
+    new (
+        seq: SequenceInterface<GenericParamDescription>
+    ): VisualizerInterface<GenericParamDescription>
 }
 
 export class VisualizerExportModule {
@@ -25,11 +30,12 @@ export class VisualizerExportModule {
     }
 }
 
-export interface VisualizerInterface extends ParamableInterface {
+export interface VisualizerInterface<PD extends GenericParamDescription>
+    extends ParamableInterface<PD> {
     /**
      * Change the sequence the visualizer is showing.
      */
-    view(seq: SequenceInterface): void
+    view(seq: SequenceInterface<GenericParamDescription>): void
     /**
      * Cause the visualizer to realize itself within a DOM element.
      * The visualizer should remove itself from any other location it might

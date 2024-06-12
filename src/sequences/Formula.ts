@@ -1,8 +1,21 @@
-import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
+import {SequenceExportModule} from './SequenceInterface'
 import {ParamType} from '../shared/ParamType'
 import {Cached} from './Cached'
 import simpleFactor from './simpleFactor'
 import * as math from 'mathjs'
+import type {ParamValues} from '@/shared/Paramable'
+
+const seqName = 'Formula: empty'
+const seqDescription = 'A sequence defined by a formula in n'
+
+const paramDesc = {
+    formula: {
+        default: 'n',
+        type: ParamType.STRING,
+        displayName: 'Formula',
+        required: true,
+    },
+} as const
 
 /**
  *
@@ -12,18 +25,9 @@ import * as math from 'mathjs'
  * those are both arbitrary choices; we might at some point want to allow
  * either to be tailored.
  */
-class Formula extends Cached {
-    name = 'Formula: empty'
-    description = 'A sequence defined by a formula in n'
-    formula = 'n'
-    params = {
-        formula: {
-            value: this.formula,
-            type: ParamType.STRING,
-            displayName: 'Formula',
-            required: true,
-        },
-    }
+class Formula extends Cached(paramDesc) {
+    name = seqName
+    description = seqDescription
 
     private evaluator: math.EvalFunction
 
@@ -38,15 +42,16 @@ class Formula extends Cached {
         this.evaluator = math.compile(this.formula)
     }
 
-    checkParameters(params: {[key: string]: unknown}) {
+    checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
+        params.formula
 
         let parsetree = undefined
         try {
-            parsetree = math.parse(params.formula as string)
+            parsetree = math.parse(params.formula)
         } catch (err: unknown) {
             status.addError(
-                ('Could not parse formula: ' + params.formula) as string,
+                'Could not parse formula: ' + params.formula,
                 (err as Error).message
             )
             return status
@@ -81,9 +86,8 @@ class Formula extends Cached {
     }
 }
 
-export const exportModule = new SequenceExportModule(
+export const exportModule = SequenceExportModule.family(
     Formula,
-    Formula.prototype.name,
-    Formula.prototype.description,
-    SequenceExportKind.FAMILY
+    seqName,
+    seqDescription
 )

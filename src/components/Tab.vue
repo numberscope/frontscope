@@ -1,12 +1,22 @@
+<template>
+    <div class="tab">
+        <div class="drag"></div>
+        <div class="content">
+            <slot></slot>
+        </div>
+        <div class="resize"></div>
+    </div>
+</template>
+
 <script setup lang="ts">
     import interact from 'interactjs'
     import {positionAndSizeTab} from '../views/Scope.vue'
 
     // every element with draggable class can be dragged
     interact('.tab').resizable({
-        // no inertia for resizing (better imo)
+        // no inertia for resizing
         inertia: false,
-        // Only want bootom resizing and only when the tab isn't docked
+        // Only want bottom resizing and only when the tab isn't docked
         edges: {
             left: false,
             right: false,
@@ -16,10 +26,12 @@
 
         listeners: {
             start() {
+                // prevent text selection
                 document.body.style.userSelect = 'none'
             },
 
             end() {
+                // allow text selection
                 document.body.style.userSelect = 'auto'
             },
 
@@ -111,16 +123,6 @@
         }
     }
 </script>
-
-<template>
-    <div class="tab">
-        <div class="drag"></div>
-        <div class="content">
-            <slot></slot>
-        </div>
-        <div class="resize"></div>
-    </div>
-</template>
 
 <style scoped lang="scss">
     .tab {
