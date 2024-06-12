@@ -27,16 +27,27 @@
             class="button material-icons-sharp"
             @click="shareUrl">
             share
-            <div class="copy-notification help-box">Copied to clipboard!</div>
+            <div id="share-popup" class="notification help-box">
+                Copied to clipboard!
+            </div>
         </div>
 
-        <div class="button material-icons-sharp">save</div>
+        <div
+            id="save-button"
+            class="button material-icons-sharp"
+            @click="saveSpecimen">
+            save
+            <div id="save-popup" class="notification help-box">
+                Saved to gallery!
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
     import {specimen} from '../views/Scope.vue'
     import {visualizer} from '../views/Scope.vue'
+    import {saveSpecimenToBrowser} from '../shared/browserCaching'
     // true if paused, false if playing
     let paused = false
     // refreshes the specimen
@@ -76,7 +87,30 @@
         console.log(clipboard)
         clipboard.writeText(url)
 
-        const notification = document.querySelector('.copy-notification')
+        const notification = document.getElementById('share-popup')
+        if (!(notification instanceof HTMLElement)) return
+
+        //show notification for 2 seconds
+        notification.style.visibility = 'visible'
+        notification.style.opacity = '1'
+        setTimeout(() => {
+            notification.style.visibility = 'hidden'
+            notification.style.opacity = '0'
+        }, 2000)
+    }
+    function saveSpecimen() {
+        // get url
+        const url = window.location.href
+        // get specimen name
+        const name = document.querySelector('input[type="text"]')
+        if (!(name instanceof HTMLInputElement)) return
+        const specimenName = name.value
+
+        //save to browser
+        saveSpecimenToBrowser(url, specimenName)
+
+        //get notification element
+        const notification = document.getElementById('save-popup')
         if (!(notification instanceof HTMLElement)) return
 
         //show notification for 2 seconds
@@ -150,7 +184,10 @@
         right: 4px;
         bottom: 4px;
     }
-    .copy-notification {
+    #share-popup {
+        translate: -210px 0px;
+    }
+    #save-popup {
         translate: -210px 0px;
     }
     .help-box {

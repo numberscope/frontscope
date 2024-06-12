@@ -116,7 +116,7 @@ export function updateCurrent(url: string, name: string): void {
  * @param name
  */
 
-export function saveSpecimen(url: string, name: string): void {
+export function saveSpecimenToBrowser(url: string, name: string): void {
     const savedUrls = getSIMs()
     const SIM = {url: url, name: name, date: getCurrentDate()}
     let contains = false
