@@ -13,24 +13,19 @@
                 </div>
             </div>
         </div>
-        <div
-            class="button material-icons-sharp"
-            @click="refresh"
-            @touch="refresh">
+        <div class="button material-icons-sharp" @click="refresh">
             refresh
         </div>
         <div
             id="pause-button"
             class="button material-icons-sharp"
-            @click="togglePause"
-            @touchend="togglePause">
+            @click="togglePause">
             pause
         </div>
         <div
             id="share-button"
             class="button material-icons-sharp"
-            @click="shareUrl"
-            @touchend="shareUrl">
+            @click="shareUrl">
             share
             <div class="copy-notification help-box">Copied to clipboard!</div>
         </div>
@@ -76,7 +71,10 @@
         //get url
         const url = window.location.href
         //copy to clipboard
-        navigator.clipboard.writeText(url)
+
+        const clipboard = navigator.clipboard
+        console.log(clipboard)
+        clipboard.writeText(url)
 
         const notification = document.querySelector('.copy-notification')
         if (!(notification instanceof HTMLElement)) return
