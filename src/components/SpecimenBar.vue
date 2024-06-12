@@ -16,10 +16,14 @@
         <div class="button material-icons-sharp" @click="refresh">
             refresh
         </div>
-        <div class="button material-icons-sharp" @click="togglePause">
+        <div
+            id="#pause-button"
+            class="button material-icons-sharp"
+            @click="togglePause">
             pause
         </div>
         <div class="button material-icons-sharp">share</div>
+        <div class="button material-icons-sharp">save</div>
     </div>
 </template>
 
@@ -32,6 +36,12 @@
     function refresh() {
         specimen.updateSequence()
         paused = false
+        updateButtons()
+    }
+    function updateButtons() {
+        const playButton = document.getElementById('#pause-button')
+        if (!(playButton instanceof HTMLElement)) return
+        playButton.innerHTML = paused ? 'play_arrow' : 'pause'
     }
     // toggles the pause state
     function togglePause() {
@@ -46,6 +56,7 @@
             paused = true
             console.log('paused')
         }
+        updateButtons()
     }
 </script>
 <style>
@@ -80,6 +91,7 @@
         border: 1px solid var(--ns-color-black);
         color: var(--ns-color-grey);
         cursor: pointer;
+        user-select: none;
     }
     select {
         border: 1px solid var(--ns-color-black);
