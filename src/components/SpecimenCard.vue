@@ -17,7 +17,6 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
-    import {positionAndSizeAllTabs} from '../views/Scope.vue'
     import {Specimen} from '../shared/Specimen'
     let cid_count = 0
 
