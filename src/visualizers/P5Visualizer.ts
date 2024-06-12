@@ -249,6 +249,6 @@ export abstract class P5Visualizer
      * this to request a specific aspect ratio.
      */
     requestedAspectRatio(): number | undefined {
-        return 1.77
+        return undefined
     }
 }
