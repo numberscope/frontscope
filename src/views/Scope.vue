@@ -1,5 +1,5 @@
 <template>
-    <NavBar>
+    <NavBar class="navbar">
         <SpecimenBar
             :specimen="specimen as Specimen"
             @updateSpecimen="handleSpecimenUpdate">
@@ -368,10 +368,15 @@
 
 <style scoped lang="scss">
     // mobile styles
+    .navbar {
+        display: none;
+    }
+
     #specimen-container {
         height: calc(100vh - 54px);
         position: relative;
     }
+
     #main {
         display: flex;
         height: 100%;
@@ -423,6 +428,9 @@
     }
     // desktop styles
     @media (min-width: 700px) {
+        .navbar {
+            display: unset;
+        }
         #sequenceTab,
         #visualiserTab {
             width: 300px;

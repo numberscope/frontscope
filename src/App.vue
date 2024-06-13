@@ -1,6 +1,6 @@
 <template>
     <div id="container">
-        <!-- <NavBar /> -->
+        <NavBar class="navbar-mobile" />
         <main>
             <RouterView />
         </main>
@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-    // import NavBar from './views/minor/NavBar.vue'
+    import NavBar from './views/minor/NavBar.vue'
     import {RouterView} from 'vue-router'
     import Footer from './views/minor/Footer.vue'
 </script>
@@ -58,6 +58,9 @@
         --ns-breakpoint-desktop: 1200px;
     }
 
+    .navbar-mobile {
+        display: unset;
+    }
     #container {
         display: flex;
         flex-direction: column;
@@ -89,5 +92,10 @@
     @font-face {
         font-family: 'Inter';
         src: url('/src/assets/fonts/inter/Inter-VariableFont_slnt\,wght.ttf');
+    }
+    @media (min-width: 700px) {
+        .navbar-mobile {
+            display: none;
+        }
     }
 </style>
