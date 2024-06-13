@@ -1,17 +1,33 @@
 <template>
+    <NavBar>
+        <SpecimenBar
+            :specimen="specimen as Specimen"
+            @updateSpecimen="handleSpecimenUpdate">
+        </SpecimenBar>
+    </NavBar>
     <div id="specimen-container">
         <tab id="sequenceTab" class="tab docked" docked="top-right">
             <ParamEditor
                 title="Sequence"
-                :paramable="specimen.getSequence()"
-                @changed="() => specimen.updateSequence()" />
+                :paramable="specimen.sequence"
+                @changed="
+                    () => {
+                        specimen.updateSequence()
+                        updateURL()
+                    }
+                " />
         </tab>
         <tab id="visualiserTab" class="tab docked" docked="bottom-right">
             <ParamEditor
                 title="Visualizer"
-                :paramable="specimen.getVisualizer()" />
+                :paramable="specimen.visualizer"
+                @changed="() => updateURL()" />
         </tab>
-        <SpecimenBar class="specimen-bar" />
+        <SpecimenBar
+            id="specimen-bar-phone"
+            class="specimen-bar"
+            :specimen="specimen as Specimen"
+            @updateSpecimen="handleSpecimenUpdate" />
         <!-- 
             The dropzone ids must remain like "[position]-dropzone"
             where [position] is the same as the dropzone attribute.
@@ -63,6 +79,9 @@
 </template>
 
 <script lang="ts">
+    import NavBar from './minor/NavBar.vue'
+    import SpecimenBar from '../components/SpecimenBar.vue'
+
     /**
      * Positions a tab to be inside a dropzone
      * Resizes the tab to be the same size as the dropzone
@@ -178,25 +197,37 @@
             }
         })
     }
-    // moved paramaters out of setup and into here
-    // because i need to access them from navBar.vue
-    const sequence = new exportModule.sequence(0)
-    export const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
-
-    export const specimen = reactive(new Specimen(visualizer, sequence))
 </script>
 
 <script setup lang="ts">
     import Tab from '../components/Tab.vue'
     import interact from 'interactjs'
     import {onMounted} from 'vue'
+    import {useRoute, useRouter} from 'vue-router'
     import ParamEditor from '../components/ParamEditor.vue'
-    import vizMODULES from '../visualizers/visualizers'
-    import {exportModule} from '../sequences/Formula'
     import {reactive} from 'vue'
     import {Specimen} from '../shared/Specimen'
-    import SpecimenBar from '../components/SpecimenBar.vue'
 
+    const router = useRouter()
+    const route = useRoute()
+
+    const defaultSpecimen = new Specimen('Specimen', 'ModFill', 'Random')
+
+    const specimen = reactive(
+        typeof route.query.specimen === 'string'
+            ? Specimen.fromURL(route.query.specimen as string)
+            : defaultSpecimen
+    )
+    const updateURL = () =>
+        router.push({
+            query: {
+                specimen: specimen.toURL(),
+            },
+        })
+    function handleSpecimenUpdate(newName: string) {
+        specimen.name = newName
+        updateURL()
+    }
     onMounted(() => {
         const specimenContainer = document.getElementById(
             'specimen-container'
@@ -207,7 +238,15 @@
         window.addEventListener('resize', () => {
             positionAndSizeAllTabs()
         })
+
         specimen.setup(canvasContainer)
+
+        setInterval(() => {
+            specimen.resized(
+                canvasContainer.clientWidth,
+                canvasContainer.clientHeight
+            )
+        }, 500)
     })
 
     // enable draggables to be dropped into this
@@ -330,6 +369,24 @@
 <style scoped lang="scss">
     // mobile styles
     #specimen-container {
+        height: calc(100vh - 54px);
+        position: relative;
+    }
+    #main {
+        display: flex;
+        height: 100%;
+    }
+
+    #canvas-container {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dropzone-container {
         display: flex;
         flex-direction: column;
         min-height: fit-content;
@@ -342,7 +399,7 @@
     #canvas-container {
         order: 1;
         border-bottom: 1px solid var(--ns-color-black);
-        min-height: 300px;
+        height: 301px;
     }
     #sequenceTab {
         width: 100%;
@@ -358,7 +415,7 @@
         order: 4;
         border-bottom: 1px solid var(--ns-color-black);
     }
-    .specimen-bar {
+    #specimen-bar-phone {
         order: 2;
         padding-left: auto;
         padding-right: auto;
@@ -370,7 +427,7 @@
         #visualiserTab {
             width: 300px;
         }
-        .specimen-bar {
+        #specimen-bar-phone {
             display: none;
             border: 0px;
         }
@@ -384,6 +441,8 @@
         }
 
         #canvas-container {
+            height: unset;
+
             order: unset;
             flex: 1;
             position: relative;

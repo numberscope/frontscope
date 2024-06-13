@@ -1,6 +1,8 @@
-import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
+import {VisualizerExportModule} from './VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
 import {ParamType} from '../shared/ParamType'
+import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
 # Factor Histogram
@@ -26,71 +28,72 @@ have a corresponding value of Omega.
 ## Parameters
 **/
 
-class FactorHistogram extends P5Visualizer {
-    name = 'Factor Histogram'
-    description =
-        'Displays a histogram of the '
-        + 'number of prime factors of a sequence'
+const vizName = 'Factor Histogram'
+const vizDescription =
+    'Displays a histogram of the ' + 'number of prime factors of a sequence'
 
-    binSize = 1
-    terms = 100
-    firstIndex = NaN
-    mouseOver = true
+const paramDesc = {
+    /** md
+- Bin Size: The size (number of Omega values) for each bin
+of the histogram.
+    **/
+    binSize: {
+        default: 1,
+        type: ParamType.INTEGER,
+        displayName: 'Bin Size',
+        required: true,
+    },
+    /** md
+- First Index: The first index included in the statistics.
+    If the first index is before the first term
+    of the series then the first term of the series will be used.
+    **/
+    firstIndex: {
+        default: NaN,
+        type: ParamType.INTEGER,
+        displayName: 'First Index',
+        required: false,
+    },
+
+    /** md
+- Number of Terms: The number of terms included in the statistics.
+        If this goes past the last term of the sequence it will
+        show all terms of the sequence after the first index.
+    **/
+    terms: {
+        default: 100,
+        type: ParamType.INTEGER,
+        displayName: 'Number of Terms',
+        required: true,
+    },
+
+    /** md
+- Mouse Over:   This turns on a mouse over feature that shows you the height
+        of the bin that you are currently hovering over, as well as
+the bin label (i.e., which Omega values are included).
+    **/
+    mouseOver: {
+        default: true,
+        type: ParamType.BOOLEAN,
+        displayName: 'Mouse Over',
+        required: true,
+    },
+} as const
+
+class FactorHistogram extends P5Visualizer(paramDesc) {
+    name = vizName
+    description = vizDescription
 
     binFactorArray: number[] = []
 
-    params = {
-        /** md
-- Bin Size: The size (number of Omega values) for each bin
-  of the histogram.
-         **/
-        binSize: {
-            value: this.binSize,
-            type: ParamType.INTEGER,
-            displayName: 'Bin Size',
-            required: true,
-        },
-        /** md
-- First Index: The first index included in the statistics.
-               If the first index is before the first term
-               of the series then the first term of the series will be used.
-         **/
-        firstIndex: {
-            value: '' as string | number,
-            type: ParamType.INTEGER,
-            displayName: 'First Index',
-            required: false,
-        },
-
-        /** md
-- Number of Terms: The number of terms included in the statistics.
-                   If this goes past the last term of the sequence it will
-                   show all terms of the sequence after the first index.
-         **/
-        terms: {
-            value: this.terms,
-            type: ParamType.INTEGER,
-            displayName: 'Number of Terms',
-            required: true,
-        },
-
-        /** md
-- Mouse Over:   This turns on a mouse over feature that shows you the height
-                of the bin that you are currently hovering over, as well as
-		the bin label (i.e., which Omega values are included).
-         **/
-        mouseOver: {
-            value: this.mouseOver,
-            type: ParamType.INTEGER,
-            displayName: 'Mouse Over',
-            required: true,
-        },
+    constructor(seq: SequenceInterface<GenericParamDescription>) {
+        super(seq)
     }
 
-    checkParameters(params: {[key: string]: unknown}) {
+    checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-        if ((params.binSize as number) < 1)
+        if (params.binSize < 1)
             status.addError('Bin Size can not be less than 1')
 
         return status
@@ -99,7 +102,7 @@ class FactorHistogram extends P5Visualizer {
     // Obtain the true first index
     startIndex(): number {
         if (
-            typeof this.params.firstIndex.value === 'string'
+            Number.isNaN(this.firstIndex)
             || this.firstIndex < this.seq.first
         ) {
             return this.seq.first
@@ -396,6 +399,6 @@ _Originally contributed by Devlin Costello._
 
 export const exportModule = new VisualizerExportModule(
     FactorHistogram,
-    FactorHistogram.prototype.name,
-    FactorHistogram.prototype.description
+    vizName,
+    vizDescription
 )

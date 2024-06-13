@@ -20,7 +20,7 @@
                     <span class="material-icons-sharp">menu</span>
                 </button>
             </div>
-            <SpecimenBar class="specimen-bar" />
+            <slot class="specimen-bar"></slot>
             <div class="burger-menu">
                 <div id="navbar-links" :class="{open: menuOpen}">
                     <RouterLink
@@ -44,7 +44,6 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
-    import SpecimenBar from '../../components/SpecimenBar.vue'
 
     export default defineComponent({
         name: 'NavBar',

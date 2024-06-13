@@ -3,7 +3,10 @@
         <div class="input-container">
             <label>
                 Specimen name
-                <input type="text" />
+                <input
+                    type="text"
+                    :value="specimen.name"
+                    @input="updateName($event)" />
             </label>
 
             <div class="desc-tooltip">
@@ -61,118 +64,133 @@
     </div>
 </template>
 
-<script setup lang="ts">
-    import {specimen} from '../views/Scope.vue'
-    import {visualizer} from '../views/Scope.vue'
+<script lang="ts">
+    import {defineComponent} from 'vue'
     import {
         saveSpecimenToBrowser,
         getSIMByName,
     } from '../shared/browserCaching'
+    import {Specimen} from '../shared/Specimen'
+    export default defineComponent({
+        props: {
+            specimen: {type: Specimen, required: true},
+        },
+        methods: {
+            updateName(event: Event) {
+                if (event && event.target) {
+                    const inputBox = event.target as HTMLInputElement
+                    this.$emit('updateSpecimenName', inputBox.value)
+                }
+            },
+            refresh() {
+                this.specimen.updateSequence()
+                paused = false
+                this.updateButtons()
+            },
+            updateButtons() {
+                // find the pause button and change the icon based on 'paused'.
+                const playButton = document.getElementById('pause-button')
+                if (!(playButton instanceof HTMLElement)) return
+                playButton.innerHTML = paused ? 'play_arrow' : 'pause'
+                console.log('updated buttons')
+            },
+            // toggles the pause state
+            togglePause() {
+                if (paused) {
+                    // continue the visualizer
+                    this.specimen.visualizer.continue()
+                    paused = false
+                    console.log('unpaused')
+                } else {
+                    // pause the visualizer
+                    this.specimen.visualizer.stop()
+                    paused = true
+                    console.log('paused')
+                }
+                this.updateButtons()
+            },
+            shareUrl() {
+                //get url
+                const url = window.location.href
+                //copy to clipboard
+
+                const clipboard = navigator.clipboard
+                console.log(clipboard)
+                clipboard.writeText(url)
+
+                const notification = document.getElementById('share-popup')
+                if (!(notification instanceof HTMLElement)) return
+
+                //show notification for 2 seconds
+                notification.style.visibility = 'visible'
+                notification.style.opacity = '1'
+                setTimeout(() => {
+                    notification.style.visibility = 'hidden'
+                    notification.style.opacity = '0'
+                }, 2000)
+            },
+            checkSave() {
+                // get specimen name
+                const name = document.querySelector('input[type="text"]')
+                if (!(name instanceof HTMLInputElement)) return
+                const specimenName = name.value
+
+                try {
+                    // check if specimen with that name already exists
+                    // if it exists, we should ask the user
+                    // if they want to overwrite it
+                    getSIMByName(specimenName)
+                    const overwrite =
+                        document.getElementById('overwrite-popup')
+                    if (!(overwrite instanceof HTMLElement)) return
+                    overwrite.style.visibility = 'visible'
+                    overwrite.style.opacity = '1'
+                } catch (e) {
+                    // not in database, so we can save it without repercussions
+                    this.saveSpecimen()
+                }
+            },
+            saveSpecimen() {
+                //get rid of overwrite popup (if it is visible)
+                this.removeOverwritePopup()
+                // get specimen url
+                const url = window.location.href
+                // get specimen name
+                const name = document.querySelector('input[type="text"]')
+                if (!(name instanceof HTMLInputElement)) return
+                const specimenName = name.value
+
+                //save to browser
+                saveSpecimenToBrowser(url, specimenName)
+
+                //get notification element
+                const notification = document.getElementById('save-popup')
+                if (!(notification instanceof HTMLElement)) return
+
+                //show notification for 2 seconds
+                notification.style.visibility = 'visible'
+                notification.style.opacity = '1'
+                setTimeout(() => {
+                    notification.style.visibility = 'hidden'
+                    notification.style.opacity = '0'
+                }, 2000)
+            },
+            removeOverwritePopup() {
+                const overwrite = document.getElementById('overwrite-popup')
+                if (!(overwrite instanceof HTMLElement)) return
+                setTimeout(() => {
+                    overwrite.style.visibility = 'hidden'
+                    overwrite.style.opacity = '0'
+                }, 10)
+            },
+        },
+    })
 
     // true if paused, false if playing
     let paused = false
     // refreshes the specimen
-    function refresh() {
-        specimen.updateSequence()
-        paused = false
-        updateButtons()
-    }
-    function updateButtons() {
-        // find the pause button and change the icon based on 'paused'.
-        const playButton = document.getElementById('pause-button')
-        if (!(playButton instanceof HTMLElement)) return
-        playButton.innerHTML = paused ? 'play_arrow' : 'pause'
-        console.log('updated buttons')
-    }
-    // toggles the pause state
-    function togglePause() {
-        if (paused) {
-            // continue the visualizer
-            visualizer.continue()
-            paused = false
-            console.log('unpaused')
-        } else {
-            // pause the visualizer
-            visualizer.stop()
-            paused = true
-            console.log('paused')
-        }
-        updateButtons()
-    }
-    function shareUrl() {
-        //get url
-        const url = window.location.href
-        //copy to clipboard
-
-        const clipboard = navigator.clipboard
-        console.log(clipboard)
-        clipboard.writeText(url)
-
-        const notification = document.getElementById('share-popup')
-        if (!(notification instanceof HTMLElement)) return
-
-        //show notification for 2 seconds
-        notification.style.visibility = 'visible'
-        notification.style.opacity = '1'
-        setTimeout(() => {
-            notification.style.visibility = 'hidden'
-            notification.style.opacity = '0'
-        }, 2000)
-    }
-    function checkSave() {
-        // get specimen name
-        const name = document.querySelector('input[type="text"]')
-        if (!(name instanceof HTMLInputElement)) return
-        const specimenName = name.value
-
-        try {
-            // check if specimen with that name already exists
-            // if it exists, we should ask the user if they want to overwrite it
-            getSIMByName(specimenName)
-            const overwrite = document.getElementById('overwrite-popup')
-            if (!(overwrite instanceof HTMLElement)) return
-            overwrite.style.visibility = 'visible'
-            overwrite.style.opacity = '1'
-        } catch (e) {
-            // not in database, so we can save it without repercussions
-            saveSpecimen()
-        }
-    }
-    function removeOverwritePopup() {
-        const overwrite = document.getElementById('overwrite-popup')
-        if (!(overwrite instanceof HTMLElement)) return
-        setTimeout(() => {
-            overwrite.style.visibility = 'hidden'
-            overwrite.style.opacity = '0'
-        }, 10)
-    }
-
-    function saveSpecimen() {
-        //get rid of overwrite popup (if it is visible)
-        removeOverwritePopup()
-        // get specimen url
-        const url = window.location.href
-        // get specimen name
-        const name = document.querySelector('input[type="text"]')
-        if (!(name instanceof HTMLInputElement)) return
-        const specimenName = name.value
-
-        //save to browser
-        saveSpecimenToBrowser(url, specimenName)
-
-        //get notification element
-        const notification = document.getElementById('save-popup')
-        if (!(notification instanceof HTMLElement)) return
-
-        //show notification for 2 seconds
-        notification.style.visibility = 'visible'
-        notification.style.opacity = '1'
-        setTimeout(() => {
-            notification.style.visibility = 'hidden'
-            notification.style.opacity = '0'
-        }, 2000)
-    }
 </script>
+
 <style>
     .specimen-bar {
         display: flex;

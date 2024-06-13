@@ -1,3 +1,26 @@
+<template>
+    <div class="tab" @click="selected" last-coords-x="0" last-coords-y="0">
+        <div class="drag">
+            <div class="buttons">
+                <span
+                    class="minimize material-icons-sharp"
+                    @click="minMaxWindow">
+                    minimize
+                </span>
+                <span
+                    class="docking material-symbols-sharp"
+                    @click="dockWindow">
+                    dock_to_right
+                </span>
+            </div>
+        </div>
+        <div class="content">
+            <slot></slot>
+        </div>
+        <div class="resize"></div>
+    </div>
+</template>
+
 <script setup lang="ts">
     import interact from 'interactjs'
     import {
@@ -8,9 +31,9 @@
 
     // every element with draggable class can be dragged
     interact('.tab').resizable({
-        // no inertia for resizing (better imo)
+        // no inertia for resizing
         inertia: false,
-        // Only want bootom resizing and only when the tab isn't docked
+        // Only want bottom resizing and only when the tab isn't docked
         edges: {
             left: false,
             right: false,
@@ -174,7 +197,6 @@
                         dropzoneWrapper.style.height = 'calc(100% - 90px)'
                     }
                     content.style.overflowY = 'hidden'
-                    console.log('minimized')
                     tab.classList.add('minimized')
                     dropzoneWrapper.classList.add('resized')
                     // update the size and position of all tabs
@@ -276,29 +298,6 @@
         selectTab(tab)
     }
 </script>
-
-<template>
-    <div class="tab" @click="selected" last-coords-x="0" last-coords-y="0">
-        <div class="drag">
-            <div class="buttons">
-                <span
-                    class="minimize material-icons-sharp"
-                    @click="minMaxWindow">
-                    minimize
-                </span>
-                <span
-                    class="docking material-symbols-sharp"
-                    @click="dockWindow">
-                    dock_to_right
-                </span>
-            </div>
-        </div>
-        <div class="content">
-            <slot></slot>
-        </div>
-        <div class="resize"></div>
-    </div>
-</template>
 
 <style scoped lang="scss">
     // mobile styles
