@@ -2,7 +2,7 @@
     <NavBar class="navbar">
         <SpecimenBar
             :specimen="specimen as Specimen"
-            @updateSpecimen="handleSpecimenUpdate">
+            @updateSpecimenName="handleSpecimenUpdate">
         </SpecimenBar>
     </NavBar>
     <div id="specimen-container">
@@ -27,7 +27,7 @@
             id="specimen-bar-phone"
             class="specimen-bar"
             :specimen="specimen as Specimen"
-            @updateSpecimen="handleSpecimenUpdate" />
+            @updateSpecimenName="handleSpecimenUpdate" />
         <!-- 
             The dropzone ids must remain like "[position]-dropzone"
             where [position] is the same as the dropzone attribute.
@@ -225,6 +225,7 @@
             },
         })
     function handleSpecimenUpdate(newName: string) {
+        console.log('input change')
         specimen.name = newName
         updateURL()
     }
@@ -371,27 +372,11 @@
     .navbar {
         display: none;
     }
-
-    #specimen-container {
-        height: calc(100vh - 54px);
-        position: relative;
-    }
-
     #main {
         display: flex;
         height: 100%;
     }
-
-    #canvas-container {
-        flex: 1;
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .dropzone-container {
+    #specimen-container {
         display: flex;
         flex-direction: column;
         min-height: fit-content;
@@ -404,7 +389,8 @@
     #canvas-container {
         order: 1;
         border-bottom: 1px solid var(--ns-color-black);
-        height: 301px;
+        height: 300px;
+        width: 100%;
     }
     #sequenceTab {
         width: 100%;
@@ -412,6 +398,7 @@
         padding-right: auto;
         order: 3;
         border-bottom: 1px solid var(--ns-color-black);
+        height: fit-content;
     }
     #visualiserTab {
         width: 100%;
@@ -419,11 +406,13 @@
         padding-right: auto;
         order: 4;
         border-bottom: 1px solid var(--ns-color-black);
+        height: fit-content;
     }
     #specimen-bar-phone {
         order: 2;
         padding-left: auto;
         padding-right: auto;
+        border-bottom: 1px solid var(--ns-color-black);
         border-bottom: 1px solid var(--ns-color-black);
     }
     // desktop styles
@@ -431,13 +420,13 @@
         .navbar {
             display: unset;
         }
-        #sequenceTab,
-        #visualiserTab {
-            width: 300px;
-        }
         #specimen-bar-phone {
             display: none;
             border: 0px;
+        }
+        #sequenceTab,
+        #visualiserTab {
+            width: 300px;
         }
         #specimen-container {
             height: calc(100vh - 54px);
@@ -450,7 +439,6 @@
 
         #canvas-container {
             height: unset;
-
             order: unset;
             flex: 1;
             position: relative;

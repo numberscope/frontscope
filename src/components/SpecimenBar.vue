@@ -80,12 +80,14 @@
                 if (event && event.target) {
                     const inputBox = event.target as HTMLInputElement
                     this.$emit('updateSpecimenName', inputBox.value)
+                    console.log('trying to change names')
                 }
             },
             refresh() {
                 this.specimen.updateSequence()
                 paused = false
                 this.updateButtons()
+                console.log('refreshing')
             },
             updateButtons() {
                 // find the pause button and change the icon based on 'paused'.
