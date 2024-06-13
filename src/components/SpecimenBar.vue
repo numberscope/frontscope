@@ -80,21 +80,18 @@
                 if (event && event.target) {
                     const inputBox = event.target as HTMLInputElement
                     this.$emit('updateSpecimenName', inputBox.value)
-                    console.log('trying to change names')
                 }
             },
             refresh() {
                 this.specimen.updateSequence()
                 paused = false
                 this.updateButtons()
-                console.log('refreshing')
             },
             updateButtons() {
                 // find the pause button and change the icon based on 'paused'.
                 const playButton = document.getElementById('pause-button')
                 if (!(playButton instanceof HTMLElement)) return
                 playButton.innerHTML = paused ? 'play_arrow' : 'pause'
-                console.log('updated buttons')
             },
             // toggles the pause state
             togglePause() {
@@ -102,12 +99,10 @@
                     // continue the visualizer
                     this.specimen.visualizer.continue()
                     paused = false
-                    console.log('unpaused')
                 } else {
                     // pause the visualizer
                     this.specimen.visualizer.stop()
                     paused = true
-                    console.log('paused')
                 }
                 this.updateButtons()
             },
@@ -117,7 +112,6 @@
                 //copy to clipboard
 
                 const clipboard = navigator.clipboard
-                console.log(clipboard)
                 clipboard.writeText(url)
 
                 const notification = document.getElementById('share-popup')

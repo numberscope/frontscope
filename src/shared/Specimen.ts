@@ -69,7 +69,6 @@ export class Specimen {
      * Hard resets the specimen
      */
     reset() {
-        console.log('reset')
         if (!this.location) return
         this.size = this.calculateSize(
             this.location.clientWidth,
@@ -206,8 +205,6 @@ export class Specimen {
             height,
             this.visualizer.requestedAspectRatio()
         )
-        console.log(this.size.width, newSize.width)
-        console.log(this.size.height, newSize.height)
         if (
             this.size.width === newSize.width
             && this.size.height === newSize.height

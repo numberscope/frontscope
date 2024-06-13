@@ -225,7 +225,6 @@
             },
         })
     function handleSpecimenUpdate(newName: string) {
-        console.log('input change')
         specimen.name = newName
         updateURL()
     }
