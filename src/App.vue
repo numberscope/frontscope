@@ -1,6 +1,6 @@
 <template>
     <div id="container">
-        <NavBar />
+        <NavBar class="navbar-mobile" />
         <main>
             <RouterView />
         </main>
@@ -58,6 +58,9 @@
         --ns-breakpoint-desktop: 1200px;
     }
 
+    .navbar-mobile {
+        display: unset;
+    }
     #container {
         display: flex;
         flex-direction: column;
@@ -89,5 +92,10 @@
     @font-face {
         font-family: 'Inter';
         src: url('/src/assets/fonts/inter/Inter-VariableFont_slnt\,wght.ttf');
+    }
+    @media (min-width: 700px) {
+        .navbar-mobile {
+            display: none;
+        }
     }
 </style>

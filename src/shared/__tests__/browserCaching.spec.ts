@@ -2,7 +2,7 @@ import {describe, it, expect, vi, beforeEach} from 'vitest'
 import {
     getCurrent,
     updateCurrent,
-    saveSpecimen,
+    saveSpecimenToBrowser,
     deleteSpecimen,
     openSpecimen,
 } from '../browserCaching'
@@ -61,7 +61,7 @@ describe('SIM functions', () => {
     })
 
     it('should save a new specimen', () => {
-        saveSpecimen('https://example.com', 'Example')
+        saveSpecimenToBrowser('https://example.com', 'Example')
         const savedUrls = JSON.parse(
             localStorage.getItem('savedSpecimens') as string
         )
@@ -71,8 +71,8 @@ describe('SIM functions', () => {
     })
 
     it('should update an existing specimen', () => {
-        saveSpecimen('https://example.com', 'Example')
-        saveSpecimen('https://example2.com', 'Example')
+        saveSpecimenToBrowser('https://example.com', 'Example')
+        saveSpecimenToBrowser('https://example2.com', 'Example')
         const savedUrls = JSON.parse(
             localStorage.getItem('savedSpecimens') as string
         )
