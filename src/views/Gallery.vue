@@ -17,40 +17,7 @@
             <h2>Self similarity telescope</h2>
             <span class="material-icons-sharp">keyboard_arrow_up</span>
         </div>
-        <div class="gallery">
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-        </div>
+        <div class="gallery"></div>
 
         <div type="button" class="visualizer-bar">
             <h2>Self similarity telescope</h2>
@@ -58,47 +25,60 @@
         </div>
         <div class="gallery">
             <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
-            <SpecimenCard
-                :specimenName="specimenName"
-                :vizName="vizName"
-                :seqName="sequenceName" />
+                v-for="(specimen, index) in specimens"
+                :key="index"
+                :specimenName="specimen.specimenName"
+                :vizName="specimen.vizName"
+                :seqName="specimen.seqName"
+                :lastEdited="specimen.lastEdited" />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
     import SpecimenCard from '../components/SpecimenCard.vue'
+    import {ref, onMounted} from 'vue'
+    import {getSIMs} from '../shared/browserCaching'
+    import type {SIM} from '../shared/browserCaching'
+    import {Specimen} from '../shared/Specimen'
 
-    const sequenceName = 'Random'
-    const specimenName = 'Specimen'
-    const vizName = 'Histogram'
+    interface cardSpecimen {
+        specimenName: string
+        vizName: string
+        seqName: string
+        lastEdited: string
+    }
+
+    const specimens = ref<cardSpecimen[]>([])
+
+    function loadSpecimens() {
+        const savedSIMs: SIM[] = getSIMs()
+        const cardSpecs: cardSpecimen[] = []
+
+        console.log(savedSIMs.length)
+
+        for (let i = 0; i < savedSIMs.length; i++) {
+            console.log(savedSIMs[i])
+            const url = savedSIMs[i].url
+            const date = savedSIMs[i].date
+            const spec = Specimen.fromURL(url)
+
+            cardSpecs.push({
+                specimenName: spec.name,
+                vizName: spec.visualizer.name,
+                seqName: spec.sequence.name,
+                lastEdited: date,
+            })
+        }
+
+        console.log('got to here 2')
+
+        specimens.value = cardSpecs
+    }
+
+    onMounted(() => {
+        loadSpecimens()
+    })
 </script>
 
 <style scoped>

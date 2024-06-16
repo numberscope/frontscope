@@ -5,7 +5,7 @@
 */
 
 // NON MEMORY RELATED HELPER FUNCTIONS
-interface SIM {
+export interface SIM {
     url: string
     name: string
     date: string
@@ -32,25 +32,6 @@ const cacheKey = 'savedSpecimens'
 const currentKey = 'currentSpecimen'
 
 /**
- * Fetches the array of SIMs represented in memory.
- *
- * @param name
- */
-function getSIMs(): SIM[] {
-    // Retrieves the saved SIMs from browser cache
-    const savedSIMsJson = localStorage.getItem(cacheKey)
-    // Creates empty list in case none is found in browser storage
-    let savedSIMs: SIM[] = []
-
-    // Parses the saved SIMs if they exist and overrides empty savedUrls
-    if (savedSIMsJson) {
-        savedSIMs = JSON.parse(savedSIMsJson)
-    }
-
-    return savedSIMs
-}
-
-/**
  * Fetches the SIM associated with a certain name.
  *
  * @param name
@@ -71,6 +52,25 @@ function getSIMByName(name: string): SIM {
 }
 
 //MAIN FUNCTIONS
+
+/**
+ * Fetches the array of SIMs represented in memory.
+ *
+ * @param name
+ */
+export function getSIMs(): SIM[] {
+    // Retrieves the saved SIMs from browser cache
+    const savedSIMsJson = localStorage.getItem(cacheKey)
+    // Creates empty list in case none is found in browser storage
+    let savedSIMs: SIM[] = []
+
+    // Parses the saved SIMs if they exist and overrides empty savedUrls
+    if (savedSIMsJson) {
+        savedSIMs = JSON.parse(savedSIMsJson)
+    }
+
+    return savedSIMs
+}
 
 /**
  * Loads the last remembered current into the memory slot.
@@ -173,4 +173,10 @@ export function openSpecimen(name: string): void {
     const SIM = getSIMByName(name)
 
     localStorage.setItem(currentKey, JSON.stringify(SIM))
+}
+
+export function openCurrent(): void {
+    const currentSIM = getCurrent()
+    const url = currentSIM.url
+    window.location.href = url
 }

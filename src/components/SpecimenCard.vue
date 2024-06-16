@@ -1,5 +1,5 @@
 <template>
-    <div class="card-body">
+    <div class="card-body" v-on:click="openSpecimen">
         <div
             class="card-preview"
             :id="cid"
@@ -17,6 +17,7 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
+    import {openSpecimen, openCurrent} from '../shared/browserCaching'
     import {Specimen} from '../shared/Specimen'
     let cid_count = 0
 
@@ -26,11 +27,18 @@
             specimenName: {type: String, required: true},
             vizName: {type: String, required: true},
             seqName: {type: String, required: true},
+            lastEdited: {type: String, required: false},
             cid: {
                 type: String,
                 default: function () {
                     return 'Card-' + cid_count++
                 },
+            },
+        },
+        methods: {
+            openSpecimen() {
+                openSpecimen(this.specimenName)
+                openCurrent()
             },
         },
         mounted() {
