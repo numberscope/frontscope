@@ -24,16 +24,20 @@
     export default defineComponent({
         name: 'SpecimenCard',
         props: {
-            specimenName: {type: String, required: true},
-            vizName: {type: String, required: true},
-            seqName: {type: String, required: true},
-            lastEdited: {type: String, required: false},
+            url: {type: String, required: true},
+            lastEdited: {type: String, required: true},
             cid: {
                 type: String,
                 default: function () {
                     return 'Card-' + cid_count++
                 },
             },
+        },
+        data() {
+            return {
+                seqName: '',
+                specimenName: '',
+            }
         },
         methods: {
             openSpecimen() {
@@ -42,11 +46,10 @@
             },
         },
         mounted() {
-            const specimen = new Specimen(
-                this.specimenName,
-                this.vizName,
-                this.seqName
-            )
+            const specimen = Specimen.fromURL(this.url)
+
+            this.seqName = specimen.sequence.name
+            this.specimenName = specimen.name
 
             const canvasContainer = document.getElementById('' + this.cid)
             if (!(canvasContainer instanceof HTMLElement)) return

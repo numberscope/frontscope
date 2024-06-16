@@ -27,9 +27,7 @@
             <SpecimenCard
                 v-for="(specimen, index) in specimens"
                 :key="index"
-                :specimenName="specimen.specimenName"
-                :vizName="specimen.vizName"
-                :seqName="specimen.seqName"
+                :url="specimen.url"
                 :lastEdited="specimen.lastEdited" />
         </div>
     </div>
@@ -40,12 +38,9 @@
     import {ref, onMounted} from 'vue'
     import {getSIMs} from '../shared/browserCaching'
     import type {SIM} from '../shared/browserCaching'
-    import {Specimen} from '../shared/Specimen'
 
     interface cardSpecimen {
-        specimenName: string
-        vizName: string
-        seqName: string
+        url: string
         lastEdited: string
     }
 
@@ -55,23 +50,15 @@
         const savedSIMs: SIM[] = getSIMs()
         const cardSpecs: cardSpecimen[] = []
 
-        console.log(savedSIMs.length)
-
         for (let i = 0; i < savedSIMs.length; i++) {
-            console.log(savedSIMs[i])
-            const url = savedSIMs[i].url
+            const url = savedSIMs[i].url.split('?specimen=')[1]
             const date = savedSIMs[i].date
-            const spec = Specimen.fromURL(url)
 
             cardSpecs.push({
-                specimenName: spec.name,
-                vizName: spec.visualizer.name,
-                seqName: spec.sequence.name,
+                url: url,
                 lastEdited: date,
             })
         }
-
-        console.log('got to here 2')
 
         specimens.value = cardSpecs
     }
