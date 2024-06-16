@@ -1,15 +1,74 @@
 <template>
     <div id="specimen-container">
+        <ChangeSequenceModal
+            v-show="changeSequenceOpen"
+            @close="
+                () => {
+                    changeSequenceOpen = false
+                }
+            "
+            :specimen="specimen" />
+        <ChangeVisualizerModal
+            v-show="changeVisualizerOpen"
+            @close="
+                () => {
+                    changeVisualizerOpen = false
+                }
+            "
+            :specimen="specimen" />
         <tab id="sequenceTab" class="tab docked" docked="top-right">
+            <div class="tab-title-bar">
+                <div>
+                    <h1>Sequence</h1>
+                    <span class="subheading">{{
+                        specimen.sequence.name
+                    }}</span>
+                </div>
+                <button
+                    class="change-button"
+                    @click="
+                        () => {
+                            changeSequenceOpen = true
+                        }
+                    ">
+                    <span class="material-icons-sharp">swap_horiz</span>
+                    <span class="change-button-text">Change Sequence</span>
+                </button>
+            </div>
+
             <ParamEditor
                 title="Sequence"
-                :paramable="specimen.getSequence()"
-                @changed="() => specimen.updateSequence()" />
+                :paramable="specimen.sequence"
+                @changed="
+                    () => {
+                        specimen.updateSequence()
+                        updateURL()
+                    }
+                " />
         </tab>
         <tab id="visualiserTab" class="tab docked" docked="bottom-right">
+            <div class="tab-title-bar">
+                <div>
+                    <h1>Visualizer</h1>
+                    <span class="subheading">
+                        {{ specimen.visualizer.name }}
+                    </span>
+                </div>
+                <button
+                    class="change-button"
+                    @click="
+                        () => {
+                            changeVisualizerOpen = true
+                        }
+                    ">
+                    <span class="material-icons-sharp">swap_horiz</span>
+                    <span class="change-button-text">Change Visualizer</span>
+                </button>
+            </div>
             <ParamEditor
                 title="Visualizer"
-                :paramable="specimen.getVisualizer()" />
+                :paramable="specimen.visualizer"
+                @changed="() => updateURL()" />
         </tab>
 
         <!-- 
@@ -63,11 +122,6 @@
 </template>
 
 <script lang="ts">
-    import {reactive} from 'vue'
-    import vizMODULES from '@/visualizers/visualizers'
-    import {Specimen} from '@/shared/Specimen'
-    import {exportModule} from '@/sequences/Formula'
-
     /**
      * Positions a tab to be inside a dropzone
      * Resizes the tab to be the same size as the dropzone
@@ -78,6 +132,9 @@
         tab: HTMLElement,
         dropzone: HTMLElement
     ): void {
+        if (window.innerWidth < 700) return
+
+        const dropzoneContainer = dropzone.parentElement?.parentElement
         const dropzoneRect = dropzone.getBoundingClientRect()
 
         const {x, y} = translateCoords(dropzoneRect.x, dropzoneRect.y)
@@ -86,8 +143,32 @@
         tab.style.left = x + 'px'
         tab.style.height = dropzoneRect.height + 'px'
 
+        // update the classlist with "minimized"
+        // if the height is less or equal than 110
+        if (dropzoneRect.height <= 110) {
+            tab.classList.add('minimized')
+        } else {
+            tab.classList.remove('minimized')
+        }
+
         tab.setAttribute('data-x', x.toString())
         tab.setAttribute('data-y', y.toString())
+
+        if (
+            tab instanceof HTMLElement
+            && dropzoneContainer instanceof HTMLElement
+            && dropzone instanceof HTMLElement
+            && dropzone.classList.contains('empty')
+        ) {
+            dropzone.classList.remove('empty')
+            dropzone.classList.remove('drop-hover')
+            dropzoneContainer.classList.remove('empty')
+            tab.classList.add('docked')
+            const dropzoneAttribute = dropzone.getAttribute('dropzone')
+            if (dropzoneAttribute !== null) {
+                tab.setAttribute('docked', dropzoneAttribute)
+            }
+        }
     }
 
     /**
@@ -120,7 +201,7 @@
      * Doesn't affect non-docked tabs.
      * Used when the window is resized.
      */
-    function positionAndSizeAllTabs(): void {
+    export function positionAndSizeAllTabs(): void {
         document.querySelectorAll('.tab').forEach((tab: Element) => {
             if (!(tab instanceof HTMLElement)) return
             if (tab.getAttribute('docked') === 'none') return
@@ -133,17 +214,62 @@
             positionAndSizeTab(tab, dropzone)
         })
     }
+    // selects a tab
+    export function selectTab(tab: HTMLElement): void {
+        deselectTab()
+        const drag = tab.querySelector('.drag')
+        if (!(drag instanceof HTMLElement)) return
 
-    const sequence = new exportModule.sequence(0)
-    const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
-    export const specimen = reactive(new Specimen(visualizer, sequence))
+        drag.classList.add('selected')
+        drag.style.backgroundColor = 'var(--ns-color-primary)'
+        tab.style.zIndex = '100'
+    }
+    // deselects all tabs
+    export function deselectTab(): void {
+        const tabs = document.querySelectorAll('.tab')
+        tabs.forEach(tab => {
+            if (tab instanceof HTMLElement) {
+                const drag = tab.querySelector('.drag')
+                if (!(drag instanceof HTMLElement)) return
+                drag.classList.remove('selected')
+                drag.style.backgroundColor = 'var(--ns-color-black)'
+                tab.style.zIndex = '1'
+            }
+        })
+    }
 </script>
 
 <script setup lang="ts">
     import Tab from '@/components/Tab.vue'
     import interact from 'interactjs'
-    import {onMounted} from 'vue'
-    import ParamEditor from '@/components/ParamEditor.vue'
+    import {onMounted, ref} from 'vue'
+    import {useRoute, useRouter} from 'vue-router'
+    import ParamEditor from '../components/ParamEditor.vue'
+    import {reactive} from 'vue'
+    import {Specimen} from '../shared/Specimen'
+    import ChangeVisualizerModal from '../components/ChangeVisualizerModal.vue'
+    import ChangeSequenceModal from '../components/ChangeSequenceModal.vue'
+
+    const changeSequenceOpen = ref(false)
+    const changeVisualizerOpen = ref(false)
+
+    const router = useRouter()
+    const route = useRoute()
+
+    const defaultSpecimen = new Specimen('Specimen', 'ModFill', 'Random')
+
+    const specimen = reactive(
+        typeof route.query.specimen === 'string'
+            ? Specimen.fromURL(route.query.specimen as string)
+            : defaultSpecimen
+    )
+
+    const updateURL = () =>
+        router.push({
+            query: {
+                specimen: specimen.toURL(),
+            },
+        })
 
     onMounted(() => {
         const specimenContainer = document.getElementById(
@@ -155,7 +281,15 @@
         window.addEventListener('resize', () => {
             positionAndSizeAllTabs()
         })
+
         specimen.setup(canvasContainer)
+
+        setInterval(() => {
+            specimen.resized(
+                canvasContainer.clientWidth,
+                canvasContainer.clientHeight
+            )
+        }, 500)
     })
 
     // enable draggables to be dropped into this
@@ -254,7 +388,7 @@
                     dropzoneWrapper.style.height =
                         Math.min(
                             event.rect.height,
-                            dropContRect.height - 144
+                            dropContRect.height - 90
                         ) + 'px'
                     dropzoneWrapper.classList.add('resized')
                     positionAndSizeAllTabs()
@@ -269,13 +403,14 @@
 
             // minimum size
             interact.modifiers.restrictSize({
-                min: {width: 0, height: 128},
+                min: {width: 700, height: 90},
             }),
         ],
     })
 </script>
 
 <style scoped lang="scss">
+    // mobile styles
     #specimen-container {
         height: calc(100vh - 54px);
         position: relative;
@@ -289,64 +424,153 @@
         flex: 1;
         position: relative;
         overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tab-title-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h1 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .subheading {
+            color: var(--ns-color-grey);
+            font-size: 14px;
+        }
+
+        .change-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid var(--ns-color-white);
+            background: none;
+            width: min-content;
+            padding: 4px;
+
+            &:hover {
+                border: 1px solid var(--ns-color-light);
+            }
+        }
     }
 
     .dropzone-container {
         display: flex;
         flex-direction: column;
-        width: 300px;
-        height: 100%;
-
-        &#right-dropzone-container {
-            right: 0;
-            top: 0;
+        min-height: fit-content;
+        padding-left: auto;
+        padding-right: auto;
+    }
+    .dropzone-container {
+        display: none;
+    }
+    #canvas-container {
+        order: 1;
+        border-bottom: 1px solid var(--ns-color-black);
+        height: 301px;
+    }
+    #sequenceTab {
+        width: 100%;
+        padding-left: auto;
+        padding-right: auto;
+        order: 2;
+        border-bottom: 1px solid var(--ns-color-black);
+    }
+    #visualiserTab {
+        width: 100%;
+        padding-left: auto;
+        padding-right: auto;
+        order: 3;
+        border-bottom: 1px solid var(--ns-color-black);
+    }
+    // desktop styles
+    @media (min-width: 700px) {
+        #sequenceTab,
+        #visualiserTab {
+            width: 300px;
+        }
+        #specimen-container {
+            height: calc(100vh - 54px);
+            position: relative;
+        }
+        #main {
+            display: flex;
+            height: 100%;
         }
 
-        &#left-dropzone-container {
-            left: 0;
-            top: 0;
+        #canvas-container {
+            height: unset;
+
+            order: unset;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
         }
 
-        &.empty {
-            position: absolute;
-            pointer-events: none;
-
-            .dropzone-resize.material-icons-sharp {
-                display: none;
-            }
-        }
-
-        .dropzone-size-wrapper {
-            flex-grow: 1;
+        .dropzone-container {
             display: flex;
             flex-direction: column;
-            max-height: calc(100% - 128px);
+            width: 300px;
+            height: 100%;
 
-            &.resized {
-                flex-grow: unset;
+            &#right-dropzone-container {
+                right: 0;
+                top: 0;
             }
 
-            .dropzone-resize {
-                height: 16px;
-                font-size: 16px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: ns-resize;
+            &#left-dropzone-container {
+                left: 0;
+                top: 0;
             }
 
-            .dropzone {
+            &.empty {
+                position: absolute;
+                pointer-events: none;
+
+                .dropzone-resize.material-icons-sharp {
+                    display: none;
+                }
+            }
+
+            .dropzone-size-wrapper {
                 flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                max-height: calc(100% - 90px);
 
-                &.drop-hover {
-                    background-color: var(--ns-color-primary);
-                    filter: brightness(120%);
+                &.resized {
+                    flex-grow: unset;
+                }
+
+                .dropzone-resize {
+                    height: 16px;
+                    font-size: 16px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    cursor: ns-resize;
+                }
+
+                .dropzone {
+                    flex-grow: 1;
+
+                    &.drop-hover {
+                        background-color: var(--ns-color-primary);
+                        filter: brightness(120%);
+                    }
                 }
             }
         }
-    }
 
-    .tab {
-        position: absolute;
+        .tab {
+            width: 300px;
+            position: absolute;
+            order: unset;
+        }
     }
 </style>
