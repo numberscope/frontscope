@@ -1,6 +1,7 @@
 <template>
     <NavBar class="navbar">
         <SpecimenBar
+            id="specimen-bar-desktop"
             :specimen="specimen as Specimen"
             @updateSpecimenName="handleSpecimenUpdate">
         </SpecimenBar>
@@ -369,6 +370,9 @@
 <style scoped lang="scss">
     // mobile styles
     .navbar {
+        display: unset;
+    }
+    #specimen-bar-desktop {
         display: none;
     }
     #main {
@@ -416,6 +420,9 @@
     }
     // desktop styles
     @media (min-width: 700px) {
+        #specimen-bar-desktop {
+            display: flex;
+        }
         .navbar {
             display: unset;
         }

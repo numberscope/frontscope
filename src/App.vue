@@ -1,6 +1,5 @@
 <template>
     <div id="container">
-        <NavBar class="navbar-mobile" />
         <main>
             <RouterView />
         </main>
@@ -9,7 +8,6 @@
 </template>
 
 <script setup lang="ts">
-    import NavBar from './views/minor/NavBar.vue'
     import {RouterView} from 'vue-router'
     import Footer from './views/minor/Footer.vue'
 </script>
@@ -59,7 +57,7 @@
     }
 
     .navbar-mobile {
-        display: unset;
+        display: none;
     }
     #container {
         display: flex;
