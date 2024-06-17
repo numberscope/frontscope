@@ -14,7 +14,6 @@
                     () => {
                         specimen.updateSequence()
                         updateURL()
-                        //updateCurrent(specimen.toURL(), specimen.name)
                     }
                 " />
         </tab>
