@@ -55,7 +55,7 @@ function getSIMs(): SIM[] {
  *
  * @param name
  */
-function getSIMByName(name: string): SIM {
+export function getSIMByName(name: string): SIM {
     const savedSIMs = getSIMs()
 
     // Finds the SIM that matches the given name
@@ -116,7 +116,7 @@ export function updateCurrent(url: string, name: string): void {
  * @param name
  */
 
-export function saveSpecimen(url: string, name: string): void {
+export function saveSpecimenToBrowser(url: string, name: string): void {
     const savedUrls = getSIMs()
     const SIM = {url: url, name: name, date: getCurrentDate()}
     let contains = false

@@ -193,6 +193,18 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         }
 
         /**
+         * Continue displaying the visualizer
+         */
+        continue(): void {
+            this._sketch?.loop()
+        }
+        /**
+         * Determining the maximum pixel width and height the containing
+         * element allows.
+         * @returns [num, num] Maximum width and height of inhabited element
+         */
+
+        /**
          * The p5 setup for this visualizer. Note that derived Visualizers
          * _must_ call this first.
          */

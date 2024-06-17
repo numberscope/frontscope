@@ -1,4 +1,11 @@
 <template>
+    <NavBar class="navbar">
+        <SpecimenBar
+            id="specimen-bar-desktop"
+            :specimen="specimen as Specimen"
+            @updateSpecimenName="handleSpecimenUpdate">
+        </SpecimenBar>
+    </NavBar>
     <div id="specimen-container">
         <ChangeSequenceModal
             v-show="changeSequenceOpen"
@@ -70,7 +77,11 @@
                 :paramable="specimen.visualizer"
                 @changed="() => updateURL()" />
         </tab>
-
+        <SpecimenBar
+            id="specimen-bar-phone"
+            class="specimen-bar"
+            :specimen="specimen as Specimen"
+            @updateSpecimenName="handleSpecimenUpdate" />
         <!-- 
             The dropzone ids must remain like "[position]-dropzone"
             where [position] is the same as the dropzone attribute.
@@ -122,6 +133,9 @@
 </template>
 
 <script lang="ts">
+    import NavBar from './minor/NavBar.vue'
+    import SpecimenBar from '../components/SpecimenBar.vue'
+
     /**
      * Positions a tab to be inside a dropzone
      * Resizes the tab to be the same size as the dropzone
@@ -240,7 +254,7 @@
 </script>
 
 <script setup lang="ts">
-    import Tab from '@/components/Tab.vue'
+    import Tab from '../components/Tab.vue'
     import interact from 'interactjs'
     import {onMounted, ref} from 'vue'
     import {useRoute, useRouter} from 'vue-router'
@@ -263,14 +277,16 @@
             ? Specimen.fromURL(route.query.specimen as string)
             : defaultSpecimen
     )
-
     const updateURL = () =>
         router.push({
             query: {
                 specimen: specimen.toURL(),
             },
         })
-
+    function handleSpecimenUpdate(newName: string) {
+        specimen.name = newName
+        updateURL()
+    }
     onMounted(() => {
         const specimenContainer = document.getElementById(
             'specimen-container'
@@ -411,6 +427,16 @@
 
 <style scoped lang="scss">
     // mobile styles
+    .navbar {
+        display: unset;
+    }
+    #specimen-bar-desktop {
+        display: none;
+    }
+    #main {
+        display: flex;
+        height: 100%;
+    }
     #specimen-container {
         height: calc(100vh - 54px);
         position: relative;
@@ -472,24 +498,44 @@
     #canvas-container {
         order: 1;
         border-bottom: 1px solid var(--ns-color-black);
-        height: 301px;
+        height: 300px;
+        width: 100%;
     }
     #sequenceTab {
         width: 100%;
         padding-left: auto;
         padding-right: auto;
-        order: 2;
+        order: 3;
         border-bottom: 1px solid var(--ns-color-black);
+        height: fit-content;
     }
     #visualiserTab {
         width: 100%;
         padding-left: auto;
         padding-right: auto;
-        order: 3;
+        order: 4;
+        border-bottom: 1px solid var(--ns-color-black);
+        height: fit-content;
+    }
+    #specimen-bar-phone {
+        order: 2;
+        padding-left: auto;
+        padding-right: auto;
+        border-bottom: 1px solid var(--ns-color-black);
         border-bottom: 1px solid var(--ns-color-black);
     }
     // desktop styles
     @media (min-width: 700px) {
+        #specimen-bar-desktop {
+            display: flex;
+        }
+        .navbar {
+            display: unset;
+        }
+        #specimen-bar-phone {
+            display: none;
+            border: 0px;
+        }
         #sequenceTab,
         #visualiserTab {
             width: 300px;
@@ -505,7 +551,6 @@
 
         #canvas-container {
             height: unset;
-
             order: unset;
             flex: 1;
             position: relative;
