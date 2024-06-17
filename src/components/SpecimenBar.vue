@@ -62,12 +62,12 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div
-            id="download-button"
-            class="button material-icons-sharp"
-            @click="downloadSpecimen">
-            download
+            <div
+                id="download-button"
+                class="button material-icons-sharp"
+                @click="downloadSpecimen">
+                download
+            </div>
         </div>
     </div>
 </template>

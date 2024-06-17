@@ -326,8 +326,6 @@
                 canvasContainer.clientHeight
             )
         }, 500)
-
-        console.log('hello')
     })
 
     // enable draggables to be dropped into this
