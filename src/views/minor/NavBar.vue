@@ -71,7 +71,6 @@
         justify-content: center;
         padding: 8px 16px 8px 16px;
         border-bottom: 1px solid var(--ns-color-black);
-        height: 76px;
 
         #navbar-main {
             display: flex;
@@ -107,7 +106,6 @@
             display: none;
             flex-direction: column;
             margin-top: 8px;
-            border-bottom: 1px solid var(--ns-color-black);
             background-color: var(--ns-color-white);
             &.open {
                 display: flex;
@@ -140,7 +138,7 @@
     .specimen-bar {
         display: none;
     }
-    @media (min-width: 700px) {
+    @media (min-width: 850px) {
         nav {
             justify-content: space-between;
             align-items: center;

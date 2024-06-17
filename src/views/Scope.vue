@@ -146,7 +146,7 @@
         tab: HTMLElement,
         dropzone: HTMLElement
     ): void {
-        if (window.innerWidth < 700) return
+        if (window.innerWidth < 850) return
 
         const dropzoneContainer = dropzone.parentElement?.parentElement
         const dropzoneRect = dropzone.getBoundingClientRect()
@@ -427,6 +427,10 @@
 
 <style scoped lang="scss">
     // mobile styles
+    #specimen-container {
+        position: relative;
+    }
+
     .navbar {
         display: unset;
     }
@@ -438,8 +442,11 @@
         height: 100%;
     }
     #specimen-container {
-        height: calc(100vh - 54px);
-        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: fit-content;
+        padding-left: auto;
+        padding-right: auto;
     }
     #main {
         display: flex;
@@ -525,7 +532,7 @@
         border-bottom: 1px solid var(--ns-color-black);
     }
     // desktop styles
-    @media (min-width: 700px) {
+    @media (min-width: 850px) {
         #specimen-bar-desktop {
             display: flex;
         }
@@ -542,7 +549,6 @@
         }
         #specimen-container {
             height: calc(100vh - 54px);
-            position: relative;
         }
         #main {
             display: flex;

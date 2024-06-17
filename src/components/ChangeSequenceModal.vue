@@ -11,8 +11,10 @@
                 <h1>Change Sequence</h1>
 
                 <div id="search-bar">
-                    <label for="oeis">Search the OEIS</label><br />
-                    <input type="text" id="oeis" placeholder="A037161" />
+                    <div>
+                        <label for="oeis">Search the OEIS</label><br />
+                        <input type="text" id="oeis" placeholder="A037161" />
+                    </div>
                     <button class="material-icons-sharp">search</button>
                 </div>
 
@@ -80,40 +82,49 @@
     }
 
     #content {
-        padding: 32px;
+        padding: 16px;
+        padding-top: 0;
         display: flex;
         flex-direction: column;
         width: 100%;
-        height: 100%;
+        height: calc(100% - 48px);
     }
 
     #modal {
-        width: 990px;
-        height: 647px;
+        max-width: 900px;
+        width: 100%;
+        height: 100%;
         background-color: var(--ns-color-white);
-        margin: 32px;
+        display: flex;
+        flex-direction: column;
     }
 
     #bar {
-        height: 24px;
-        background-color: var(--ns-color-primary);
+        height: 48px;
+        padding: 16px;
+        background-color: var(--ns-color-white);
         display: flex;
         justify-content: end;
         align-items: center;
 
         button {
-            font-size: 16px;
+            font-size: 24px;
             background: none;
             border: none;
             cursor: pointer;
             padding: 4px;
-            color: var(--ns-color-white);
+            color: var(--ns-color-black);
         }
     }
 
     #search-bar {
         display: flex;
-        align-items: baseline;
+        align-items: center;
+
+        div {
+            margin-right: 8px;
+        }
+
         label {
             font-size: var(--ns-size-subheading);
         }
@@ -127,7 +138,6 @@
             border-bottom-width: 1px;
             border-bottom-style: solid;
             padding: 6px 8px;
-            width: 328px;
         }
         input[type='text']:focus {
             outline: none;
@@ -151,5 +161,28 @@
         overflow: auto;
         flex: 1;
         gap: 16px;
+    }
+
+    @media (min-width: 850px) {
+        #bar {
+            display: flex;
+            background-color: var(--ns-color-primary);
+            height: 24px;
+            padding: 0;
+
+            button {
+                color: var(--ns-color-white);
+                font-size: 16px;
+            }
+        }
+
+        #content {
+            height: calc(100% - 24px);
+            padding-top: 16px;
+        }
+
+        #modal {
+            max-height: 80%;
+        }
     }
 </style>

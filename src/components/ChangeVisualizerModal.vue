@@ -76,34 +76,39 @@
     }
 
     #modal {
-        width: 990px;
-        height: 647px;
+        max-width: 900px;
+        width: 100%;
+        height: 100%;
         background-color: var(--ns-color-white);
-        margin: 32px;
+        display: flex;
+        flex-direction: column;
     }
 
     #bar {
-        height: 24px;
-        background-color: var(--ns-color-primary);
+        height: 48px;
+        padding: 16px;
+        background-color: var(--ns-color-white);
         display: flex;
         justify-content: end;
         align-items: center;
 
         button {
-            font-size: 16px;
+            font-size: 24px;
             background: none;
             border: none;
             cursor: pointer;
             padding: 4px;
-            color: var(--ns-color-white);
+            color: var(--ns-color-black);
         }
     }
 
     #content {
-        padding: 32px;
+        padding: 16px;
+        padding-top: 0;
         display: flex;
         flex-direction: column;
-        height: 623px;
+        width: 100%;
+        height: calc(100% - 48px);
     }
 
     #search {
@@ -120,5 +125,28 @@
         overflow: auto;
         flex: 1;
         gap: 16px;
+    }
+
+    @media (min-width: 850px) {
+        #bar {
+            display: flex;
+            background-color: var(--ns-color-primary);
+            height: 24px;
+            padding: 0;
+
+            button {
+                color: var(--ns-color-white);
+                font-size: 16px;
+            }
+        }
+
+        #content {
+            height: calc(100% - 24px);
+            padding-top: 16px;
+        }
+
+        #modal {
+            max-height: 80%;
+        }
     }
 </style>

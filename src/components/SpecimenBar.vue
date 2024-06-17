@@ -16,47 +16,49 @@
                 </div>
             </div>
         </div>
-        <div class="button material-icons-sharp" @click="refresh">
-            refresh
-        </div>
-        <div
-            id="pause-button"
-            class="button material-icons-sharp"
-            @click="togglePause">
-            pause
-        </div>
-        <div
-            id="share-button"
-            class="button material-icons-sharp"
-            @click="shareUrl">
-            share
-            <div id="share-popup" class="notification help-box">
-                Copied to clipboard!
+        <div class="button-container">
+            <div class="button material-icons-sharp" @click="refresh">
+                refresh
             </div>
-        </div>
-        <div>
             <div
-                id="save-button"
+                id="pause-button"
                 class="button material-icons-sharp"
-                @click="checkSave()">
-                save
+                @click="togglePause">
+                pause
             </div>
-            <div id="save-popup" class="notification help-box">
-                Saved to gallery!
-            </div>
-            <div id="overwrite-popup" class="notification help-box">
-                <div id="overwrite-text">
-                    You already have a specimen with the same name, do you
-                    want to overwrite it?
+            <div
+                id="share-button"
+                class="button material-icons-sharp"
+                @click="shareUrl">
+                share
+                <div id="share-popup" class="notification help-box">
+                    Copied to clipboard!
                 </div>
-                <div id="confirm-overwrite">
-                    <div class="overwrite-button" @click="saveSpecimen">
-                        yes
+            </div>
+            <div>
+                <div
+                    id="save-button"
+                    class="button material-icons-sharp"
+                    @click="checkSave()">
+                    save
+                </div>
+                <div id="save-popup" class="notification help-box">
+                    Saved to gallery!
+                </div>
+                <div id="overwrite-popup" class="notification help-box">
+                    <div id="overwrite-text">
+                        You already have a specimen with the same name, do you
+                        want to overwrite it?
                     </div>
-                    <div
-                        class="overwrite-button"
-                        @click="removeOverwritePopup">
-                        no
+                    <div id="confirm-overwrite">
+                        <div class="overwrite-button" @click="saveSpecimen">
+                            yes
+                        </div>
+                        <div
+                            class="overwrite-button"
+                            @click="removeOverwritePopup">
+                            no
+                        </div>
                     </div>
                 </div>
             </div>
@@ -214,19 +216,29 @@
             }
         }
     }
-    .button {
-        min-width: 30px;
-        text-align: center;
-        width: 30px;
-        height: 30px;
-        line-height: 30px;
-        vertical-align: middle;
-        font-size: 24px;
-        border: 1px solid var(--ns-color-black);
-        color: var(--ns-color-grey);
-        cursor: pointer;
-        user-select: none;
+    .button-container {
+        display: flex;
+        gap: 8px;
+        margin-right: 8px;
+        .button {
+            min-width: 30px;
+            text-align: center;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            vertical-align: middle;
+            font-size: 24px;
+            border: 1px solid var(--ns-color-black);
+            color: var(--ns-color-grey);
+            cursor: pointer;
+            user-select: none;
+
+            &:hover {
+                color: var(--ns-color-black);
+            }
+        }
     }
+
     .help {
         color: var(--ns-color-black);
     }

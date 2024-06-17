@@ -91,7 +91,7 @@
         font-family: 'Inter';
         src: url('/src/assets/fonts/inter/Inter-VariableFont_slnt\,wght.ttf');
     }
-    @media (min-width: 700px) {
+    @media (min-width: 850px) {
         .navbar-mobile {
             display: none;
         }
