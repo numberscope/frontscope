@@ -61,6 +61,12 @@
                 </div>
             </div>
         </div>
+        <div
+            id="download-button"
+            class="button material-icons-sharp"
+            @click="downloadSpecimen">
+            download
+        </div>
     </div>
 </template>
 
@@ -180,6 +186,27 @@
                     overwrite.style.visibility = 'hidden'
                     overwrite.style.opacity = '0'
                 }, 10)
+            },
+            downloadSpecimen() {
+                // get specimen input box and the canvas
+                const name = document.querySelector('input[type="text"]')
+                const canvas = document.querySelector(
+                    '#canvas-container canvas'
+                )
+
+                if (!(name instanceof HTMLInputElement)) return
+                if (!(canvas instanceof HTMLCanvasElement)) return
+
+                // get specimen name
+                const specimenName = name.value
+                //create a link from the canvas
+                const canvasURL = canvas.toDataURL()
+
+                // create a link element and download the canvas
+                const link = document.createElement('a')
+                link.href = canvasURL
+                link.download = `${specimenName}.png`
+                link.click()
             },
         },
     })
