@@ -17,7 +17,14 @@
             <h2>Self similarity telescope</h2>
             <span class="material-icons-sharp">keyboard_arrow_up</span>
         </div>
-        <div class="gallery"></div>
+        <div class="gallery">
+            <FeaturedCard
+                v-for="specimen in featured"
+                :key="specimen.url"
+                :url="specimen.url"
+                :lastEdited="specimen.lastEdited">
+            </FeaturedCard>
+        </div>
 
         <div type="button" class="visualizer-bar">
             <h2>Self similarity telescope</h2>
@@ -25,18 +32,22 @@
         </div>
         <div class="gallery">
             <SpecimenCard
-                v-for="(specimen, index) in specimens"
-                :key="index"
+                v-for="specimen in specimens"
+                :key="specimen.url"
                 :url="specimen.url"
-                :lastEdited="specimen.lastEdited" />
+                :lastEdited="specimen.lastEdited"
+                @specimenDeleted="loadSpecimens">
+            </SpecimenCard>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
     import SpecimenCard from '../components/SpecimenCard.vue'
+    import FeaturedCard from '../components/FeaturedCard.vue'
     import {ref, onMounted} from 'vue'
     import {getSIMs} from '../shared/browserCaching'
+    import {getFeatured} from '../shared/defineFeatured'
     import type {SIM} from '../shared/browserCaching'
 
     interface cardSpecimen {
@@ -45,13 +56,22 @@
     }
 
     const specimens = ref<cardSpecimen[]>([])
+    const featured = ref<cardSpecimen[]>([])
+
+    function loadFeatured() {
+        const savedSIMs: SIM[] = getFeatured()
+        featured.value = SIMstoCards(savedSIMs)
+    }
 
     function loadSpecimens() {
         const savedSIMs: SIM[] = getSIMs()
-        const cardSpecs: cardSpecimen[] = []
+        specimens.value = SIMstoCards(savedSIMs)
+    }
 
+    function SIMstoCards(savedSIMs: SIM[]): cardSpecimen[] {
+        const cardSpecs: cardSpecimen[] = []
         for (let i = 0; i < savedSIMs.length; i++) {
-            const url = savedSIMs[i].url.split('?specimen=')[1]
+            const url = savedSIMs[i].url
             const date = savedSIMs[i].date
 
             cardSpecs.push({
@@ -59,11 +79,11 @@
                 lastEdited: date,
             })
         }
-
-        specimens.value = cardSpecs
+        return cardSpecs
     }
 
     onMounted(() => {
+        loadFeatured()
         loadSpecimens()
     })
 </script>
@@ -122,7 +142,7 @@
     .gallery {
         display: flex;
         flex-wrap: wrap;
-        justify-content: space-evenly;
+        justify-content: left;
         margin-top: 29px;
         gap: 29px;
     }
