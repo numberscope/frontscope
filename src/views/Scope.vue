@@ -216,6 +216,12 @@
      * Used when the window is resized.
      */
     export function positionAndSizeAllTabs(): void {
+        document
+            .querySelectorAll('.dropzone')
+            .forEach((dropzone: Element) => {
+                dropzone.classList.add('empty')
+            })
+
         document.querySelectorAll('.tab').forEach((tab: Element) => {
             if (!(tab instanceof HTMLElement)) return
             if (tab.getAttribute('docked') === 'none') return
@@ -224,9 +230,19 @@
                 '#' + tab.getAttribute('docked') + '-dropzone'
             )
             if (!(dropzone instanceof HTMLElement)) return
-
+            dropzone.classList.remove('empty')
             positionAndSizeTab(tab, dropzone)
         })
+
+        document
+            .querySelectorAll('.dropzone-container')
+            .forEach((container: Element) => {
+                if (container.querySelectorAll('.empty').length == 2) {
+                    container.classList.add('empty')
+                } else {
+                    container.classList.remove('empty')
+                }
+            })
     }
     // selects a tab
     export function selectTab(tab: HTMLElement): void {
@@ -306,6 +322,8 @@
                 canvasContainer.clientHeight
             )
         }, 500)
+
+        console.log('hello')
     })
 
     // enable draggables to be dropped into this
