@@ -2,19 +2,12 @@
     <div class="card-body">
         <div class="card-preview" :id="cid" v-on:click="openSpecimen"></div>
         <div class="card-title-box">
-            <div>
-                <h5 class="card-title">
-                    {{ specimenName }}
-                </h5>
-                <p class="card-text">
-                    {{ seqName }}
-                </p>
-            </div>
-            <div v-on:click="deleteSpecimen" style="padding-right: 15px">
-                <span class="material-icons-sharp" style="user-select: none"
-                    >delete</span
-                >
-            </div>
+            <h5 class="card-title">
+                {{ specimenName }}
+            </h5>
+            <p class="card-text">
+                {{ seqName }}
+            </p>
         </div>
     </div>
 </template>
@@ -22,19 +15,18 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import {Specimen} from '../shared/Specimen'
-    import {deleteSpecimen} from '../shared/browserCaching'
 
     let cid_count = 0
 
     export default defineComponent({
-        name: 'SpecimenCard',
+        name: 'FeaturedCard',
         props: {
             url: {type: String, required: true},
             lastEdited: {type: String, required: true},
             cid: {
                 type: String,
                 default: function () {
-                    return 'Card-' + cid_count++
+                    return 'featuredCard-' + cid_count++
                 },
             },
         },
@@ -55,10 +47,6 @@
                     })
                     .then(window.location.reload)
             },
-            deleteSpecimen() {
-                deleteSpecimen(this.specimenName)
-                this.$emit('specimenDeleted', this.specimenName)
-            },
         },
         mounted() {
             const specimen = Specimen.fromURL(this.url)
@@ -68,7 +56,6 @@
 
             const canvasContainer = document.getElementById('' + this.cid)
             if (!(canvasContainer instanceof HTMLElement)) return
-
             specimen.setup(canvasContainer)
             specimen.visualizer.isValid = true
             specimen.sequence.isValid = true
@@ -101,9 +88,6 @@
         border-top: 1px solid var(--ns-color-black);
         align-items: left;
         text-align: left;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
     }
     .card-title {
         font-size: 14px;

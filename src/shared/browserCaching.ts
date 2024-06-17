@@ -1,3 +1,5 @@
+import {Specimen} from './Specimen'
+
 /* A "SIM" (Specimen In Memory) is a triple of strings,
     The first string contains the specimen URL
     The second string contains the specimen name
@@ -5,7 +7,7 @@
 */
 
 // NON MEMORY RELATED HELPER FUNCTIONS
-interface SIM {
+export interface SIM {
     url: string
     name: string
     date: string
@@ -31,24 +33,9 @@ function getCurrentDate(): string {
 const cacheKey = 'savedSpecimens'
 const currentKey = 'currentSpecimen'
 
-/**
- * Fetches the array of SIMs represented in memory.
- *
- * @param name
- */
-function getSIMs(): SIM[] {
-    // Retrieves the saved SIMs from browser cache
-    const savedSIMsJson = localStorage.getItem(cacheKey)
-    // Creates empty list in case none is found in browser storage
-    let savedSIMs: SIM[] = []
-
-    // Parses the saved SIMs if they exist and overrides empty savedUrls
-    if (savedSIMsJson) {
-        savedSIMs = JSON.parse(savedSIMsJson)
-    }
-
-    return savedSIMs
-}
+//The default specimen
+//Will be displayed when the user visits the website for the first time
+const defaultSpecimen = new Specimen('Specimen', 'ModFill', 'Random')
 
 /**
  * Fetches the SIM associated with a certain name.
@@ -73,6 +60,25 @@ export function getSIMByName(name: string): SIM {
 //MAIN FUNCTIONS
 
 /**
+ * Fetches the array of SIMs represented in memory.
+ *
+ * @param name
+ */
+export function getSIMs(): SIM[] {
+    // Retrieves the saved SIMs from browser cache
+    const savedSIMsJson = localStorage.getItem(cacheKey)
+    // Creates empty list in case none is found in browser storage
+    let savedSIMs: SIM[] = []
+
+    // Parses the saved SIMs if they exist and overrides empty savedUrls
+    if (savedSIMsJson) {
+        savedSIMs = JSON.parse(savedSIMsJson)
+    }
+
+    return savedSIMs
+}
+
+/**
  * Loads the last remembered current into the memory slot.
  * To be called whenever the website is booted up.
  */
@@ -92,18 +98,19 @@ export function getCurrent(): SIM {
 }
 
 /**
- * Overrides the url and name in the current slot.
+ * Overrides the url and inferred name in the current slot.
  * To be called whenever changes are made to the current specimen.
  *
  * @param url
- * @param name
  */
-export function updateCurrent(url: string, name: string): void {
-    // Overrides url and name in the current slot
-    const current: SIM = getCurrent()
-    current.name = name
-    current.url = url
-    localStorage.setItem(currentKey, JSON.stringify(current))
+export function updateCurrent(specimen: Specimen): void {
+    // Overrides the current slot
+    const newCurrent: SIM = {
+        url: specimen.toURL(),
+        name: specimen.name,
+        date: '',
+    }
+    localStorage.setItem(currentKey, JSON.stringify(newCurrent))
 }
 
 /**
@@ -169,8 +176,15 @@ export function deleteSpecimen(name: string): void {
  *
  * @param name
  */
-export function openSpecimen(name: string): void {
+export function loadSIMToCurrent(name: string): void {
     const SIM = getSIMByName(name)
-
     localStorage.setItem(currentKey, JSON.stringify(SIM))
+}
+
+export function openCurrent(): Specimen {
+    const currentSIM = getCurrent()
+    if (currentSIM.url == '') {
+        return defaultSpecimen
+    }
+    return Specimen.fromURL(currentSIM.url)
 }
