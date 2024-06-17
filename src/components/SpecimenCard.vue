@@ -70,6 +70,10 @@
             if (!(canvasContainer instanceof HTMLElement)) return
 
             specimen.setup(canvasContainer)
+            specimen.visualizer.isValid = true
+            specimen.sequence.isValid = true
+            specimen.visualizer.assignParameters()
+            specimen.sequence.assignParameters()
         },
     })
 </script>
