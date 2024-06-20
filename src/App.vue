@@ -3,13 +3,11 @@
         <main>
             <RouterView />
         </main>
-        <Footer />
     </div>
 </template>
 
 <script setup lang="ts">
     import {RouterView} from 'vue-router'
-    import Footer from './views/minor/Footer.vue'
 </script>
 
 <!-- Global styles. This style tag is explicitly unscoped. -->

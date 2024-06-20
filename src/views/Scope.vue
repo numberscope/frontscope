@@ -568,7 +568,7 @@
             width: 300px;
         }
         #specimen-container {
-            height: calc(100vh - 54px);
+            height: calc(100vh - 76px);
         }
         #main {
             display: flex;

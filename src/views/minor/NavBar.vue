@@ -117,8 +117,8 @@
             }
 
             .nav-link {
-                font-family: var(--ns-font-display);
-                font-size: var(--ns-size-display);
+                font-family: var(--ns-font-body);
+                font-size: var(--ns-size-heading);
 
                 margin-top: 8px;
                 text-decoration: none;
@@ -156,9 +156,9 @@
                 margin-top: 0;
                 border-bottom: none;
                 width: unset;
+                gap: 24px;
                 .nav-link {
                     margin-top: 0;
-                    margin-left: 16px;
                 }
             }
         }

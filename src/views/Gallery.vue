@@ -51,11 +51,13 @@
             </SpecimenCard>
         </div>
     </div>
+    <Footer />
 </template>
 
 <script setup lang="ts">
     import SpecimenCard from '../components/SpecimenCard.vue'
     import NavBar from '../views/minor/NavBar.vue'
+    import Footer from '../views/minor/Footer.vue'
     import FeaturedCard from '../components/FeaturedCard.vue'
     import {ref, onMounted, computed} from 'vue'
     import {getSIMs} from '../shared/browserCaching'
