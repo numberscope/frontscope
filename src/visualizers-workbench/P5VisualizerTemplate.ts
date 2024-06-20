@@ -247,6 +247,5 @@ because infinity is, well, infinitely far away!
 
 // === Export module ===
 // Putting this at the end of the source file makes it easy for other people
-// to find. Put the visualizer class and a short description string into the
-// export module constructor
+// to find. Simply insert the visualiser class into the export module
 export const exportModule = new VisualizerExportModule(P5VisualizerTemplate)

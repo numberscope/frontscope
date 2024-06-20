@@ -9,6 +9,10 @@ import type {
 import simpleFactor from '@/sequences/simpleFactor'
 import {ParamType} from '../shared/ParamType'
 
+// NOTE: Grid visualizer is not currently working due to the new Paramable
+// system, which is why it has been moved to `visualizers-workbench`
+// Perhaps an issue should be opened to fix this
+
 /** md
 # Grid Visualizer
 

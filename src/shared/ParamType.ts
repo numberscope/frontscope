@@ -175,7 +175,7 @@ const typeFunctions: {
                 value
                     .trim()
                     .match(
-                        /^(-?(\d+\.\d*|\.?\d+)(\s,\s-?(\d+\.\d*|\.?\d+))*)?$/
+                        /^(-?(\d+\.\d*|\.?\d+)(\s*,\s*-?(\d+\.\d*|\.?\d+))*)?$/
                     ) === null,
                 'Input must be a comma-separated list of numbers'
             ),
@@ -191,7 +191,7 @@ const typeFunctions: {
     [ParamType.BIGINT_ARRAY]: {
         validate: value =>
             ValidationStatus.errorIf(
-                value.trim().match(/^(-?\d+(\s,\s-?\d+)*)?$/) === null,
+                value.trim().match(/^(-?\d+(\s*,\s*-?\d+)*)?$/) === null,
                 'Input must be a comma-separated list of integers'
             ),
         realize: value => {

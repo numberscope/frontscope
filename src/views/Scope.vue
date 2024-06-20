@@ -143,7 +143,7 @@
 
     const sequence =
         new (exportModule.sequenceOrConstructor as SequenceConstructor)(0)
-    const visualizer = new vizMODULES['ModFill'].visualizer(sequence)
+    const visualizer = new vizMODULES['Chaos'].visualizer(sequence)
 
     const specimen = reactive(new Specimen(visualizer, sequence))
 

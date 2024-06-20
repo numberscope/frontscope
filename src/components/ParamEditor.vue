@@ -22,7 +22,7 @@
                     <ParamField
                         v-if="checkDependency(subParam)"
                         v-bind:param="subParam"
-                        v-bind:value="paramable.tentativeValues[name]"
+                        v-bind:value="paramable.tentativeValues[subName]"
                         v-bind:paramName="subName as string"
                         v-bind:status="paramStatuses[subName]"
                         @updateParam="

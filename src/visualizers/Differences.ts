@@ -3,6 +3,7 @@ import {P5Visualizer} from './P5Visualizer'
 import {ParamType} from '../shared/ParamType'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import {ValidationStatus} from '@/shared/ValidationStatus'
 
 const min = Math.min
 
@@ -32,6 +33,11 @@ row. _(Positive integer or zero. Zero means all available entries.)_
         type: ParamType.INTEGER,
         displayName: 'Entries in top row',
         required: true,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(
+                n < 0,
+                "Number of entries in top row can't be negative"
+            ),
     },
     /** md
 - **Number of rows:** How many rows to produce. _(Positive integer, no larger
@@ -43,6 +49,11 @@ than 'Entries in top row.')_
         displayName: 'Number of rows',
         required: false,
         description: 'If zero, defaults to the length of top row',
+        validate: (levels: number) =>
+            ValidationStatus.errorIf(
+                levels < 1,
+                'Number of rows must be positive'
+            ),
     },
 } as const
 
@@ -62,10 +73,6 @@ class Differences extends P5Visualizer(paramDesc) {
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-        if (params.levels < 1)
-            status.addError('Number of rows must be positive')
-        if (params.n < 0)
-            status.addError("Number of entries in top row can't be negative")
         if (params.n < params.levels)
             status.addError("Number of rows can't exceed length of first row")
 
