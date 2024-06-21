@@ -1,5 +1,4 @@
 import {test, expect} from '@playwright/test'
-import {Specimen} from '../src/shared/Specimen'
 
 test.beforeEach(async ({page}) => {
     await page.goto('/')
@@ -105,7 +104,13 @@ test.describe('Scope', () => {
         const oldURL = page.url()
 
         await page.locator('#specimen-bar-desktop input').fill('test')
-        const currentSpecimen = getCurrentSpecimen(page)
+        const currentSpecimenIM = await page.evaluate(() => {
+            return localStorage.getItem('currentSpecimen')
+        })
+        if (currentSpecimenIM === null) {
+            throw new Error('currentSpecimen is null')
+        }
+        const currentSpecimen = JSON.parse(currentSpecimenIM)
 
         await expect(currentSpecimen.name).toEqual('test')
         await expect(page.url()).not.toEqual(oldURL)
@@ -136,15 +141,4 @@ test.describe('Scope', () => {
         const url = page.url()
         await expect(clipboardContent).toMatch(url)
     })
-    function getCurrentSpecimen(page) {
-        const currentSpecimenIM = page.evaluate(() => {
-            return localStorage.getItem('currentSpecimen')
-        })
-        if (currentSpecimenIM === null) {
-            throw new Error('currentSpecimen is null')
-        }
-        const currentSpecimen = JSON.parse(currentSpecimenIM)
-        const specimen = Specimen.fromURL(currentSpecimen.url)
-        return specimen
-    }
 })
