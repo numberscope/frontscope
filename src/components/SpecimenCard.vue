@@ -11,7 +11,9 @@
                 </p>
             </div>
             <div v-on:click="deleteSpecimen" style="padding-right: 15px">
-                <span class="material-icons-sharp" style="user-select: none"
+                <span
+                    class="delete-button material-icons-sharp"
+                    style="user-select: none"
                     >delete</span
                 >
             </div>

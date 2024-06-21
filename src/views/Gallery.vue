@@ -24,7 +24,7 @@
                 keyboard_arrow_up</span
             >
         </div>
-        <div class="gallery" v-if="showFeatured">
+        <div id="featured-gallery" class="gallery" v-if="showFeatured">
             <FeaturedCard
                 v-for="specimen in featured"
                 :key="specimen.url"
@@ -42,7 +42,7 @@
                 keyboard_arrow_up</span
             >
         </div>
-        <div class="gallery" v-if="showSpecimens">
+        <div id="saved-gallery" class="gallery" v-if="showSpecimens">
             <SpecimenCard
                 v-for="specimen in specimens"
                 :key="specimen.url"
