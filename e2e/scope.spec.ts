@@ -116,6 +116,18 @@ test.describe('Scope', () => {
         await expect(currentSpecimen.name).toEqual('test')
         await expect(page.url()).not.toEqual(oldURL)
     })
+    test('refreshing the specimen', async ({page}) => {
+        const oldCanvas = await page.locator('#canvas-container canvas')
+
+        oldCanvas.evaluate(canvas => {
+            canvas.classList.add('old-canvas')
+        })
+        await page.locator('#specimen-bar-desktop #refresh-button').click()
+
+        const newCanvas = await page.locator('#canvas-container canvas')
+        await expect(newCanvas).not.toBe(oldCanvas)
+        await expect(newCanvas).not.toHaveClass('old-canvas')
+    })
     test('copying to clipboard', async ({page, context, browserName}) => {
         // grant clipboard permissions for chromium, other browsers don't
         // allow this due to privacy concerns
