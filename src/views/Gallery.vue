@@ -17,6 +17,7 @@
         <div type="button" class="visualizer-bar">
             <h2>Featured Gallery</h2>
             <span
+                id="featured-arrow"
                 :class="['material-icons-sharp', featuredArrowClass]"
                 style="user-select: none"
                 @click="toggleFeatured">

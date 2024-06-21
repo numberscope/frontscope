@@ -128,6 +128,7 @@ test.describe('Scope', () => {
         await expect(newCanvas).not.toBe(oldCanvas)
         await expect(newCanvas).not.toHaveClass('old-canvas')
     })
+
     test('copying to clipboard', async ({page, context, browserName}) => {
         // grant clipboard permissions for chromium, other browsers don't
         // allow this due to privacy concerns
