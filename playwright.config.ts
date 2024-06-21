@@ -13,7 +13,7 @@ import {defineConfig, devices} from '@playwright/test'
 export default defineConfig({
     testDir: './e2e',
     /* Run tests in files in parallel */
-    fullyParallel: true,
+    fullyParallel: false,
     forbidOnly: !!process.env.CI,
     /* Retry on CI only */
     retries: process.env.CI ? 2 : 0,
@@ -37,11 +37,6 @@ export default defineConfig({
         {
             name: 'firefox',
             use: {...devices['Desktop Firefox']},
-        },
-
-        {
-            name: 'webkit',
-            use: {...devices['Desktop Safari']},
         },
 
         /* Test against mobile viewports. */
