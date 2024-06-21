@@ -25,7 +25,7 @@
             :specimen="specimen" />
         <tab id="sequenceTab" class="tab docked" docked="top-right">
             <div class="tab-title-bar">
-                <div>
+                <div class="visualizer-info">
                     <h1>Sequence</h1>
                     <span class="subheading">{{
                         specimen.sequence.name
@@ -55,7 +55,7 @@
         </tab>
         <tab id="visualiserTab" class="tab docked" docked="bottom-right">
             <div class="tab-title-bar">
-                <div>
+                <div class="visualizer-info">
                     <h1>Visualizer</h1>
                     <span class="subheading">
                         {{ specimen.visualizer.name }}
@@ -602,6 +602,7 @@
             &.empty {
                 position: absolute;
                 pointer-events: none;
+                z-index: 1;
 
                 .dropzone-resize.material-icons-sharp {
                     display: none;
