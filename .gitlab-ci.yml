@@ -35,4 +35,5 @@ end-to-end-test-job: # This job runs in the test stage.
     script:
         - npm install
         - npx playwright install
+        - npx playwright install-deps
         - npx playwright test
