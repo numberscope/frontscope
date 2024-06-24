@@ -34,4 +34,5 @@ end-to-end-test-job: # This job runs in the test stage.
     stage: test # It only starts when the jobs in the build stage and unit-test-job complete successfully.
     script:
         - npm install
+        - npx playwright install
         - npx playwright test
