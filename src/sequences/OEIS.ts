@@ -147,7 +147,7 @@ export default class OEIS extends Cached(paramDesc) {
         ) {
             status.addError('OEIS IDs are of form Annnnnn')
         }
-        if (params.cacheBlock < 0 || !Number.isInteger(params.cacheBlock)) {
+        if (params.cacheBlock < 0) {
             status.addError('Number of elements must be a positive integer.')
         }
 

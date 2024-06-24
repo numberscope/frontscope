@@ -208,7 +208,7 @@ const typeFunctions: {
                 value
                     .trim()
                     .match(
-                        /^-?(\d+\.\d*|\.?\d+)\s,\s-?(\d+\.\d*|\.?\d+)$/
+                        /^-?(\d+\.\d*|\.?\d+)\s*,\s*-?(\d+\.\d*|\.?\d+)$/
                     ) === null,
                 'Input must be two comma-separated numbers'
             ),
