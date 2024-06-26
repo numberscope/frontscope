@@ -1,6 +1,9 @@
 import p5 from 'p5'
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {ParamType} from '../shared/ParamType'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import type {SequenceInterface} from '@/sequences/SequenceInterface'
 
 /** md
 # Turtle Visualizer
@@ -14,107 +17,107 @@ straight segment. It displays the resulting polygonal path.
 ## Parameters
 **/
 
+const paramDesc = {
+    /** md
+- domain: A comma-separated list of all of the values that may occur in the
+sequence. (One way to ensure a small number of possible values is to use a
+sequence that has been reduced with respect to some small modulus. But
+some sequences, like A014577 "The regular paper-folding sequence", naturally
+have a small domain.)
+     **/
+    domain: {
+        default: [0n, 1n, 2n, 3n, 4n] as bigint[],
+        type: ParamType.BIGINT_ARRAY,
+        displayName: 'Sequence Domain',
+        required: true,
+        description: '(comma-separated list of values)',
+    },
+    /** md
+- range: a comma-separated list of numbers. These are turning angles,
+corresponding positionally to the domain elements. Range and domain must
+be the same length.
+     **/
+    range: {
+        default: [30, 45, 60, 90, 120] as number[],
+        type: ParamType.NUMBER_ARRAY,
+        displayName: 'Angles',
+        required: true,
+        description: '(comma-separated list of values in degrees)',
+    },
+    /** md
+- stepSize: a number. Gives the length of the segment drawn for each entry.
+     **/
+    stepSize: {
+        default: 20,
+        type: ParamType.INTEGER,
+        displayName: 'Step Size',
+        required: true,
+    },
+    /**
+- start: x,y coordinates of the point where drawing will start
+     **/
+    start: {
+        default: new p5.Vector(),
+        type: ParamType.VECTOR,
+        displayName: 'Start',
+        required: true,
+        description: 'coordinates of the point where drawing will start',
+    },
+    /**
+- strokeWeight: a number. Gives the width of the segment drawn for each entry.
+     **/
+    strokeWeight: {
+        default: 5,
+        type: ParamType.INTEGER,
+        displayName: 'Stroke Width',
+        required: true,
+    },
+    /**
+- bgColor: The background color of the visualizer canvas
+     **/
+    bgColor: {
+        default: '#666666',
+        type: ParamType.COLOR,
+        displayName: 'Background Color',
+        required: false,
+    },
+    /**
+- strokeColor: The color used for drawing the path.
+     **/
+    strokeColor: {
+        default: '#ff0000',
+        type: ParamType.COLOR,
+        displayName: 'Stroke Color',
+        required: false,
+    },
+} as const
+
 // Turtle needs work
 // Throwing the same error on previous Numberscope website
-class Turtle extends P5Visualizer {
-    static visualizationName = 'Turtle'
-    private rotMap = new Map<string, number>()
-    domain = [0n, 1n, 2n, 3n, 4n]
-    range = [30, 45, 60, 90, 120]
-    stepSize = 20
-    start = new p5.Vector()
-    strokeWeight = 5
-    bgColor = '#666666'
-    strokeColor = '#ff0000'
+class Turtle extends P5Visualizer(paramDesc) {
+    name = 'Turtle'
+    description =
+        'Use a sequence to steer a virtual '
+        + 'turtle that leaves a visible trail'
 
-    params = {
-        /** md
-- domain: A comma-separated list of all of the values that may occur in the
-    sequence. (One way to ensure a small number of possible values is to use a
-    sequence that has been reduced with respect to some small modulus. But
-    some sequences, like A014577 "The regular paper-folding sequence", naturally
-    have a small domain.)
-         **/
-        domain: {
-            value: this.domain,
-            displayName: 'Sequence Domain',
-            required: true,
-            description: '(comma-separated list of values)',
-        },
-        /** md
-- range: a comma-separated list of numbers. These are turning angles,
-    corresponding positionally to the domain elements. Range and domain must
-    be the same length.
-         **/
-        range: {
-            value: this.range,
-            displayName: 'Angles',
-            required: true,
-            description: '(comma-separated list of values in degrees)',
-        },
-        /** md
-- stepSize: a number. Gives the length of the segment drawn for each entry.
-         **/
-        stepSize: {
-            value: this.stepSize,
-            forceType: 'integer',
-            displayName: 'Step Size',
-            required: true,
-        },
-        /**
-- start: x,y coordinates of the point where drawing will start
-         **/
-        start: {
-            value: this.start,
-            displayName: 'Start',
-            required: true,
-            description: 'coordinates of the point where drawing will start',
-        },
-        /**
-- strokeWeight: a number. Gives the width of the segment drawn for each entry.
-         **/
-        strokeWeight: {
-            value: this.strokeWeight,
-            forceType: 'integer',
-            displayName: 'Stroke Width',
-            required: true,
-        },
-        /**
-- bgColor: The background color of the visualizer canvas
-         **/
-        bgColor: {
-            value: this.bgColor,
-            forceType: 'color',
-            displayName: 'Background Color',
-            required: false,
-        },
-        /**
-- strokeColor: The color used for drawing the path.
-         **/
-        strokeColor: {
-            value: this.strokeColor,
-            forceType: 'color',
-            displayName: 'Stroke Color',
-            required: false,
-        },
-    }
+    private rotMap = new Map<string, number>()
 
     private currentIndex = 0
     private orientation = 0
     private X = 0
     private Y = 0
 
-    checkParameters() {
-        const status = super.checkParameters()
+    constructor(seq: SequenceInterface<GenericParamDescription>) {
+        super(seq)
+    }
 
-        if (
-            this.params.domain.value.length != this.params.range.value.length
-        ) {
-            status.isValid = false
-            status.errors.push(
+    checkParameters(params: ParamValues<typeof paramDesc>) {
+        const status = super.checkParameters(params)
+
+        if (params.domain.length != params.range.length)
+            status.addError(
                 'Domain and range must have the same number of entries'
             )
-        }
 
         return status
     }
@@ -123,8 +126,8 @@ class Turtle extends P5Visualizer {
         super.setup()
         this.currentIndex = this.seq.first
         this.orientation = 0
-        this.X = this.sketch.width / 2
-        this.Y = this.sketch.height / 2
+        this.X = this.sketch.width / 2 + this.start.x
+        this.Y = this.sketch.height / 2 + this.start.y
 
         for (let i = 0; i < this.domain.length; i++) {
             this.rotMap.set(
@@ -161,7 +164,4 @@ class Turtle extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    Turtle,
-    'Use a sequence to steer a virtual turtle that leaves a visible trail'
-)
+export const exportModule = new VisualizerExportModule(Turtle)
