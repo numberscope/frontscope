@@ -1,8 +1,8 @@
 <template>
-    <div id="background" @click.self="$emit('close')">
+    <div id="background" @click.self="emit('close')">
         <div id="modal">
             <div id="bar">
-                <button class="material-icons-sharp" @click="$emit('close')">
+                <button class="material-icons-sharp" @click="emit('close')">
                     close
                 </button>
             </div>
@@ -24,7 +24,7 @@
                         v-for="(sequence, name) in seqMODULES"
                         :key="name"
                         @click="
-                            changeSequence(name as string), $emit('close')
+                            changeSequence(name as string), emit('close')
                         ">
                         <h2>{{ sequence.name }}</h2>
                         <p>{{ sequence.description }}</p>
@@ -37,12 +37,12 @@
 
 <script setup lang="ts">
     import seqMODULES from '../sequences/sequences'
+    const emit = defineEmits(['close', 'change'])
 
     const props = defineProps(['specimen'])
-    defineEmits(['close'])
-
     function changeSequence(key: string) {
         props.specimen!.sequence = key
+        emit('change')
     }
 </script>
 

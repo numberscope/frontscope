@@ -1,11 +1,11 @@
 <template>
-    <div id="background" @click.self="$emit('close')">
+    <div id="background" @click.self="emit('close')">
         <div id="modal">
             <div id="bar">
                 <button
                     class="material-icons-sharp"
                     alt="Close button"
-                    @click="$emit('close')">
+                    @click="emit('close')">
                     close
                 </button>
             </div>
@@ -19,7 +19,7 @@
                         v-for="(visualizer, name) in vizMODULES"
                         :key="name"
                         @click="
-                            changeVisualizer(name as string), $emit('close')
+                            changeVisualizer(name as string), emit('close')
                         ">
                         <h2>{{ visualizer.name }}</h2>
                         <p>{{ visualizer.description }}</p>
@@ -32,12 +32,13 @@
 
 <script setup lang="ts">
     import vizMODULES from '../visualizers/visualizers'
+    const emit = defineEmits(['close', 'change'])
 
     const props = defineProps(['specimen'])
-    defineEmits(['close'])
 
     function changeVisualizer(key: string) {
         props.specimen!.visualizer = key
+        emit('change')
     }
 </script>
 
