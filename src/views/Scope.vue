@@ -14,6 +14,7 @@
                     changeSequenceOpen = false
                 }
             "
+            @change="updateURL"
             :specimen="specimen" />
         <ChangeVisualizerModal
             v-show="changeVisualizerOpen"
@@ -22,6 +23,7 @@
                     changeVisualizerOpen = false
                 }
             "
+            @change="updateURL"
             :specimen="specimen" />
         <tab id="sequenceTab" class="tab docked" docked="top-right">
             <div class="tab-title-bar">
