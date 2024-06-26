@@ -22,6 +22,7 @@ export class Specimen {
     private _sequence: SequenceInterface<GenericParamDescription>
     private location?: HTMLElement
     private isSetup: boolean = false
+    private size: {width: number; height: number}
 
     /**
      * Constructs a new specimen from a visualizer and a sequence.
@@ -45,6 +46,7 @@ export class Specimen {
         this._visualizer = new vizMODULES[visualizerKey].visualizer(
             this._sequence
         )
+        this.size = {width: 0, height: 0}
     }
     /**
      * Call this as soon after construction as possible once the HTML
@@ -52,10 +54,31 @@ export class Specimen {
      */
     setup(location: HTMLElement) {
         this.location = location
-        this._visualizer.view(this._sequence)
-        this._visualizer.inhabit(this.location)
-        this._visualizer.show()
+        this.size = this.calculateSize(
+            this.location.clientWidth,
+            this.location.clientHeight,
+            this.visualizer.requestedAspectRatio()
+        )
+
+        this.visualizer.view(this.sequence)
+        this.visualizer.inhabit(this.location, this.size)
+        this.visualizer.show()
         this.isSetup = true
+    }
+    /**
+     * Hard resets the specimen
+     */
+    reset() {
+        if (!this.location) return
+        this.size = this.calculateSize(
+            this.location.clientWidth,
+            this.location.clientHeight,
+            this.visualizer.requestedAspectRatio()
+        )
+
+        this.visualizer.depart(this.location)
+        this.visualizer.inhabit(this.location, this.size)
+        this.visualizer.show()
     }
     /**
      * Returns the name of this specimen
@@ -140,6 +163,61 @@ export class Specimen {
      */
     updateSequence() {
         this.visualizer.view(this.sequence)
+    }
+
+    /**
+     * Calculates the size of the visualizer in its container.
+     * @param containerWidth width of the container
+     * @param containerHeight height of the container
+     * @param aspectRatio aspect ratio requested by visualizer
+     * @returns the size of the visualizer
+     */
+    calculateSize(
+        containerWidth: number,
+        containerHeight: number,
+        aspectRatio: number | undefined
+    ): {width: number; height: number} {
+        if (aspectRatio === undefined)
+            return {
+                width: containerWidth,
+                height: containerHeight,
+            }
+        const constraint = containerWidth / containerHeight < aspectRatio
+        return {
+            width: constraint
+                ? containerWidth
+                : containerHeight * aspectRatio,
+            height: constraint
+                ? containerWidth / aspectRatio
+                : containerHeight,
+        }
+    }
+    /**
+     * This function should be called when the size of the visualizer container
+     * has changed. It calculates the size of the contents according to the
+     * aspect ratio requested and calls the resize function.
+     * @param width New width of the visualizer container
+     * @param height New height of the visualizer container
+     */
+    resized(width: number, height: number): void {
+        const newSize = this.calculateSize(
+            width,
+            height,
+            this.visualizer.requestedAspectRatio()
+        )
+
+        if (
+            this.size.width === newSize.width
+            && this.size.height === newSize.height
+        )
+            return
+
+        this.size = newSize
+
+        if (!this.visualizer.resized?.(this.size.width, this.size.height)) {
+            // Reset the visualizer if the resized function isn't implemented
+            this.reset()
+        }
     }
     /**
      * Converts the specimen to a URL as a way of saving all information
