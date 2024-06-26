@@ -1,6 +1,6 @@
 <template>
     <div class="card-body">
-        <div class="card-preview" :id="cid" v-on:click="openSpecimen"></div>
+        <Thumbnail :url="url" v-on:click="openSpecimen" />
         <div class="card-title-box">
             <h5 class="card-title">
                 {{ specimenName }}
@@ -15,6 +15,7 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import {Specimen} from '../shared/Specimen'
+    import Thumbnail from './Thumbnail.vue'
 
     let cid_count = 0
 
@@ -49,18 +50,11 @@
             },
         },
         mounted() {
-            const specimen = Specimen.fromURL(this.url)
-
-            this.seqName = specimen.sequence.name
-            this.specimenName = specimen.name
-
-            const canvasContainer = document.getElementById('' + this.cid)
-            if (!(canvasContainer instanceof HTMLElement)) return
-            specimen.setup(canvasContainer)
-            specimen.visualizer.isValid = true
-            specimen.sequence.isValid = true
-            specimen.visualizer.assignParameters()
-            specimen.sequence.assignParameters()
+            this.seqName = Specimen.getSequenceNameFromURL(this.url)
+            this.specimenName = Specimen.getNameFromURL(this.url)
+        },
+        components: {
+            Thumbnail,
         },
     })
 </script>

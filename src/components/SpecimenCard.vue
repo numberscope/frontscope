@@ -1,6 +1,6 @@
 <template>
     <div class="card-body">
-        <div class="card-preview" :id="cid" v-on:click="openSpecimen"></div>
+        <Thumbnail :url="url" v-on:click="openSpecimen" />
         <div class="card-title-box">
             <div>
                 <h5 class="card-title">
@@ -23,6 +23,7 @@
     import {defineComponent} from 'vue'
     import {Specimen} from '../shared/Specimen'
     import {deleteSpecimen} from '../shared/browserCaching'
+    import Thumbnail from './Thumbnail.vue'
 
     let cid_count = 0
 
@@ -61,19 +62,11 @@
             },
         },
         mounted() {
-            const specimen = Specimen.fromURL(this.url)
-
-            this.seqName = specimen.sequence.name
-            this.specimenName = specimen.name
-
-            const canvasContainer = document.getElementById('' + this.cid)
-            if (!(canvasContainer instanceof HTMLElement)) return
-
-            specimen.setup(canvasContainer)
-            specimen.visualizer.isValid = true
-            specimen.sequence.isValid = true
-            specimen.visualizer.assignParameters()
-            specimen.sequence.assignParameters()
+            this.seqName = Specimen.getSequenceNameFromURL(this.url)
+            this.specimenName = Specimen.getNameFromURL(this.url)
+        },
+        components: {
+            Thumbnail,
         },
     })
 </script>
@@ -85,15 +78,6 @@
         border: 1px solid var(--ns-color-black);
         display: flex;
         flex-direction: column;
-        align-items: center;
-    }
-    .card-preview {
-        width: 200px;
-        height: 200px;
-        margin: 8px;
-        background-color: #f8f9fa;
-        display: flex;
-        justify-content: center;
         align-items: center;
     }
     .card-title-box {
