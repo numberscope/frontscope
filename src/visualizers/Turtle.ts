@@ -126,8 +126,8 @@ class Turtle extends P5Visualizer(paramDesc) {
         super.setup()
         this.currentIndex = this.seq.first
         this.orientation = 0
-        this.X = this.sketch.width / 2
-        this.Y = this.sketch.height / 2
+        this.X = this.sketch.width / 2 + this.start.x
+        this.Y = this.sketch.height / 2 + this.start.y
 
         for (let i = 0; i < this.domain.length; i++) {
             this.rotMap.set(
