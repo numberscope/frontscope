@@ -36,6 +36,8 @@ class Palette {
         } else {
             this.backgroundColor = INVALID_COLOR
             this.textColor = INVALID_COLOR
+            this.backgroundColor = INVALID_COLOR
+            this.textColor = INVALID_COLOR
         }
     }
 }
