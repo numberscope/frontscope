@@ -14,6 +14,7 @@ window.alert( alertMessage(someError) )
 ```
 **/
 export const alertMessage = (error: string | unknown) => {
+    console.log(error)
     const errorMessage =
         'Numberscope experienced an error.\n\n'
         + 'Error Message:\n'

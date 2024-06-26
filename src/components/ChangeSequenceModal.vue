@@ -13,15 +13,20 @@
                 <div id="search-bar">
                     <div>
                         <label for="oeis">Search the OEIS</label><br />
-                        <input type="text" id="oeis" placeholder="A037161" />
+                        <input
+                            type="text"
+                            id="oeis-id"
+                            placeholder="A037161" />
                     </div>
-                    <button class="material-icons-sharp">search</button>
+                    <button class="material-icons-sharp" @click="importOEIS">
+                        add
+                    </button>
                 </div>
 
                 <div id="results">
                     <div
                         class="sequence"
-                        v-for="(sequence, name) in seqMODULES"
+                        v-for="(sequence, name) in reactiveSeqMODULES"
                         :key="name"
                         @click="
                             changeSequence(name as string), emit('close')
@@ -36,13 +41,53 @@
 </template>
 
 <script setup lang="ts">
+    import {SequenceExportModule} from '@/sequences/SequenceInterface'
     import seqMODULES from '../sequences/sequences'
+    import OEISSequence from '@/sequences/OEIS'
+    import {reactive} from 'vue'
     const emit = defineEmits(['close', 'change'])
+
+    const reactiveSeqMODULES = reactive({...seqMODULES})
 
     const props = defineProps(['specimen'])
     function changeSequence(key: string) {
         props.specimen!.sequence = key
         emit('change')
+    }
+
+    function importOEIS() {
+        const oeisElem = document.getElementById(
+            'oeis-id'
+        )! as HTMLInputElement
+
+        // Determine the desired values for the OEIS sequence
+        const name = 'Example'
+        const oeisId = oeisElem.value
+        const cacheBlock = 1000
+        const modulus = BigInt(0)
+
+        // Generate the sequence from these values and its corresponding key
+        const sequence = new OEISSequence(
+            0,
+            name,
+            oeisId,
+            cacheBlock,
+            modulus
+        )
+        const key = sequence.toSequenceExportKey()
+
+        // If this sequence hasn't already been generated, add it to the
+        // sequence export modules
+        if (!(key in seqMODULES)) {
+            const exportModule = SequenceExportModule.instance(sequence)
+            seqMODULES[key] = exportModule
+            reactiveSeqMODULES[key] = exportModule
+        }
+
+        // Select this sequence and close the modal
+        // NOTE: this functionality can be removed if not desired
+        changeSequence(key)
+        emit('close')
     }
 </script>
 

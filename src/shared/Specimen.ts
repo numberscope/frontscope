@@ -1,13 +1,34 @@
 import type {VisualizerInterface} from '../visualizers/VisualizerInterface'
 import {SequenceExportKind} from '../sequences/SequenceInterface'
-import type {
-    SequenceConstructor,
-    SequenceInterface,
+import {
+    SequenceExportModule,
+    type SequenceConstructor,
+    type SequenceInterface,
 } from '../sequences/SequenceInterface'
 import type {GenericParamDescription} from './Paramable'
 import {toBase64, loadFromBase64} from './Paramable'
 import seqMODULES from '../sequences/sequences'
 import vizMODULES from '../visualizers/visualizers'
+import OEISSequence from '@/sequences/OEIS'
+
+/**
+ * Loads a sequence from a given export module key, accounting for its kind
+ * and making sure to load it if it is an unloaded OEIS sequence
+ */
+function loadSequenceFromExportModule(sequenceKey: string) {
+    type SeqIntf = SequenceInterface<GenericParamDescription>
+    // Load OEIS sequence if it is not already
+    // OEIS sequence keys start with '.'
+    if (sequenceKey.startsWith('.') && !(sequenceKey in seqMODULES))
+        seqMODULES[sequenceKey] = SequenceExportModule.instance(
+            OEISSequence.fromSequenceExportKey(sequenceKey)
+        )
+
+    if (seqMODULES[sequenceKey].kind === SequenceExportKind.FAMILY)
+        return new (seqMODULES[sequenceKey]
+            .sequenceOrConstructor as SequenceConstructor)(0)
+    else return seqMODULES[sequenceKey].sequenceOrConstructor as SeqIntf
+}
 
 /**
  * This class represents a specimen, containing a visualizer,
@@ -36,13 +57,7 @@ export class Specimen {
         this._name = name
         this._visualizerKey = visualizerKey
         this._sequenceKey = sequenceKey
-        type SeqIntf = SequenceInterface<GenericParamDescription>
-        if (seqMODULES[sequenceKey].kind === SequenceExportKind.FAMILY)
-            this._sequence = new (seqMODULES[sequenceKey]
-                .sequenceOrConstructor as SequenceConstructor)(0)
-        else
-            this._sequence = seqMODULES[sequenceKey]
-                .sequenceOrConstructor as SeqIntf
+        this._sequence = loadSequenceFromExportModule(sequenceKey)
         this._visualizer = new vizMODULES[visualizerKey].visualizer(
             this._sequence
         )
@@ -60,6 +75,7 @@ export class Specimen {
             this.visualizer.requestedAspectRatio()
         )
 
+        this.sequence.initialize()
         this.visualizer.view(this.sequence)
         this.visualizer.inhabit(this.location, this.size)
         this.visualizer.show()
@@ -137,13 +153,8 @@ export class Specimen {
      */
     set sequenceKey(sequenceKey: string) {
         this._sequenceKey = sequenceKey
-        type SeqIntf = SequenceInterface<GenericParamDescription>
-        if (seqMODULES[sequenceKey].kind === SequenceExportKind.FAMILY)
-            this._sequence = new (seqMODULES[sequenceKey]
-                .sequenceOrConstructor as SequenceConstructor)(0)
-        else
-            this._sequence = seqMODULES[sequenceKey]
-                .sequenceOrConstructor as SeqIntf
+        this._sequence = loadSequenceFromExportModule(sequenceKey)
+        this._sequence.initialize()
         this.visualizer.view(this.sequence)
     }
     /**

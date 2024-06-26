@@ -7,7 +7,7 @@
     <header>
         <nav>
             <div id="navbar-main">
-                <RouterLink id="logo" to="/" v-on:click="closeMenu">
+                <RouterLink id="logo" to="/" v-on:click="goToScope">
                     <img :src="LogoWithMicroscope" alt="A microscope icon." />
                 </RouterLink>
                 <button
@@ -59,6 +59,11 @@
 
             closeMenu: function () {
                 this.menuOpen = false
+            },
+
+            goToScope: function () {
+                this.closeMenu()
+                this.$emit('goToScope')
             },
         },
     })

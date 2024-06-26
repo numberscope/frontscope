@@ -1,44 +1,10 @@
-import type {ValidationStatus} from '../shared/ValidationStatus'
 import {modulo} from '../shared/math'
 import {Cached} from './Cached'
 import {alertMessage} from '../shared/alertMessage'
 
 import axios from 'axios'
-import {ParamType} from '../shared/ParamType'
-import type {ParamValues} from '@/shared/Paramable'
 
-const seqName = 'OEIS Sequence Template'
-const seqDescription = 'Factory for obtaining sequences from the OEIS'
-
-const paramDesc = {
-    oeisId: {
-        default: '',
-        type: ParamType.STRING,
-        displayName: 'OEIS ID',
-        required: true,
-    },
-    givenName: {
-        default: '',
-        type: ParamType.STRING,
-        displayName: 'Name',
-        required: false,
-    },
-    cacheBlock: {
-        default: 1000,
-        type: ParamType.INTEGER,
-        displayName: 'Number of Elements',
-        required: false,
-        description: 'How many elements to try to fetch from the database.',
-    },
-    modulus: {
-        default: 0n,
-        type: ParamType.BIGINT,
-        displayName: 'Modulus',
-        required: false,
-        description:
-            'If nonzero, take the residue of each element to this modulus.',
-    },
-} as const
+const paramDesc = {} as const
 
 /**
  *
@@ -47,12 +13,24 @@ const paramDesc = {
  * the Flask backend.
  *
  */
-export default class OEIS extends Cached(paramDesc) {
-    name = seqName
-    description = seqDescription
+export default class OEISSequence extends Cached(paramDesc) {
+    description = 'An imported OEIS sequence'
 
-    constructor(sequenceID: number) {
-        super(sequenceID)
+    oeisId: string
+    modulus: bigint
+    private initialized = false
+
+    constructor(
+        sequenceID: number,
+        name: string,
+        oeisId: string,
+        cacheBlock: number,
+        modulus: bigint
+    ) {
+        super(sequenceID, 0, Infinity, cacheBlock)
+        this.name = name
+        this.oeisId = oeisId
+        this.modulus = modulus
         // Don't know the index range yet, will fill in later
     }
 
@@ -141,30 +119,65 @@ export default class OEIS extends Cached(paramDesc) {
         }
     }
 
-    checkParameters(params: ParamValues<typeof paramDesc>): ValidationStatus {
-        const status = super.checkParameters(params)
-
-        if (
-            params.oeisId.length !== 7
-            || (params.oeisId[0] !== 'A' && params.oeisId[0] !== 'a')
-        ) {
-            status.addError('OEIS IDs are of form Annnnnn')
-        }
-        if (params.cacheBlock < 0) {
-            status.addError('Number of elements must be a positive integer.')
-        }
-
-        return status
-    }
-
-    initialize(): void {
-        this.name = this.givenName || this.oeisId
+    async initialize(): Promise<void> {
+        // We only want to initialize OEIS sequences once, as they're expensive
+        // to pull from backscope and they are immutable
+        if (this.initialized) return
+        this.initialized = true
+        this.name = this.name || this.oeisId
         if (this.cacheBlock < 1) {
             this.cacheBlock = 1000
             this.refreshParams()
         }
-        super.initialize()
+        await super.initialize()
+    }
+
+    /**
+     * Gets the standard sequence export key for this OEIS sequence. This is for
+     * consistency so that OEIS sequences with the same name, OEIS ID, cache
+     * block, and modulus aren't loaded duplicately and have the same key in
+     * the list of sequence export modules
+     */
+    toSequenceExportKey(): string {
+        return (
+            '.'
+            + this.oeisId
+            + '#'
+            + this.cacheBlock
+            + '#'
+            + this.modulus
+            + '#'
+            + this.name
+        )
+    }
+
+    /**
+     * Given a standard sequence export key generated from
+     * `toSequenceExportKey()`, reconstructs an `OEISSequence` from it.
+     * This is useful when loading saved specimens after restarting the
+     * webpage. If the used OEIS sequence key is not present in the list
+     * of sequence export modules, this function is called to generate it
+     *
+     * This function throws an error if it is not a valid sequence export key
+     */
+    static fromSequenceExportKey(key: string): OEISSequence {
+        if (!key.startsWith('.'))
+            throw new Error("Sequence export key should start with '.'")
+
+        const components = key.substring(1).split('#')
+        if (components.length < 4)
+            throw new Error('Sequence export key is missing components')
+
+        return new OEISSequence(
+            0,
+            components.slice(3).join('#'),
+            components[0],
+            Number.parseInt(components[1]),
+            BigInt(Number.parseInt(components[2]))
+        )
     }
 }
 
-// OEIS does not have an export module as it is not itself a sequence
+// OEIS does not have an export module as it is not itself a selectable
+// sequence, but is constructed as an instance when OEIS sequences are
+// imported

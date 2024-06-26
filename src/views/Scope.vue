@@ -1,5 +1,5 @@
 <template>
-    <NavBar class="navbar">
+    <NavBar class="navbar" @goToScope="resetSpecimen">
         <SpecimenBar
             id="specimen-bar-desktop"
             :specimen="specimen as Specimen"
@@ -308,6 +308,9 @@
     function handleSpecimenUpdate(newName: string) {
         specimen.name = newName
         updateURL()
+    }
+    function resetSpecimen() {
+        specimen.updateSequence()
     }
     onMounted(() => {
         const specimenContainer = document.getElementById(
