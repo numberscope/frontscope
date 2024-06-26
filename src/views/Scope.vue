@@ -136,7 +136,7 @@
     import {onMounted} from 'vue'
     import ParamEditor from '@/components/ParamEditor.vue'
     import vizMODULES from '@/visualizers/visualizers'
-    import {exportModule} from '@/sequences/Random'
+    import {exportModule} from '@/sequences/Formula'
     import {reactive} from 'vue'
     import {Specimen} from '@/shared/Specimen'
     import type {SequenceConstructor} from '@/sequences/SequenceInterface'

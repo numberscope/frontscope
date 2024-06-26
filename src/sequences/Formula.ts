@@ -41,7 +41,6 @@ class Formula extends Cached(paramDesc) {
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
-        params.formula
 
         let parsetree = undefined
         try {
@@ -75,7 +74,10 @@ class Formula extends Cached(paramDesc) {
     }
 
     calculate(n: number) {
-        return BigInt(this.evaluator.evaluate({n: n}))
+        const result = this.evaluator.evaluate({n: n})
+        if (result === Infinity) return BigInt(Number.MAX_SAFE_INTEGER)
+        else if (Number.isNaN(result)) return BigInt(0)
+        return BigInt(Math.floor(result))
     }
 
     factor(_n: number, v: bigint) {

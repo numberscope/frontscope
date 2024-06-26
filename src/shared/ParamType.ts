@@ -182,7 +182,7 @@ const typeFunctions: {
         realize: value => {
             const numbers = value.split(',')
             const array = []
-            for (const number in numbers)
+            for (const number of numbers)
                 array.push(parseFloat(number.trim()))
             return array
         },
@@ -197,7 +197,7 @@ const typeFunctions: {
         realize: value => {
             const numbers = value.split(',')
             const array = []
-            for (const number in numbers) array.push(BigInt(number.trim()))
+            for (const number of numbers) array.push(BigInt(number.trim()))
             return array
         },
         derealize: value => (value as bigint[]).join(', '),
