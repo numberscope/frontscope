@@ -79,6 +79,7 @@ class Formula extends Cached(paramDesc) {
     calculate(n: number) {
         const result = this.evaluator.evaluate({n: n})
         if (result === Infinity) return BigInt(Number.MAX_SAFE_INTEGER)
+        else if (result === -Infinity) return BigInt(Number.MIN_SAFE_INTEGER)
         else if (Number.isNaN(result)) return BigInt(0)
         return BigInt(Math.floor(result))
     }
