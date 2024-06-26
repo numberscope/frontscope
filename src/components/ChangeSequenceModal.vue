@@ -1,8 +1,8 @@
 <template>
-    <div id="background" @click.self="emit('close')">
+    <div id="background" @click.self="closeModal()">
         <div id="modal">
             <div id="bar">
-                <button class="material-icons-sharp" @click="emit('close')">
+                <button class="material-icons-sharp" @click="closeModal()">
                     close
                 </button>
             </div>
@@ -10,27 +10,50 @@
             <div id="content">
                 <h1>Change Sequence</h1>
 
+                <h4>Import from the OEIS</h4>
                 <div id="search-bar">
                     <div>
-                        <label for="oeis">Search the OEIS</label><br />
+                        <label for="oeis-id">OEIS ID</label><br />
                         <input
                             type="text"
                             id="oeis-id"
                             placeholder="A037161" />
                     </div>
-                    <button class="material-icons-sharp" @click="importOEIS">
+                    <div style="width: 50%">
+                        <label for="oeis-name">Sequence Alias</label><br />
+                        <input
+                            type="text"
+                            id="oeis-name"
+                            placeholder="Prime Numbers" />
+                    </div>
+                    <div>
+                        <label for="oeis-cache">Number of Elements</label>
+                        <input type="text" id="oeis-cache" value="1000" />
+                    </div>
+                    <div>
+                        <label for="oeis-mod">Modulus</label>
+                        <input type="text" id="oeis-mod" value="0" />
+                    </div>
+                    <button
+                        class="material-icons-sharp"
+                        @click="importOEIS"
+                        style="cursor: pointer">
                         add
                     </button>
                 </div>
+                <span
+                    v-if="error.message.length > 0"
+                    style="color: red; font-size: var(--ns-size-body)">
+                    {{ error.message }}
+                </span>
 
+                <h4>Loaded Sequences</h4>
                 <div id="results">
                     <div
                         class="sequence"
                         v-for="(sequence, name) in reactiveSeqMODULES"
                         :key="name"
-                        @click="
-                            changeSequence(name as string), emit('close')
-                        ">
+                        @click="changeSequence(name as string), closeModal()">
                         <h2>{{ sequence.name }}</h2>
                         <p>{{ sequence.description }}</p>
                     </div>
@@ -48,6 +71,7 @@
     const emit = defineEmits(['close', 'change'])
 
     const reactiveSeqMODULES = reactive({...seqMODULES})
+    const error = reactive({message: ''})
 
     const props = defineProps(['specimen'])
     function changeSequence(key: string) {
@@ -55,24 +79,47 @@
         emit('change')
     }
 
-    function importOEIS() {
-        const oeisElem = document.getElementById(
-            'oeis-id'
-        )! as HTMLInputElement
+    function closeModal() {
+        error.message = ''
+        emit('close')
+    }
 
+    function importOEIS() {
         // Determine the desired values for the OEIS sequence
-        const name = 'Example'
-        const oeisId = oeisElem.value
-        const cacheBlock = 1000
-        const modulus = BigInt(0)
+        const name = (
+            document.getElementById('oeis-name')! as HTMLInputElement
+        ).value
+        const oeisId = (
+            document.getElementById('oeis-id')! as HTMLInputElement
+        ).value
+        const cacheBlock = (
+            document.getElementById('oeis-cache')! as HTMLInputElement
+        ).value
+        const modulus = (
+            document.getElementById('oeis-mod')! as HTMLInputElement
+        ).value
+
+        if (!oeisId.match(/^[A-Z]\d{6}$/)) {
+            error.message = "OEIS ID must be of the form 'Annnnnn'"
+            return
+        }
+        if (!cacheBlock.match(/^\d+$/)) {
+            error.message =
+                'Number of elements must be a non-negative integer'
+            return
+        }
+        if (!modulus.match(/^\d+$$/)) {
+            error.message = 'Modulus must be a non-negative integer'
+            return
+        }
 
         // Generate the sequence from these values and its corresponding key
         const sequence = new OEISSequence(
             0,
             name,
             oeisId,
-            cacheBlock,
-            modulus
+            Number.parseInt(cacheBlock),
+            BigInt(Number.parseInt(modulus))
         )
         const key = sequence.toSequenceExportKey()
 
@@ -87,7 +134,7 @@
         // Select this sequence and close the modal
         // NOTE: this functionality can be removed if not desired
         changeSequence(key)
-        emit('close')
+        closeModal()
     }
 </script>
 
@@ -100,18 +147,19 @@
 
     .sequence {
         width: 216px;
-        height: 268px;
-        background-color: black;
+        height: 216px;
+        background-color: var(--ns-color-white);
         padding: 10px;
-        color: white;
+        border: 1px solid black;
+        color: var(--ns-color-black);
         cursor: pointer;
     }
     .sequence p {
         font-size: var(--ns-size-subheading);
-        color: white;
+        color: var(--ns-color-black);
     }
     .sequence h2 {
-        color: white;
+        color: var(--ns-color-black);
         font-size: var(--ns-size-heading);
     }
 
