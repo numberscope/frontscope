@@ -25,6 +25,8 @@ You can find [Numberscope on GitHub](https://github.com/numberscope) or
 -   Sebastian Bozlee
 -   Olivia Brobin
 -   Devlin Costello
+-   Delft CSE2000 Spring '24 Team: Matej Bavec, Ziggy Beijer, Kaldis Bērziņš,
+    Max Derbenwick, and Gido Vitner
 -   Aaron Fenyes
 -   Brendan Heaney
 -   Steven Hristopoulos
