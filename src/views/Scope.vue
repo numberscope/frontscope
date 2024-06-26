@@ -326,8 +326,6 @@
                 canvasContainer.clientHeight
             )
         }, 500)
-
-        console.log('hello')
     })
 
     // enable draggables to be dropped into this
@@ -570,7 +568,7 @@
             width: 300px;
         }
         #specimen-container {
-            height: calc(100vh - 54px);
+            height: calc(100vh - 76px);
         }
         #main {
             display: flex;
