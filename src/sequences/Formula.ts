@@ -5,7 +5,7 @@ import simpleFactor from './simpleFactor'
 import * as math from 'mathjs'
 import type {ParamValues} from '@/shared/Paramable'
 
-const seqName = 'Formula: empty'
+const seqName = 'Formula'
 const seqDescription = 'A sequence defined by a formula in n'
 
 const paramDesc = {

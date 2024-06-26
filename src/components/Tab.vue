@@ -316,7 +316,7 @@
         max-width: 500px;
     }
     // desktop styles
-    @media (min-width: 700px) {
+    @media (min-width: 850px) {
         .buttons {
             display: flex;
             justify-content: flex-end;

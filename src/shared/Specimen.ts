@@ -124,6 +124,7 @@ export class Specimen {
      */
     set visualizerKey(visualizerKey: string) {
         this._visualizerKey = visualizerKey
+        this._visualizer.depart(this.location!)
         this._visualizer = new vizMODULES[visualizerKey].visualizer(
             this._sequence
         )

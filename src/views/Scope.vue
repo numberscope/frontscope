@@ -7,7 +7,42 @@
         </SpecimenBar>
     </NavBar>
     <div id="specimen-container">
+        <ChangeSequenceModal
+            v-show="changeSequenceOpen"
+            @close="
+                () => {
+                    changeSequenceOpen = false
+                }
+            "
+            :specimen="specimen" />
+        <ChangeVisualizerModal
+            v-show="changeVisualizerOpen"
+            @close="
+                () => {
+                    changeVisualizerOpen = false
+                }
+            "
+            :specimen="specimen" />
         <tab id="sequenceTab" class="tab docked" docked="top-right">
+            <div class="tab-title-bar">
+                <div>
+                    <h1>Sequence</h1>
+                    <span class="subheading">{{
+                        specimen.sequence.name
+                    }}</span>
+                </div>
+                <button
+                    class="change-button"
+                    @click="
+                        () => {
+                            changeSequenceOpen = true
+                        }
+                    ">
+                    <span class="material-icons-sharp">swap_horiz</span>
+                    <span class="change-button-text">Change Sequence</span>
+                </button>
+            </div>
+
             <ParamEditor
                 title="Sequence"
                 :paramable="specimen.sequence"
@@ -19,6 +54,24 @@
                 " />
         </tab>
         <tab id="visualiserTab" class="tab docked" docked="bottom-right">
+            <div class="tab-title-bar">
+                <div>
+                    <h1>Visualizer</h1>
+                    <span class="subheading">
+                        {{ specimen.visualizer.name }}
+                    </span>
+                </div>
+                <button
+                    class="change-button"
+                    @click="
+                        () => {
+                            changeVisualizerOpen = true
+                        }
+                    ">
+                    <span class="material-icons-sharp">swap_horiz</span>
+                    <span class="change-button-text">Change Visualizer</span>
+                </button>
+            </div>
             <ParamEditor
                 title="Visualizer"
                 :paramable="specimen.visualizer"
@@ -94,7 +147,7 @@
         tab: HTMLElement,
         dropzone: HTMLElement
     ): void {
-        if (window.innerWidth < 700) return
+        if (window.innerWidth < 850) return
 
         const dropzoneContainer = dropzone.parentElement?.parentElement
         const dropzoneRect = dropzone.getBoundingClientRect()
@@ -164,6 +217,12 @@
      * Used when the window is resized.
      */
     export function positionAndSizeAllTabs(): void {
+        document
+            .querySelectorAll('.dropzone')
+            .forEach((dropzone: Element) => {
+                dropzone.classList.add('empty')
+            })
+
         document.querySelectorAll('.tab').forEach((tab: Element) => {
             if (!(tab instanceof HTMLElement)) return
             if (tab.getAttribute('docked') === 'none') return
@@ -172,9 +231,19 @@
                 '#' + tab.getAttribute('docked') + '-dropzone'
             )
             if (!(dropzone instanceof HTMLElement)) return
-
+            dropzone.classList.remove('empty')
             positionAndSizeTab(tab, dropzone)
         })
+
+        document
+            .querySelectorAll('.dropzone-container')
+            .forEach((container: Element) => {
+                if (container.querySelectorAll('.empty').length == 2) {
+                    container.classList.add('empty')
+                } else {
+                    container.classList.remove('empty')
+                }
+            })
     }
     // selects a tab
     export function selectTab(tab: HTMLElement): void {
@@ -204,11 +273,16 @@
 <script setup lang="ts">
     import Tab from '@/components/Tab.vue'
     import interact from 'interactjs'
-    import {onMounted} from 'vue'
+    import {onMounted, ref} from 'vue'
     import {useRoute, useRouter} from 'vue-router'
     import ParamEditor from '@/components/ParamEditor.vue'
     import {reactive} from 'vue'
     import {Specimen} from '@/shared/Specimen'
+    import ChangeVisualizerModal from '../components/ChangeVisualizerModal.vue'
+    import ChangeSequenceModal from '../components/ChangeSequenceModal.vue'
+
+    const changeSequenceOpen = ref(false)
+    const changeVisualizerOpen = ref(false)
 
     const router = useRouter()
     const route = useRoute()
@@ -252,6 +326,8 @@
                 canvasContainer.clientHeight
             )
         }, 500)
+
+        console.log('hello')
     })
 
     // enable draggables to be dropped into this
@@ -373,6 +449,10 @@
 
 <style scoped lang="scss">
     // mobile styles
+    #specimen-container {
+        position: relative;
+    }
+
     .navbar {
         display: unset;
     }
@@ -384,8 +464,11 @@
         height: 100%;
     }
     #specimen-container {
-        height: calc(100vh - 54px);
-        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: fit-content;
+        padding-left: auto;
+        padding-right: auto;
     }
     #main {
         display: flex;
@@ -401,6 +484,36 @@
         justify-content: center;
     }
 
+    .tab-title-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h1 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .subheading {
+            color: var(--ns-color-grey);
+            font-size: 14px;
+        }
+
+        .change-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid var(--ns-color-white);
+            background: none;
+            width: min-content;
+            padding: 4px;
+
+            &:hover {
+                border: 1px solid var(--ns-color-light);
+            }
+        }
+    }
+
     .dropzone-container {
         display: flex;
         flex-direction: column;
@@ -414,7 +527,7 @@
     #canvas-container {
         order: 1;
         border-bottom: 1px solid var(--ns-color-black);
-        height: 301px;
+        height: 300px;
         width: 100%;
     }
     #sequenceTab {
@@ -441,7 +554,7 @@
         border-bottom: 1px solid var(--ns-color-black);
     }
     // desktop styles
-    @media (min-width: 700px) {
+    @media (min-width: 850px) {
         #specimen-bar-desktop {
             display: flex;
         }
@@ -458,7 +571,6 @@
         }
         #specimen-container {
             height: calc(100vh - 54px);
-            position: relative;
         }
         #main {
             display: flex;

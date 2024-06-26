@@ -83,7 +83,7 @@
     /* Display font */
     @font-face {
         font-family: 'Infinity';
-        src: url('/src/assets/fonts/infinity/Infinity.ttf');
+        src: url('../src/assets/fonts/infinity/Infinity.ttf');
     }
 
     /* Body font */
@@ -91,7 +91,7 @@
         font-family: 'Inter';
         src: url('/src/assets/fonts/inter/Inter-VariableFont_slnt\,wght.ttf');
     }
-    @media (min-width: 700px) {
+    @media (min-width: 850px) {
         .navbar-mobile {
             display: none;
         }
