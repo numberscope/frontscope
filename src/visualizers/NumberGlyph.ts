@@ -2,10 +2,10 @@ import p5 from 'p5'
 import {P5Visualizer} from './P5Visualizer'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 //import type {Factorization} from '../sequences/SequenceInterface'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from './VisualizerInterface'
 import * as math from 'mathjs'
 import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
 
 /** md
 
@@ -51,6 +51,11 @@ exceeds \( 2^{53}-1 \) to be 0.
 
 ### Parameters
  **/
+
+const vizName = 'Number Glyphs'
+const vizDescription =
+    'Map entries to colorful glyphs '
+    + 'using their magnitudes and prime factors'
 
 const paramDesc = {
     /** md
@@ -132,10 +137,8 @@ The default value is 25.
 } as const
 
 class NumberGlyph extends P5Visualizer(paramDesc) {
-    name = 'Number Glyphs'
-    description =
-        'Map entries to colorful glyphs '
-        + 'using their magnitudes and prime factors'
+    name = vizName
+    description = vizDescription
 
     private evaluator: math.EvalFunction
 
@@ -402,7 +405,11 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     }
 }
 
-export const exportModule = new VisualizerExportModule(NumberGlyph)
+export const exportModule = new VisualizerExportModule(
+    NumberGlyph,
+    vizName,
+    vizDescription
+)
 
 /** md
 
