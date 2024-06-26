@@ -82,6 +82,7 @@
 <script lang="ts">
     import NavBar from './minor/NavBar.vue'
     import SpecimenBar from '../components/SpecimenBar.vue'
+    import {openCurrent, updateCurrent} from '@/shared/browserCaching'
 
     /**
      * Positions a tab to be inside a dropzone
@@ -212,19 +213,22 @@
     const router = useRouter()
     const route = useRoute()
 
-    const defaultSpecimen = new Specimen('Specimen', 'ModFill', 'Random')
-
     const specimen = reactive(
         typeof route.query.specimen === 'string'
             ? Specimen.fromURL(route.query.specimen as string)
-            : defaultSpecimen
+            : openCurrent()
     )
-    const updateURL = () =>
+
+    updateCurrent(specimen as Specimen)
+
+    const updateURL = () => {
+        updateCurrent(specimen as Specimen)
         router.push({
             query: {
                 specimen: specimen.toURL(),
             },
         })
+    }
     function handleSpecimenUpdate(newName: string) {
         specimen.name = newName
         updateURL()

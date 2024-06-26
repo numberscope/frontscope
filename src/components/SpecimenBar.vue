@@ -149,8 +149,10 @@
             saveSpecimen() {
                 //get rid of overwrite popup (if it is visible)
                 this.removeOverwritePopup()
+
                 // get specimen url
-                const url = window.location.href
+                const url = this.specimen.toURL()
+
                 // get specimen name
                 const name = document.querySelector('input[type="text"]')
                 if (!(name instanceof HTMLInputElement)) return

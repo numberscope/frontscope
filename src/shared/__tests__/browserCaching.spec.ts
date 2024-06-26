@@ -1,10 +1,8 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest'
 import {
     getCurrent,
-    updateCurrent,
     saveSpecimenToBrowser,
     deleteSpecimen,
-    openSpecimen,
 } from '../browserCaching'
 
 // Mocks localStorage
@@ -51,15 +49,6 @@ describe('SIM functions', () => {
         expect(getCurrent()).toEqual(current)
     })
 
-    it('should update the current SIM', () => {
-        updateCurrent('https://test.com', 'Test')
-        const current = JSON.parse(
-            localStorage.getItem('currentSpecimen') as string
-        )
-        expect(current.url).toBe('https://test.com')
-        expect(current.name).toBe('Test')
-    })
-
     it('should save a new specimen', () => {
         saveSpecimenToBrowser('https://example.com', 'Example')
         const savedUrls = JSON.parse(
@@ -92,18 +81,5 @@ describe('SIM functions', () => {
             localStorage.getItem('savedSpecimens') as string
         )
         expect(updatedUrls).toEqual([savedUrls[1]])
-    })
-
-    it('should open a specimen by name', () => {
-        const savedUrls = [
-            {url: 'https://example1.com', name: 'Example1', date: mockDate},
-            {url: 'https://example2.com', name: 'Example2', date: mockDate},
-        ]
-        localStorage.setItem('savedSpecimens', JSON.stringify(savedUrls))
-        openSpecimen('Example1')
-        const current = JSON.parse(
-            localStorage.getItem('currentSpecimen') as string
-        )
-        expect(current).toEqual(savedUrls[0])
     })
 })
