@@ -201,13 +201,13 @@
 </script>
 
 <script setup lang="ts">
-    import Tab from '../components/Tab.vue'
+    import Tab from '@/components/Tab.vue'
     import interact from 'interactjs'
     import {onMounted} from 'vue'
     import {useRoute, useRouter} from 'vue-router'
     import ParamEditor from '@/components/ParamEditor.vue'
     import {reactive} from 'vue'
-    import {Specimen} from '../shared/Specimen'
+    import {Specimen} from '@/shared/Specimen'
 
     const router = useRouter()
     const route = useRoute()

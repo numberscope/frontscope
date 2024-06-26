@@ -205,6 +205,7 @@ export class Specimen {
             height,
             this.visualizer.requestedAspectRatio()
         )
+
         if (
             this.size.width === newSize.width
             && this.size.height === newSize.height
