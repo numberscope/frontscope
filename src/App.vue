@@ -54,9 +54,6 @@
         --ns-breakpoint-desktop: 1200px;
     }
 
-    .navbar-mobile {
-        display: none;
-    }
     #container {
         display: flex;
         flex-direction: column;
@@ -92,10 +89,5 @@
     @font-face {
         font-family: 'Inter';
         src: url('/src/assets/fonts/inter/Inter-VariableFont_slnt\,wght.ttf');
-    }
-    @media (min-width: 850px) {
-        .navbar-mobile {
-            display: none;
-        }
     }
 </style>
