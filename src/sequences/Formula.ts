@@ -44,6 +44,7 @@ class Formula extends Cached(paramDesc) {
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
+        params.formula
 
         let parsetree = undefined
         try {
