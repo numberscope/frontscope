@@ -1,4 +1,7 @@
-import type {ParamableInterface} from '../shared/Paramable'
+import type {
+    GenericParamDescription,
+    ParamableInterface,
+} from '../shared/Paramable'
 /**
  * Interface for Sequence classes.
  * Every sequence class must implement these properties and functions
@@ -6,7 +9,8 @@ import type {ParamableInterface} from '../shared/Paramable'
  */
 export type Factorization = [bigint, bigint][] | null
 
-export interface SequenceInterface extends ParamableInterface {
+export interface SequenceInterface<PD extends GenericParamDescription>
+    extends ParamableInterface<PD> {
     sequenceID: number
 
     /**
@@ -62,7 +66,16 @@ export interface SequenceInterface extends ParamableInterface {
 }
 
 export interface SequenceConstructor {
-    new (sequenceID: number): SequenceInterface
+    /**
+     * Constructs a sequence.
+     * @param sequenceID the ID of the sequence
+     */
+    new (sequenceID: number): SequenceInterface<GenericParamDescription>
+    /**
+     * The prototype of the sequence, used to extract name and description
+     * fields.
+     */
+    prototype: SequenceInterface<GenericParamDescription>
 }
 
 /**
@@ -74,11 +87,10 @@ export interface SequenceConstructor {
  *
  */
 export enum SequenceExportKind {
-    GETTER, // Produces new INSTANCES for the SequenceMenu; always
-    // listed at the bottom of the SequenceMenu
     FAMILY, // A single entry in the SequenceMenu that needs parameters
     // whenever used
-    INSTANCE, // A single sequence in the SequenceMenu, added by a FACTORY
+    INSTANCE, // A single sequence in the SequenceMenu, generally imported
+    // by OEIS
 }
 /**
  *
@@ -94,17 +106,56 @@ export enum SequenceExportKind {
  *
  */
 export class SequenceExportModule {
-    constructorOrSequence: SequenceConstructor | SequenceInterface
+    sequenceOrConstructor:
+        | SequenceConstructor
+        | SequenceInterface<GenericParamDescription>
     name: string
+    description: string
     kind: SequenceExportKind
 
-    constructor(
-        sequence: SequenceConstructor | SequenceInterface,
+    private constructor(
+        sequenceOrConstructor:
+            | SequenceConstructor
+            | SequenceInterface<GenericParamDescription>,
         name: string,
+        description: string,
         kind: SequenceExportKind
     ) {
-        this.constructorOrSequence = sequence
+        this.sequenceOrConstructor = sequenceOrConstructor
         this.name = name
+        this.description = description
         this.kind = kind
+    }
+
+    /**
+     * Constructs a `SequenceExportModule` representing a family of sequences
+     * constructed and tweaked using parameters.
+     * @param constructor the constructor for the family of sequences
+     * @return an appropriate sequence export module
+     */
+    static family(constructor: SequenceConstructor): SequenceExportModule {
+        return new SequenceExportModule(
+            constructor,
+            constructor.prototype.name,
+            constructor.prototype.description,
+            SequenceExportKind.FAMILY
+        )
+    }
+
+    /**
+     * Constructs a `SequenceExportModule` representing a specific live
+     * sequence.
+     * @param sequence the live sequence
+     * @return an appropriate sequence export module
+     */
+    static instance(
+        sequence: SequenceInterface<GenericParamDescription>
+    ): SequenceExportModule {
+        return new SequenceExportModule(
+            sequence,
+            sequence.name,
+            sequence.description,
+            SequenceExportKind.INSTANCE
+        )
     }
 }

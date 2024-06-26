@@ -1,5 +1,9 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
+import {ParamType} from '../shared/ParamType'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import {ValidationStatus} from '@/shared/ValidationStatus'
 
 const min = Math.min
 
@@ -19,61 +23,58 @@ that each difference appears between and below the two numbers it's the
 difference of.
 **/
 
-class Differences extends P5Visualizer {
-    static visualizationName = 'Differences'
-
-    // parameters
-    n = 20
-    levels = 5
-
+const paramDesc = {
     /** md
-## Parameters
-    **/
-    params = {
-        /** md
 - **Entries in top row:** How many sequence entries to display in the top
-  row. _(Positive integer or zero. Zero means all available entries.)_
-         **/
-        n: {
-            value: this.n,
-            forceType: 'integer',
-            displayName: 'Entries in top row',
-            required: true,
-        },
-        /** md
+row. _(Positive integer or zero. Zero means all available entries.)_
+     **/
+    n: {
+        default: 20,
+        type: ParamType.INTEGER,
+        displayName: 'Entries in top row',
+        required: true,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(
+                n < 0,
+                "Number of entries in top row can't be negative"
+            ),
+    },
+    /** md
 - **Number of rows:** How many rows to produce. _(Positive integer, no larger
-  than 'Entries in top row.')_
-         **/
-        levels: {
-            value: this.levels,
-            forceType: 'integer',
-            displayName: 'Number of rows',
-            required: false,
-            description: 'If zero, defaults to the length of top row',
-        },
-    }
+than 'Entries in top row.')_
+     **/
+    levels: {
+        default: 5,
+        type: ParamType.INTEGER,
+        displayName: 'Number of rows',
+        required: false,
+        description: 'If zero, defaults to the length of top row',
+        validate: (levels: number) =>
+            ValidationStatus.errorIf(
+                levels < 1,
+                'Number of rows must be positive'
+            ),
+    },
+} as const
+
+class Differences extends P5Visualizer(paramDesc) {
+    name = 'Differences'
+    description =
+        'Produces a table of differences '
+        + 'between consecutive entries, potentially iterated several times'
 
     first = 0
+    levels = 5
 
-    checkParameters() {
-        const status = super.checkParameters()
+    constructor(seq: SequenceInterface<GenericParamDescription>) {
+        super(seq)
+    }
 
-        if (this.params.levels.value < 1) {
-            status.isValid = false
-            status.errors.push('Number of rows must be positive')
-        }
-        if (this.params.n.value < 0) {
-            status.isValid = false
-            status.errors.push(
-                "Number of entries in top row can't be negative"
-            )
-        }
-        if (this.params.n.value < this.params.levels.value) {
-            status.isValid = false
-            status.errors.push(
-                "Number of rows can't exceed length of first row"
-            )
-        }
+    checkParameters(params: ParamValues<typeof paramDesc>) {
+        const status = super.checkParameters(params)
+
+        if (params.n < params.levels)
+            status.addError("Number of rows can't exceed length of first row")
 
         return status
     }
@@ -143,8 +144,4 @@ class Differences extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    Differences,
-    'Produces a table of differences between consecutive entries, '
-        + 'potentially iterated several times'
-)
+export const exportModule = new VisualizerExportModule(Differences)
