@@ -1,156 +1,370 @@
 <template>
-    <!--
-## The main Numberscope interface
+    <div id="specimen-container">
+        <tab id="sequenceTab" class="tab docked" docked="top-right">
+            <ParamEditor
+                title="Sequence"
+                :paramable="specimen.sequence"
+                @changed="
+                    () => {
+                        specimen.updateSequence()
+                        updateURL()
+                    }
+                " />
+        </tab>
+        <tab id="visualiserTab" class="tab docked" docked="bottom-right">
+            <ParamEditor
+                title="Visualizer"
+                :paramable="specimen.visualizer"
+                @changed="() => updateURL()" />
+        </tab>
 
-On the left-hand side you will see the Sequence Menu and below that the
-Visualizer Menu. Click on an entry in either to bring up a settings dialog.
-When the parameters are to your liking, click on "Save Changes." A
-description of the component will appear in the central display area.
+        <!-- 
+            The dropzone ids must remain like "[position]-dropzone"
+            where [position] is the same as the dropzone attribute.
 
-When you have chosen and configured both a Sequence and a Visualizer,
-a "Create Bundle" button will appear. Clicking it will create a
-small preview panel for that combination. The "Draw" button on that
-panel will zoom to a full-screen view of the visualization you've
-created. Hit the "&lt; Back" button at the top left of that view (_not_
-your browser's `Back` button) to return to the main interface.
-
-You can create as many visualization bundles as you wish, and cycle
-back and forth between any of them and the main page.
-
-The remaining pages of the User Guide provide information on each of the
-implemented visualizers.
-      -->
-    <div class="container-fluid scope-container">
-        <div class="row propflex" v-if="drawingActive">
-            <div class="col-sm-12 propflex">
-                <CanvasArea
-                    v-bind:activeViz="guaranteeViz()"
-                    v-bind:activeSeq="guaranteeSeq()"
-                    v-on:closeCanvas="closeCanvas()" />
+            This is because the dropzones are looked up by id in the
+            tab management code.
+        -->
+        <div id="main">
+            <div
+                id="left-dropzone-container"
+                class="dropzone-container empty">
+                <div class="dropzone-size-wrapper">
+                    <div
+                        id="top-left-dropzone"
+                        class="dropzone empty"
+                        dropzone="top-left"></div>
+                    <div class="dropzone-resize material-icons-sharp">
+                        drag_handle
+                    </div>
+                </div>
+                <div class="dropzone-size-wrapper">
+                    <div
+                        id="bottom-left-dropzone"
+                        class="dropzone empty"
+                        dropzone="bottom-left"></div>
+                </div>
             </div>
-        </div>
-        <div class="row" v-if="!drawingActive">
-            <div class="col-sm-2">
-                <SequenceMenu
-                    v-bind:sequences="sequences"
-                    v-bind:activeSeq="activeSeq"
-                    v-on:createSeq="setActiveSeq($event)"
-                    v-on:addInstance="addInstance($event)" />
-                <VisualizationMenu
-                    v-bind:visualizers="visualizers"
-                    v-bind:activeViz="activeViz"
-                    v-on:createViz="setActiveViz($event)" />
-            </div>
-            <div class="col-sm-10">
-                <BundleManager
-                    v-bind:activeViz="activeViz"
-                    v-bind:activeSeq="activeSeq"
-                    v-bind:bundles="seqVizPairs"
-                    v-on:createBundle="bundleSeqVizPair()"
-                    v-on:drawBundle="drawBundle($event)" />
+            <div id="canvas-container"></div>
+            <div id="right-dropzone-container" class="dropzone-container">
+                <div class="dropzone-size-wrapper">
+                    <div
+                        id="top-right-dropzone"
+                        class="dropzone"
+                        dropzone="top-right"></div>
+                    <div class="dropzone-resize material-icons-sharp">
+                        drag_handle
+                    </div>
+                </div>
+
+                <div class="dropzone-size-wrapper">
+                    <div
+                        id="bottom-right-dropzone"
+                        class="dropzone"
+                        dropzone="bottom-right"></div>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script lang="ts">
-    import {defineComponent} from 'vue'
-    import VisualizationMenu from '../components/VisualizationMenu.vue'
-    import SequenceMenu from '../components/SequenceMenu.vue'
-    import CanvasArea from '../components/CanvasArea.vue'
-    import BundleManager from '../components/BundleManager.vue'
-    import VISUALIZERS from '../visualizers/visualizers'
-    import SEQUENCES from '../sequences/sequences'
-    import type {SequenceInterface} from '../sequences/SequenceInterface'
-    import {
-        SequenceExportKind,
-        SequenceExportModule,
-    } from '../sequences/SequenceInterface'
-    import type {VisualizerInterface} from '../visualizers/VisualizerInterface'
-    export default defineComponent({
-        name: 'ToolMain',
-        components: {
-            VisualizationMenu,
-            SequenceMenu,
-            CanvasArea,
-            BundleManager,
-        },
-        methods: {
-            guaranteeViz: function () {
-                return this.activeViz as VisualizerInterface
-            },
-            setActiveViz: function (newViz: VisualizerInterface) {
-                this.activeViz = newViz
-            },
-            guaranteeSeq: function () {
-                return this.activeSeq as SequenceInterface
-            },
-            setActiveSeq: function (newSeq: SequenceInterface) {
-                this.activeSeq = newSeq
-            },
-            addInstance: function (newInstance: SequenceInterface) {
-                const seqBundle = new SequenceExportModule(
-                    newInstance,
-                    newInstance.name,
-                    SequenceExportKind.INSTANCE
-                )
-                this.sequences.push(seqBundle)
-                this.setActiveSeq(newInstance)
-            },
-            bundleSeqVizPair: function () {
-                const bundle = {
-                    seq: this.activeSeq as SequenceInterface,
-                    viz: this.activeViz as VisualizerInterface,
-                }
-                this.seqVizPairs.push(bundle)
-                this.clearActive()
-            },
-            drawBundle: function (seqVizBundle: {
-                seq: SequenceInterface
-                viz: VisualizerInterface
-            }) {
-                this.activeSeq = seqVizBundle.seq
-                this.activeViz = seqVizBundle.viz
-                this.drawingActive = true
-            },
-            closeCanvas: function () {
-                this.clearActive()
-                this.drawingActive = false
-            },
-            clearActive: function () {
-                this.activeViz = null
-                this.activeSeq = null
-            },
-        },
-        data: function () {
-            const visualizers = Object.values(VISUALIZERS)
-            const sequences = Object.values(SEQUENCES)
+    /**
+     * Positions a tab to be inside a dropzone
+     * Resizes the tab to be the same size as the dropzone
+     * @param tab The HTML container that the draggable tab lives in
+     * @param dropzone The dropzone the tab is docked to
+     */
+    export function positionAndSizeTab(
+        tab: HTMLElement,
+        dropzone: HTMLElement
+    ): void {
+        const dropzoneRect = dropzone.getBoundingClientRect()
 
-            const state = {
-                visualizers: visualizers,
-                sequences: sequences,
-                seqVizPairs: [] as {
-                    seq: SequenceInterface
-                    viz: VisualizerInterface
-                }[],
-                activeViz: null as VisualizerInterface | null,
-                activeSeq: null as SequenceInterface | null,
-                drawingActive: false,
+        const {x, y} = translateCoords(dropzoneRect.x, dropzoneRect.y)
+
+        tab.style.top = y + 'px'
+        tab.style.left = x + 'px'
+        tab.style.height = dropzoneRect.height + 'px'
+
+        tab.setAttribute('data-x', x.toString())
+        tab.setAttribute('data-y', y.toString())
+    }
+
+    /**
+     * Translates global (viewport) coordinates into coordinates in
+     * the specimen container.
+     * @param x x coordinate
+     * @param y y coordinate
+     */
+    export function translateCoords(
+        x: number,
+        y: number
+    ): {x: number; y: number} {
+        const specimenContainer = document.querySelector(
+            '#specimen-container'
+        )
+        if (specimenContainer instanceof HTMLElement) {
+            const rect = specimenContainer.getBoundingClientRect()
+
+            return {
+                x: x - rect.x,
+                y: y - rect.y,
             }
-            return state
+        }
+
+        return {x, y}
+    }
+
+    /**
+     * Places every docked tab back in its position and size.
+     * Doesn't affect non-docked tabs.
+     * Used when the window is resized.
+     */
+    function positionAndSizeAllTabs(): void {
+        document.querySelectorAll('.tab').forEach((tab: Element) => {
+            if (!(tab instanceof HTMLElement)) return
+            if (tab.getAttribute('docked') === 'none') return
+
+            const dropzone = document.querySelector(
+                '#' + tab.getAttribute('docked') + '-dropzone'
+            )
+            if (!(dropzone instanceof HTMLElement)) return
+
+            positionAndSizeTab(tab, dropzone)
+        })
+    }
+</script>
+
+<script setup lang="ts">
+    import Tab from '@/components/Tab.vue'
+    import interact from 'interactjs'
+    import {onMounted} from 'vue'
+    import {useRoute, useRouter} from 'vue-router'
+    import ParamEditor from '@/components/ParamEditor.vue'
+    import {reactive} from 'vue'
+    import {Specimen} from '@/shared/Specimen'
+
+    const router = useRouter()
+    const route = useRoute()
+
+    const defaultSpecimen = new Specimen('Specimen', 'ModFill', 'Random')
+
+    const specimen = reactive(
+        typeof route.query.specimen === 'string'
+            ? Specimen.fromURL(route.query.specimen as string)
+            : defaultSpecimen
+    )
+
+    const updateURL = () =>
+        router.push({
+            query: {
+                specimen: specimen.toURL(),
+            },
+        })
+
+    onMounted(() => {
+        const specimenContainer = document.getElementById(
+            'specimen-container'
+        )!
+        const canvasContainer = document.getElementById('canvas-container')!
+        positionAndSizeAllTabs()
+
+        window.addEventListener('resize', () => {
+            positionAndSizeAllTabs()
+        })
+        specimen.setup(canvasContainer)
+    })
+
+    // enable draggables to be dropped into this
+    interact('.dropzone').dropzone({
+        accept: '.drag',
+        // amount of required overlap for drop
+        overlap: 0.5,
+        // activates when a tab is dragged over a dropzone
+        ondragenter: function (event: Interact.InteractEvent) {
+            event.target.classList.add('drop-hover')
         },
+
+        // activates when a tab is dragged out of a dropzone
+        ondragleave: function (event: Interact.InteractEvent) {
+            event.target.classList.remove('drop-hover')
+
+            const dropzone = event.target
+            const dropzoneContainer = dropzone.parentElement?.parentElement
+            const tab = event.relatedTarget?.parentElement
+            if (
+                tab instanceof HTMLElement
+                && dropzoneContainer instanceof HTMLElement
+                && tab.classList.contains('docked')
+            ) {
+                // Both individual dropzones and their containers have an
+                // empty class. It exists to make the dropzones not occupy
+                // any space when they are empty. The classes must always be
+                // updated with any changes to the tab state.
+
+                dropzone.classList.add('empty')
+                tab.classList.remove('docked')
+                tab.setAttribute('docked', 'none')
+
+                if (
+                    dropzoneContainer.querySelectorAll('.empty').length == 2
+                ) {
+                    dropzoneContainer.classList.add('empty')
+                }
+            }
+        },
+
+        // activates when tab is dropped in dropzone
+        ondrop: function (event) {
+            const tab = event.relatedTarget.parentElement
+            const dropzone = event.target
+            const dropzoneContainer = dropzone.parentElement.parentElement
+
+            if (
+                tab instanceof HTMLElement
+                && dropzoneContainer instanceof HTMLElement
+                && dropzone.classList.contains('empty')
+            ) {
+                dropzone.classList.remove('empty')
+                dropzone.classList.remove('drop-hover')
+                dropzoneContainer.classList.remove('empty')
+                tab.classList.add('docked')
+                tab.setAttribute('docked', dropzone.getAttribute('dropzone'))
+
+                positionAndSizeTab(tab, dropzone)
+            }
+        },
+    })
+
+    interact('.dropzone-size-wrapper').resizable({
+        manualStart: false,
+        inertia: false,
+        autoScroll: false,
+
+        edges: {
+            left: false,
+            right: false,
+            bottom: '.dropzone-resize',
+            top: false,
+        },
+
+        listeners: {
+            start() {
+                document.body.style.userSelect = 'none'
+            },
+
+            end() {
+                document.body.style.userSelect = 'auto'
+            },
+
+            move(event: Interact.InteractEvent) {
+                const dropzoneWrapper = event.target
+                const dropzoneCont =
+                    dropzoneWrapper.parentElement?.parentElement
+
+                if (
+                    dropzoneWrapper instanceof HTMLElement
+                    && dropzoneCont instanceof HTMLElement
+                ) {
+                    const dropContRect = dropzoneCont.getBoundingClientRect()
+
+                    dropzoneWrapper.style.height =
+                        Math.min(
+                            event.rect.height,
+                            dropContRect.height - 144
+                        ) + 'px'
+                    dropzoneWrapper.classList.add('resized')
+                    positionAndSizeAllTabs()
+                }
+            },
+        },
+        modifiers: [
+            // keep the edges inside the screen
+            interact.modifiers.restrictEdges({
+                outer: '#speciment-container',
+            }),
+
+            // minimum size
+            interact.modifiers.restrictSize({
+                min: {width: 0, height: 128},
+            }),
+        ],
     })
 </script>
 
-<style>
-    .scope-container {
+<style scoped lang="scss">
+    #specimen-container {
+        height: calc(100vh - 54px);
+        position: relative;
+    }
+    #main {
+        display: flex;
+        height: 100%;
+    }
+
+    #canvas-container {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dropzone-container {
         display: flex;
         flex-direction: column;
-        flex: 1;
+        width: 300px;
+        height: 100%;
+
+        &#right-dropzone-container {
+            right: 0;
+            top: 0;
+        }
+
+        &#left-dropzone-container {
+            left: 0;
+            top: 0;
+        }
+
+        &.empty {
+            position: absolute;
+            pointer-events: none;
+
+            .dropzone-resize.material-icons-sharp {
+                display: none;
+            }
+        }
+
+        .dropzone-size-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100% - 128px);
+
+            &.resized {
+                flex-grow: unset;
+            }
+
+            .dropzone-resize {
+                height: 16px;
+                font-size: 16px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: ns-resize;
+            }
+
+            .dropzone {
+                flex-grow: 1;
+
+                &.drop-hover {
+                    background-color: var(--ns-color-primary);
+                    filter: brightness(120%);
+                }
+            }
+        }
     }
-    .propflex {
-        /* Propagates flexibility from its parent to its children */
-        display: flex;
-        flex: 1;
+
+    .tab {
+        position: absolute;
     }
 </style>

@@ -2,8 +2,10 @@ import p5 from 'p5'
 import {P5Visualizer} from './P5Visualizer'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 //import type {Factorization} from '../sequences/SequenceInterface'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from './VisualizerInterface'
 import * as math from 'mathjs'
+import {ParamType} from '../shared/ParamType'
+import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
 
 /** md
 
@@ -50,15 +52,13 @@ exceeds \( 2^{53}-1 \) to be 0.
 ### Parameters
  **/
 
-class NumberGlyph extends P5Visualizer {
-    static visualizationName = 'Number Glyphs'
-    n = 64
-    customize = false
-    brightCap = 25
-    formula = 'log(max(abs(n),2)^x) % 25'
+const vizName = 'Number Glyphs'
+const vizDescription =
+    'Map entries to colorful glyphs '
+    + 'using their magnitudes and prime factors'
 
-    params = {
-        /** md
+const paramDesc = {
+    /** md
 ##### Number of Terms
 
 The number of terms to display onscreen.  The sizes of the discs will 
@@ -68,25 +68,25 @@ the screen).  Choose a perfect square number of terms to fill the square.
 If the sequence does not have that many terms, the visualizer will 
 only attempt to show the available terms.
 **/
-        n: {
-            value: this.n,
-            forceType: 'integer',
-            displayName: 'Number of Terms',
-            required: true,
-        },
-        /** md
+    n: {
+        default: 64,
+        type: ParamType.INTEGER,
+        displayName: 'Number of Terms',
+        required: true,
+    },
+    /** md
 ##### Customize Glyphs
 
 This is a boolean which, if selected, will reveal further customization
 options for the glyph generation function.
 **/
-        customize: {
-            value: this.customize,
-            forceType: 'boolean',
-            displayName: 'Customize Glyphs',
-            required: true,
-        },
-        /** md
+    customize: {
+        default: false,
+        type: ParamType.BOOLEAN,
+        displayName: 'Customize Glyphs',
+        required: true,
+    },
+    /** md
 ##### Growth Function
 
 This is a function in two variables, n and x.  Most standard math notations
@@ -100,15 +100,16 @@ and higher values are brighter.
 
 The default value is `log(max(abs(n),2)^x) % 25`.
 **/
-        formula: {
-            value: this.formula,
-            displayName: 'Growth Function',
-            description: "A function in 'n' (term) and 'x' (growth variable)",
-            visibleDependency: 'customize',
-            visibleValue: true,
-            required: true,
-        },
-        /** md
+    formula: {
+        default: 'log(max(abs(n),2)^x) % 25',
+        type: ParamType.STRING,
+        displayName: 'Growth Function',
+        description: "A function in 'n' (term) and 'x' (growth variable)",
+        visibleDependency: 'customize',
+        visibleValue: true,
+        required: true,
+    },
+    /** md
 ##### Brightness Adjustment
 
 This is a brightness adjustment.  It acts as a brightness cap or 
@@ -123,17 +124,21 @@ is set to the maximum attained by the Growth Function.
 
 The default value is 25.  
 **/
-        brightCap: {
-            value: this.brightCap,
-            forceType: 'integer',
-            displayName: 'Brightness Adjustment',
-            description:
-                'Smaller values make brighter glyphs with decreased variation',
-            visibleDependency: 'customize',
-            visibleValue: true,
-            required: false,
-        },
-    }
+    brightCap: {
+        default: 25,
+        type: ParamType.INTEGER,
+        displayName: 'Brightness Adjustment',
+        description:
+            'Smaller values make brighter glyphs with decreased variation',
+        visibleDependency: 'customize',
+        visibleValue: true,
+        required: false,
+    },
+} as const
+
+class NumberGlyph extends P5Visualizer(paramDesc) {
+    name = vizName
+    description = vizDescription
 
     private evaluator: math.EvalFunction
 
@@ -155,26 +160,25 @@ The default value is 25.
     private radii = 50 // increments of radius in a dot
     private initialRadius = 50 // size of dots
 
-    constructor(seq: SequenceInterface) {
+    constructor(seq: SequenceInterface<GenericParamDescription>) {
         super(seq)
         // It is mandatory to initialize the `evaluator` property here,
         // so just use a simple dummy formula until the user provides one.
         this.evaluator = math.compile(this.formula)
     }
 
-    checkParameters() {
+    checkParameters(params: ParamValues<typeof paramDesc>) {
         // code currently re-used from SequenceFormula.ts
-        const status = super.checkParameters()
+        const status = super.checkParameters(params)
 
         let parsetree = undefined
         try {
-            parsetree = math.parse(this.params.formula.value)
+            parsetree = math.parse(params.formula)
         } catch (err: unknown) {
-            status.isValid = false
-            status.errors.push(
-                'Could not parse formula: ' + this.params.formula.value
+            status.addError(
+                'Could not parse formula: ' + params.formula,
+                (err as Error).message
             )
-            status.errors.push((err as Error).message)
             return status
         }
         const othersymbs = parsetree.filter(
@@ -185,7 +189,6 @@ The default value is 25.
                 && node.name !== 'x'
         )
         if (othersymbs.length > 0) {
-            status.isValid = false
             status.errors.push(
                 "Only 'n' and 'x' may occur as a free variable in formula.",
                 `Please remove '${(othersymbs[0] as math.SymbolNode).name}'`
@@ -404,7 +407,8 @@ The default value is 25.
 
 export const exportModule = new VisualizerExportModule(
     NumberGlyph,
-    'Map entries to colorful glyphs using their magnitudes and prime factors'
+    vizName,
+    vizDescription
 )
 
 /** md

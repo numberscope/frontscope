@@ -1,6 +1,28 @@
-import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
+import {SequenceExportModule} from './SequenceInterface'
 import {Cached} from './Cached'
 import simpleFactor from './simpleFactor'
+import {ParamType} from '../shared/ParamType'
+import type {ParamValues} from '@/shared/Paramable'
+
+const seqName = 'Random Integers in Range'
+const seqDescription =
+    'A sequence of integers chosen independently uniformly '
+    + 'from n to m inclusive.'
+
+const paramDesc = {
+    min: {
+        default: 0,
+        type: ParamType.INTEGER,
+        displayName: 'Minimum value attainable',
+        required: true,
+    },
+    max: {
+        default: 9,
+        type: ParamType.INTEGER,
+        displayName: 'Maximum value attainable',
+        required: true,
+    },
+} as const
 
 /**
  *
@@ -8,27 +30,9 @@ import simpleFactor from './simpleFactor'
  * Creates a sequence of random integers in a specified range.
  * Starts at index 0 and has no limit.
  */
-class Random extends Cached {
-    name = 'Random Integers in Range'
-    description =
-        'A sequence of integers chosen independently uniformly '
-        + 'from n to m inclusive.'
-    min = 0
-    max = 9
-    params = {
-        min: {
-            value: this.min,
-            forceType: 'integer',
-            displayName: 'Minimum value attainable',
-            required: true,
-        },
-        max: {
-            value: this.max,
-            forceType: 'integer',
-            displayName: 'Maximum value attainable',
-            required: true,
-        },
-    }
+class Random extends Cached(paramDesc) {
+    name = seqName
+    description = seqDescription
 
     /**
      *Creates an instance of Random
@@ -38,13 +42,11 @@ class Random extends Cached {
         super(sequenceID)
     }
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: ParamValues<typeof paramDesc>) {
+        const status = super.checkParameters(params)
 
-        if (this.params.max.value < this.params.min.value) {
-            status.isValid = false
-            status.errors.push('The max value cannot be less than the min.')
-        }
+        if (params.max < params.min)
+            status.addError('The max value cannot be less than the min.')
 
         return status
     }
@@ -66,8 +68,8 @@ class Random extends Cached {
     }
 }
 
-export const exportModule = new SequenceExportModule(
+export const exportModule = SequenceExportModule.family(
     Random,
-    'Random Integers in Range',
-    SequenceExportKind.FAMILY
+    seqName,
+    seqDescription
 )
