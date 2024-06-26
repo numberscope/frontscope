@@ -43,7 +43,6 @@
     import typeFunctions, {ParamType} from '../shared/ParamType'
     import {ValidationStatus} from '../shared/ValidationStatus'
     import ParamField from './ParamField.vue'
-    import {ModalType} from '@/shared/modalType'
 
     interface ParamHierarchy {
         param: ParamInterface<ParamType>
@@ -65,13 +64,6 @@
             ParamField,
         },
         computed: {
-            paramStatuses() {
-                const paramStatuses: {[key: string]: ValidationStatus} = {}
-                Object.keys(this.paramable.params).forEach(
-                    key => (paramStatuses[key] = ValidationStatus.ok())
-                )
-                return paramStatuses
-            },
             sortedParams() {
                 const sortedParams: {[key: string]: ParamHierarchy} = {}
                 Object.keys(this.paramable.params).forEach(key => {
@@ -89,10 +81,12 @@
             },
         },
         data() {
+            const paramStatuses: {[key: string]: ValidationStatus} = {}
             const status = ValidationStatus.ok()
-            return {status, ButtonType: ModalType}
+            return {paramStatuses, status}
         },
         created() {
+            this.updateParamStatuses()
             Object.keys(this.paramable.params).forEach(key =>
                 this.validateIndependent(key)
             )
@@ -100,6 +94,11 @@
             this.$emit('changed')
         },
         methods: {
+            updateParamStatuses() {
+                Object.keys(this.paramable.params).forEach(
+                    key => (this.paramStatuses[key] = ValidationStatus.ok())
+                )
+            },
             updateParam(paramName: string, value: string) {
                 const paramable = this.paramable
                 paramable.tentativeValues[paramName] = value
@@ -158,6 +157,11 @@
                 else return param.visibleValue! === v
             },
         },
+        watch: {
+            paramable() {
+                this.updateParamStatuses()
+            },
+        },
     })
 </script>
 
@@ -193,11 +197,5 @@
         font-size: var(--ns-size-body);
         margin: 8px 0;
         color: red;
-    }
-
-    #title-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
     }
 </style>
