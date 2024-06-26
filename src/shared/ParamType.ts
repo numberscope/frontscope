@@ -175,14 +175,14 @@ const typeFunctions: {
                 value
                     .trim()
                     .match(
-                        /^(-?(\d+\.\d*|\.?\d+)(\s,\s-?(\d+\.\d*|\.?\d+))*)?$/
+                        /^(-?(\d+\.\d*|\.?\d+)(\s*,\s*-?(\d+\.\d*|\.?\d+))*)?$/
                     ) === null,
                 'Input must be a comma-separated list of numbers'
             ),
         realize: value => {
             const numbers = value.split(',')
             const array = []
-            for (const number in numbers)
+            for (const number of numbers)
                 array.push(parseFloat(number.trim()))
             return array
         },
@@ -191,13 +191,13 @@ const typeFunctions: {
     [ParamType.BIGINT_ARRAY]: {
         validate: value =>
             ValidationStatus.errorIf(
-                value.trim().match(/^(-?\d+(\s,\s-?\d+)*)?$/) === null,
+                value.trim().match(/^(-?\d+(\s*,\s*-?\d+)*)?$/) === null,
                 'Input must be a comma-separated list of integers'
             ),
         realize: value => {
             const numbers = value.split(',')
             const array = []
-            for (const number in numbers) array.push(BigInt(number.trim()))
+            for (const number of numbers) array.push(BigInt(number.trim()))
             return array
         },
         derealize: value => (value as bigint[]).join(', '),
@@ -208,7 +208,7 @@ const typeFunctions: {
                 value
                     .trim()
                     .match(
-                        /^-?(\d+\.\d*|\.?\d+)\s,\s-?(\d+\.\d*|\.?\d+)$/
+                        /^-?(\d+\.\d*|\.?\d+)\s*,\s*-?(\d+\.\d*|\.?\d+)$/
                     ) === null,
                 'Input must be two comma-separated numbers'
             ),

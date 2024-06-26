@@ -52,8 +52,6 @@ export default class OEIS extends Cached(paramDesc) {
     name = seqName
     description = seqDescription
 
-    oeisSeq = true
-
     constructor(sequenceID: number) {
         super(sequenceID)
         // Don't know the index range yet, will fill in later
@@ -153,15 +151,8 @@ export default class OEIS extends Cached(paramDesc) {
         ) {
             status.addError('OEIS IDs are of form Annnnnn')
         }
-        if (typeof params.cacheBlock === 'number') {
-            if (
-                params.cacheBlock < 0
-                || !Number.isInteger(params.cacheBlock)
-            ) {
-                status.addError(
-                    'Number of elements must be a positive integer.'
-                )
-            }
+        if (params.cacheBlock < 0) {
+            status.addError('Number of elements must be a positive integer.')
         }
 
         return status

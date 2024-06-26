@@ -201,38 +201,38 @@ class Chaos extends P5Visualizer(paramDesc) {
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-        if ((params.corners as number) < 2) {
+        if (params.corners < 2) {
             status.addError('The number of corners must be an integer > 1.')
         }
-        if ((params.frac as number) < 0 || (params.frac as number) > 1) {
+        if (params.frac < 0 || params.frac > 1) {
             status.addError('The fraction must be between 0 and 1 inclusive.')
         }
-        if ((params.walkers as number) < 1) {
+        if (params.walkers < 1) {
             status.addError(
                 'The number of walkers must be a positive integer.'
             )
         }
-        if ((params.gradientLength as number) < 1) {
+        if (params.gradientLength < 1) {
             status.addError(
                 'The colour cycle length must be a positive integer.'
             )
         }
         if (
-            (params.highlightWalker as number) < 0
-            || (params.highlightWalker as number) >= (params.walkers as number)
+            params.highlightWalker < 0
+            || params.highlightWalker >= params.walkers
         ) {
             status.addError(
                 'The highlighted walker must be an integer '
                     + 'between 0 and one less than the number of walkers.'
             )
         }
-        if ((params.circSize as number) < 0) {
+        if (params.circSize < 0) {
             status.addError('The circle size must be positive.')
         }
-        if ((params.alpha as number) < 0 || (params.alpha as number) > 1) {
+        if (params.alpha < 0 || params.alpha > 1) {
             status.addError('The alpha must be between 0 and 1 inclusive.')
         }
-        if ((params.pixelsPerFrame as number) < 1) {
+        if (params.pixelsPerFrame < 1) {
             status.addError('The dots per frame must be a positive integer.')
         }
 

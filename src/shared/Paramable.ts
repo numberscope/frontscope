@@ -285,6 +285,13 @@ export class Paramable<PD extends GenericParamDescription>
         for (const prop in this.params) {
             if (!Object.prototype.hasOwnProperty.call(this, prop)) continue
             const param = this.params[prop]
+
+            const tentative = this.tentativeValues[prop]
+            if (typeFunctions[param.type].validate(tentative)) {
+                const realized = typeFunctions[param.type].realize(tentative)
+                if (realized === me[prop]) continue
+            }
+
             // Circumventing typescript a bit as we do above
             this.tentativeValues[prop] = typeFunctions[param.type].derealize(
                 me[prop] as never
