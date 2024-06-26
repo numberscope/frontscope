@@ -1,12 +1,17 @@
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import {P5Visualizer} from '@/visualizers/P5Visualizer'
-import {bigabs, floorSqrt, modulo} from '@/shared/math'
-import type {ParamInterface} from '@/shared/Paramable'
+import {bigabs, floorSqrt, modulo} from '../shared/math'
+import type {GenericParamDescription} from '../shared/Paramable'
 import type {
     SequenceInterface,
     Factorization,
 } from '@/sequences/SequenceInterface'
 import simpleFactor from '@/sequences/simpleFactor'
+import {ParamType} from '../shared/ParamType'
+
+// NOTE: Grid visualizer is not currently working due to the new Paramable
+// system, which is why it has been moved to `visualizers-workbench`
+// Perhaps an issue should be opened to fix this
 
 /** md
 # Grid Visualizer
@@ -239,6 +244,7 @@ function getPropertyParams(index: number, prop: PropertyObject) {
     return {
         [`property${index}`]: {
             value: prop.property,
+            type: ParamType.ENUM,
             from: Property,
             displayName: `Property ${index + 1}`,
             required: false,
@@ -247,6 +253,7 @@ function getPropertyParams(index: number, prop: PropertyObject) {
         },
         [`prop${index}Vis`]: {
             value: prop.visualization,
+            type: ParamType.ENUM,
             from: PropertyVisualization,
             displayName: 'Display',
             required: false,
@@ -255,7 +262,7 @@ function getPropertyParams(index: number, prop: PropertyObject) {
         },
         [`prop${index}Color`]: {
             value: prop.color,
-            forceType: 'color',
+            type: ParamType.COLOR,
             displayName: 'Color',
             required: false,
             visibleDependency: `property${index}`,
@@ -263,6 +270,7 @@ function getPropertyParams(index: number, prop: PropertyObject) {
         },
         [`prop${index}Aux`]: {
             value: prop.aux,
+            type: ParamType.BIGINT,
             displayName: (d: Property) => propertyAuxName[Property[d]] || '',
             required: false,
             visibleDependency: `property${index}`,
@@ -415,8 +423,126 @@ const propertyIndicatorFunction: {
     Semi_Prime: isSemiPrime,
 }
 
-class Grid extends P5Visualizer {
-    static visualizationName = 'Grid'
+const paramDesc = {
+    /** md
+### Presets: Which preset to display
+
+If a preset other than `Custom` is selected, then the `Properties`
+portion of the dialog is overriden.  For details on the meanings of the
+terms below, see the
+[Properties](#property-1-2-etc-properties-to-display-by-coloring-cells)
+section of the documentation.
+
+- Custom:  the remaining properties can be set by you
+- Primes:  primes are shown in red
+- Abundant_Numbers:  the abundant numbers are shown in black
+- Abundant_Numbers_And_Primes:  the primes are shown in red and the abundant
+numbers in black
+- Polygonal_Numbers:  the polygonal numbers are shown in a variety of
+different colors (one for each type of polygon)
+- Color_By_Last_Digit_1:  the last digit is shown (one color for each digit
+in a rainbow style)
+- Color_By_Last_Digit_2:  a variation on the last, where odd digits are
+indicated by smaller boxes
+    **/
+    preset: {
+        default: Preset.Custom,
+        type: ParamType.ENUM,
+        from: Preset,
+        displayName: 'Presets',
+        required: false,
+        description:
+            'If a preset is selected, properties no longer function.',
+    },
+
+    /** md
+### Grid cells: The number of cells to display in the grid
+
+This will be rounded down to the nearest square integer.
+This may get laggy when it is in the thousands or higher, depending on the
+property being tested.
+    **/
+    amountOfNumbers: {
+        default: 4096,
+        type: ParamType.NUMBER,
+        displayName: 'Grid cells',
+        required: false,
+        description: 'Warning: display lags over 10,000 cells',
+    },
+
+    /** md
+### Starting Index: The sequence index at which to begin
+    **/
+    startingIndex: {
+        default: 0,
+        type: ParamType.NUMBER,
+        displayName: 'Starting Index',
+        required: false,
+        description: '',
+    },
+
+    /** md
+### Path in grid: The path to follow while filling numbers into the grid.
+
+- Spiral:  An Ulam-type square spiral starting at the center of grid.
+- Rows:  Left-to-right, top-to-bottom in rows.
+- Rows_Augment:  Each row restarts the sequence from the starting index,
+but adds the row number to the sequence _values_.
+    **/
+    pathType: {
+        default: PathType.Spiral,
+        type: ParamType.ENUM,
+        from: PathType,
+        displayName: 'Path in grid',
+        required: false,
+    },
+
+    /** md
+### Show numbers: Whether to show values overlaid on cells
+
+When this is selected, the number of cells in the grid will be
+limited to 400
+even if you choose more.
+    **/
+    showNumbers: {
+        default: false,
+        type: ParamType.BOOLEAN,
+        displayName: 'Show numbers',
+        required: false,
+        description: 'When true, grid is limited to 400 cells',
+    },
+
+    /** md
+### Number color: The font color of displayed numbers
+
+This parameter is only available when the "Show Numbers" parameter is
+checked.
+    **/
+    numberColor: {
+        default: WHITE,
+        type: ParamType.COLOR,
+        displayName: 'Number color',
+        required: false,
+        visibleDependency: 'showNumbers',
+        visiblePredicate: (dependentValue: boolean) =>
+            dependentValue === true,
+    },
+    /** md
+### Background Color: Background color of the grid
+    **/
+    backgroundColor: {
+        default: BLACK,
+        type: ParamType.COLOR,
+        displayName: 'Background color',
+        required: false,
+    },
+} as const
+
+class Grid extends P5Visualizer(paramDesc) {
+    name = 'Grid'
+    description =
+        'Puts numbers in a grid, '
+        + 'highlighting cells based on various properties'
 
     // Grid variables
     amountOfNumbers = 4096
@@ -445,116 +571,7 @@ class Grid extends P5Visualizer {
     primaryProperties: number[] = []
     secondaryProperties: number[] = []
 
-    params: {[key: string]: ParamInterface} = {
-        /** md
-### Presets: Which preset to display
-
-If a preset other than `Custom` is selected, then the `Properties`
-portion of the dialog is overriden.  For details on the meanings of the terms
-below, see the
-[Properties](#property-1-2-etc-properties-to-display-by-coloring-cells)
-section of the documentation.
-
-- Custom:  the remaining properties can be set by you
-- Primes:  primes are shown in red
-- Abundant_Numbers:  the abundant numbers are shown in black
-- Abundant_Numbers_And_Primes:  the primes are shown in red and the abundant
-  numbers in black
-- Polygonal_Numbers:  the polygonal numbers are shown in a variety of
-  different colors (one for each type of polygon)
-- Color_By_Last_Digit_1:  the last digit is shown (one color for each digit
-  in a rainbow style)
-- Color_By_Last_Digit_2:  a variation on the last, where odd digits are
-  indicated by smaller boxes
-         **/
-        preset: {
-            value: this.preset,
-            from: Preset,
-            displayName: 'Presets',
-            required: false,
-            description:
-                'If a preset is selected, properties no longer function.',
-        },
-
-        /** md
-### Grid cells: The number of cells to display in the grid
-
-This will be rounded down to the nearest square integer.
-This may get laggy when it is in the thousands or higher, depending on the
-property being tested.
-         **/
-        amountOfNumbers: {
-            value: this.amountOfNumbers,
-            displayName: 'Grid cells',
-            required: false,
-            description: 'Warning: display lags over 10,000 cells',
-        },
-
-        /** md
-### Starting Index: The sequence index at which to begin
-         **/
-        startingIndex: {
-            value: this.startingIndex,
-            displayName: 'Starting Index',
-            required: false,
-            description: '',
-        },
-
-        /** md
-### Path in grid: The path to follow while filling numbers into the grid.
-
-- Spiral:  An Ulam-type square spiral starting at the center of grid.
-- Rows:  Left-to-right, top-to-bottom in rows.
-- Rows_Augment:  Each row restarts the sequence from the starting index,
-    but adds the row number to the sequence _values_.
-         **/
-        pathType: {
-            value: this.pathType,
-            from: PathType,
-            displayName: 'Path in grid',
-            required: false,
-        },
-
-        /** md
-### Show numbers: Whether to show values overlaid on cells
-
-When this is selected, the number of cells in the grid will be limited to 400
-even if you choose more.
-         **/
-        showNumbers: {
-            value: this.showNumbers,
-            forceType: 'boolean',
-            displayName: 'Show numbers',
-            required: false,
-            description: 'When true, grid is limited to 400 cells',
-        },
-
-        /** md
-### Number color: The font color of displayed numbers
-
-This parameter is only available when the "Show Numbers" parameter is checked.
-         **/
-        numberColor: {
-            value: this.numberColor,
-            forceType: 'color',
-            displayName: 'Number color',
-            required: false,
-            visibleDependency: 'showNumbers',
-            visiblePredicate: (dependentValue: boolean) =>
-                dependentValue === true,
-        },
-        /** md
-### Background Color: Background color of the grid
-         **/
-        backgroundColor: {
-            value: this.backgroundColor,
-            forceType: 'color',
-            displayName: 'Background color',
-            required: false,
-        },
-    }
-
-    constructor(seq: SequenceInterface) {
+    constructor(seq: SequenceInterface<GenericParamDescription>) {
         super(seq)
         /** md
 ### Property 1, 2, etc.:  Properties to display by coloring cells
@@ -619,16 +636,22 @@ earlier ones that use the _same_ style.)
     assignParameters(): void {
         super.assignParameters()
 
+        // NOTE: This is commented out because it breaks the new type safety
+        // of the parameters. I wasn't able to figure out exactly what the
+        // intent is, but the strings being accessed are not parameters
+        // according to the parameter description
+        /*
         for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
-            this.propertyObjects[i].property = this.params[`property${i}`]
-                .value as Property
-            this.propertyObjects[i].visualization = this.params[`prop${i}Vis`]
-                .value as PropertyVisualization
-            this.propertyObjects[i].color = this.params[`prop${i}Color`]
-                .value as string
-            this.propertyObjects[i].aux = this.params[`prop${i}Aux`]
-                .value as bigint
+            this.propertyObjects[i].property = 
+                this.tentativeValues[`property${i}`] as Property
+            this.propertyObjects[i].visualization =
+                this.tentativeValues[`prop${i}Vis`] as PropertyVisualization
+            this.propertyObjects[i].color =
+                this.tentativeValues[`prop${i}Color`].value as string
+            this.propertyObjects[i].aux =
+                this.tentativeValues[`prop${i}Aux`].value as bigint
         }
+        */
     }
 
     setup(): void {
@@ -885,10 +908,7 @@ earlier ones that use the _same_ style.)
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    Grid,
-    'Puts numbers in a grid, highlighting cells based on various properties'
-)
+export const exportModule = new VisualizerExportModule(Grid)
 
 /** md
 

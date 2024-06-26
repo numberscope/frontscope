@@ -1,7 +1,18 @@
-import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
+import {SequenceExportModule} from './SequenceInterface'
+import {ParamType} from '../shared/ParamType'
 import {Cached} from './Cached'
 import simpleFactor from './simpleFactor'
 import * as math from 'mathjs'
+import type {ParamValues} from '@/shared/Paramable'
+
+const paramDesc = {
+    formula: {
+        default: 'n',
+        type: ParamType.STRING,
+        displayName: 'Formula',
+        required: true,
+    },
+} as const
 
 /**
  *
@@ -11,17 +22,9 @@ import * as math from 'mathjs'
  * those are both arbitrary choices; we might at some point want to allow
  * either to be tailored.
  */
-class Formula extends Cached {
+class Formula extends Cached(paramDesc) {
     name = 'Formula: empty'
     description = 'A sequence defined by a formula in n'
-    formula = 'n'
-    params = {
-        formula: {
-            value: this.formula,
-            displayName: 'Formula',
-            required: true,
-        },
-    }
 
     private evaluator: math.EvalFunction
 
@@ -36,18 +39,17 @@ class Formula extends Cached {
         this.evaluator = math.compile(this.formula)
     }
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: ParamValues<typeof paramDesc>) {
+        const status = super.checkParameters(params)
 
         let parsetree = undefined
         try {
-            parsetree = math.parse(this.params.formula.value)
+            parsetree = math.parse(params.formula)
         } catch (err: unknown) {
-            status.isValid = false
-            status.errors.push(
-                'Could not parse formula: ' + this.params.formula.value
+            status.addError(
+                'Could not parse formula: ' + params.formula,
+                (err as Error).message
             )
-            status.errors.push((err as Error).message)
             return status
         }
         const othersymbs = parsetree.filter(
@@ -57,8 +59,7 @@ class Formula extends Cached {
                 && node.name !== 'n'
         )
         if (othersymbs.length > 0) {
-            status.isValid = false
-            status.errors.push(
+            status.addError(
                 "Only 'n' may occur as a free variable in formula.",
                 `Please remove '${(othersymbs[0] as math.SymbolNode).name}'`
             )
@@ -73,7 +74,11 @@ class Formula extends Cached {
     }
 
     calculate(n: number) {
-        return BigInt(this.evaluator.evaluate({n: n}))
+        const result = this.evaluator.evaluate({n: n})
+        if (result === Infinity) return BigInt(Number.MAX_SAFE_INTEGER)
+        else if (result === -Infinity) return BigInt(Number.MIN_SAFE_INTEGER)
+        else if (Number.isNaN(result)) return BigInt(0)
+        return BigInt(Math.floor(result))
     }
 
     factor(_n: number, v: bigint) {
@@ -81,8 +86,4 @@ class Formula extends Cached {
     }
 }
 
-export const exportModule = new SequenceExportModule(
-    Formula,
-    'Sequence by Formula',
-    SequenceExportKind.FAMILY
-)
+export const exportModule = SequenceExportModule.family(Formula)

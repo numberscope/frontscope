@@ -13,8 +13,11 @@
 //
 // These comments get compiled into the Visualizer's user guide page.
 
-import {P5Visualizer} from '../visualizers/P5Visualizer'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import {ParamType} from '../shared/ParamType'
+import {P5Visualizer, INVALID_COLOR} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import type {SequenceInterface} from '@/sequences/SequenceInterface'
 
 /** md
 # Entries (p5 Template)
@@ -33,33 +36,24 @@ the p5.js library. It includes explanatory comments and minimal examples of
 required and commonly used features._
 **/
 
-class P5VisualizerTemplate extends P5Visualizer {
+const paramDesc = {
+    /** md
+- **Step size:** How far to step when the user presses an arrow key. _(Positive
+integer.)_
+     **/
+    stepSize: {
+        default: 1, // === Default value ===
+        type: ParamType.INTEGER,
+        displayName: 'Step size',
+        required: true,
+    },
+} as const
+
+class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
     // === Visualizer name ===
     // Appears in the visualizer list and bundle card titles
-    static visualizationName = 'Entries (p5 Template)'
-
-    // === Parameters ===
-    // Top-level properties that the user can choose while creating the
-    // visualizer bundle. If a parameter is meant to have a default value, we
-    // conventionally use that as the initial value, so we can refer to it when
-    // we set the default value below
-    stepSize = 1
-
-    /** md
-## Parameters
-    **/
-    params = {
-        /** md
-- **Step size:** How far to step when the user presses an arrow key. _(Positive
-  integer.)_
-         **/
-        stepSize: {
-            value: this.stepSize, // === Default value ===
-            forceType: 'integer',
-            displayName: 'Step size',
-            required: true,
-        },
-    }
+    name = 'Entries (p5 Template)'
+    description = 'Step through entries one at a time'
 
     // === Internal properties ===
     // Top-level properties that are set and updated while the visualizer is
@@ -74,18 +68,20 @@ class P5VisualizerTemplate extends P5Visualizer {
     index = 0
 
     // palette colors
-    bgColor = P5Visualizer.INVALID_COLOR
-    textColor = P5Visualizer.INVALID_COLOR
-    outlineColor = P5Visualizer.INVALID_COLOR
+    bgColor = INVALID_COLOR
+    textColor = INVALID_COLOR
+    outlineColor = INVALID_COLOR
 
-    checkParameters() {
-        const status = super.checkParameters()
+    constructor(seq: SequenceInterface<GenericParamDescription>) {
+        super(seq)
+    }
+
+    checkParameters(params: ParamValues<typeof paramDesc>) {
+        const status = super.checkParameters(params)
 
         // make sure the step size is positive
-        if (this.params.stepSize.value <= 0) {
-            status.isValid = false
-            status.errors.push('Step size must be positive')
-        }
+        if (params.stepSize <= 0)
+            status.addError('Step size must be positive')
 
         return status
     }
@@ -251,9 +247,5 @@ because infinity is, well, infinitely far away!
 
 // === Export module ===
 // Putting this at the end of the source file makes it easy for other people
-// to find. Put the visualizer class and a short description string into the
-// export module constructor
-export const exportModule = new VisualizerExportModule(
-    P5VisualizerTemplate,
-    'Step through entries one at a time'
-)
+// to find. Simply insert the visualiser class into the export module
+export const exportModule = new VisualizerExportModule(P5VisualizerTemplate)

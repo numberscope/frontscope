@@ -1,5 +1,5 @@
 import type {Factorization, SequenceInterface} from './SequenceInterface'
-import {Paramable} from '../shared/Paramable'
+import {Paramable, type GenericParamDescription} from '../shared/Paramable'
 
 /**
  *
@@ -8,7 +8,10 @@ import {Paramable} from '../shared/Paramable'
  * Primarily intended to be used as a base class for your own sequences.
  *
  */
-export class SequenceDefault extends Paramable implements SequenceInterface {
+export class SequenceDefault<PD extends GenericParamDescription>
+    extends Paramable<PD>
+    implements SequenceInterface<PD>
+{
     sequenceID: number
     name = 'Base'
     description = 'A Base sequence class'
@@ -16,8 +19,8 @@ export class SequenceDefault extends Paramable implements SequenceInterface {
     last = 0
     ready: boolean
 
-    constructor(sequenceID: number) {
-        super()
+    constructor(params: PD, sequenceID: number) {
+        super(params)
         this.sequenceID = sequenceID
         this.ready = false
         this.isValid = false

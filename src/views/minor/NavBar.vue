@@ -1,105 +1,142 @@
 <script setup lang="ts">
     import {RouterLink} from 'vue-router'
-    import LogoWithMicroscope from '../../assets/img/LogoWithMicroscope.png'
+    import LogoWithMicroscope from '../../assets/img/logo.svg'
 </script>
 
 <template>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
-            <div class="container-fluid">
-                <RouterLink class="navbar-brand" to="/">
-                    <img
-                        :src="LogoWithMicroscope"
-                        id="logoWithMicroscope"
-                        alt="A microscope icon." />
+        <nav>
+            <div id="navbar-main">
+                <RouterLink id="logo" to="/" v-on:click="closeMenu">
+                    <img :src="LogoWithMicroscope" alt="A microscope icon." />
                 </RouterLink>
                 <button
-                    class="navbar-toggler"
+                    id="navbar-toggler"
                     type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent"
                     aria-controls="navbarSupportedContent"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation.">
-                    <span class="navbar-toggler-icon"></span>
+                    :aria-expanded="menuOpen"
+                    aria-label="Toggle navigation."
+                    v-on:click="toggleMenu">
+                    <span class="material-icons-sharp">menu</span>
                 </button>
-                <div
-                    class="collapse navbar-collapse"
-                    id="navbarSupportedContent">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <RouterLink class="nav-link" to="/scope">
-                                The 'Scope
-                            </RouterLink>
-                        </li>
-                        <li class="nav-item">
-                            <a
-                                href="/doc/doc/about/index.html"
-                                class="nav-link">
-                                About
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/doc/" class="nav-link">
-                                Documentation
-                            </a>
-                        </li>
-                    </ul>
-                    <span class="navbar-text">
-                        {{ copyright }}
-                        <br />
-                        Licensed Under the
-                        <a href="https://opensource.org/licenses/MIT">
-                            MIT License</a
-                        >
-                    </span>
-                    <span class="navbar-text"> </span>
-                </div>
+            </div>
+            <div id="navbar-links" :class="{open: menuOpen}">
+                <RouterLink
+                    class="nav-link"
+                    to="/gallery"
+                    v-on:click="closeMenu">
+                    Gallery
+                </RouterLink>
+
+                <a href="/doc/doc/about/index.html" class="nav-link">
+                    About
+                </a>
+
+                <a href="/doc/" class="nav-link"> Documentation </a>
             </div>
         </nav>
     </header>
 </template>
 
 <script lang="ts">
-    const currentYear = new Date().getFullYear()
-    const copyrightText =
-        `Copyright © 2020-${currentYear}`
-        + ' Regents of the University of Colorado'
-    export default {
-        data() {
+    import {defineComponent} from 'vue'
+
+    export default defineComponent({
+        name: 'NavBar',
+        data: function () {
             return {
-                copyright: copyrightText,
+                menuOpen: false,
             }
         },
-        name: 'CopyAndLicense',
-    }
+        methods: {
+            toggleMenu: function () {
+                this.menuOpen = !this.menuOpen
+            },
+
+            closeMenu: function () {
+                this.menuOpen = false
+            },
+        },
+    })
 </script>
 
-<style>
-    .navbar-nav li.nav-item .nav-link {
-        color: var(--ns-navigation-foreground);
+<style lang="scss" scoped>
+    nav {
+        display: flex;
+        flex-direction: column;
+        padding: 8px 16px 8px 16px;
+        border-bottom: 1px solid var(--ns-color-black);
+        height: auto;
+
+        #navbar-main {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+
+            #navbar-toggler {
+                background: none;
+                border: none;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+
+        #navbar-links {
+            display: none;
+            flex-direction: column;
+            margin-top: 8px;
+
+            &.open {
+                display: flex;
+            }
+
+            @media (min-width: var(--ns-breakpoint-mobile)) {
+                display: flex;
+            }
+
+            .nav-link {
+                font-family: var(--ns-font-display);
+                font-size: var(--ns-size-display);
+
+                margin-top: 8px;
+                text-decoration: none;
+
+                &:focus,
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
     }
-    .navbar-nav li.nav-item .nav-link:hover {
-        color: var(--ns-navigation-foreground);
+    #logo {
+        img {
+            height: 32px;
+        }
     }
-    .navbar-text a {
-        text-decoration: none;
-    }
-    .nav-link:hover {
-        text-decoration: underline;
-    }
-    .navbar-text a:hover {
-        text-decoration: underline;
-    }
-    .navbar-text {
-        text-align: right;
-        font-size: small;
-    }
-    .navbar-custom {
-        color: var(--ns-navigation-foreground);
-        background-color: var(--ns-navigation-background);
-    }
-    #logoWithMicroscope {
-        width: 10em;
+
+    @media (min-width: 700px) {
+        nav {
+            justify-content: space-between;
+            align-items: center;
+            flex-direction: row;
+            height: 54px;
+            #navbar-main {
+                #navbar-toggler {
+                    display: none;
+                }
+            }
+
+            #navbar-links {
+                display: flex;
+                flex-direction: row;
+                margin-top: 0;
+
+                .nav-link {
+                    margin-top: 0;
+                    margin-left: 16px;
+                }
+            }
+        }
     }
 </style>

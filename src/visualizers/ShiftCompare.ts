@@ -2,6 +2,9 @@ import p5 from 'p5'
 import {modulo} from '../shared/math'
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {ParamType} from '../shared/ParamType'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import type {SequenceInterface} from '@/sequences/SequenceInterface'
 
 /** md
 # Shift Compare Visualizer
@@ -17,31 +20,38 @@ modulus). The pixel is colored black otherwise.
 ## Parameters
 **/
 
+const paramDesc = {
+    /** md
+- mod: The modulus to use when comparing entries.
+     **/
+    mod: {
+        default: 2n,
+        type: ParamType.BIGINT,
+        displayName: 'Modulo',
+        required: true,
+        description: 'Modulus used to compare sequence elements',
+    },
+} as const
+
 // CAUTION: This is unstable with some sequences
 // Using it may crash your browser
-class ShiftCompare extends P5Visualizer {
-    static visualizationName = 'Shift Compare'
+class ShiftCompare extends P5Visualizer(paramDesc) {
+    name = 'Shift Compare'
+    description =
+        'A grid showing pairwise congruence '
+        + 'of sequence entries, to some modulus'
+
     private img: p5.Image = new p5.Image(1, 1) // just a dummy
     mod = 2n
-    params = {
-        /** md
-- mod: The modulus to use when comparing entries.
-         **/
-        mod: {
-            value: this.mod,
-            displayName: 'Modulo',
-            required: true,
-            description: 'Modulus used to compare sequence elements',
-        },
+
+    constructor(seq: SequenceInterface<GenericParamDescription>) {
+        super(seq)
     }
 
-    checkParameters() {
-        const status = super.checkParameters()
+    checkParameters(params: ParamValues<typeof paramDesc>) {
+        const status = super.checkParameters(params)
 
-        if (this.params.mod.value <= 0n) {
-            status.isValid = false
-            status.errors.push('Modulo must be positive')
-        }
+        if (params.mod <= 0n) status.addError('Modulo must be positive')
 
         return status
     }
@@ -115,7 +125,4 @@ class ShiftCompare extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    ShiftCompare,
-    'A grid showing pairwise congruence of sequence entries, to some modulus'
-)
+export const exportModule = new VisualizerExportModule(ShiftCompare)

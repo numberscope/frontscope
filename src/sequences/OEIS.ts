@@ -1,10 +1,41 @@
 import type {ValidationStatus} from '../shared/ValidationStatus'
 import {modulo} from '../shared/math'
-import {SequenceExportModule, SequenceExportKind} from './SequenceInterface'
 import {Cached} from './Cached'
 import {alertMessage} from '../shared/alertMessage'
 
 import axios from 'axios'
+import {ParamType} from '../shared/ParamType'
+import type {ParamValues} from '@/shared/Paramable'
+
+const paramDesc = {
+    oeisId: {
+        default: '',
+        type: ParamType.STRING,
+        displayName: 'OEIS ID',
+        required: true,
+    },
+    givenName: {
+        default: '',
+        type: ParamType.STRING,
+        displayName: 'Name',
+        required: false,
+    },
+    cacheBlock: {
+        default: 1000,
+        type: ParamType.INTEGER,
+        displayName: 'Number of Elements',
+        required: false,
+        description: 'How many elements to try to fetch from the database.',
+    },
+    modulus: {
+        default: 0n,
+        type: ParamType.BIGINT,
+        displayName: 'Modulus',
+        required: false,
+        description:
+            'If nonzero, take the residue of each element to this modulus.',
+    },
+} as const
 
 /**
  *
@@ -13,35 +44,13 @@ import axios from 'axios'
  * the Flask backend.
  *
  */
-export default class OEIS extends Cached {
+export default class OEIS extends Cached(paramDesc) {
     name = 'OEIS Sequence Template'
     description = 'Factory for obtaining sequences from the OEIS'
-    oeisSeq = true
-    cacheBlock = 1000
-    oeisId = ''
-    givenName = ''
-    modulus = 0n
-    params = {
-        oeisId: {value: '', displayName: 'OEIS ID', required: true},
-        givenName: {value: '', displayName: 'Name', required: false},
-        cacheBlock: {
-            value: this.cacheBlock,
-            displayName: 'Number of Elements',
-            required: false,
-            description:
-                'How many elements to try to fetch from the database.',
-        },
-        modulus: {
-            value: this.modulus,
-            displayName: 'Modulus',
-            required: false,
-            description:
-                'If nonzero, take the residue of each element to this modulus.',
-        },
-    }
 
     constructor(sequenceID: number) {
-        super(sequenceID) // Don't know the index range yet, will fill in later
+        super(sequenceID)
+        // Don't know the index range yet, will fill in later
     }
 
     /* Unlike the base Cached sequence class, we grab the entire sequence
@@ -129,28 +138,18 @@ export default class OEIS extends Cached {
         }
     }
 
-    checkParameters(): ValidationStatus {
-        const status = super.checkParameters()
+    checkParameters(params: ParamValues<typeof paramDesc>): ValidationStatus {
+        const status = super.checkParameters(params)
 
         if (
-            this.params.oeisId.value.length !== 7
-            || (this.params.oeisId.value[0] !== 'A'
-                && this.params.oeisId.value[0] !== 'a')
+            params.oeisId.length !== 7
+            || (params.oeisId[0] !== 'A' && params.oeisId[0] !== 'a')
         ) {
-            status.errors.push('OEIS IDs are of form Annnnnn')
+            status.addError('OEIS IDs are of form Annnnnn')
         }
-        if (typeof this.params.cacheBlock.value === 'number') {
-            if (
-                this.params.cacheBlock.value < 0
-                || !Number.isInteger(this.params.cacheBlock.value)
-            ) {
-                status.errors.push(
-                    'Number of elements must be a positive integer.'
-                )
-            }
+        if (params.cacheBlock < 0) {
+            status.addError('Number of elements must be a positive integer.')
         }
-
-        if (status.errors.length > 0) status.isValid = false
 
         return status
     }
@@ -165,8 +164,4 @@ export default class OEIS extends Cached {
     }
 }
 
-export const exportModule = new SequenceExportModule(
-    OEIS,
-    'Add OEIS Sequence',
-    SequenceExportKind.GETTER
-)
+// OEIS does not have an export module as it is not itself a sequence

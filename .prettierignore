@@ -2,6 +2,7 @@
 *.ico
 *.jpg
 *.png
+*.svg
 *.ttf
 *.txt
 *.generator

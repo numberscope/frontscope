@@ -3,6 +3,8 @@ import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {P5Visualizer} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
 import type p5 from 'p5'
+import {ParamType} from '../shared/ParamType'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 
 /** md
 # Mod Fill Visualizer
@@ -18,38 +20,47 @@ occur by watching the order the cells are filled in as the diagram is drawn.
 ## Parameters
 **/
 
-class ModFill extends P5Visualizer {
-    static visualizationName = 'Mod Fill'
-    modDimension = 10n
-    params = {
-        /** md
+const paramDesc = {
+    /** md
 - modDimension: The number of rows to display, which corresponds to the largest
-    modulus to consider.
-         **/
-        // note will be small enough to fit in a `number` when we need it to.
-        modDimension: {
-            value: this.modDimension,
-            displayName: 'Mod dimension',
-            required: true,
-        },
-    }
+modulus to consider.
+     **/
+    // note will be small enough to fit in a `number` when we need it to.
+    modDimension: {
+        default: 10n,
+        type: ParamType.BIGINT,
+        displayName: 'Mod dimension',
+        required: true,
+    },
+} as const
+
+class ModFill extends P5Visualizer(paramDesc) {
+    name = 'Mod Fill'
+    description =
+        'A triangular grid showing which ' + 'residues occur, to each modulus'
 
     rectWidth = 0
     rectHeight = 0
     i = 0
 
-    checkParameters() {
-        const status = super.checkParameters()
+    constructor(seq: SequenceInterface<GenericParamDescription>) {
+        super(seq)
+    }
 
-        if (this.params.modDimension.value <= 0n) {
-            status.isValid = false
+    checkParameters(params: ParamValues<typeof paramDesc>) {
+        const status = super.checkParameters(params)
+
+        if (params.modDimension <= 0n)
             status.errors.push('Mod dimension must be positive')
-        }
 
         return status
     }
 
-    drawNew(sketch: p5, num: number, seq: SequenceInterface) {
+    drawNew(
+        sketch: p5,
+        num: number,
+        seq: SequenceInterface<GenericParamDescription>
+    ) {
         sketch.fill(0)
         for (let mod = 1n; mod <= this.modDimension; mod++) {
             const s = seq.getElement(num)
@@ -80,7 +91,4 @@ class ModFill extends P5Visualizer {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    ModFill,
-    'A triangular grid showing which residues occur, to each modulus'
-)
+export const exportModule = new VisualizerExportModule(ModFill)

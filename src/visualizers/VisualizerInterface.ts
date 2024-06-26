@@ -1,36 +1,42 @@
 import type {SequenceInterface} from '../sequences/SequenceInterface'
-import type {ParamableInterface} from '../shared/Paramable'
+import type {
+    GenericParamDescription,
+    ParamableInterface,
+} from '../shared/Paramable'
 
 interface VisualizerConstructor {
     /**
      * Constructs a visualizer
      * @param seq SequenceInterface The initial sequence to visualize
      */
-    new (seq: SequenceInterface): VisualizerInterface
-    visualizationName: string
+    new (
+        seq: SequenceInterface<GenericParamDescription>
+    ): VisualizerInterface<GenericParamDescription>
+    /**
+     * The prototype of the visualizer interface, this is used to extract
+     * the name and description
+     */
+    prototype: VisualizerInterface<GenericParamDescription>
 }
 
 export class VisualizerExportModule {
+    visualizer: VisualizerConstructor
     name: string
     description: string
-    visualizer: VisualizerConstructor
 
-    constructor(viz: VisualizerConstructor, description: string) {
-        this.name = viz.visualizationName
+    constructor(viz: VisualizerConstructor) {
         this.visualizer = viz
-        this.description = description
+        this.name = viz.prototype.name
+        this.description = viz.prototype.description
     }
 }
 
-export interface VisualizerInterface extends ParamableInterface {
-    /* Returns a string identifying what sort of Visualizer this is
-     * (typically would depend only on the class of the Visualizer)
-     */
-    visualization(): string
+export interface VisualizerInterface<PD extends GenericParamDescription>
+    extends ParamableInterface<PD> {
     /**
      * Change the sequence the visualizer is showing.
      */
-    view(seq: SequenceInterface): void
+    view(seq: SequenceInterface<GenericParamDescription>): void
     /**
      * Cause the visualizer to realize itself within a DOM element.
      * The visualizer should remove itself from any other location it might
