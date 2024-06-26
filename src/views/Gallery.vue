@@ -138,6 +138,7 @@
 
     #gallery-content {
         margin: 16px;
+        flex: 1;
     }
 
     #header-mobile {
