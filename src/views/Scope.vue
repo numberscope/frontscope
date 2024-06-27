@@ -1,17 +1,89 @@
 <template>
+    <NavBar class="navbar" @goToScope="resetSpecimen">
+        <SpecimenBar
+            id="specimen-bar-desktop"
+            :specimen="specimen as Specimen"
+            @updateSpecimenName="handleSpecimenUpdate">
+        </SpecimenBar>
+    </NavBar>
     <div id="specimen-container">
+        <ChangeSequenceModal
+            v-show="changeSequenceOpen"
+            @close="
+                () => {
+                    changeSequenceOpen = false
+                }
+            "
+            @change="updateURL"
+            :specimen="specimen" />
+        <ChangeVisualizerModal
+            v-show="changeVisualizerOpen"
+            @close="
+                () => {
+                    changeVisualizerOpen = false
+                }
+            "
+            @change="updateURL"
+            :specimen="specimen" />
         <tab id="sequenceTab" class="tab docked" docked="top-right">
+            <div class="tab-title-bar">
+                <div>
+                    <h1>Sequence</h1>
+                    <span class="subheading">{{
+                        specimen.sequence.name
+                    }}</span>
+                </div>
+                <button
+                    class="change-button"
+                    @click="
+                        () => {
+                            changeSequenceOpen = true
+                        }
+                    ">
+                    <span class="material-icons-sharp">swap_horiz</span>
+                    <span class="change-button-text">Change Sequence</span>
+                </button>
+            </div>
+
             <ParamEditor
                 title="Sequence"
                 :paramable="specimen.sequence"
-                @changed="() => specimen.updateSequence()" />
+                @changed="
+                    () => {
+                        specimen.updateSequence()
+                        updateURL()
+                    }
+                " />
         </tab>
         <tab id="visualiserTab" class="tab docked" docked="bottom-right">
+            <div class="tab-title-bar">
+                <div>
+                    <h1>Visualizer</h1>
+                    <span class="subheading">
+                        {{ specimen.visualizer.name }}
+                    </span>
+                </div>
+                <button
+                    class="change-button"
+                    @click="
+                        () => {
+                            changeVisualizerOpen = true
+                        }
+                    ">
+                    <span class="material-icons-sharp">swap_horiz</span>
+                    <span class="change-button-text">Change Visualizer</span>
+                </button>
+            </div>
             <ParamEditor
                 title="Visualizer"
-                :paramable="specimen.visualizer" />
+                :paramable="specimen.visualizer"
+                @changed="() => updateURL()" />
         </tab>
-
+        <SpecimenBar
+            id="specimen-bar-phone"
+            class="specimen-bar"
+            :specimen="specimen as Specimen"
+            @updateSpecimenName="handleSpecimenUpdate" />
         <!-- 
             The dropzone ids must remain like "[position]-dropzone"
             where [position] is the same as the dropzone attribute.
@@ -63,6 +135,10 @@
 </template>
 
 <script lang="ts">
+    import NavBar from './minor/NavBar.vue'
+    import SpecimenBar from '../components/SpecimenBar.vue'
+    import {openCurrent, updateCurrent} from '@/shared/browserCaching'
+
     /**
      * Positions a tab to be inside a dropzone
      * Resizes the tab to be the same size as the dropzone
@@ -73,6 +149,9 @@
         tab: HTMLElement,
         dropzone: HTMLElement
     ): void {
+        if (window.innerWidth < 850) return
+
+        const dropzoneContainer = dropzone.parentElement?.parentElement
         const dropzoneRect = dropzone.getBoundingClientRect()
 
         const {x, y} = translateCoords(dropzoneRect.x, dropzoneRect.y)
@@ -81,8 +160,32 @@
         tab.style.left = x + 'px'
         tab.style.height = dropzoneRect.height + 'px'
 
+        // update the classlist with "minimized"
+        // if the height is less or equal than 110
+        if (dropzoneRect.height <= 110) {
+            tab.classList.add('minimized')
+        } else {
+            tab.classList.remove('minimized')
+        }
+
         tab.setAttribute('data-x', x.toString())
         tab.setAttribute('data-y', y.toString())
+
+        if (
+            tab instanceof HTMLElement
+            && dropzoneContainer instanceof HTMLElement
+            && dropzone instanceof HTMLElement
+            && dropzone.classList.contains('empty')
+        ) {
+            dropzone.classList.remove('empty')
+            dropzone.classList.remove('drop-hover')
+            dropzoneContainer.classList.remove('empty')
+            tab.classList.add('docked')
+            const dropzoneAttribute = dropzone.getAttribute('dropzone')
+            if (dropzoneAttribute !== null) {
+                tab.setAttribute('docked', dropzoneAttribute)
+            }
+        }
     }
 
     /**
@@ -115,7 +218,13 @@
      * Doesn't affect non-docked tabs.
      * Used when the window is resized.
      */
-    function positionAndSizeAllTabs(): void {
+    export function positionAndSizeAllTabs(): void {
+        document
+            .querySelectorAll('.dropzone')
+            .forEach((dropzone: Element) => {
+                dropzone.classList.add('empty')
+            })
+
         document.querySelectorAll('.tab').forEach((tab: Element) => {
             if (!(tab instanceof HTMLElement)) return
             if (tab.getAttribute('docked') === 'none') return
@@ -124,8 +233,41 @@
                 '#' + tab.getAttribute('docked') + '-dropzone'
             )
             if (!(dropzone instanceof HTMLElement)) return
-
+            dropzone.classList.remove('empty')
             positionAndSizeTab(tab, dropzone)
+        })
+
+        document
+            .querySelectorAll('.dropzone-container')
+            .forEach((container: Element) => {
+                if (container.querySelectorAll('.empty').length == 2) {
+                    container.classList.add('empty')
+                } else {
+                    container.classList.remove('empty')
+                }
+            })
+    }
+    // selects a tab
+    export function selectTab(tab: HTMLElement): void {
+        deselectTab()
+        const drag = tab.querySelector('.drag')
+        if (!(drag instanceof HTMLElement)) return
+
+        drag.classList.add('selected')
+        drag.style.backgroundColor = 'var(--ns-color-primary)'
+        tab.style.zIndex = '100'
+    }
+    // deselects all tabs
+    export function deselectTab(): void {
+        const tabs = document.querySelectorAll('.tab')
+        tabs.forEach(tab => {
+            if (tab instanceof HTMLElement) {
+                const drag = tab.querySelector('.drag')
+                if (!(drag instanceof HTMLElement)) return
+                drag.classList.remove('selected')
+                drag.style.backgroundColor = 'var(--ns-color-black)'
+                tab.style.zIndex = '1'
+            }
         })
     }
 </script>
@@ -133,20 +275,43 @@
 <script setup lang="ts">
     import Tab from '@/components/Tab.vue'
     import interact from 'interactjs'
-    import {onMounted} from 'vue'
+    import {onMounted, ref} from 'vue'
+    import {useRoute, useRouter} from 'vue-router'
     import ParamEditor from '@/components/ParamEditor.vue'
-    import vizMODULES from '@/visualizers/visualizers'
-    import {exportModule} from '@/sequences/Formula'
     import {reactive} from 'vue'
     import {Specimen} from '@/shared/Specimen'
-    import type {SequenceConstructor} from '@/sequences/SequenceInterface'
+    import ChangeVisualizerModal from '../components/ChangeVisualizerModal.vue'
+    import ChangeSequenceModal from '../components/ChangeSequenceModal.vue'
 
-    const sequence =
-        new (exportModule.sequenceOrConstructor as SequenceConstructor)(0)
-    const visualizer = new vizMODULES['Turtle'].visualizer(sequence)
+    const changeSequenceOpen = ref(false)
+    const changeVisualizerOpen = ref(false)
 
-    const specimen = reactive(new Specimen(visualizer, sequence))
+    const router = useRouter()
+    const route = useRoute()
 
+    const specimen = reactive(
+        typeof route.query.specimen === 'string'
+            ? Specimen.fromURL(route.query.specimen as string)
+            : openCurrent()
+    )
+
+    updateCurrent(specimen as Specimen)
+
+    const updateURL = () => {
+        updateCurrent(specimen as Specimen)
+        router.push({
+            query: {
+                specimen: specimen.toURL(),
+            },
+        })
+    }
+    function handleSpecimenUpdate(newName: string) {
+        specimen.name = newName
+        updateURL()
+    }
+    function resetSpecimen() {
+        specimen.updateSequence()
+    }
     onMounted(() => {
         const specimenContainer = document.getElementById(
             'specimen-container'
@@ -157,7 +322,15 @@
         window.addEventListener('resize', () => {
             positionAndSizeAllTabs()
         })
+
         specimen.setup(canvasContainer)
+
+        setInterval(() => {
+            specimen.resized(
+                canvasContainer.clientWidth,
+                canvasContainer.clientHeight
+            )
+        }, 500)
     })
 
     // enable draggables to be dropped into this
@@ -256,7 +429,7 @@
                     dropzoneWrapper.style.height =
                         Math.min(
                             event.rect.height,
-                            dropContRect.height - 144
+                            dropContRect.height - 90
                         ) + 'px'
                     dropzoneWrapper.classList.add('resized')
                     positionAndSizeAllTabs()
@@ -271,16 +444,34 @@
 
             // minimum size
             interact.modifiers.restrictSize({
-                min: {width: 0, height: 128},
+                min: {width: 700, height: 90},
             }),
         ],
     })
 </script>
 
 <style scoped lang="scss">
+    // mobile styles
     #specimen-container {
-        height: calc(100vh - 54px);
         position: relative;
+    }
+
+    .navbar {
+        display: unset;
+    }
+    #specimen-bar-desktop {
+        display: none;
+    }
+    #main {
+        display: flex;
+        height: 100%;
+    }
+    #specimen-container {
+        display: flex;
+        flex-direction: column;
+        min-height: fit-content;
+        padding-left: auto;
+        padding-right: auto;
     }
     #main {
         display: flex;
@@ -291,64 +482,171 @@
         flex: 1;
         position: relative;
         overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tab-title-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h1 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .subheading {
+            color: var(--ns-color-grey);
+            font-size: 14px;
+        }
+
+        .change-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid var(--ns-color-white);
+            background: none;
+            width: min-content;
+            padding: 4px;
+
+            &:hover {
+                border: 1px solid var(--ns-color-light);
+            }
+        }
     }
 
     .dropzone-container {
         display: flex;
         flex-direction: column;
-        width: 300px;
-        height: 100%;
-
-        &#right-dropzone-container {
-            right: 0;
-            top: 0;
+        min-height: fit-content;
+        padding-left: auto;
+        padding-right: auto;
+    }
+    .dropzone-container {
+        display: none;
+    }
+    #canvas-container {
+        order: 1;
+        border-bottom: 1px solid var(--ns-color-black);
+        height: 300px;
+        width: 100%;
+    }
+    #sequenceTab {
+        width: 100%;
+        padding-left: auto;
+        padding-right: auto;
+        order: 3;
+        border-bottom: 1px solid var(--ns-color-black);
+        height: fit-content;
+    }
+    #visualiserTab {
+        width: 100%;
+        padding-left: auto;
+        padding-right: auto;
+        order: 4;
+        border-bottom: 1px solid var(--ns-color-black);
+        height: fit-content;
+    }
+    #specimen-bar-phone {
+        order: 2;
+        padding-left: auto;
+        padding-right: auto;
+        border-bottom: 1px solid var(--ns-color-black);
+        border-bottom: 1px solid var(--ns-color-black);
+    }
+    // desktop styles
+    @media (min-width: 850px) {
+        #specimen-bar-desktop {
+            display: flex;
+        }
+        .navbar {
+            display: unset;
+        }
+        #specimen-bar-phone {
+            display: none;
+            border: 0px;
+        }
+        #sequenceTab,
+        #visualiserTab {
+            width: 300px;
+        }
+        #specimen-container {
+            height: calc(100vh - 76px);
+        }
+        #main {
+            display: flex;
+            height: 100%;
         }
 
-        &#left-dropzone-container {
-            left: 0;
-            top: 0;
+        #canvas-container {
+            height: unset;
+            order: unset;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
         }
 
-        &.empty {
-            position: absolute;
-            pointer-events: none;
-
-            .dropzone-resize.material-icons-sharp {
-                display: none;
-            }
-        }
-
-        .dropzone-size-wrapper {
-            flex-grow: 1;
+        .dropzone-container {
             display: flex;
             flex-direction: column;
-            max-height: calc(100% - 128px);
+            width: 300px;
+            height: 100%;
 
-            &.resized {
-                flex-grow: unset;
+            &#right-dropzone-container {
+                right: 0;
+                top: 0;
             }
 
-            .dropzone-resize {
-                height: 16px;
-                font-size: 16px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: ns-resize;
+            &#left-dropzone-container {
+                left: 0;
+                top: 0;
             }
 
-            .dropzone {
+            &.empty {
+                position: absolute;
+                pointer-events: none;
+
+                .dropzone-resize.material-icons-sharp {
+                    display: none;
+                }
+            }
+
+            .dropzone-size-wrapper {
                 flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                max-height: calc(100% - 90px);
 
-                &.drop-hover {
-                    background-color: var(--ns-color-primary);
-                    filter: brightness(120%);
+                &.resized {
+                    flex-grow: unset;
+                }
+
+                .dropzone-resize {
+                    height: 16px;
+                    font-size: 16px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    cursor: ns-resize;
+                }
+
+                .dropzone {
+                    flex-grow: 1;
+
+                    &.drop-hover {
+                        background-color: var(--ns-color-primary);
+                        filter: brightness(120%);
+                    }
                 }
             }
         }
-    }
 
-    .tab {
-        position: absolute;
+        .tab {
+            width: 300px;
+            position: absolute;
+            order: unset;
+        }
     }
 </style>

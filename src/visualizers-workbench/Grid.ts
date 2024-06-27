@@ -1,12 +1,12 @@
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import {P5Visualizer} from '@/visualizers/P5Visualizer'
+import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
+import {P5Visualizer} from '../visualizers/P5Visualizer'
 import {bigabs, floorSqrt, modulo} from '../shared/math'
 import type {GenericParamDescription} from '../shared/Paramable'
 import type {
     SequenceInterface,
     Factorization,
-} from '@/sequences/SequenceInterface'
-import simpleFactor from '@/sequences/simpleFactor'
+} from '../sequences/SequenceInterface'
+import simpleFactor from '../sequences/simpleFactor'
 import {ParamType} from '../shared/ParamType'
 
 // NOTE: Grid visualizer is not currently working due to the new Paramable
@@ -423,6 +423,11 @@ const propertyIndicatorFunction: {
     Semi_Prime: isSemiPrime,
 }
 
+const vizName = 'Grid'
+const vizDescription =
+    'Puts numbers in a grid, '
+    + 'highlighting cells based on various properties'
+
 const paramDesc = {
     /** md
 ### Presets: Which preset to display
@@ -539,10 +544,8 @@ checked.
 } as const
 
 class Grid extends P5Visualizer(paramDesc) {
-    name = 'Grid'
-    description =
-        'Puts numbers in a grid, '
-        + 'highlighting cells based on various properties'
+    name = vizName
+    description = vizDescription
 
     // Grid variables
     amountOfNumbers = 4096
@@ -908,7 +911,11 @@ earlier ones that use the _same_ style.)
     }
 }
 
-export const exportModule = new VisualizerExportModule(Grid)
+export const exportModule = new VisualizerExportModule(
+    Grid,
+    vizName,
+    vizDescription
+)
 
 /** md
 

@@ -5,8 +5,7 @@
                 {{ error }}
             </p>
         </div>
-        <h1>{{ title }}</h1>
-        <span class="subheading">{{ paramable.name }}</span>
+
         <p class="description">{{ paramable.description }}</p>
         <div v-for="(hierarchy, name) in sortedParams" v-bind:key="name">
             <ParamField
@@ -64,36 +63,42 @@
         components: {
             ParamField,
         },
+        computed: {
+            sortedParams() {
+                const sortedParams: {[key: string]: ParamHierarchy} = {}
+                Object.keys(this.paramable.params).forEach(key => {
+                    const param = this.paramable.params[key]
+                    if (!param.visibleDependency)
+                        sortedParams[key] = {param, children: {}}
+                })
+                Object.keys(this.paramable.params).forEach(key => {
+                    const param = this.paramable.params[key]
+                    if (param.visibleDependency)
+                        sortedParams[param.visibleDependency].children[key] =
+                            param
+                })
+                return sortedParams
+            },
+        },
         data() {
             const paramStatuses: {[key: string]: ValidationStatus} = {}
             const status = ValidationStatus.ok()
-
-            Object.keys(this.paramable.params).forEach(
-                key => (paramStatuses[key] = ValidationStatus.ok())
-            )
-
-            const sortedParams: {[key: string]: ParamHierarchy} = {}
-            Object.keys(this.paramable.params).forEach(key => {
-                const param = this.paramable.params[key]
-                if (!param.visibleDependency)
-                    sortedParams[key] = {param, children: {}}
-            })
-            Object.keys(this.paramable.params).forEach(key => {
-                const param = this.paramable.params[key]
-                if (param.visibleDependency)
-                    sortedParams[param.visibleDependency].children[key] =
-                        param
-            })
-
-            return {paramStatuses, status, sortedParams}
+            return {paramStatuses, status}
         },
         created() {
+            this.updateParamStatuses()
             Object.keys(this.paramable.params).forEach(key =>
                 this.validateIndependent(key)
             )
-            this.validateAggregate()
+            if (this.validateAggregate()) this.paramable.assignParameters()
+            this.$emit('changed')
         },
         methods: {
+            updateParamStatuses() {
+                Object.keys(this.paramable.params).forEach(
+                    key => (this.paramStatuses[key] = ValidationStatus.ok())
+                )
+            },
             updateParam(paramName: string, value: string) {
                 const paramable = this.paramable
                 paramable.tentativeValues[paramName] = value
@@ -152,13 +157,18 @@
                 else return param.visibleValue! === v
             },
         },
+        watch: {
+            paramable() {
+                this.updateParamStatuses()
+            },
+        },
     })
 </script>
 
 <style scoped lang="scss">
     h1 {
+        margin: 0;
         font-size: 16px;
-        margin-bottom: 0;
     }
 
     .subheading {

@@ -1,41 +1,17 @@
 <template>
     <div id="container">
-        <NavBar />
         <main>
             <RouterView />
         </main>
-        <Footer />
     </div>
 </template>
 
 <script setup lang="ts">
-    import NavBar from './views/minor/NavBar.vue'
     import {RouterView} from 'vue-router'
-    import Footer from './views/minor/Footer.vue'
 </script>
 
 <!-- Global styles. This style tag is explicitly unscoped. -->
 <style>
-    #container {
-        display: flex;
-        flex-direction: column;
-
-        main {
-            height: 100%;
-        }
-    }
-
-    * {
-        box-sizing: border-box;
-        font-family: var(--ns-font-main);
-        color: var(--ns-color-black);
-    }
-
-    html,
-    body {
-        margin: 0;
-        padding: 0;
-    }
     :root {
         /* Font sizes */
         --ns-size-body: 12px;
@@ -60,7 +36,7 @@
         /* Bolditude */
         --ns-font-weight-medium: 500;
 
-        /* Breakpoint widths 
+        /* Breakpoint widths
         Default styles should be for vertical mobile devices
         (devices narrower than --ns-breakpoint-mobile)
 
@@ -78,10 +54,35 @@
         --ns-breakpoint-desktop: 1200px;
     }
 
+    #container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+
+        main {
+            height: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
+    * {
+        box-sizing: border-box;
+        font-family: var(--ns-font-main);
+        color: var(--ns-color-black);
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
     /* Display font */
     @font-face {
         font-family: 'Infinity';
-        src: url('/src/assets/fonts/infinity/Infinity.ttf');
+        src: url('../src/assets/fonts/infinity/Infinity.ttf');
     }
 
     /* Body font */
