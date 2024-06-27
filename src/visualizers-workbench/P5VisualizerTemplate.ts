@@ -13,11 +13,11 @@
 //
 // These comments get compiled into the Visualizer's user guide page.
 
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
 import {ParamType} from '../shared/ParamType'
 import {P5Visualizer, INVALID_COLOR} from '../visualizers/P5Visualizer'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
-import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
 # Entries (p5 Template)
@@ -36,6 +36,11 @@ the p5.js library. It includes explanatory comments and minimal examples of
 required and commonly used features._
 **/
 
+// === Visualizer name ===
+// Appears in the visualizer list and bundle card titles
+const vizName = 'Entries (p5 Template)'
+const vizDescription = 'Step through entries one at a time'
+
 const paramDesc = {
     /** md
 - **Step size:** How far to step when the user presses an arrow key. _(Positive
@@ -52,8 +57,8 @@ integer.)_
 class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
     // === Visualizer name ===
     // Appears in the visualizer list and bundle card titles
-    name = 'Entries (p5 Template)'
-    description = 'Step through entries one at a time'
+    name = vizName
+    description = vizDescription
 
     // === Internal properties ===
     // Top-level properties that are set and updated while the visualizer is
@@ -247,5 +252,10 @@ because infinity is, well, infinitely far away!
 
 // === Export module ===
 // Putting this at the end of the source file makes it easy for other people
-// to find. Simply insert the visualiser class into the export module
-export const exportModule = new VisualizerExportModule(P5VisualizerTemplate)
+// to find. Put the visualizer class and a short description string into the
+// export module constructor
+export const exportModule = new VisualizerExportModule(
+    P5VisualizerTemplate,
+    vizName,
+    vizDescription
+)
