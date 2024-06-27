@@ -1,5 +1,5 @@
 <template>
-    <NavBar class="navbar">
+    <NavBar class="navbar" @goToScope="resetSpecimen">
         <SpecimenBar
             id="specimen-bar-desktop"
             :specimen="specimen as Specimen"
@@ -14,6 +14,7 @@
                     changeSequenceOpen = false
                 }
             "
+            @change="updateURL"
             :specimen="specimen" />
         <ChangeVisualizerModal
             v-show="changeVisualizerOpen"
@@ -22,6 +23,7 @@
                     changeVisualizerOpen = false
                 }
             "
+            @change="updateURL"
             :specimen="specimen" />
         <tab id="sequenceTab" class="tab docked" docked="top-right">
             <div class="tab-title-bar">
@@ -306,6 +308,9 @@
     function handleSpecimenUpdate(newName: string) {
         specimen.name = newName
         updateURL()
+    }
+    function resetSpecimen() {
+        specimen.updateSequence()
     }
     onMounted(() => {
         const specimenContainer = document.getElementById(

@@ -39,11 +39,7 @@ export class SequenceDefault<PD extends GenericParamDescription>
         ) {
             throw Error('Sequence first index must be a safe integer')
         }
-        if (this.isValid) {
-            this.ready = true
-            return
-        }
-        throw Error('Sequence invalid. Run validate and address any errors.')
+        this.ready = true
     }
 
     /**

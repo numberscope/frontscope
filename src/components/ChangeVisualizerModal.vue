@@ -15,7 +15,7 @@
 
                 <div id="results">
                     <div
-                        class="sequence"
+                        class="visualizer"
                         v-for="(visualizer, name) in vizMODULES"
                         :key="name"
                         @click="
@@ -48,20 +48,21 @@
         margin-bottom: 16px;
     }
 
-    .sequence {
+    .visualizer {
         width: 216px;
-        height: 268px;
-        background-color: black;
+        height: 216px;
+        background-color: var(--ns-color-white);
         padding: 10px;
-        color: white;
+        border: 1px solid black;
+        color: var(--ns-color-black);
         cursor: pointer;
     }
-    .sequence p {
+    .visualizer p {
         font-size: var(--ns-size-subheading);
-        color: white;
+        color: var(--ns-color-black);
     }
-    .sequence h2 {
-        color: white;
+    .visualizer h2 {
+        color: var(--ns-color-black);
         font-size: var(--ns-size-heading);
     }
 
