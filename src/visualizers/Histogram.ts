@@ -1,8 +1,8 @@
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from './VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
 import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
-import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
 # Factor Histogram
@@ -27,6 +27,10 @@ have a corresponding value of Omega.
 
 ## Parameters
 **/
+
+const vizName = 'Factor Histogram'
+const vizDescription =
+    'Displays a histogram of the ' + 'number of prime factors of a sequence'
 
 const paramDesc = {
     /** md
@@ -77,10 +81,8 @@ the bin label (i.e., which Omega values are included).
 } as const
 
 class FactorHistogram extends P5Visualizer(paramDesc) {
-    name = 'Factor Histogram'
-    description =
-        'Displays a histogram of the '
-        + 'number of prime factors of a sequence'
+    name = vizName
+    description = vizDescription
 
     binFactorArray: number[] = []
 
@@ -395,4 +397,8 @@ class FactorHistogram extends P5Visualizer(paramDesc) {
 _Originally contributed by Devlin Costello._
  **/
 
-export const exportModule = new VisualizerExportModule(FactorHistogram)
+export const exportModule = new VisualizerExportModule(
+    FactorHistogram,
+    vizName,
+    vizDescription
+)

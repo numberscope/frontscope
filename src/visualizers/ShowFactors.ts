@@ -1,8 +1,8 @@
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from './VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
 import {ParamType} from '../shared/ParamType'
-import type {SequenceInterface} from '@/sequences/SequenceInterface'
-import type {GenericParamDescription} from '@/shared/Paramable'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
+import type {GenericParamDescription} from '../shared/Paramable'
 
 /** md
 # Show Factors Visualizer
@@ -14,6 +14,9 @@ the sequence, and below each term, its prime factors.
 
 ## Parameters
 **/
+
+const vizName = 'Show Factors'
+const vizDescription = 'Produces a table of factors of a sequence'
 
 const paramDesc = {
     /** md
@@ -37,8 +40,8 @@ const paramDesc = {
 } as const
 
 class ShowFactors extends P5Visualizer(paramDesc) {
-    name = 'Show Factors'
-    description = 'Produces a table of factors of a sequence'
+    name = vizName
+    description = vizDescription
 
     first = 0
 
@@ -91,4 +94,8 @@ class ShowFactors extends P5Visualizer(paramDesc) {
     }
 }
 
-export const exportModule = new VisualizerExportModule(ShowFactors)
+export const exportModule = new VisualizerExportModule(
+    ShowFactors,
+    vizName,
+    vizDescription
+)

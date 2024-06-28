@@ -1,6 +1,8 @@
-import {ValidationStatus} from './ValidationStatus'
+import {hasField, hasStringFields, makeStringFields} from './fields'
+import type {StringFields} from './fields'
 import typeFunctions, {ParamType} from './ParamType'
 import type {RealizedParamType} from './ParamType'
+import {ValidationStatus} from './ValidationStatus'
 
 /**
  * The following collection of properties specifies how a given parameter
@@ -114,13 +116,6 @@ export type ParamValues<PD extends GenericParamDescription> =
     PD extends ParamDescription<ExtractParamChoices<PD>>
         ? {[K in keyof PD]: RealizedParamType[ExtractParamChoices<PD>[K]]}
         : never
-/* Represents a mapping of all tentative (non-realized) values from a
- * parameter description. In essence, a mapping of all parameter names
- * to string values.
- */
-export type TentativeParamValues<PD extends GenericParamDescription> = {
-    [K in keyof PD]: string
-}
 
 export interface ParamableInterface<PD extends GenericParamDescription> {
     name: string
@@ -139,7 +134,7 @@ export interface ParamableInterface<PD extends GenericParamDescription> {
      * the input fields. `assignParameters()` will realize these values and copy
      * them into top-level properties.
      */
-    tentativeValues: TentativeParamValues<PD>
+    tentativeValues: StringFields<PD>
     /**
      * An aggregate validation function for the `ParamableInterface`. This
      * function is expected to validate any interdependent constraints of
@@ -167,6 +162,17 @@ export interface ParamableInterface<PD extends GenericParamDescription> {
      * represented in the UI presenting the params.
      */
     refreshParams(): void
+    /**
+     * toBase64() should encode the current state of the tentative parameters
+     * into a string in an reversible way.
+     */
+    toBase64(): string
+    /**
+     * loadFromBase64() should decode the string and restore the state of
+     * the tentative parameters to the values that produced the given
+     * encoding via a toBase64() call.
+     */
+    loadFromBase64(base64: string): void
 }
 
 /* A helper function to realize all parameters given a parameter description
@@ -174,7 +180,7 @@ export interface ParamableInterface<PD extends GenericParamDescription> {
  */
 function realizeAll<PD extends GenericParamDescription>(
     desc: PD,
-    tentative: TentativeParamValues<PD>
+    tentative: StringFields<PD>
 ): ParamValues<PD> {
     const params: (keyof PD)[] = Object.keys(desc)
     const realized: Record<keyof PD, unknown> = Object.fromEntries(
@@ -202,24 +208,26 @@ export class Paramable<PD extends GenericParamDescription>
     name = 'Paramable'
     description = 'A class which can have parameters set'
     params: PD
-    tentativeValues: TentativeParamValues<PD>
+    tentativeValues: StringFields<PD>
     isValid = false
 
     constructor(params: PD) {
         this.params = params
 
-        const tentativeValues: Partial<TentativeParamValues<PD>> = {}
+        // Start with empty string for every tentative value
+        this.tentativeValues = makeStringFields(params)
+        // Now fill in the string forms of all of the default values of
+        // the parameters as the tentative values
         for (const prop in params) {
-            if (!Object.prototype.hasOwnProperty.call(params, prop)) continue
-
+            // Be a little paranoid: only include "own" properties:
+            if (!hasField(params, prop)) continue
             const param = params[prop]
             // Because of how function types are unioned, we have to circumvent
             // typescript a little bit
-            tentativeValues[prop] = typeFunctions[param.type].derealize(
+            this.tentativeValues[prop] = typeFunctions[param.type].derealize(
                 param.default as never
             )
         }
-        this.tentativeValues = tentativeValues as TentativeParamValues<PD>
     }
     /**
      * All implementations based on this default delegate the checking of
@@ -261,8 +269,7 @@ export class Paramable<PD extends GenericParamDescription>
         const props: string[] = []
         const changed: string[] = []
         for (const prop in realized) {
-            if (!Object.prototype.hasOwnProperty.call(realized, prop))
-                continue
+            if (!hasField(realized, prop)) continue
 
             const me = this as Record<string, unknown>
             props.push(prop)
@@ -286,7 +293,7 @@ export class Paramable<PD extends GenericParamDescription>
     refreshParams(): void {
         const me = this as unknown as ParamValues<PD>
         for (const prop in this.params) {
-            if (!Object.prototype.hasOwnProperty.call(this, prop)) continue
+            if (!hasField(this, prop)) continue
             const param = this.params[prop]
 
             const tentative = this.tentativeValues[prop]
@@ -312,5 +319,38 @@ export class Paramable<PD extends GenericParamDescription>
      */
     parameterChanged(_name: string): void {
         return
+    }
+
+    /**
+     * Encodes the tentative parameter values of a given paramable
+     * into a base64 string.
+     *
+     * @return the base 64 string containing encoded parameters
+     */
+    toBase64(): string {
+        return window.btoa(JSON.stringify(this.tentativeValues))
+    }
+
+    /**
+     * Parses the tentative parameter values from a base64 string
+     * and updates the tentative values of the given paramable
+     * accordingly. If the string is invalid for the given paramble
+     * (i.e. a parameter is not given), then an error is thrown.
+     * Note that the values are not validated or assigned in this
+     * process.
+     *
+     * @param base64 the string from which to decode parameters
+     */
+    loadFromBase64(base64: string): void {
+        const tentativeValues = JSON.parse(window.atob(base64))
+        if (hasStringFields(tentativeValues, this.tentativeValues)) {
+            for (const key in this.tentativeValues) {
+                // Be a little paranoid: Only use "own" properties
+                if (!hasField(this.tentativeValues, key)) continue
+                this.tentativeValues[key] = tentativeValues[key]
+            }
+        } else {
+            throw new Error('Invalid base64 string for given paramable')
+        }
     }
 }

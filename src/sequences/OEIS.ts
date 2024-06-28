@@ -7,6 +7,9 @@ import axios from 'axios'
 import {ParamType} from '../shared/ParamType'
 import type {ParamValues} from '@/shared/Paramable'
 
+const seqName = 'OEIS Sequence Template'
+const seqDescription = 'Factory for obtaining sequences from the OEIS'
+
 const paramDesc = {
     oeisId: {
         default: '',
@@ -45,8 +48,8 @@ const paramDesc = {
  *
  */
 export default class OEIS extends Cached(paramDesc) {
-    name = 'OEIS Sequence Template'
-    description = 'Factory for obtaining sequences from the OEIS'
+    name = seqName
+    description = seqDescription
 
     constructor(sequenceID: number) {
         super(sequenceID)
