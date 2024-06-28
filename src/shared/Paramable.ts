@@ -167,6 +167,17 @@ export interface ParamableInterface<PD extends GenericParamDescription> {
      * represented in the UI presenting the params.
      */
     refreshParams(): void
+    /**
+     * toBase64() should encode the current state of the tentative parameters
+     * into a string in an reversible way.
+     */
+    toBase64(): string
+    /**
+     * loadFromBase64() should decode the string and restore the state of
+     * the tentative parameters to the values that produced the given
+     * encoding via a toBase64() call.
+     */
+    loadFromBase64(base64: string): void
 }
 
 /* A helper function to realize all parameters given a parameter description
@@ -239,8 +250,11 @@ export class Paramable<PD extends GenericParamDescription>
     /**
      * Performs the same purpose as `validate()`, but takes as a parameter
      * a list of realized values of the parameters, so that the function doesn't
-     * have to do this itself. This function should always be the one overloaded
-     * by classes which extend `Paramable`, and not `validate()`
+     * have to do this itself. Except in an extraordinary case in which a
+     * derived-class Paramable object needed to do some cross-parameter
+     * check based on the input strings as opposed to realized values, derived
+     * classes should essenitally always override this checkParameters() method,
+     * rather than `validate()`.
      * @param _params the list of realized parameter values to be validated
      * @return the result of the validation
      */
@@ -310,49 +324,42 @@ export class Paramable<PD extends GenericParamDescription>
     parameterChanged(_name: string): void {
         return
     }
-}
 
-/**
- * Encodes the tentative parameter values of a given paramable
- * into a base64 string.
- *
- * @param paramable the paramable to encode
- * @return the base 64 string containing encoded parameters
- */
-export function toBase64<T extends GenericParamDescription>(
-    paramable: ParamableInterface<T>
-): string {
-    return btoa(JSON.stringify(paramable.tentativeValues))
-}
+    /**
+     * Encodes the tentative parameter values of a given paramable
+     * into a base64 string.
+     *
+     * @return the base 64 string containing encoded parameters
+     */
+    toBase64(): string {
+        return window.btoa(JSON.stringify(this.tentativeValues))
+    }
 
-/**
- * Parses the tentative parameter values from a base64 string
- * and updates the tentative values of the given paramable
- * accordingly. If the string is invalid for the given paramble
- * (i.e. a parameter is not given), then an error is thrown.
- * Note that the values are not validated or assigned in this
- * process.
- *
- * @param base64 the string from which to decode parameters
- * @param paramable the paramable to update
- */
-export function loadFromBase64<T extends GenericParamDescription>(
-    base64: string,
-    paramable: ParamableInterface<T>
-) {
-    const tentativeValues = JSON.parse(atob(base64))
-    for (const key in paramable.tentativeValues) {
-        if (
-            !Object.prototype.hasOwnProperty.call(
-                paramable.tentativeValues,
-                key
+    /**
+     * Parses the tentative parameter values from a base64 string
+     * and updates the tentative values of the given paramable
+     * accordingly. If the string is invalid for the given paramble
+     * (i.e. a parameter is not given), then an error is thrown.
+     * Note that the values are not validated or assigned in this
+     * process.
+     *
+     * @param base64 the string from which to decode parameters
+     */
+    loadFromBase64(base64: string): void {
+        const tentativeValues = JSON.parse(window.atob(base64))
+        for (const key in this.tentativeValues) {
+            if (
+                !Object.prototype.hasOwnProperty.call(
+                    this.tentativeValues,
+                    key
+                )
             )
-        )
-            continue
+                continue
 
-        if (!Object.prototype.hasOwnProperty.call(tentativeValues, key))
-            throw new Error('Invalid base64 string for given paramable')
+            if (!Object.prototype.hasOwnProperty.call(tentativeValues, key))
+                throw new Error('Invalid base64 string for given paramable')
 
-        paramable.tentativeValues[key] = `${tentativeValues[key]}`
+            this.tentativeValues[key] = `${tentativeValues[key]}`
+        }
     }
 }

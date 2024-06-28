@@ -152,7 +152,7 @@
 
     const specimen = reactive(
         typeof route.query.specimen === 'string'
-            ? Specimen.fromURL(route.query.specimen as string)
+            ? Specimen.fromURL(route.query.specimen)
             : defaultSpecimen
     )
 
