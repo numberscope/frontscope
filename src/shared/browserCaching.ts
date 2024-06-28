@@ -33,8 +33,7 @@ const currentKey = 'currentSpecimen'
 
 /**
  * Fetches the array of SIMs represented in memory.
- *
- * @param name
+ * @return {SIM[]}
  */
 function getSIMs(): SIM[] {
     // Retrieves the saved SIMs from browser cache
@@ -51,9 +50,18 @@ function getSIMs(): SIM[] {
 }
 
 /**
+ * Overwrites the array of SIMS in local storage.
+ * @param {SIM[]} sims
+ */
+function putSIMs(sims: SIM[]) {
+    localStorage.setItem(cacheKey, JSON.stringify(sims))
+}
+
+/**
  * Fetches the SIM associated with a certain name.
  *
- * @param name
+ * @param {string} name
+ * @return {SIM}
  */
 function getSIMByName(name: string): SIM {
     const savedSIMs = getSIMs()
@@ -75,6 +83,7 @@ function getSIMByName(name: string): SIM {
 /**
  * Loads the last remembered current into the memory slot.
  * To be called whenever the website is booted up.
+ * @return {SIM}
  */
 export function getCurrent(): SIM {
     // Retrieves the saved SIM in the current slot
@@ -95,8 +104,8 @@ export function getCurrent(): SIM {
  * Overrides the url and name in the current slot.
  * To be called whenever changes are made to the current specimen.
  *
- * @param url
- * @param name
+ * @param {string} url
+ * @param {string} name
  */
 export function updateCurrent(url: string, name: string): void {
     // Overrides url and name in the current slot
@@ -112,54 +121,35 @@ export function updateCurrent(url: string, name: string): void {
  * If the name corresponds to an already existing SIM, it is overriden.
  * It should be called when the user presses the save button.
  *
- * @param url
- * @param name
+ * @param {string} url
+ * @param {string} name
  */
 
 export function saveSpecimen(url: string, name: string): void {
-    const savedUrls = getSIMs()
-    const SIM = {url: url, name: name, date: getCurrentDate()}
-    let contains = false
-
-    // Searches for a SIM with a matching name,
-    // if it is found it is overriden
-    for (let i = 0; i < savedUrls.length; i++) {
-        if (savedUrls[i].name === name) {
-            savedUrls[i] = SIM
-            contains = true
-            break
-        }
+    const date = getCurrentDate()
+    const savedURLs = getSIMs()
+    const existing = savedURLs.find(SIM => SIM.name === name)
+    if (existing) {
+        existing.url = url
+        existing.date = getCurrentDate()
+    } else {
+        savedURLs.push({name, url, date})
     }
-
-    // If the SIM with a matching name is not found,
-    // it appends to the end of the array
-    if (!contains) {
-        savedUrls.push(SIM)
-    }
-
-    // Saves the updated array back to the browser cache
-    localStorage.setItem(cacheKey, JSON.stringify(savedUrls))
+    putSIMs(savedURLs)
 }
 
 /**
  * Deletes a specimen specified by name from the cached array.
  * It should be called when the user presses the delete button.
  *
- * @param name
+ * @param {string} name
  */
 export function deleteSpecimen(name: string): void {
-    const savedUrls = getSIMs()
-
-    // Finds the index of the SIM object with the matching name
-    const index = savedUrls.findIndex(SIM => SIM.name === name)
-
-    // If the SIM object is found, this removes it from the array
-    if (index !== -1) {
-        savedUrls.splice(index, 1)
-    }
-
-    // Saves the updated array back to the browser cache
-    localStorage.setItem(cacheKey, JSON.stringify(savedUrls))
+    const savedURLs = getSIMs()
+    const index = savedURLs.findIndex(SIM => SIM.name === name)
+    // If the SIM object is found, remove it from the array
+    if (index !== -1) savedURLs.splice(index, 1)
+    putSIMs(savedURLs)
 }
 
 /**
@@ -167,7 +157,7 @@ export function deleteSpecimen(name: string): void {
  * It should be called when the user presses a specimen in the gallery.
  * If the name is not found in memory it will throw an error.
  *
- * @param name
+ * @param {string}name
  */
 export function openSpecimen(name: string): void {
     const SIM = getSIMByName(name)
