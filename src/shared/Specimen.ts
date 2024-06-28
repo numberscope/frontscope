@@ -1,12 +1,24 @@
-import type {VisualizerInterface} from '../visualizers/VisualizerInterface'
+import {hasStringFields} from './fields'
+import type {GenericParamDescription} from './Paramable'
+
 import {SequenceExportKind} from '../sequences/SequenceInterface'
 import type {
     SequenceConstructor,
     SequenceInterface,
 } from '../sequences/SequenceInterface'
-import type {GenericParamDescription} from './Paramable'
 import seqMODULES from '../sequences/sequences'
+
+import type {VisualizerInterface} from '../visualizers/VisualizerInterface'
 import vizMODULES from '../visualizers/visualizers'
+
+/* Convenience constant to provide fields and types of a decoded URL */
+const dummyURLstructure = {
+    name: '',
+    sequence: '',
+    sequenceParams: '',
+    visualizer: '',
+    visualizerParams: '',
+} as const
 
 /**
  * This class represents a specimen, containing a visualizer,
@@ -27,8 +39,8 @@ export class Specimen {
      * The string arguments passed in are expected to be keys
      * for the visualizer/sequences' export modules.
      * @param name the name of this specimen
-     * @param visualizer the specimen's visualizer
-     * @param sequence the specimen's sequence
+     * @param visualizerKey the specimen's variety of visualizer
+     * @param sequenceKey the specimen's variety of sequence
      */
     constructor(name: string, visualizerKey: string, sequenceKey: string) {
         this._name = name
@@ -122,18 +134,6 @@ export class Specimen {
         this.visualizer.view(this.sequence)
     }
     /**
-     * Exists for redundancy, same as set visualizerKey()
-     */
-    set visualizer(visualizerKey: string) {
-        this.visualizerKey = visualizerKey
-    }
-    /**
-     * Exists for redundancy, same as set sequenceKey()
-     */
-    set sequence(sequenceKey: string) {
-        this.sequenceKey = sequenceKey
-    }
-    /**
      * Ensures that the visualizer is aware that the sequence has been
      * updated.
      */
@@ -165,27 +165,18 @@ export class Specimen {
     static fromURL(url: string): Specimen {
         const data = JSON.parse(window.atob(url)) as {[key: string]: string}
 
-        // Make sure URL is valid
-        if (
-            !Object.prototype.hasOwnProperty.call(data, 'name')
-            || !Object.prototype.hasOwnProperty.call(data, 'sequence')
-            || !Object.prototype.hasOwnProperty.call(data, 'sequenceParams')
-            || !Object.prototype.hasOwnProperty.call(data, 'visualizer')
-            || !Object.prototype.hasOwnProperty.call(data, 'visualizerParams')
-        )
-            throw new Error('Invalid URL')
+        if (hasStringFields(data, dummyURLstructure)) {
+            const specimen = new Specimen(
+                data.name,
+                data.visualizer,
+                data.sequence
+            )
+            // Assign parameters to the visualizers and sequences
+            specimen.sequence.loadFromBase64(data.sequenceParams)
+            specimen.visualizer.loadFromBase64(data.visualizerParams)
 
-        // Load visualizer and sequence from names
-        const specimen = new Specimen(
-            `${data['name']}`,
-            `${data['visualizer']}`,
-            `${data['sequence']}`
-        )
-
-        // Assign parameters to the visualizers and sequences
-        specimen.sequence.loadFromBase64(`${data['sequenceParams']}`)
-        specimen.visualizer.loadFromBase64(`${data['visualizerParams']}`)
-
-        return specimen
+            return specimen
+        }
+        throw new Error('Invalid URL')
     }
 }
