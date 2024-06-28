@@ -1,4 +1,4 @@
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from './VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
 import {ParamType} from '../shared/ParamType'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
@@ -22,6 +22,11 @@ differences, and so on, for as many rows as you like. The rows are shifted so
 that each difference appears between and below the two numbers it's the
 difference of.
 **/
+
+const vizName = 'Differences'
+const vizDescription =
+    'Produces a table of differences '
+    + 'between consecutive entries, potentially iterated several times'
 
 const paramDesc = {
     /** md
@@ -58,10 +63,8 @@ than 'Entries in top row.')_
 } as const
 
 class Differences extends P5Visualizer(paramDesc) {
-    name = 'Differences'
-    description =
-        'Produces a table of differences '
-        + 'between consecutive entries, potentially iterated several times'
+    name = vizName
+    description = vizDescription
 
     first = 0
     levels = 5
@@ -144,4 +147,8 @@ class Differences extends P5Visualizer(paramDesc) {
     }
 }
 
-export const exportModule = new VisualizerExportModule(Differences)
+export const exportModule = new VisualizerExportModule(
+    Differences,
+    vizName,
+    vizDescription
+)

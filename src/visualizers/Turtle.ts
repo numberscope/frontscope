@@ -1,9 +1,9 @@
 import p5 from 'p5'
 import {P5Visualizer} from './P5Visualizer'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {VisualizerExportModule} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
-import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
+import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
 # Turtle Visualizer
@@ -16,6 +16,11 @@ straight segment. It displays the resulting polygonal path.
 
 ## Parameters
 **/
+
+const vizName = 'Turtle'
+const vizDescription =
+    'Use a sequence to steer a virtual '
+    + 'turtle that leaves a visible trail'
 
 const paramDesc = {
     /** md
@@ -95,10 +100,8 @@ be the same length.
 // Turtle needs work
 // Throwing the same error on previous Numberscope website
 class Turtle extends P5Visualizer(paramDesc) {
-    name = 'Turtle'
-    description =
-        'Use a sequence to steer a virtual '
-        + 'turtle that leaves a visible trail'
+    name = vizName
+    description = vizDescription
 
     private rotMap = new Map<string, number>()
 
@@ -164,4 +167,8 @@ class Turtle extends P5Visualizer(paramDesc) {
     }
 }
 
-export const exportModule = new VisualizerExportModule(Turtle)
+export const exportModule = new VisualizerExportModule(
+    Turtle,
+    vizName,
+    vizDescription
+)
