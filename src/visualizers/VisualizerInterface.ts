@@ -40,12 +40,17 @@ export interface VisualizerInterface<PD extends GenericParamDescription>
      * Cause the visualizer to realize itself within a DOM element.
      * The visualizer should remove itself from any other location it might
      * have been displaying, and prepare to draw within the provided element.
-     * It is safe to call this with the same element in which
-     * the visualizer is already displaying.
+     * It is safe to call this with the same element in which the visualizer
+     * is already displaying.
+     * The size provided to the visualizer is the size the visualizer should
+     * assume, respecting its aspect ratio preferences. If needed, the
+     * visualizer can also query the size of the element for the full container
+     * size.
      * @param element HTMLElement The DOM node where the visualizer should
      *     insert itself.
+     * @param size The width and height the visualizer should occupy
      */
-    inhabit(element: HTMLElement): void
+    inhabit(element: HTMLElement, size: {width: number; height: number}): void
     /**
      * Show the sequence according to this visualizer.
      */
@@ -65,7 +70,20 @@ export interface VisualizerInterface<PD extends GenericParamDescription>
      * @param element HTMLElement The DOM node the visualizer was inhabit()ing
      */
     depart(element: HTMLElement): void
-
+    /**
+     * This is called when the size of the visualizer should change, either
+     * because the window is resized, or the docking configuration has changed.
+     * Visualizer writers should take care to resize their canvas and to make
+     * sure that any html elements aren't wider than the requested width.
+     * The new size is the full available size cut down to fit in the requested
+     * aspect ratio.
+     *
+     * Not implementing this function will mean that the visualizer is reset
+     * on resize
+     * @param width The new width of the visualizer (in pixels)
+     * @param height The new height of the visualizer (in pixels)
+     */
+    resized?(width: number, height: number): void
     /**
      * Provides a way for visualizers to request a specific aspect ratio for
      * its canvas. This aspect ratio is specified as a positive n > 0 where
