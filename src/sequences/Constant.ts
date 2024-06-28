@@ -2,6 +2,10 @@ import {SequenceExportModule} from './SequenceInterface'
 import {SequenceDefault} from './SequenceDefault'
 import {ParamType} from '../shared/ParamType'
 
+const seqName = 'Constant Sequence'
+const seqDescription =
+    'A sequence with the same value for all nonnegative indices'
+
 const paramDesc = {
     constant: {
         default: 0n,
@@ -18,8 +22,8 @@ const paramDesc = {
  * and reimplementing the getElement function.
  */
 class Constant extends SequenceDefault<typeof paramDesc> {
-    name = 'Constant Sequence'
-    description = 'A sequence with the same value for all nonnegative indices'
+    name = seqName
+    description = seqDescription
     constant = paramDesc.constant.default
     first = 0
     last = Infinity
@@ -41,4 +45,8 @@ class Constant extends SequenceDefault<typeof paramDesc> {
     }
 }
 
-export const exportModule = SequenceExportModule.family(Constant)
+export const exportModule = SequenceExportModule.family(
+    Constant,
+    seqName,
+    seqDescription
+)

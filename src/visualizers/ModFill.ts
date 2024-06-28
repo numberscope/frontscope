@@ -1,10 +1,10 @@
 import {modulo} from '../shared/math'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
-import {P5Visualizer} from '../visualizers/P5Visualizer'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {P5Visualizer} from './P5Visualizer'
+import {VisualizerExportModule} from './VisualizerInterface'
 import type p5 from 'p5'
 import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
 
 /** md
 # Mod Fill Visualizer
@@ -19,6 +19,10 @@ occur by watching the order the cells are filled in as the diagram is drawn.
 
 ## Parameters
 **/
+
+const vizName = 'Mod Fill'
+const vizDescription =
+    'A triangular grid showing which residues occur, to each modulus'
 
 const paramDesc = {
     /** md
@@ -35,9 +39,8 @@ modulus to consider.
 } as const
 
 class ModFill extends P5Visualizer(paramDesc) {
-    name = 'Mod Fill'
-    description =
-        'A triangular grid showing which ' + 'residues occur, to each modulus'
+    name = vizName
+    description = vizDescription
 
     rectWidth = 0
     rectHeight = 0
@@ -91,4 +94,8 @@ class ModFill extends P5Visualizer(paramDesc) {
     }
 }
 
-export const exportModule = new VisualizerExportModule(ModFill)
+export const exportModule = new VisualizerExportModule(
+    ModFill,
+    vizName,
+    vizDescription
+)
