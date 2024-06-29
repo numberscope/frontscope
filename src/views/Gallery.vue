@@ -6,12 +6,7 @@
                 <h3>Self similarity telescope</h3>
             </div>
             <div type="button" id="change-button">
-                <span
-                    alt="Swap icon"
-                    id="change-icon"
-                    class="material-icons-sharp"
-                    >swap_horiz</span
-                >
+                <span class="material-icons-sharp">swap_horiz</span>
                 <p id="change-text">Select Visualizer</p>
             </div>
         </div>
@@ -87,6 +82,9 @@
     #change-button {
         max-width: 100px;
         width: min-content;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     #change-icon {
         display: block;
