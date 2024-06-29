@@ -10,7 +10,7 @@
                 <span
                     class="docking material-symbols-sharp"
                     @click="dockWindow">
-                    dock_to_right
+                    dock_to_side
                 </span>
             </div>
         </div>
