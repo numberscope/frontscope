@@ -10,7 +10,7 @@
                 <span
                     class="docking material-symbols-sharp"
                     @click="dockWindow">
-                    dock_to_side
+                    dock_to_right
                 </span>
             </div>
         </div>
@@ -28,6 +28,8 @@
         positionAndSizeAllTabs,
         selectTab,
     } from '../views/Scope.vue'
+
+    const minimizedTabHeight = 110
 
     // every element with draggable class can be dragged
     interact('.tab').resizable({
@@ -62,9 +64,10 @@
                     // select the tab when it is resized
                     selectTab(tab)
                     // update the classlist with "minimized"
-                    // if the height is less or equal than 110
+                    // if the height is less or equal than the
+                    // minimized tab height
                     tab.style.height = event.rect.height + 'px'
-                    if (event.rect.height <= 110) {
+                    if (event.rect.height <= minimizedTabHeight) {
                         tab.classList.add('minimized')
                     } else {
                         tab.classList.remove('minimized')
@@ -190,13 +193,16 @@
                     positionAndSizeAllTabs()
                 } else {
                     // if we want to minimize top tab,
-                    // set height of wrapper to 110px,
+                    // set height of wrapper to the minimized tab height,
                     // if we want to minimize bottom tab,
-                    // set height (of top tab wrapper) to 100% - 90px
+                    // set height (of top tab wrapper) to 100% - XXXpx,
+                    // where XXX is a bit less than the minimized tab height
                     if (vert === 'top') {
-                        dropzoneWrapper.style.height = '110px'
+                        dropzoneWrapper.style.height = `${minimizedTabHeight}px`
                     } else {
-                        dropzoneWrapper.style.height = 'calc(100% - 90px)'
+                        // Temp variable to beat lint's line length limits :(
+                        const h = `calc(100% - ${minimizedTabHeight - 20}px)`
+                        dropzoneWrapper.style.height = h
                     }
                     content.style.overflowY = 'hidden'
                     tab.classList.add('minimized')
