@@ -60,6 +60,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
     {
         _sketch?: p5
         _canvas?: p5.Renderer
+        _size: {width: number; height: number}
 
         within?: HTMLElement
         get sketch(): p5 {
@@ -86,6 +87,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         constructor(seq: SequenceInterface<GenericParamDescription>) {
             super(desc)
             this.seq = seq
+            this._size = {width: 0, height: 0}
             Object.assign(this, defaultObject)
         }
 
@@ -98,13 +100,18 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * of the p5 object itself would need to implement an extended or
          * replaced inhabit() method.
          * @param element HTMLElement  Where the visualizer should inject itself
+         * @param size The width and height the visualizer should occupy
          */
-        inhabit(element: HTMLElement): void {
+        inhabit(
+            element: HTMLElement,
+            size: {width: number; height: number}
+        ): void {
             if (this.within === element) return // already inhabiting there
             if (this.within) {
                 // oops, already inhabiting somewhere else; depart there
                 this.depart(this.within)
             }
+            this._size = size
             this.within = element
             this._sketch = new p5(sketch => {
                 this._sketch = sketch // must assign here,  as setup is called
@@ -186,23 +193,13 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         }
 
         /**
-         * Determining the maximum pixel width and height the containing
-         * element allows.
-         * @returns [number, number] Maximum width and height of inhabited
-         * element
-         */
-        measure(): [number, number] {
-            if (!this.within) return [0, 0]
-            return [this.within.clientWidth, this.within.clientHeight]
-        }
-
-        /**
          * The p5 setup for this visualizer. Note that derived Visualizers
          * _must_ call this first.
          */
         setup() {
-            const [w, h] = this.measure()
-            this._canvas = this.sketch.background('white').createCanvas(w, h)
+            this._canvas = this.sketch
+                .background('white')
+                .createCanvas(this._size.width, this._size.height)
         }
 
         /**
@@ -216,18 +213,6 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * implement this function.
          */
         draw(): void {}
-
-        /**
-         * What to do when the window resizes
-         */
-        windowResized(): void {
-            if (!this._sketch) return
-            // Make sure the canvas isn't acting as a "strut" keeping
-            // the div big:
-            this._sketch.resizeCanvas(10, 10)
-            const [w, h] = this.measure()
-            this._sketch.resizeCanvas(w, h)
-        }
 
         /**
          * Get rid of the visualization altogether
@@ -285,7 +270,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             const element = this.within!
             this.stop()
             this.depart(element)
-            this.inhabit(element)
+            this.inhabit(element, this._size)
             this.show()
         }
     }

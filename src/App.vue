@@ -60,6 +60,9 @@
         /* Bolditude */
         --ns-font-weight-medium: 500;
 
+        /* Dimensions */
+        --ns-desktop-tab-width: 300px;
+
         /* Breakpoint widths 
         Default styles should be for vertical mobile devices
         (devices narrower than --ns-breakpoint-mobile)
