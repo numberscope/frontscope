@@ -1,6 +1,11 @@
 <template>
     <div id="specimen-container">
-        <tab id="sequenceTab" class="tab docked" docked="top-right">
+        <tab
+            id="sequenceTab"
+            class="tab docked"
+            docked="top-right"
+            :last-coords-x="Math.floor(tabWidth / 3)"
+            :last-coords-y="Math.floor(tabWidth / 3)">
             <ParamEditor
                 title="Sequence"
                 :paramable="specimen.sequence"
@@ -11,7 +16,13 @@
                     }
                 " />
         </tab>
-        <tab id="visualiserTab" class="tab docked" docked="bottom-right">
+        <tab
+            id="visualiserTab"
+            class="tab docked"
+            docked="bottom-right"
+            last-dropzone="bottom-right"
+            :last-coords-x="Math.floor((2 * tabWidth) / 3)"
+            :last-coords-y="Math.floor((2 * tabWidth) / 3)">
             <ParamEditor
                 title="Visualizer"
                 :paramable="specimen.visualizer"
@@ -204,6 +215,12 @@
         typeof route.query.specimen === 'string'
             ? Specimen.fromURL(route.query.specimen)
             : defaultSpecimen
+    )
+
+    const tabWidth = parseInt(
+        window
+            .getComputedStyle(document.documentElement)
+            .getPropertyValue('--ns-desktop-tab-width')
     )
 
     const updateURL = () =>
@@ -404,7 +421,7 @@
     @media (min-width: 700px) {
         #sequenceTab,
         #visualiserTab {
-            width: 300px;
+            width: var(--ns-desktop-tab-width);
         }
         #specimen-container {
             height: calc(100vh - 54px);
@@ -427,7 +444,7 @@
         .dropzone-container {
             display: flex;
             flex-direction: column;
-            width: 300px;
+            width: var(--ns-desktop-tab-width);
             height: 100%;
 
             &#right-dropzone-container {

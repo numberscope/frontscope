@@ -1,5 +1,5 @@
 <template>
-    <div class="tab" @click="selected" last-coords-x="0" last-coords-y="0">
+    <div class="tab" @click="selected">
         <div class="drag">
             <div class="buttons">
                 <span
@@ -103,13 +103,15 @@
 
                 const tab = event.target.parentElement
                 if (!(tab instanceof HTMLElement)) return
-                if (tab.getAttribute('docked') === 'none') return
+                const zoneName = tab.getAttribute('docked')
+                if (!zoneName || zoneName === 'none') return
 
                 const dropzone = document.querySelector(
-                    '#' + tab.getAttribute('docked') + '-dropzone'
+                    `#${zoneName}-dropzone`
                 )
                 if (!(dropzone instanceof HTMLElement)) return
 
+                tab.setAttribute('last-dropzone', zoneName)
                 positionAndSizeTab(tab, dropzone)
             },
         },
@@ -219,6 +221,13 @@
             tab.classList.add('minimized')
         }
     }
+    // helper to choose docking site
+    function zoneOrder(preferred: string) {
+        const zoneParts = preferred.split('-')
+        const otherVert = zoneParts[0] === 'top' ? 'bottom' : 'top'
+        return [preferred, `${otherVert}-${zoneParts[1]}`]
+    }
+
     function dockWindow(event: MouseEvent) {
         const tab = (event.currentTarget as HTMLElement).closest('.tab')
         if (!(tab instanceof HTMLElement)) return
@@ -273,21 +282,16 @@
         tab.setAttribute('last-coords-x', x.toString())
         tab.setAttribute('last-coords-y', y.toString())
 
-        const firstDropzone = document.querySelector('#top-right-dropzone')
-        const secondDropzone = document.querySelector(
-            '#bottom-right-dropzone'
-        )
-
-        if (!(firstDropzone instanceof HTMLElement)) return
-        if (!(secondDropzone instanceof HTMLElement)) return
-
-        // if top right dropzone is empty, dock there
-        if (firstDropzone.classList.contains('empty')) {
-            positionAndSizeTab(tab, firstDropzone)
-        }
-        // otherwise dock in the bottom right dropzone
-        else {
-            positionAndSizeTab(tab, secondDropzone)
+        const preferredZone = tab.getAttribute('last-dropzone') || 'top-right'
+        const zonesToTry = zoneOrder(preferredZone)
+        for (const zoneName of zonesToTry) {
+            const zone = document.querySelector(`#${zoneName}-dropzone`)
+            if (!(zone instanceof HTMLElement)) continue
+            if (zone.classList.contains('empty')) {
+                positionAndSizeTab(tab, zone)
+                tab.setAttribute('last-dropzone', zoneName)
+                break
+            }
         }
     }
     // select the tab when it is clicked
@@ -333,7 +337,7 @@
         }
         .tab {
             border: 1px solid var(--ns-color-black);
-            width: 300px;
+            width: var(--ns-desktop-tab-width);
             height: 200px;
             z-index: 50;
         }
