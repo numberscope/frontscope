@@ -63,7 +63,7 @@ function putSIMs(sims: SIM[]) {
  * @param {string} name
  * @return {SIM}
  */
-function getSIMByName(name: string): SIM {
+export function getSIMByName(name: string): SIM {
     const savedSIMs = getSIMs()
 
     // Finds the SIM that matches the given name
