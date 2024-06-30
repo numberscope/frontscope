@@ -11,19 +11,22 @@ import seqMODULES from '../sequences/sequences'
 import type {VisualizerInterface} from '../visualizers/VisualizerInterface'
 import vizMODULES from '../visualizers/visualizers'
 
-/* Convenience constant to provide fields and types of a decoded URL */
-const dummyURLstructure = {
+// Convenience constant to provide fields and types needed to specify
+// a Specimen
+const dummySpecifier = {
     name: '',
     sequence: '',
     sequenceParams: '',
     visualizer: '',
     visualizerParams: '',
 } as const
+type SpecimenSpecifier = Record<keyof typeof dummySpecifier, string>
 
 /**
  * This class represents a specimen, containing a visualizer,
  * a sequence, and the set of all parameters that make both of them up.
- * Specimens can be converted to and from URLs so that they can be saved.
+ * Specimens can be converted to and from base64 encodings so that they
+ * can be saved.
  */
 export class Specimen {
     private _name: string
@@ -39,11 +42,21 @@ export class Specimen {
      * Constructs a new specimen from a visualizer and a sequence.
      * The string arguments passed in are expected to be keys
      * for the visualizer/sequences' export modules.
-     * @param name the name of this specimen
-     * @param visualizerKey the specimen's variety of visualizer
-     * @param sequenceKey the specimen's variety of sequence
+     * Optionally the base64 encodings of the visualizer and sequence
+     * parameters can be passed in as well.
+     * @param {string} name
+     * @param {string} visualizerKey  the specimen's variety of visualizer
+     * @param {string} sequenceKey  the specimen's variety of sequence
+     * @param {string?} vis64  base64 encoding of visualizer parameters
+     * @param {string?} seq64  base64 encoding of sequence parameters
      */
-    constructor(name: string, visualizerKey: string, sequenceKey: string) {
+    constructor(
+        name: string,
+        visualizerKey: string,
+        sequenceKey: string,
+        vis64?: string,
+        seq64?: string
+    ) {
         this._name = name
         this._visualizerKey = visualizerKey
         this._sequenceKey = sequenceKey
@@ -54,14 +67,17 @@ export class Specimen {
         else
             this._sequence = seqMODULES[sequenceKey]
                 .sequenceOrConstructor as SeqIntf
+        if (seq64) this._sequence.loadFromBase64(seq64)
         this._visualizer = new vizMODULES[visualizerKey].visualizer(
             this._sequence
         )
         this.size = {width: 0, height: 0}
+        if (vis64) this._visualizer.loadFromBase64(vis64)
     }
     /**
      * Call this as soon after construction as possible once the HTML
      * element has been mounted
+     * @param {HTMLElement} location  where in the DOM to insert the specimen
      */
     setup(location: HTMLElement) {
         this.location = location
@@ -93,36 +109,42 @@ export class Specimen {
     }
     /**
      * Returns the name of this specimen
+     * @return {string} name of the specimen
      */
     get name(): string {
         return this._name
     }
     /**
      * Returns the key of the specimen's visualizer
+     * @return {string} the variety of visualizer used in this specimen
      */
     get visualizerKey(): string {
         return this._visualizerKey
     }
     /**
      * Returns the key of the specimen's sequence
+     * @return {string} the variety of sequence shown in this specimen
      */
     get sequenceKey(): string {
         return this._sequenceKey
     }
     /**
      * Returns the specimen's visualizer
+     * @returns {VisualizerInterface} the visualizer displaying this specimen
      */
     get visualizer(): VisualizerInterface<GenericParamDescription> {
         return this._visualizer
     }
     /**
      * Returns the specimen's sequence
+     * @returns {SequenceInterface} the sequence shown in this specimen
      */
     get sequence(): SequenceInterface<GenericParamDescription> {
         return this._sequence
     }
     /**
      * Assigns a new name to this specimen
+     * @param {string} name  New name
      */
     set name(name: string) {
         this._name = name
@@ -131,7 +153,8 @@ export class Specimen {
      * Assigns a new visualizer to this specimen and updates its sequence
      * to match the specimen. It also ensures this visualizer inhabits
      * the correct HTML element and begins to render.
-     * @param visualizerKey the key of the desired visualizer's export module
+     * @param {string} visualizerKey
+     *     the key of the desired visualizer's export module
      */
     set visualizerKey(visualizerKey: string) {
         this._visualizerKey = visualizerKey
@@ -143,7 +166,7 @@ export class Specimen {
     /**
      * Assigns a new sequence to this specimen and updates the visualizer
      * to reflect this change in the render.
-     * @param specimenKey the key of the desired sequence's export module
+     * @param {string} specimenKey  key of the desired sequence's export module
      */
     set sequenceKey(sequenceKey: string) {
         this._sequenceKey = sequenceKey
@@ -166,10 +189,10 @@ export class Specimen {
 
     /**
      * Calculates the size of the visualizer in its container.
-     * @param containerWidth width of the container
-     * @param containerHeight height of the container
-     * @param aspectRatio aspect ratio requested by visualizer
-     * @returns the size of the visualizer
+     * @param {number} containerWidth  width of the container
+     * @param {number} containerHeight  height of the container
+     * @param {number?} aspectRatio  aspect ratio requested by visualizer
+     * @returns {{width: number, height: number}} resulting size of visualizer
      */
     calculateSize(
         containerWidth: number,
@@ -195,8 +218,8 @@ export class Specimen {
      * This function should be called when the size of the visualizer container
      * has changed. It calculates the size of the contents according to the
      * aspect ratio requested and calls the resize function.
-     * @param width New width of the visualizer container
-     * @param height New height of the visualizer container
+     * @param {number} width  New width of the visualizer container
+     * @param {number} height  New height of the visualizer container
      */
     resized(width: number, height: number): void {
         const newSize = this.calculateSize(
@@ -219,11 +242,11 @@ export class Specimen {
         }
     }
     /**
-     * Converts the specimen to a URL as a way of saving all information
+     * Encodes the specimen to a base64 string, recording all information
      * about the specimen.
-     * @return the specimen URL as a string
+     * @return {string} A string encoding all information about the specimen
      */
-    toURL(): string {
+    encode64(): string {
         const data = {
             name: this.name,
             sequence: this.sequenceKey,
@@ -235,26 +258,53 @@ export class Specimen {
         return window.btoa(JSON.stringify(data))
     }
     /**
-     * Reads a specimen URL previously generated by toURL() and parses
-     * it back into a `Specimen` object.
-     * @param _url the specimen URL to parse
-     * @return the corresponding specimen object
+     * Parses a base64 encoding of a specimen into a SpecimenSpecifier object
+     * that has all of the string values needed to generate a Specimen. Throws
+     * an error if the encoded string cannot be decoded appropriately.
+     * @param {string} base64  the encoded string to parse
+     * @return {SpecimenSpecifier} data specifying the specimen
      */
-    static fromURL(url: string): Specimen {
-        const data = JSON.parse(window.atob(url)) as {[key: string]: string}
-
-        if (hasStringFields(data, dummyURLstructure)) {
-            const specimen = new Specimen(
-                data.name,
-                data.visualizer,
-                data.sequence
-            )
-            // Assign parameters to the visualizers and sequences
-            specimen.sequence.loadFromBase64(data.sequenceParams)
-            specimen.visualizer.loadFromBase64(data.visualizerParams)
-
-            return specimen
+    private static parse64(base64: string): SpecimenSpecifier {
+        console.log('Working on', base64)
+        const data = JSON.parse(window.atob(base64)) as {
+            [key: string]: string
         }
-        throw new Error('Invalid URL')
+        console.log('Got data', data)
+        if (hasStringFields(data, dummySpecifier)) return data
+        throw new Error('Invalid base64 encoding of a Specimen')
+    }
+    /**
+     * Decodes a base 64 encoded string (as produced by encode64()) back
+     * into a `Specimen` object.
+     * @param {string} base64  A string produced by encoding a specimen
+     * @return {Specimen} the corresponding Specimen
+     */
+    static decode64(base64: string): Specimen {
+        const data = this.parse64(base64)
+        return new Specimen(
+            data.name,
+            data.visualizer,
+            data.sequence,
+            data.visualizerParams,
+            data.sequenceParams
+        )
+    }
+    /**
+     * Extracts the name of a specimen from its base64 string encoding
+     * @param {string} base64  A string produced by encoding a specimen
+     * @return {string} the name of the specimen
+     */
+    static getNameFrom64(base64: string): string {
+        return this.parse64(base64)['name']
+    }
+
+    /**
+     * Extracts the name of the variety of sequence a specimen is showing
+     * from its base64 string encoding
+     * @param {string} base64  A string produced by encoding a specimen
+     * @return {string} the name of the sequence variety the specimen uses
+     */
+    static getSequenceNameFrom64(base64: string): string {
+        return seqMODULES[this.parse64(base64)['sequence']].name
     }
 }

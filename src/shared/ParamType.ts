@@ -131,7 +131,8 @@ const typeFunctions: {
     [ParamType.NUMBER]: {
         validate: value =>
             ValidationStatus.errorIf(
-                value.trim().match(/^-?(\d+\.\d*|\.?\d+)$/) === null,
+                value.trim().match(/^-?((\d+\.\d*|\.?\d+)|Infinity)$/)
+                    === null,
                 'Input must be a number'
             ),
         realize: value => parseFloat(value),

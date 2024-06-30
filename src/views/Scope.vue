@@ -2,7 +2,7 @@
     <NavBar class="navbar">
         <SpecimenBar
             id="specimen-bar-desktop"
-            :specimen="specimen as Specimen"
+            :specimen
             @updateSpecimenName="handleSpecimenUpdate">
         </SpecimenBar>
     </NavBar>
@@ -38,7 +38,7 @@
         <SpecimenBar
             id="specimen-bar-phone"
             class="specimen-bar"
-            :specimen="specimen as Specimen"
+            :specimen
             @updateSpecimenName="handleSpecimenUpdate" />
         <!-- 
             The dropzone ids must remain like "[position]-dropzone"
@@ -93,6 +93,7 @@
 <script lang="ts">
     import NavBar from './minor/NavBar.vue'
     import SpecimenBar from '../components/SpecimenBar.vue'
+    import {openCurrent, updateCurrent} from '@/shared/browserCaching'
 
     /**
      * Positions a tab to be inside a dropzone
@@ -223,13 +224,12 @@
     const router = useRouter()
     const route = useRoute()
 
-    const defaultSpecimen = new Specimen('Specimen', 'ModFill', 'Random')
-
     const specimen = reactive(
         typeof route.query.specimen === 'string'
-            ? Specimen.fromURL(route.query.specimen)
-            : defaultSpecimen
+            ? Specimen.decode64(route.query.specimen)
+            : openCurrent()
     )
+    updateCurrent(specimen)
 
     const tabWidth = parseInt(
         window
@@ -237,12 +237,14 @@
             .getPropertyValue('--ns-desktop-tab-width')
     )
 
-    const updateURL = () =>
+    const updateURL = () => {
+        updateCurrent(specimen)
         router.push({
             query: {
-                specimen: specimen.toURL(),
+                specimen: specimen.encode64(),
             },
         })
+    }
 
     function handleSpecimenUpdate(newName: string) {
         specimen.name = newName

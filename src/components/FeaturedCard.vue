@@ -2,19 +2,12 @@
     <div class="card-body">
         <Thumbnail :base64 v-on:click="openSpecimen" />
         <div class="card-title-box">
-            <div>
-                <h5 class="card-title">
-                    {{ specimenName }}
-                </h5>
-                <p class="card-text">
-                    {{ seqName }}
-                </p>
-            </div>
-            <div v-on:click="deleteSpecimen" style="padding-right: 15px">
-                <span class="material-icons-sharp" style="user-select: none"
-                    >delete</span
-                >
-            </div>
+            <h5 class="card-title">
+                {{ specimenName }}
+            </h5>
+            <p class="card-text">
+                {{ seqName }}
+            </p>
         </div>
     </div>
 </template>
@@ -22,20 +15,19 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import {Specimen} from '../shared/Specimen'
-    import {deleteSpecimen} from '../shared/browserCaching'
     import Thumbnail from './Thumbnail.vue'
 
     let cid_count = 0
 
     export default defineComponent({
-        name: 'SpecimenCard',
+        name: 'FeaturedCard',
         props: {
             base64: {type: String, required: true},
             lastEdited: {type: String, required: true},
             cid: {
                 type: String,
                 default: function () {
-                    return 'Card-' + cid_count++
+                    return 'featuredCard-' + cid_count++
                 },
             },
         },
@@ -55,10 +47,6 @@
                         },
                     })
                     .then(window.location.reload)
-            },
-            deleteSpecimen() {
-                deleteSpecimen(this.specimenName)
-                this.$emit('specimenDeleted', this.specimenName)
             },
         },
         mounted() {
@@ -80,14 +68,20 @@
         flex-direction: column;
         align-items: center;
     }
+    .card-preview {
+        width: 200px;
+        height: 200px;
+        margin: 8px;
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
     .card-title-box {
         width: 100%;
         border-top: 1px solid var(--ns-color-black);
         align-items: left;
         text-align: left;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
     }
     .card-title {
         font-size: 14px;
