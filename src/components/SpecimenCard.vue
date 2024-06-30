@@ -10,10 +10,13 @@
                     {{ seqName }}
                 </p>
             </div>
-            <div v-on:click="deleteSpecimen" style="padding-right: 15px">
-                <span class="material-icons-sharp" style="user-select: none"
-                    >delete</span
-                >
+            <div
+                v-if="!permanent"
+                v-on:click="deleteSpecimen"
+                style="padding-right: 15px">
+                <span class="material-icons-sharp" style="user-select: none">
+                    delete
+                </span>
             </div>
         </div>
     </div>
@@ -32,6 +35,7 @@
         props: {
             base64: {type: String, required: true},
             lastEdited: {type: String, required: true},
+            permanent: {type: Boolean},
             cid: {
                 type: String,
                 default: function () {

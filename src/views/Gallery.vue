@@ -24,12 +24,13 @@
             >
         </div>
         <div class="gallery" v-if="showFeatured">
-            <FeaturedCard
+            <SpecimenCard
                 v-for="specimen in featured"
-                :key="specimen.base64"
+                :key="'feat' + specimen.base64"
                 :base64="specimen.base64"
-                :lastEdited="specimen.lastEdited">
-            </FeaturedCard>
+                :lastEdited="specimen.lastEdited"
+                permanent>
+            </SpecimenCard>
         </div>
 
         <div type="button" class="visualizer-bar">
@@ -55,7 +56,6 @@
 
 <script setup lang="ts">
     import SpecimenCard from '../components/SpecimenCard.vue'
-    import FeaturedCard from '../components/FeaturedCard.vue'
     import {ref, onMounted, computed} from 'vue'
     import {getSIMs} from '../shared/browserCaching'
     import {getFeatured} from '../shared/defineFeatured'
