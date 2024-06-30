@@ -1,4 +1,5 @@
 <template>
+    <NavBar class="navbar" />
     <div id="gallery-content">
         <div id="header-mobile">
             <div>
@@ -47,6 +48,7 @@
 
 <script setup lang="ts">
     import SpecimenCard from '../components/SpecimenCard.vue'
+    import NavBar from '../views/minor/NavBar.vue'
 
     const sequenceName = '2-acid val of Z'
     const cardName = 'Pinstripe'
