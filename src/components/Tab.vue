@@ -168,8 +168,7 @@
         if (tab.classList.contains('docked')) {
             // vertical and horizontal position of the tab
             // (eg. top-right, where vert is top and side is right)
-            const vert = tab.getAttribute('docked')?.split('-')[0]
-            const side = tab.getAttribute('docked')?.split('-')[1]
+            const [vert, side] = (tab.getAttribute('docked') ?? '').split('-')
             // get the correct dropzone wrapper
             const dropzoneWrapper = tab.parentElement?.querySelector(
                 '#' + side + '-dropzone-container'
