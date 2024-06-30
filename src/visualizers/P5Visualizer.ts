@@ -193,6 +193,13 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         }
 
         /**
+         * Continue displaying the visualizer
+         */
+        continue(): void {
+            this._sketch?.loop()
+        }
+
+        /**
          * The p5 setup for this visualizer. Note that derived Visualizers
          * _must_ call this first.
          */
