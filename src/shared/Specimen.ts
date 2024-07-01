@@ -60,19 +60,28 @@ export class Specimen {
         this._name = name
         this._visualizerKey = visualizerKey
         this._sequenceKey = sequenceKey
-        type SeqIntf = SequenceInterface<GenericParamDescription>
-        if (seqMODULES[sequenceKey].kind === SequenceExportKind.FAMILY)
-            this._sequence = new (seqMODULES[sequenceKey]
-                .sequenceOrConstructor as SequenceConstructor)(0)
-        else
-            this._sequence = seqMODULES[sequenceKey]
-                .sequenceOrConstructor as SeqIntf
-        if (seq64) this._sequence.loadFromBase64(seq64)
+        this._sequence = Specimen.makeSequence(sequenceKey, seq64)
+
         this._visualizer = new vizMODULES[visualizerKey].visualizer(
             this._sequence
         )
         this.size = {width: 0, height: 0}
         if (vis64) this._visualizer.loadFromBase64(vis64)
+    }
+
+    // Helper for constructor and for extracting sequence name
+    static makeSequence(sequenceKey: string, seq64?: string) {
+        type SeqIntf = SequenceInterface<GenericParamDescription>
+        if (seqMODULES[sequenceKey].kind === SequenceExportKind.FAMILY) {
+            const sequence = new (seqMODULES[sequenceKey]
+                .sequenceOrConstructor as SequenceConstructor)(0)
+            if (seq64) sequence.loadFromBase64(seq64)
+            return sequence
+        }
+        const sequence = seqMODULES[sequenceKey]
+            .sequenceOrConstructor as SeqIntf
+        if (seq64) sequence.loadFromBase64(seq64)
+        return sequence
     }
     /**
      * Call this as soon after construction as possible once the HTML
@@ -307,6 +316,14 @@ export class Specimen {
      * @return {string} the name of the sequence variety the specimen uses
      */
     static getSequenceNameFrom64(base64: string): string {
-        return seqMODULES[this.parse64(base64)['sequence']].name
+        const data = this.parse64(base64)
+        const sequence = Specimen.makeSequence(
+            data.sequence,
+            data.sequenceParams
+        )
+        sequence.validate()
+        sequence.isValid = true
+        sequence.assignParameters()
+        return sequence.name
     }
 }
