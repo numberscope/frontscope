@@ -1,6 +1,6 @@
 <template>
-    <div class="card-body">
-        <Thumbnail :base64 v-on:click="openSpecimen" />
+    <div class="card-body" v-on:click="openSpecimen">
+        <Thumbnail :base64 />
         <div class="card-title-box">
             <div>
                 <h5 class="card-title">
