@@ -265,11 +265,9 @@ export class Specimen {
      * @return {SpecimenSpecifier} data specifying the specimen
      */
     private static parse64(base64: string): SpecimenSpecifier {
-        console.log('Working on', base64)
         const data = JSON.parse(window.atob(base64)) as {
             [key: string]: string
         }
-        console.log('Got data', data)
         if (hasStringFields(data, dummySpecifier)) return data
         throw new Error('Invalid base64 encoding of a Specimen')
     }

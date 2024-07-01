@@ -98,7 +98,6 @@
     function SIMstoCards(savedSIMs: SIM[]): cardSpecimen[] {
         const cardSpecs: cardSpecimen[] = []
         for (const SIM of savedSIMs) {
-            console.log('Scheduling', SIM)
             let base64 = SIM.en64
             // Backwards compatibility hack for specimens that may
             // have been saved as URLs in prior versions of software:

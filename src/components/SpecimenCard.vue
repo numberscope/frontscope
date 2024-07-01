@@ -83,6 +83,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        cursor: pointer;
     }
     .card-title-box {
         width: 100%;
