@@ -230,9 +230,10 @@ export class Paramable<PD extends GenericParamDescription>
             const param = params[prop]
             // Because of how function types are unioned, we have to circumvent
             // typescript a little bit
-            this.tentativeValues[prop] = typeFunctions[param.type].derealize(
-                param.default as never
-            )
+            if (param.required)
+                this.tentativeValues[prop] = typeFunctions[
+                    param.type
+                ].derealize(param.default as never)
         }
     }
     /**
