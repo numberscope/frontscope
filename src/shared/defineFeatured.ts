@@ -37,6 +37,11 @@ export function getFeatured(): SIM[] {
             name: 'Polyfactors',
             date: '',
         },
+        {
+            en64: 'eyJuYW1lIjoiV2FpdCBGb3IgSXQiLCJzZXF1ZW5jZSI6IkZvcm11bGEiLCJzZXF1ZW5jZVBhcmFtcyI6ImV5Sm1iM0p0ZFd4aElqb2liV2x1S0dac2IyOXlLSE5wYmlodUtTa3BKVFVpZlE9PSIsInZpc3VhbGl6ZXIiOiJUdXJ0bGUiLCJ2aXN1YWxpemVyUGFyYW1zIjoiZXlKa2IyMWhhVzRpT2lJd0xDQXhMQ0F5TENBekxDQTBJaXdpY21GdVoyVWlPaUl6TUN3Z05EVXNJRFl3TENBNU1Dd2dNVEl3SWl3aWMzUmxjRk5wZW1VaU9pSXpNQ0lzSW5OMFlYSjBJam9pTUN3Z01DSXNJbk4wY205clpWZGxhV2RvZENJNklqSWlMQ0ppWjBOdmJHOXlJam9pSXpWa05UQTVaaUlzSW5OMGNtOXJaVU52Ykc5eUlqb2lJemRoT1dZMlppSjkifQ==',
+            name: 'Wait For It',
+            date: '',
+        },
     ]
 
     return featuredSIMs
