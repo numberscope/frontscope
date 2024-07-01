@@ -215,7 +215,7 @@
 <script setup lang="ts">
     import Tab from '@/components/Tab.vue'
     import interact from 'interactjs'
-    import {onMounted} from 'vue'
+    import {onMounted, onUnmounted} from 'vue'
     import {useRoute, useRouter} from 'vue-router'
     import ParamEditor from '@/components/ParamEditor.vue'
     import {reactive} from 'vue'
@@ -251,17 +251,18 @@
         updateURL()
     }
 
+    let canvasContainer: HTMLElement = document.documentElement
     onMounted(() => {
         const specimenContainer = document.getElementById(
             'specimen-container'
         )!
-        const canvasContainer = document.getElementById('canvas-container')!
         positionAndSizeAllTabs()
 
         window.addEventListener('resize', () => {
             positionAndSizeAllTabs()
         })
 
+        canvasContainer = document.getElementById('canvas-container')!
         specimen.setup(canvasContainer)
 
         setInterval(() => {
@@ -270,6 +271,10 @@
                 canvasContainer.clientHeight
             )
         }, 500)
+    })
+
+    onUnmounted(() => {
+        specimen.visualizer.depart(canvasContainer)
     })
 
     // enable draggables to be dropped into this

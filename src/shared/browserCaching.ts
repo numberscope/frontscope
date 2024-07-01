@@ -35,7 +35,7 @@ const currentKey = 'currentSpecimen'
 
 // The default specimen
 // Will be displayed when the user visits the website for the first time
-const defaultSpecimen = new Specimen('Specimen', 'ModFill', 'Random')
+export const defaultSpecimen = new Specimen('Specimen', 'ModFill', 'Random')
 
 /**
  * Fetches the array of SIMs represented in memory.

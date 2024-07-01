@@ -3,15 +3,16 @@
 </template>
 
 <script setup lang="ts">
-    import {onMounted, ref} from 'vue'
+    import {onMounted, onUnmounted, ref} from 'vue'
     import {Specimen} from '@/shared/Specimen'
+    import {defaultSpecimen} from '@/shared/browserCaching'
 
     const canvasContainer = ref<HTMLDivElement | null>(null)
+    let specimen = defaultSpecimen
     const props = defineProps(['base64'])
 
     onMounted(() => {
-        const specimen = Specimen.decode64(props.base64)
-
+        specimen = Specimen.decode64(props.base64)
         if (!(canvasContainer.value instanceof HTMLElement)) return
 
         specimen.visualizer.validate()
@@ -21,6 +22,12 @@
         specimen.visualizer.assignParameters()
         specimen.sequence.assignParameters()
         specimen.setup(canvasContainer.value)
+        setTimeout(() => specimen.visualizer.stop(), 4000)
+    })
+
+    onUnmounted(() => {
+        if (!(canvasContainer.value instanceof HTMLElement)) return
+        specimen.visualizer.depart(canvasContainer.value)
     })
 </script>
 
