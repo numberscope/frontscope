@@ -14,13 +14,6 @@
     onMounted(() => {
         specimen = Specimen.decode64(props.base64)
         if (!(canvasContainer.value instanceof HTMLElement)) return
-
-        specimen.visualizer.validate()
-        specimen.sequence.validate()
-        specimen.visualizer.isValid = true
-        specimen.sequence.isValid = true
-        specimen.visualizer.assignParameters()
-        specimen.sequence.assignParameters()
         specimen.setup(canvasContainer.value)
         setTimeout(() => specimen.visualizer.stop(), 4000)
     })

@@ -286,19 +286,24 @@ export class Specimen {
     }
     /**
      * Decodes a base 64 encoded string (as produced by encode64()) back
-     * into a `Specimen` object.
+     * into a `Specimen` object. Validates and assigns the resulting
+     * parameter values of the sequence and visualizer of the specimen.
+     *
      * @param {string} base64  A string produced by encoding a specimen
      * @return {Specimen} the corresponding Specimen
      */
     static decode64(base64: string): Specimen {
         const data = this.parse64(base64)
-        return new Specimen(
+        const specimen = new Specimen(
             data.name,
             data.visualizer,
             data.sequence,
             data.visualizerParams,
             data.sequenceParams
         )
+        specimen.sequence.validate()
+        specimen.visualizer.validate()
+        return specimen
     }
     /**
      * Extracts the name of a specimen from its base64 string encoding
@@ -322,8 +327,6 @@ export class Specimen {
             data.sequenceParams
         )
         sequence.validate()
-        sequence.isValid = true
-        sequence.assignParameters()
         return sequence.name
     }
 }

@@ -14,6 +14,13 @@ export class ValidationStatus {
         return this.errors.length === 0
     }
     /**
+     * The nagation of .isValid()
+     * @returns {boolean} true if the status is not valid
+     */
+    invalid(): boolean {
+        return !this.isValid()
+    }
+    /**
      * Adds one or more error messages to this `ValidationStatus`. As
      * a result, this instance shifts from a valid state to an invalid
      * one if not already.
