@@ -148,7 +148,9 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                             throw e
                         }
                     }
-                    sketch.cursor(sketch.ARROW)
+                    sketch.cursor(
+                        getComputedStyle(element).cursor || 'default'
+                    )
                 }
             }, element)
         }
@@ -254,6 +256,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         */
 
         parameterChanged(_name: string): void {
+            super.parameterChanged(_name)
             this.reset()
         }
 

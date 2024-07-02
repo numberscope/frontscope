@@ -196,6 +196,7 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
          * the sequence so that every element is recomputed when queried.
          */
         parameterChanged(_name: string): void {
+            super.parameterChanged(_name)
             this.ready = false
             this.lastValueCached = this.first - 1
             this.lastFactorCached = this.first - 1

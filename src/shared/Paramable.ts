@@ -108,13 +108,19 @@ export type ExtractParamChoices<PD extends GenericParamDescription> = {
     [K in keyof PD]: PD[K]['type']
 }
 
+// Helper just to beat lint line-length restrictions
+type OneParamType<
+    PD extends GenericParamDescription,
+    K extends keyof PD,
+> = RealizedParamType[ExtractParamChoices<PD>[K]]
+
 /* Represents a mapping of all realized values from a parameter description.
  * That is, contains the full set of parameters with their appropriate
  * types.
  */
 export type ParamValues<PD extends GenericParamDescription> =
     PD extends ParamDescription<ExtractParamChoices<PD>>
-        ? {[K in keyof PD]: RealizedParamType[ExtractParamChoices<PD>[K]]}
+        ? {-readonly [K in keyof PD]: OneParamType<PD, K>}
         : never
 
 export interface ParamableInterface<PD extends GenericParamDescription> {
@@ -224,9 +230,10 @@ export class Paramable<PD extends GenericParamDescription>
             const param = params[prop]
             // Because of how function types are unioned, we have to circumvent
             // typescript a little bit
-            this.tentativeValues[prop] = typeFunctions[param.type].derealize(
-                param.default as never
-            )
+            if (param.required)
+                this.tentativeValues[prop] = typeFunctions[
+                    param.type
+                ].derealize(param.default as never)
         }
     }
     /**
@@ -278,9 +285,8 @@ export class Paramable<PD extends GenericParamDescription>
                 changed.push(prop)
             }
         }
-
         if (changed.length < props.length)
-            for (const prop in changed) this.parameterChanged(prop)
+            for (const prop of changed) this.parameterChanged(prop)
         else this.parameterChanged('#all')
     }
     /**

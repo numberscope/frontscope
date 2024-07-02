@@ -1,13 +1,8 @@
-<script setup lang="ts">
-    import {RouterLink} from 'vue-router'
-    import LogoWithMicroscope from '../../assets/img/logo.svg'
-</script>
-
 <template>
     <header>
         <nav>
             <div id="navbar-main">
-                <RouterLink id="logo" to="/" v-on:click="closeMenu">
+                <RouterLink id="logo" :to="toUrl()" v-on:click="closeMenu">
                     <img :src="LogoWithMicroscope" alt="A microscope icon." />
                 </RouterLink>
                 <button
@@ -42,8 +37,14 @@
     </header>
 </template>
 
+<script setup lang="ts">
+    import LogoWithMicroscope from '../../assets/img/logo.svg'
+</script>
+
 <script lang="ts">
     import {defineComponent} from 'vue'
+    import {RouterLink} from 'vue-router'
+    import {getCurrent} from '../../shared/browserCaching'
 
     export default defineComponent({
         name: 'NavBar',
@@ -59,6 +60,9 @@
 
             closeMenu: function () {
                 this.menuOpen = false
+            },
+            toUrl: function () {
+                return `/?specimen=${getCurrent().en64}`
             },
         },
     })
