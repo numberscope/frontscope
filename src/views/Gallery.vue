@@ -88,7 +88,9 @@
     }
 
     function loadFeatured() {
-        featured.value = SIMstoCards(getFeatured())
+        featured.value = getFeatured().map(base64 => {
+            return {base64, lastEdited: ''}
+        })
     }
 
     function loadSpecimens() {
