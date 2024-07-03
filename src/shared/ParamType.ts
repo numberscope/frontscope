@@ -82,11 +82,11 @@ export type RealizedParamType = {
 export interface ParamTypeFunctions<T> {
     /**
      * Validates a particular input string for a given parameter type,
-     * returning a `ValidationStatus` as a result
-     * @param value the string input value to be validated
-     * @return the resultant validation status
+     * updating the given validation status accordingly.
+     * @param {string} value  the input value to be validated
+     * @param {ValidationStatus} status  the validation status to update
      */
-    validate(value: string): ValidationStatus
+    validate(value: string, status: ValidationStatus): void
     /**
      * Converts a particular input string for a given parameter type
      * into a corresponding instance of that parameter type. For example:
@@ -109,76 +109,81 @@ const typeFunctions: {
     [K in ParamType]: ParamTypeFunctions<RealizedParamType[K]>
 } = {
     [ParamType.BOOLEAN]: {
-        validate: value =>
-            ValidationStatus.errorIf(
-                value.trim().match(/^true|false$/) === null,
-                'Input must be a boolean'
-            ),
+        validate: (value, status) => {
+            if (value.trim().match(/^true|false$/) === null)
+                status.addError('Input must be a boolean')
+        },
         realize: value => value === 'true',
         derealize: value => `${value}`,
     },
     [ParamType.COLOR]: {
-        validate: value =>
-            ValidationStatus.errorIf(
+        validate: (value, status) => {
+            if (
                 value
                     .trim()
-                    .match(/^(#[0-9A-Fa-f]{3})|(#[0-9A-Fa-f]{6})$/) === null,
-                'Input must be a number'
-            ),
+                    .match(/^(#[0-9A-Fa-f]{3})|(#[0-9A-Fa-f]{6})$/) === null
+            )
+                status.addError('Input must be a valid color specification')
+        },
         realize: value => value,
         derealize: value => `${value}`,
     },
     [ParamType.NUMBER]: {
-        validate: value =>
-            ValidationStatus.errorIf(
-                value.trim().match(/^-?(\d+\.\d*|\.?\d+)$/) === null,
-                'Input must be a number'
-            ),
+        validate: (value, status) => {
+            if (
+                value.trim().match(/^-?((\d+\.\d*|\.?\d+)|Infinity)$/)
+                === null
+            )
+                status.addError('Input must be a number')
+        },
         realize: value => parseFloat(value),
         derealize: value => (Number.isNaN(value) ? '' : `${value}`),
     },
     [ParamType.INTEGER]: {
-        validate: value =>
-            ValidationStatus.errorIf(
-                value.trim().match(/^-?\d+$/) === null,
-                'Input must be an integer'
-            ),
+        validate: (value, status) => {
+            if (value.trim().match(/^-?\d+$/) === null)
+                status.addError('Input must be an integer')
+        },
         realize: value => parseInt(value),
         derealize: value => (Number.isNaN(value) ? '' : `${value}`),
     },
     [ParamType.BIGINT]: {
-        validate: value =>
-            ValidationStatus.errorIf(
-                value.trim().match(/^-?\d+$/) === null,
-                'Input must be an integer'
-            ),
+        validate: (value, status) => {
+            if (value.trim().match(/^-?\d+$/) === null)
+                status.addError('Input must be an integer')
+        },
         realize: value => BigInt(value),
         derealize: value => `${value}`,
     },
     [ParamType.ENUM]: {
-        validate: value =>
-            ValidationStatus.errorIf(
-                value.trim().match(/^-?\d+$/) === null,
-                'Input must be an integer'
-            ),
+        validate: (value, status) => {
+            if (value.trim().match(/^-?\d+$/) === null)
+                status.addError('Input must be an integer')
+        },
         realize: value => parseInt(value),
         derealize: value => `${value as number}`,
     },
     [ParamType.STRING]: {
-        validate: _value => ValidationStatus.ok(),
+        // Strings are always valid so there is nothing to do.
+        // ESlint hates us for that :-)
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        validate: (_value, _status) => {},
         realize: value => value,
         derealize: value => `${value}`,
     },
     [ParamType.NUMBER_ARRAY]: {
-        validate: value =>
-            ValidationStatus.errorIf(
+        validate: (value, status) => {
+            if (
                 value
                     .trim()
                     .match(
                         /^(-?(\d+\.\d*|\.?\d+)(\s*,\s*-?(\d+\.\d*|\.?\d+))*)?$/
-                    ) === null,
-                'Input must be a comma-separated list of numbers'
-            ),
+                    ) === null
+            )
+                status.addError(
+                    'Input must be a comma-separated list of numbers'
+                )
+        },
         realize: value => {
             const numbers = value.split(',')
             const array = []
@@ -189,11 +194,12 @@ const typeFunctions: {
         derealize: value => (value as number[]).join(', '),
     },
     [ParamType.BIGINT_ARRAY]: {
-        validate: value =>
-            ValidationStatus.errorIf(
-                value.trim().match(/^(-?\d+(\s*,\s*-?\d+)*)?$/) === null,
-                'Input must be a comma-separated list of integers'
-            ),
+        validate: (value, status) => {
+            if (value.trim().match(/^(-?\d+(\s*,\s*-?\d+)*)?$/) === null)
+                status.addError(
+                    'Input must be a comma-separated list of integers'
+                )
+        },
         realize: value => {
             const numbers = value.split(',')
             const array = []
@@ -203,15 +209,16 @@ const typeFunctions: {
         derealize: value => (value as bigint[]).join(', '),
     },
     [ParamType.VECTOR]: {
-        validate: value =>
-            ValidationStatus.errorIf(
+        validate: (value, status) => {
+            if (
                 value
                     .trim()
                     .match(
                         /^-?(\d+\.\d*|\.?\d+)\s*,\s*-?(\d+\.\d*|\.?\d+)$/
-                    ) === null,
-                'Input must be two comma-separated numbers'
-            ),
+                    ) === null
+            )
+                status.addError('Input must be two comma-separated numbers')
+        },
         realize: value => {
             const numbers = value.split(',')
             return new p5.Vector(
