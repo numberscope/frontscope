@@ -12,7 +12,7 @@
             </div>
             <div
                 v-if="!permanent"
-                v-on:click="deleteSpecimen"
+                v-on:click.stop="deleteSpecimen"
                 style="padding-right: 15px">
                 <span class="material-icons-sharp" style="user-select: none">
                     delete
