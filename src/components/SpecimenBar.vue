@@ -66,11 +66,15 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
+    import type {PropType, UnwrapNestedRefs} from 'vue'
     import {saveSpecimen, getSIMByName} from '../shared/browserCaching'
     import {Specimen} from '../shared/Specimen'
     export default defineComponent({
         props: {
-            specimen: {type: Specimen, required: true},
+            specimen: {
+                type: Object as PropType<UnwrapNestedRefs<Specimen>>,
+                required: true,
+            },
         },
         methods: {
             updateName(event: Event) {
@@ -146,15 +150,15 @@
             saveCurrent() {
                 //get rid of overwrite popup (if it is visible)
                 this.removeOverwritePopup()
-                // get specimen url
-                const url = window.location.href
+                // get specimen encoding
+                const base64 = this.specimen.encode64()
                 // get specimen name
                 const name = document.querySelector('input[type="text"]')
                 if (!(name instanceof HTMLInputElement)) return
                 const specimenName = name.value
 
                 //save to browser
-                saveSpecimen(url, specimenName)
+                saveSpecimen(base64, specimenName)
 
                 //get notification element
                 const notification = document.getElementById('save-popup')

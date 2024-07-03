@@ -1,25 +1,41 @@
 <template>
-    <div class="card-body">
-        <div class="card-preview" :id="cid"></div>
+    <div class="card-body" v-on:click="openSpecimen">
+        <Thumbnail :base64 />
         <div class="card-title-box">
-            <h5 class="card-title">
-                {{ cardName }}
-            </h5>
-            <p class="card-text">
-                {{ seqName }}
-            </p>
+            <div>
+                <h5 class="card-title">
+                    {{ specimenName }}
+                </h5>
+                <p class="card-text">
+                    {{ seqName }}
+                </p>
+            </div>
+            <div
+                v-if="!permanent"
+                v-on:click.stop="deleteSpecimen"
+                style="padding-right: 15px">
+                <span class="material-icons-sharp" style="user-select: none">
+                    delete
+                </span>
+            </div>
         </div>
     </div>
 </template>
 
 <script lang="ts">
     import {defineComponent} from 'vue'
+    import {Specimen} from '../shared/Specimen'
+    import {deleteSpecimen} from '../shared/browserCaching'
+    import Thumbnail from './Thumbnail.vue'
+
     let cid_count = 0
+
     export default defineComponent({
         name: 'SpecimenCard',
         props: {
-            seqName: {type: String, required: true},
-            cardName: {type: String, required: true},
+            base64: {type: String, required: true},
+            lastEdited: {type: String, required: true},
+            permanent: {type: Boolean},
             cid: {
                 type: String,
                 default: function () {
@@ -27,31 +43,56 @@
                 },
             },
         },
+        data() {
+            return {
+                seqName: '',
+                specimenName: '',
+            }
+        },
+        methods: {
+            openSpecimen() {
+                this.$router
+                    .push({
+                        path: '/',
+                        query: {
+                            specimen: this.base64,
+                        },
+                    })
+                    .then(window.location.reload)
+            },
+            deleteSpecimen() {
+                deleteSpecimen(this.specimenName)
+                this.$emit('specimenDeleted', this.specimenName)
+            },
+        },
+        mounted() {
+            this.seqName = Specimen.getSequenceNameFrom64(this.base64)
+            this.specimenName = Specimen.getNameFrom64(this.base64)
+        },
+        components: {
+            Thumbnail,
+        },
     })
 </script>
 
 <style scoped>
     .card-body {
+        position: relative;
         width: 216px;
         border: 1px solid var(--ns-color-black);
         display: flex;
         flex-direction: column;
         align-items: center;
-    }
-    .card-preview {
-        width: 200px;
-        height: 200px;
-        margin: 8px;
-        background-color: #f8f9fa;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        cursor: pointer;
     }
     .card-title-box {
         width: 100%;
         border-top: 1px solid var(--ns-color-black);
         align-items: left;
         text-align: left;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
     .card-title {
         font-size: 14px;

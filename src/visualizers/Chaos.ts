@@ -119,7 +119,7 @@ const paramDesc = {
             + 'at the first valid index.',
     },
     last: {
-        default: NaN,
+        default: Infinity,
         type: ParamType.INTEGER,
         displayName: 'Ending index',
         required: false,
@@ -183,9 +183,6 @@ const paramDesc = {
 class Chaos extends P5Visualizer(paramDesc) {
     name = vizName
     description = vizDescription
-
-    first = NaN
-    last = NaN
 
     // current state variables (used in setup and draw)
     private seqLength = 0

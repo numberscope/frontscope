@@ -41,7 +41,7 @@ of the histogram.
         default: 1,
         type: ParamType.INTEGER,
         displayName: 'Bin Size',
-        required: true,
+        required: false,
     },
     /** md
 - First Index: The first index included in the statistics.
@@ -389,6 +389,12 @@ class FactorHistogram extends P5Visualizer(paramDesc) {
         if (this.mouseOver === false) {
             sketch.noLoop()
         }
+    }
+
+    reset() {
+        // Have to clear out the bin factors on a hard reset
+        this.binFactorArray = []
+        super.reset()
     }
 }
 

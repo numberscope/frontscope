@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="error-box" v-if="!status.isValid()">
+        <div class="error-box" v-if="status.invalid()">
             <p v-for="error in status.errors" v-bind:key="error">
                 {{ error }}
             </p>
@@ -88,58 +88,30 @@
             return {paramStatuses, status, sortedParams}
         },
         created() {
-            Object.keys(this.paramable.params).forEach(key =>
-                this.validateIndependent(key)
-            )
-            if (this.validateAggregate()) this.paramable.assignParameters()
+            let good = true
+            for (const param in this.paramable.params) {
+                const newStatus = ValidationStatus.ok()
+                this.paramable.validateIndividual(param, newStatus)
+                this.paramStatuses[param] = newStatus
+                good &&= newStatus.isValid()
+            }
+            if (good) {
+                // The argument '.' to validate below skips all
+                // individual validation because we just checked them
+                this.status = this.paramable.validate('.')
+            }
             this.$emit('changed')
         },
         methods: {
             updateParam(paramName: string, value: string) {
                 const paramable = this.paramable
                 paramable.tentativeValues[paramName] = value
-
-                this.validateIndependent(paramName)
-                if (this.validateAggregate()) {
-                    this.paramable.assignParameters()
-                    this.$emit('changed')
-                }
-            },
-            validateIndependent(paramName: string): boolean {
-                const param = this.paramable.params[paramName]
-                const value = this.paramable.tentativeValues[paramName]
-
-                // Handle non-required parameters
-                if (!param.required && value === '') {
-                    this.paramStatuses[paramName] = ValidationStatus.ok()
-                    return true
-                }
-
-                let paramStatus = typeFunctions[param.type].validate(value)
-                if (paramStatus.isValid())
-                    paramStatus =
-                        param.validate !== undefined
-                            ? param.validate(
-                                  typeFunctions[param.type].realize(value)
-                              )
-                            : ValidationStatus.ok()
-
-                this.paramStatuses[paramName] = paramStatus
-                return paramStatus.isValid()
-            },
-            validateAggregate() {
-                const paramable = this.paramable
-                const statusValues = Object.keys(this.paramStatuses).map(
-                    key => this.paramStatuses[key]
-                )
-                if (statusValues.every(status => status.isValid())) {
-                    this.status = paramable.validate()
-                    paramable.isValid = this.status.isValid()
-                    return this.status.isValid()
-                } else {
-                    paramable.isValid = false
-                    return false
-                }
+                const newStatus = ValidationStatus.ok()
+                paramable.validateIndividual(paramName, newStatus)
+                this.paramStatuses[paramName] = newStatus
+                if (newStatus.invalid()) return
+                this.status = paramable.validate()
+                if (paramable.isValid) this.$emit('changed')
             },
             checkDependency(param: ParamInterface<ParamType>): boolean {
                 if (!this.paramStatuses[param.visibleDependency!].isValid())
