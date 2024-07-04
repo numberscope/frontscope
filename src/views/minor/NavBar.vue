@@ -68,14 +68,13 @@
     })
 </script>
 
-<style lang="scss" scoped>
+<style scoped lang="scss">
     nav {
         display: flex;
         flex-direction: column;
         justify-content: center;
         padding: 8px 16px 8px 16px;
         border-bottom: 1px solid var(--ns-color-black);
-        height: 76px;
 
         #navbar-main {
             display: flex;
@@ -114,14 +113,13 @@
             display: none;
             flex-direction: column;
             margin-top: 8px;
-            border-bottom: 1px solid var(--ns-color-black);
             background-color: var(--ns-color-white);
             &.open {
                 display: flex;
                 z-index: 1000;
             }
 
-            @media (min-width: var(--ns-breakpoint-mobile)) {
+            @media (min-width: $mobile-breakpoint) {
                 display: flex;
             }
 
@@ -148,7 +146,7 @@
         display: none;
     }
 
-    @media (min-width: 700px) {
+    @media (min-width: $tablet-breakpoint) {
         nav {
             justify-content: space-between;
             align-items: center;

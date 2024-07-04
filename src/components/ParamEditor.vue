@@ -5,8 +5,16 @@
                 {{ error }}
             </p>
         </div>
-        <h1>{{ title }}</h1>
-        <span class="subheading">{{ paramable.name }}</span>
+        <div class="tab-title-bar">
+            <div>
+                <h1>{{ title }}</h1>
+                <span class="subheading">{{ paramable.name }}</span>
+            </div>
+            <button class="change-button" @click="openSwitcher">
+                <span class="material-icons-sharp">swap_horiz</span>
+                <span class="change-button-text">Change {{ title }}</span>
+            </button>
+        </div>
         <p class="description">{{ paramable.description }}</p>
         <div v-for="(hierarchy, name) in sortedParams" v-bind:key="name">
             <ParamField
@@ -52,6 +60,13 @@
 
     type Paramable = () => ParamableInterface<GenericParamDescription>
 
+    function resetStatuses(
+        items: {[key: string]: unknown},
+        statuses: {[key: string]: ValidationStatus}
+    ) {
+        for (const item in items) statuses[item] = ValidationStatus.ok()
+    }
+
     export default defineComponent({
         name: 'ParamEditor',
         props: {
@@ -61,39 +76,40 @@
                 required: true,
             },
         },
+        emits: ['changed', 'openSwitcher'],
         components: {
             ParamField,
         },
+        computed: {
+            sortedParams() {
+                const sortedParams: {[key: string]: ParamHierarchy} = {}
+                Object.keys(this.paramable.params).forEach(key => {
+                    const param = this.paramable.params[key]
+                    if (!param.visibleDependency)
+                        sortedParams[key] = {param, children: {}}
+                })
+                Object.keys(this.paramable.params).forEach(key => {
+                    const param = this.paramable.params[key]
+                    if (param.visibleDependency)
+                        sortedParams[param.visibleDependency].children[key] =
+                            param
+                })
+                return sortedParams
+            },
+        },
         data() {
-            const paramStatuses: {[key: string]: ValidationStatus} = {}
             const status = ValidationStatus.ok()
-
-            Object.keys(this.paramable.params).forEach(
-                key => (paramStatuses[key] = ValidationStatus.ok())
-            )
-
-            const sortedParams: {[key: string]: ParamHierarchy} = {}
-            Object.keys(this.paramable.params).forEach(key => {
-                const param = this.paramable.params[key]
-                if (!param.visibleDependency)
-                    sortedParams[key] = {param, children: {}}
-            })
-            Object.keys(this.paramable.params).forEach(key => {
-                const param = this.paramable.params[key]
-                if (param.visibleDependency)
-                    sortedParams[param.visibleDependency].children[key] =
-                        param
-            })
-
-            return {paramStatuses, status, sortedParams}
+            const paramStatuses: {[key: string]: ValidationStatus} = {}
+            resetStatuses(this.paramable.params, paramStatuses)
+            return {paramStatuses, status}
         },
         created() {
+            const pstatus = this.paramStatuses
+            resetStatuses(this.paramable.params, pstatus)
             let good = true
             for (const param in this.paramable.params) {
-                const newStatus = ValidationStatus.ok()
-                this.paramable.validateIndividual(param, newStatus)
-                this.paramStatuses[param] = newStatus
-                good &&= newStatus.isValid()
+                this.paramable.validateIndividual(param, pstatus[param])
+                good &&= pstatus[param].isValid()
             }
             if (good) {
                 // The argument '.' to validate below skips all
@@ -124,6 +140,14 @@
                     return param.visiblePredicate(v as never)
                 else return param.visibleValue! === v
             },
+            openSwitcher() {
+                this.$emit('openSwitcher')
+            },
+        },
+        watch: {
+            paramable() {
+                resetStatuses(this.paramable.params, this.paramStatuses)
+            },
         },
     })
 </script>
@@ -131,7 +155,7 @@
 <style scoped lang="scss">
     h1 {
         font-size: 16px;
-        margin-bottom: 0;
+        margin: 0;
     }
 
     .subheading {
@@ -160,5 +184,35 @@
         font-size: var(--ns-size-body);
         margin: 8px 0;
         color: red;
+    }
+
+    .tab-title-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h1 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .subheading {
+            color: var(--ns-color-grey);
+            font-size: 14px;
+        }
+
+        .change-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid var(--ns-color-white);
+            background: none;
+            width: min-content;
+            padding: 4px;
+
+            &:hover {
+                border: 1px solid var(--ns-color-light);
+            }
+        }
     }
 </style>

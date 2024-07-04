@@ -65,18 +65,23 @@
         Default styles should be for vertical mobile devices
         (devices narrower than --ns-breakpoint-mobile)
 
-        Small devices (landscape phones)
-        @media (min-width: var(--ns-breakpoint-mobile)) { ... }
+        // Small devices (landscape phones)
+        @media (min-width: $mobile-breakpoint) { ... }
+        // Note var(...) expressions are not allowed in media queries,
+        // so it's necessary to use the global scss variables set up
+        // in src/assets/scss/_variables.scss directly, as shown
 
-        Medium devices (tablets)
-        @media (min-width: var(--ns-breakpoint-tablet)) { ... }
+        // Medium devices (tablets)
+        @media (min-width: $tablet-breakpoint) { ... }
 
         // Large devices (desktops)
-        @media (min-width: var(--ns-breakpoint-desktop)) { ... }
+        @media (min-width: $desktop-breakpoint) { ... }
         */
-        --ns-breakpoint-mobile: 580px;
-        --ns-breakpoint-tablet: 800px;
-        --ns-breakpoint-desktop: 1200px;
+        --ns-breakpoint-mobile: $mobile-breakpoint;
+        --ns-breakpoint-tablet: $tablet-breakpoint;
+        /* Not actually used at the moment:
+          --ns-breakpoint-desktop: 1200px;
+         */
     }
 
     /* Display font */
