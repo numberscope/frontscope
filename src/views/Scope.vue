@@ -430,6 +430,7 @@
         min-height: fit-content;
         padding-left: auto;
         padding-right: auto;
+        z-index: 0;
     }
     .dropzone-container {
         display: none;
@@ -439,6 +440,7 @@
         border-bottom: 1px solid var(--ns-color-black);
         height: 301px;
         width: 100%;
+        z-index: -1;
     }
     #sequenceTab {
         width: 100%;
