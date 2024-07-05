@@ -84,7 +84,7 @@ be the same length.
         default: '#666666',
         type: ParamType.COLOR,
         displayName: 'Background Color',
-        required: false,
+        required: true,
     },
     /**
 - strokeColor: The color used for drawing the path.
@@ -93,7 +93,7 @@ be the same length.
         default: '#ff0000',
         type: ParamType.COLOR,
         displayName: 'Stroke Color',
-        required: false,
+        required: true,
     },
 } as const
 
