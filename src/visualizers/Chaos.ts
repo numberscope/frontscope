@@ -3,8 +3,7 @@ import {modulo} from '../shared/math'
 import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
+import type {ParamValues} from '../shared/Paramable'
 
 /** md
 # Chaos Visualizer
@@ -34,8 +33,6 @@ class Palette {
             this.backgroundColor = sketch.color(hexBack)
             this.textColor = sketch.color(hexText)
         } else {
-            this.backgroundColor = INVALID_COLOR
-            this.textColor = INVALID_COLOR
             this.backgroundColor = INVALID_COLOR
             this.textColor = INVALID_COLOR
         }
@@ -192,10 +189,6 @@ class Chaos extends P5Visualizer(paramDesc) {
 
     // colour palette
     private currentPalette = new Palette()
-
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(seq)
-    }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
