@@ -6,14 +6,11 @@
             </p>
         </div>
         <div class="tab-title-bar">
+            <button class="change-button" @click="openSwitcher">▸</button>
             <div>
                 <h1>{{ title }}</h1>
                 <span class="subheading">{{ paramable.name }}</span>
             </div>
-            <button class="change-button" @click="openSwitcher">
-                <span class="material-icons-sharp">swap_horiz</span>
-                <span class="change-button-text">Change {{ title }}</span>
-            </button>
         </div>
         <p class="description">{{ paramable.description }}</p>
         <div v-for="(hierarchy, name) in sortedParams" v-bind:key="name">
@@ -140,7 +137,9 @@
                     return param.visiblePredicate(v as never)
                 else return param.visibleValue! === v
             },
-            openSwitcher() {
+            openSwitcher(event: Event) {
+                const btn = event.target as HTMLElement
+                if (btn) btn.innerHTML = '▾'
                 this.$emit('openSwitcher')
             },
         },
@@ -188,8 +187,7 @@
 
     .tab-title-bar {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        align-items: start;
 
         h1 {
             margin: 0;
@@ -202,13 +200,9 @@
         }
 
         .change-button {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border: 1px solid var(--ns-color-white);
             background: none;
             width: min-content;
-            padding: 4px;
+            border: 1px solid white;
 
             &:hover {
                 border: 1px solid var(--ns-color-light);

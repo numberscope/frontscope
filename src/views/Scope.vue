@@ -10,21 +10,13 @@
         <SwitcherModal
             category="sequence"
             v-show="changeSequenceOpen"
-            @close="
-                () => {
-                    changeSequenceOpen = false
-                }
-            "
+            @close="closeChangeSequence"
             @change="updateURL"
             :specimen="specimen" />
         <SwitcherModal
             category="visualizer"
             v-show="changeVisualizerOpen"
-            @close="
-                () => {
-                    changeVisualizerOpen = false
-                }
-            "
+            @close="closeChangeVisualizer"
             @change="updateURL"
             :specimen="specimen" />
         <tab
@@ -49,7 +41,7 @@
                 " />
         </tab>
         <tab
-            id="visualiserTab"
+            id="visualizerTab"
             class="tab docked"
             docked="bottom-right"
             last-dropzone="bottom-right"
@@ -303,6 +295,20 @@
         })
     }
 
+    function closeChangeSequence() {
+        changeSequenceOpen.value = false
+        const seqTab = document.getElementById('sequenceTab')
+        if (seqTab)
+            seqTab.getElementsByClassName('change-button')[0].innerHTML = '▸'
+    }
+
+    function closeChangeVisualizer() {
+        changeVisualizerOpen.value = false
+        const visTab = document.getElementById('visualizerTab')
+        if (visTab)
+            visTab.getElementsByClassName('change-button')[0].innerHTML = '▸'
+    }
+
     function handleSpecimenUpdate(newName: string) {
         specimen.name = newName
         updateURL()
@@ -503,7 +509,7 @@
         border-bottom: 1px solid var(--ns-color-black);
         height: fit-content;
     }
-    #visualiserTab {
+    #visualizerTab {
         width: 100%;
         padding-left: auto;
         padding-right: auto;
@@ -530,7 +536,7 @@
             border: 0px;
         }
         #sequenceTab,
-        #visualiserTab {
+        #visualizerTab {
             width: var(--ns-desktop-tab-width);
         }
         #specimen-container {
