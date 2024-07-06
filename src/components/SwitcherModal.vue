@@ -11,16 +11,20 @@
             </div>
 
             <div id="content">
-                <h1>Change {{ category }}</h1>
+                <div class="switcher-title-bar">
+                    <h1>Change {{ category }}</h1>
 
-                <div v-if="category === 'sequence'" id="search-bar">
-                    <div>
-                        <label for="oeis">Search the OEIS</label><br />
-                        <input type="text" id="oeis" placeholder="A037161" />
+                    <div v-if="category === 'sequence'" id="search-bar">
+                        <div>
+                            <label for="oeis">Search the OEIS</label><br />
+                            <input
+                                type="text"
+                                id="oeis"
+                                placeholder="A037161" />
+                        </div>
+                        <button class="material-icons-sharp">search</button>
                     </div>
-                    <button class="material-icons-sharp">search</button>
                 </div>
-
                 <div id="results">
                     <div
                         class="switch-option"
@@ -77,6 +81,10 @@
 </script>
 
 <style scoped lang="scss">
+    .switcher-title-bar {
+        display: flex;
+        justify-content: space-between;
+    }
     h1 {
         font-size: var(--ns-size-title);
         margin-bottom: 16px;
