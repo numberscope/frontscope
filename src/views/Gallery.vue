@@ -112,6 +112,7 @@
         font-size: var(--ns-size-title);
     }
     h2 {
+        margin-top: 3ex;
         font-size: var(--ns-size-heading);
     }
     h3 {
@@ -179,7 +180,6 @@
 
         #header {
             display: block;
-            margin-bottom: 16px;
         }
 
         .visualizer-bar {
