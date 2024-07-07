@@ -12,7 +12,7 @@
 
             <div id="content">
                 <div class="switcher-title-bar">
-                    <h1>Change {{ category }}</h1>
+                    <h1>Choose {{ category }}</h1>
 
                     <div v-if="category === 'sequence'" id="search-bar">
                         <div>
@@ -25,22 +25,18 @@
                         <button class="material-icons-sharp">search</button>
                     </div>
                 </div>
-                <div id="results">
-                    <div
-                        class="switch-option"
-                        v-for="(description, item) in modules[category]"
-                        :key="item"
-                        @click="changeToItem(item), emit('close')">
-                        <h2>{{ item }}</h2>
-                        <p>{{ description }}</p>
-                    </div>
-                </div>
+                <SpecimensGallery
+                    class="results"
+                    :specimens="altered(category)"
+                    :canDelete="false" />
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+    import SpecimensGallery from '../components/SpecimensGallery.vue'
+    import type {CardSpecimen} from '../components/SpecimensGallery.vue'
     import seqMODULES from '../sequences/sequences'
     import vizMODULES from '../visualizers/visualizers'
     import {Specimen} from '../shared/Specimen'
@@ -56,7 +52,7 @@
         visualizer: descriptions(vizMODULES),
     }
 
-    const emit = defineEmits(['close', 'change'])
+    const emit = defineEmits(['close'])
     type Categories = 'sequence' | 'visualizer'
 
     const props = defineProps({
@@ -70,13 +66,35 @@
         },
     })
 
-    function changeToItem(item: string | number) {
-        const key = typeof item === 'string' ? item : item.toString()
-        const spec = props.specimen
-        if (props.category === 'sequence') spec.sequenceKey = key
-        else if (props.category === 'visualizer') spec.visualizerKey = key
-        else return // Maybe should throw error or something
-        emit('change')
+    function altered(cat: Categories): CardSpecimen[] {
+        const cards: CardSpecimen[] = []
+        const options = modules[cat]
+        for (const module in options) {
+            const visKey =
+                cat === 'sequence' ? props.specimen.visualizerKey : module
+            const seqKey =
+                cat === 'sequence' ? module : props.specimen.sequenceKey
+            const vis64 =
+                cat === 'sequence' ? props.specimen.visualizer.toBase64() : ''
+            const seq64 =
+                cat === 'sequence' ? '' : props.specimen.sequence.toBase64()
+            // TODO: Way to produce Specimen _encodings_ without having to
+            // actually construct the Specimen; maybe do this if/when we
+            // switch to human-readable encodings
+            const alteredSpec = new Specimen(
+                module,
+                visKey,
+                seqKey,
+                vis64,
+                seq64
+            )
+            const newCard: CardSpecimen = {
+                base64: alteredSpec.encode64(),
+                subtitle: options[module],
+            }
+            cards.push(newCard)
+        }
+        return cards
     }
 </script>
 
@@ -193,7 +211,7 @@
         }
     }
 
-    #results {
+    .results {
         display: flex;
         flex-wrap: wrap;
         overflow: auto;

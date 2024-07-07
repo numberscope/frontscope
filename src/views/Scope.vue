@@ -9,7 +9,7 @@
     <div id="specimen-container">
         <SwitcherModal
             category="sequence"
-            v-show="changeSequenceOpen"
+            v-if="changeSequenceOpen"
             @close="
                 () => {
                     changeSequenceOpen = false
@@ -19,7 +19,7 @@
             :specimen="specimen" />
         <SwitcherModal
             category="visualizer"
-            v-show="changeVisualizerOpen"
+            v-if="changeVisualizerOpen"
             @close="
                 () => {
                     changeVisualizerOpen = false
@@ -309,6 +309,9 @@
     }
 
     let canvasContainer: HTMLElement = document.documentElement
+    type IntervalID = ReturnType<typeof setInterval>
+    let resizePoll: IntervalID
+
     onMounted(() => {
         const specimenContainer = document.getElementById(
             'specimen-container'
@@ -322,7 +325,7 @@
         canvasContainer = document.getElementById('canvas-container')!
         specimen.setup(canvasContainer)
 
-        setInterval(() => {
+        resizePoll = setInterval(() => {
             specimen.resized(
                 canvasContainer.clientWidth,
                 canvasContainer.clientHeight
@@ -331,6 +334,7 @@
     })
 
     onUnmounted(() => {
+        clearInterval(resizePoll)
         specimen.visualizer.depart(canvasContainer)
     })
 

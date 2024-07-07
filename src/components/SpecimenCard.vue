@@ -7,7 +7,7 @@
                     {{ specimenName }}
                 </h5>
                 <p class="card-text">
-                    {{ seqName }}
+                    {{ useSub }}
                 </p>
             </div>
             <div
@@ -34,7 +34,8 @@
         name: 'SpecimenCard',
         props: {
             base64: {type: String, required: true},
-            lastEdited: {type: String, required: true},
+            lastEdited: {type: String},
+            subtitle: {type: String},
             permanent: {type: Boolean},
             cid: {
                 type: String,
@@ -44,10 +45,7 @@
             },
         },
         data() {
-            return {
-                seqName: '',
-                specimenName: '',
-            }
+            return {specimenName: '', useSub: ''}
         },
         methods: {
             openSpecimen() {
@@ -58,7 +56,7 @@
                             specimen: this.base64,
                         },
                     })
-                    .then(window.location.reload)
+                    .then(_value => window.location.reload())
             },
             deleteSpecimen() {
                 deleteSpecimen(this.specimenName)
@@ -66,8 +64,9 @@
             },
         },
         mounted() {
-            this.seqName = Specimen.getSequenceNameFrom64(this.base64)
             this.specimenName = Specimen.getNameFrom64(this.base64)
+            if (this.subtitle) this.useSub = this.subtitle
+            else this.useSub = Specimen.getSequenceNameFrom64(this.base64)
         },
         components: {
             Thumbnail,

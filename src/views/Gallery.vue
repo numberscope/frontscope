@@ -23,60 +23,43 @@
                 keyboard_arrow_up</span
             >
         </div>
-        <div class="gallery" v-if="showFeatured">
-            <SpecimenCard
-                v-for="specimen in featured"
-                :key="'feat' + specimen.base64"
-                :base64="specimen.base64"
-                :lastEdited="specimen.lastEdited"
-                permanent>
-            </SpecimenCard>
-        </div>
+        <SpecimensGallery
+            v-if="showFeatured"
+            :specimens="featured"
+            :canDelete="false" />
 
         <div type="button" class="visualizer-bar">
             <h2>Saved Specimens</h2>
             <span
-                :class="['material-icons-sharp', specimensArrowClass]"
+                :class="['material-icons-sharp', savedArrowClass]"
                 style="user-select: none"
                 @click="toggleSpecimens">
-                keyboard_arrow_up</span
-            >
+                keyboard_arrow_up
+            </span>
         </div>
-        <div class="gallery" v-if="showSpecimens">
-            <SpecimenCard
-                v-for="specimen in specimens"
-                :key="specimen.base64"
-                :base64="specimen.base64"
-                :lastEdited="specimen.lastEdited"
-                @specimenDeleted="loadSpecimens">
-            </SpecimenCard>
-        </div>
+        <SpecimensGallery v-if="showSaved" :specimens="saved" canDelete />
     </div>
 </template>
 
 <script setup lang="ts">
-    import SpecimenCard from '../components/SpecimenCard.vue'
+    import SpecimensGallery from '../components/SpecimensGallery.vue'
+    import type {CardSpecimen} from '../components/SpecimensGallery.vue'
     import {ref, onMounted, computed} from 'vue'
     import {getSIMs} from '../shared/browserCaching'
     import {getFeatured} from '../shared/defineFeatured'
     import type {SIM} from '../shared/browserCaching'
     import NavBar from '../views/minor/NavBar.vue'
 
-    interface cardSpecimen {
-        base64: string
-        lastEdited: string
-    }
-
-    const specimens = ref<cardSpecimen[]>([])
-    const featured = ref<cardSpecimen[]>([])
+    const saved = ref<CardSpecimen[]>([])
+    const featured = ref<CardSpecimen[]>([])
 
     const showFeatured = ref(true)
-    const showSpecimens = ref(true)
+    const showSaved = ref(true)
     const featuredArrowClass = computed(() =>
         showFeatured.value ? 'arrow-up' : 'arrow-down'
     )
-    const specimensArrowClass = computed(() =>
-        showSpecimens.value ? 'arrow-up' : 'arrow-down'
+    const savedArrowClass = computed(() =>
+        showSaved.value ? 'arrow-up' : 'arrow-down'
     )
 
     function toggleFeatured() {
@@ -84,21 +67,21 @@
     }
 
     function toggleSpecimens() {
-        showSpecimens.value = !showSpecimens.value
+        showSaved.value = !showSaved.value
     }
 
     function loadFeatured() {
         featured.value = getFeatured().map(base64 => {
-            return {base64, lastEdited: ''}
+            return {base64}
         })
     }
 
-    function loadSpecimens() {
-        specimens.value = SIMstoCards(getSIMs())
+    function loadSaved() {
+        saved.value = SIMstoCards(getSIMs())
     }
 
-    function SIMstoCards(savedSIMs: SIM[]): cardSpecimen[] {
-        const cardSpecs: cardSpecimen[] = []
+    function SIMstoCards(savedSIMs: SIM[]): CardSpecimen[] {
+        const cardSpecs: CardSpecimen[] = []
         for (const SIM of savedSIMs) {
             let base64 = SIM.en64
             // Backwards compatibility hack for specimens that may
@@ -114,7 +97,7 @@
 
     onMounted(() => {
         loadFeatured()
-        loadSpecimens()
+        loadSaved()
     })
 </script>
 
@@ -145,6 +128,7 @@
         align-items: center;
         margin: 8px 0;
     }
+
     #change-button {
         max-width: 100px;
         width: min-content;
@@ -152,10 +136,12 @@
         flex-direction: column;
         align-items: center;
     }
+
     #change-icon {
         display: block;
         margin: auto;
     }
+
     #change-text {
         font-size: var(--ns-size-mini);
         text-align: center;
@@ -167,14 +153,6 @@
 
     .visualizer-bar {
         display: none;
-    }
-
-    .gallery {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: left;
-        margin-top: 29px;
-        gap: 29px;
     }
 
     .arrow-up {
@@ -209,11 +187,6 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
-        }
-
-        .gallery {
-            gap: 16px;
-            margin: 0 0 16px 0;
         }
     }
 </style>
