@@ -139,6 +139,19 @@
         }
     }
 
+    ::placeholder {
+        color: grey;
+        opacity: 0.5;
+    }
+    /* The below should be kept in sync with the above. Unfortunately,
+       just adding `, ::-ms-input-placeholder` to the above selector did
+       not work for reasons I do not understand.
+     */
+    ::-ms-input-placeholder {
+        color: grey;
+        opacity: 0.5;
+    }
+
     select {
         border: 1px solid var(--ns-color-black);
         background-color: var(--ns-color-white);
