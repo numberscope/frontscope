@@ -111,19 +111,15 @@ const paramDesc = {
         displayName: 'Starting index',
         required: false,
         description:
-            'Index of the first entry to use. If this is blank or less '
-            + 'than the first valid index, visualization will start '
-            + 'at the first valid index.',
+            'Index of the first entry to use. (Clearing this field will '
+            + 'reset it to the first valid index.)',
     },
     last: {
         default: Infinity,
         type: ParamType.INTEGER,
         displayName: 'Ending index',
         required: false,
-        description:
-            'Index of the last entry to use. If this is blank or greater '
-            + 'than the last valid index, visualization will end at the '
-            + 'last valid index.',
+        placeholder: '[unlimited]',
     },
     dummyDotControl: {
         default: false,

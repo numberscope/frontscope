@@ -38,6 +38,7 @@
                     v-bind:id="paramName"
                     v-bind:class="!status.isValid() ? 'error-field' : ''"
                     v-bind:value="value"
+                    v-bind:placeholder="placehold(param)"
                     v-on:input="updateString($event)" />
             </label>
 
@@ -60,7 +61,7 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import type {ParamInterface} from '../shared/Paramable'
-    import {ParamType} from '../shared/ParamType'
+    import typeFunctions, {ParamType} from '../shared/ParamType'
     import {ValidationStatus} from '../shared/ValidationStatus'
 
     export default defineComponent({
@@ -104,6 +105,11 @@
                     'updateParam',
                     (e.target as HTMLInputElement).value
                 )
+            },
+            placehold(par: ParamInterface<ParamType>) {
+                if (typeof par.placeholder === 'string')
+                    return par.placeholder
+                return typeFunctions[par.type].derealize(par.default as never)
             },
         },
         data() {

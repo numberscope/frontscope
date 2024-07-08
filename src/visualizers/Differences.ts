@@ -49,16 +49,11 @@ row. _(Positive integer or zero. Zero means all available entries.)_
 than 'Entries in top row.')_
      **/
     levels: {
-        default: 5,
+        default: 0,
         type: ParamType.INTEGER,
         displayName: 'Number of rows',
         required: false,
-        description: 'If zero, defaults to the length of top row',
-        validate: (levels: number) =>
-            ValidationStatus.errorIf(
-                levels < 1,
-                'Number of rows must be positive'
-            ),
+        placeholder: '[length of top row]',
     },
 } as const
 
@@ -67,7 +62,6 @@ class Differences extends P5Visualizer(paramDesc) {
     description = vizDescription
 
     first = 0
-    levels = 5
 
     constructor(seq: SequenceInterface<GenericParamDescription>) {
         super(seq)
@@ -84,10 +78,6 @@ class Differences extends P5Visualizer(paramDesc) {
 
     setup(): void {
         super.setup()
-        if (!this.levels) {
-            this.levels = this.n
-            this.refreshParams()
-        }
         if (this.seq.last - this.seq.first + 1 < this.levels) {
             throw Error(
                 `Sequence ${this.seq.name} has too few entries `
@@ -99,6 +89,7 @@ class Differences extends P5Visualizer(paramDesc) {
     draw() {
         const sketch = this.sketch
         const sequence = this.seq
+        const tryLevels = this.levels > 0 ? this.levels : this.n
         const fontSize = 20
         const xDelta = 50
         const yDelta = 50
@@ -115,7 +106,7 @@ class Differences extends P5Visualizer(paramDesc) {
 
         const workingSequence = []
         const end = min(sequence.first + this.n - 1, sequence.last)
-        const levels = min(this.levels, end - this.first + 1)
+        const levels = min(tryLevels, end - this.first + 1)
 
         // workingSequence cannibalizes the first n elements
         for (let i = sequence.first; i <= end; i++) {

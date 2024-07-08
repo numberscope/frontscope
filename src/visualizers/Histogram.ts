@@ -52,6 +52,7 @@ of the histogram.
         default: NaN,
         type: ParamType.INTEGER,
         displayName: 'First Index',
+        placeholder: '[start of sequence]',
         required: false,
     },
 
