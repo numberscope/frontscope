@@ -124,12 +124,7 @@
     import NavBar from './minor/NavBar.vue'
     import SpecimenBar from '../components/SpecimenBar.vue'
     import {openCurrent, updateCurrent} from '@/shared/browserCaching'
-
-    const tabletBreakpoint = parseInt(
-        window
-            .getComputedStyle(document.documentElement)
-            .getPropertyValue('--ns-breakpoint-tablet')
-    )
+    import {isMobile} from '@/shared/layoutUtilities'
 
     /**
      * Positions a tab to be inside a dropzone
@@ -141,7 +136,7 @@
         tab: HTMLElement,
         dropzone: HTMLElement
     ): void {
-        if (window.innerWidth < tabletBreakpoint) return
+        if (isMobile()) return
 
         const dropzoneContainer = dropzone.parentElement?.parentElement
         const dropzoneRect = dropzone.getBoundingClientRect()

@@ -77,7 +77,7 @@
 <style scoped>
     .card-body {
         position: relative;
-        width: 216px;
+        width: var(--ns-specimen-card-width);
         border: 1px solid var(--ns-color-black);
         display: flex;
         flex-direction: column;
@@ -104,6 +104,7 @@
         font-size: 12px;
         margin-top: 2px;
         margin-left: 8px;
+        margin-right: 8px;
         margin-bottom: 8px;
         color: #6c757d;
     }

@@ -43,7 +43,7 @@
     }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
     .gallery {
         display: flex;
         flex-wrap: wrap;
@@ -54,7 +54,7 @@
     @media (min-width: $tablet-breakpoint) {
         .gallery {
             gap: 16px;
-            margin: 0 0 16px 0;
+            margin: 16px 0 0 0;
         }
     }
 </style>

@@ -1,6 +1,6 @@
 <template>
     <div id="background" @click.self="emit('close')">
-        <div id="modal">
+        <div ref="switcher" id="modal">
             <div id="bar">
                 <button
                     class="material-icons-sharp"
@@ -25,10 +25,12 @@
                         <button class="material-icons-sharp">search</button>
                     </div>
                 </div>
-                <SpecimensGallery
-                    class="results"
-                    :specimens="altered(category)"
-                    :canDelete="false" />
+                <div ref="galleryContainer" class="results">
+                    <SpecimensGallery
+                        class="results"
+                        :specimens="altered(category)"
+                        :canDelete="false" />
+                </div>
             </div>
         </div>
     </div>
@@ -39,7 +41,10 @@
     import type {CardSpecimen} from '../components/SpecimensGallery.vue'
     import seqMODULES from '../sequences/sequences'
     import vizMODULES from '../visualizers/visualizers'
+    import {isMobile} from '../shared/layoutUtilities'
     import {Specimen} from '../shared/Specimen'
+
+    import {ref, onMounted} from 'vue'
     import type {PropType, UnwrapNestedRefs} from 'vue'
 
     function descriptions(mods: {[key: string]: {description: string}}) {
@@ -64,6 +69,60 @@
             type: Object as PropType<UnwrapNestedRefs<Specimen>>,
             required: true,
         },
+    })
+
+    const switcher = ref<HTMLElement | null>(null)
+    const galleryContainer = ref<HTMLElement | null>(null)
+    onMounted(() => {
+        // Re-dimension the modal to be (roughly) a whole number of cards
+        // wide, and either just tall enough to fit all cards, or if it
+        // can't be made that tall, ensure that it's _not_ roughly a
+        // whole number of cards tall so that it's clear that it will be
+        // necessary to scroll.
+
+        if (isMobile() || !switcher.value || !galleryContainer.value) return
+
+        const specGallery = galleryContainer.value.firstChild
+        if (!specGallery) return
+
+        const switchSty = window.getComputedStyle(switcher.value)
+        const switchWidth = parseInt(switchSty.getPropertyValue('width'))
+        const switchHeight = parseInt(switchSty.getPropertyValue('height'))
+
+        const specSty = window.getComputedStyle(specGallery as HTMLElement)
+        const specWidth = parseInt(specSty.getPropertyValue('width'))
+        const specHeight = parseInt(specSty.getPropertyValue('height'))
+
+        const gapWidth = parseInt(specSty.getPropertyValue('gap'))
+        const cardWidth = parseInt(
+            specSty.getPropertyValue('--ns-specimen-card-width')
+        )
+
+        const cardsWide = specWidth / (gapWidth + cardWidth)
+        const fracCards = cardsWide - Math.floor(cardsWide)
+        if (fracCards > 0.1) {
+            // Pare it down to a nearest integer number of cards
+            const extra = Math.floor(fracCards * (gapWidth + cardWidth))
+            switcher.value.style.width = `${switchWidth - extra}px`
+        }
+
+        const cardHeight = 300 + gapWidth // approximate; they are not fixed
+        const cardsHigh = specHeight / cardHeight
+        const nCards = Object.keys(modules[props.category]).length
+        const needsHeight = Math.ceil(nCards / Math.floor(cardsWide))
+        if (needsHeight < cardsHigh) {
+            const extra = Math.floor((cardsHigh - needsHeight) * cardHeight)
+            switcher.value.style.height = `${switchHeight - extra}px`
+            return
+        }
+        if (cardsHigh < 1.8) return // No need to adjust
+        const fracHigh = cardsHigh - Math.floor(cardsHigh)
+        if (fracHigh < 0.2 || fracHigh > 0.8) {
+            // too near an integer
+            const goalHeight = Math.round(cardsHigh) - 0.5
+            const extra = Math.floor((cardsHigh - goalHeight) * cardHeight)
+            switcher.value.style.height = `${switchHeight - extra}px`
+        }
     })
 
     function altered(cat: Categories): CardSpecimen[] {
@@ -103,47 +162,22 @@
         display: flex;
         justify-content: space-between;
     }
+
     h1 {
         font-size: var(--ns-size-title);
-        margin-bottom: 16px;
+        margin-bottom: 0;
         margin-top: 0;
-    }
-
-    .switch-option {
-        width: 216px;
-        height: 268px;
-        background-color: black;
-        padding: 10px;
-        color: white;
-        cursor: pointer;
-    }
-    .switch-option p {
-        font-size: var(--ns-size-subheading);
-        color: white;
-    }
-    .switch-option h2 {
-        color: white;
-        font-size: var(--ns-size-heading);
     }
 
     #background {
         position: absolute;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: right;
         z-index: 999;
         width: 100%;
         height: 100%;
         background-color: rgba(0, 0, 0, 0.3);
-    }
-
-    #content {
-        padding: 16px;
-        padding-top: 0;
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: calc(100% - 48px);
     }
 
     #modal {
@@ -153,6 +187,15 @@
         background-color: var(--ns-color-white);
         display: flex;
         flex-direction: column;
+    }
+
+    #content {
+        padding: 16px;
+        padding-top: 0;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: calc(100% - 48px);
     }
 
     #bar {
@@ -187,7 +230,7 @@
 
         input[type='text'] {
             font-size: var(--ns-size-heading-2);
-            margin-bottom: 16px;
+            margin-bottom: 8px;
             margin-right: 8px;
             border: none;
             border-bottom: var(--ns-color-black);
@@ -220,6 +263,15 @@
     }
 
     @media (min-width: $tablet-breakpoint) {
+        #background {
+            padding-right: calc(var(--ns-desktop-tab-width) + 16px);
+        }
+
+        #modal {
+            max-height: 90%;
+            max-width: 90%;
+        }
+
         #bar {
             display: flex;
             background-color: var(--ns-color-primary);
@@ -235,10 +287,6 @@
         #content {
             height: calc(100% - 24px);
             padding-top: 16px;
-        }
-
-        #modal {
-            max-height: 80%;
         }
     }
 </style>
