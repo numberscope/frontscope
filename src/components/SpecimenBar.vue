@@ -23,9 +23,10 @@
             <div
                 id="pause-button"
                 class="button material-icons-sharp"
-                @click="togglePause">
-                pause
-            </div>
+                v-html="
+                    specimen.visualizer.isDrawing ? 'pause' : 'play_arrow'
+                "
+                @click="togglePause" />
             <div
                 id="share-button"
                 class="button material-icons-sharp"
@@ -87,27 +88,12 @@
             },
             refresh() {
                 this.specimen.updateSequence()
-                paused = false
-                this.updateButtons()
-            },
-            updateButtons() {
-                // find the pause button and change the icon based on 'paused'.
-                const playButton = document.getElementById('pause-button')
-                if (!(playButton instanceof HTMLElement)) return
-                playButton.innerHTML = paused ? 'play_arrow' : 'pause'
             },
             // toggles the pause state
             togglePause() {
-                if (paused) {
-                    // continue the visualizer
-                    this.specimen.visualizer.continue()
-                    paused = false
-                } else {
-                    // pause the visualizer
+                if (this.specimen.visualizer.isDrawing) {
                     this.specimen.visualizer.stop()
-                    paused = true
-                }
-                this.updateButtons()
+                } else this.specimen.visualizer.continue()
             },
             shareUrl() {
                 //get url
@@ -184,10 +170,6 @@
             },
         },
     })
-
-    // true if paused, false if playing
-    let paused = false
-    // refreshes the specimen
 </script>
 
 <style>

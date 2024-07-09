@@ -12,6 +12,7 @@
             v-if="changeSequenceOpen"
             @close="
                 () => {
+                    continueVisualizer()
                     changeSequenceOpen = false
                 }
             "
@@ -22,6 +23,7 @@
             v-if="changeVisualizerOpen"
             @close="
                 () => {
+                    continueVisualizer()
                     changeVisualizerOpen = false
                 }
             "
@@ -38,6 +40,7 @@
                 :paramable="specimen.sequence"
                 @openSwitcher="
                     () => {
+                        pauseVisualizer()
                         changeSequenceOpen = true
                     }
                 "
@@ -60,6 +63,7 @@
                 :paramable="specimen.visualizer"
                 @openSwitcher="
                     () => {
+                        pauseVisualizer()
                         changeVisualizerOpen = true
                     }
                 "
@@ -301,6 +305,13 @@
     function handleSpecimenUpdate(newName: string) {
         specimen.name = newName
         updateURL()
+    }
+
+    function pauseVisualizer() {
+        specimen.visualizer.stop()
+    }
+    function continueVisualizer() {
+        specimen.visualizer.continue()
     }
 
     let canvasContainer: HTMLElement = document.documentElement
