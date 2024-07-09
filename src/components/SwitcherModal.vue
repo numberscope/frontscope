@@ -1,35 +1,40 @@
 <template>
-    <div id="background" @click.self="emit('close')">
-        <div ref="switcher" id="modal">
-            <div id="bar">
-                <button
-                    class="material-icons-sharp"
-                    alt="Close button"
-                    @click="emit('close')">
-                    close
-                </button>
-            </div>
-
-            <div id="content">
-                <div class="switcher-title-bar">
-                    <h1>Choose {{ category }}</h1>
-
-                    <div v-if="category === 'sequence'" id="search-bar">
-                        <div>
-                            <label for="oeis">Search the OEIS</label><br />
-                            <input
-                                type="text"
-                                id="oeis"
-                                placeholder="A037161" />
-                        </div>
-                        <button class="material-icons-sharp">search</button>
-                    </div>
+    <div id="background" class="filler" @click.self="emit('close')">
+        <div ref="aligner" id="canvas-overlay" class="filler">
+            <div ref="switcher" id="modal">
+                <div id="bar">
+                    <button
+                        class="material-icons-sharp"
+                        alt="Close button"
+                        @click="emit('close')">
+                        close
+                    </button>
                 </div>
-                <div ref="galleryContainer" class="results">
-                    <SpecimensGallery
-                        class="results"
-                        :specimens="altered(category)"
-                        :canDelete="false" />
+
+                <div id="content">
+                    <div class="switcher-title-bar">
+                        <h1>Choose {{ category }}</h1>
+
+                        <div v-if="category === 'sequence'" id="search-bar">
+                            <div>
+                                <label for="oeis">Search the OEIS</label>
+                                <br />
+                                <input
+                                    type="text"
+                                    id="oeis"
+                                    placeholder="A037161" />
+                            </div>
+                            <button class="material-icons-sharp">
+                                search
+                            </button>
+                        </div>
+                    </div>
+                    <div ref="galleryWrap" class="results">
+                        <SpecimensGallery
+                            class="results"
+                            :specimens="altered(category)"
+                            :canDelete="false" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -72,17 +77,28 @@
     })
 
     const switcher = ref<HTMLElement | null>(null)
-    const galleryContainer = ref<HTMLElement | null>(null)
+    const galleryWrap = ref<HTMLElement | null>(null)
+    const aligner = ref<HTMLElement | null>(null)
     onMounted(() => {
-        // Re-dimension the modal to be (roughly) a whole number of cards
+        // On mobile the switchers just cover the screen, so nothing to do:
+        if (isMobile()) return
+        // Keep TypeScript happy:
+        if (!aligner.value || !switcher.value || !galleryWrap.value) return
+
+        // Ok, time to position the switcher. First, align with the canvas
+        // container:
+        const canvasContainer = document.getElementById('canvas-container')
+        if (!canvasContainer) return
+        const canvasRect = canvasContainer.getBoundingClientRect()
+        aligner.value.style.width = `${canvasRect.width}px`
+        aligner.value.style.left = `${canvasRect.left}px`
+
+        // Now re-dimension the modal to be (roughly) a whole number of cards
         // wide, and either just tall enough to fit all cards, or if it
         // can't be made that tall, ensure that it's _not_ roughly a
         // whole number of cards tall so that it's clear that it will be
         // necessary to scroll.
-
-        if (isMobile() || !switcher.value || !galleryContainer.value) return
-
-        const specGallery = galleryContainer.value.firstChild
+        const specGallery = galleryWrap.value.firstChild
         if (!specGallery) return
 
         const switchSty = window.getComputedStyle(switcher.value)
@@ -169,14 +185,17 @@
         margin-top: 0;
     }
 
-    #background {
+    .filler {
         position: absolute;
         display: flex;
         align-items: center;
-        justify-content: right;
-        z-index: 999;
+        justify-content: center;
         width: 100%;
         height: 100%;
+    }
+
+    #background {
+        z-index: 999;
         background-color: rgba(0, 0, 0, 0.3);
     }
 
@@ -263,10 +282,6 @@
     }
 
     @media (min-width: $tablet-breakpoint) {
-        #background {
-            padding-right: calc(var(--ns-desktop-tab-width) + 16px);
-        }
-
         #modal {
             max-height: 90%;
             max-width: 90%;
