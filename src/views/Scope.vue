@@ -16,7 +16,6 @@
                     changeSequenceOpen = false
                 }
             "
-            @change="updateURL"
             :specimen="specimen" />
         <SwitcherModal
             category="visualizer"
@@ -27,7 +26,6 @@
                     changeVisualizerOpen = false
                 }
             "
-            @change="updateURL"
             :specimen="specimen" />
         <tab
             id="sequenceTab"

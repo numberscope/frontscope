@@ -1,6 +1,10 @@
 <template>
     <div id="background" class="filler" @click.self="emit('close')">
-        <div ref="aligner" id="canvas-overlay" class="filler">
+        <div
+            ref="aligner"
+            id="canvas-overlay"
+            class="filler"
+            @click.self="emit('close')">
             <div ref="switcher" id="modal">
                 <div id="bar">
                     <button
