@@ -1,5 +1,5 @@
 <template>
-    <div class="specimen-bar">
+    <div class="title-and-button-bar">
         <div class="input-container">
             <label>
                 Specimen name
@@ -9,7 +9,7 @@
                     @input="updateName($event)" />
             </label>
 
-            <div class="desc-tooltip">
+            <div class="desc-tooltip tooltip-anchor">
                 <span class="help material-icons-sharp">help</span>
                 <div class="desc-tooltip-text help-box">
                     You can enter the name you want to give this specimen
@@ -173,13 +173,17 @@
 </script>
 
 <style>
-    .specimen-bar {
+    /* Note NOT scoped, these are global styles, used also (for example)
+       in ParamEditor.vue.
+     */
+    .title-and-button-bar {
         display: flex;
         flex-direction: row;
         gap: 8px;
         justify-content: space-between;
-        align-items: flex-end;
-        padding: 8px;
+        align-items: end;
+        padding-top: 8px;
+        padding-bottom: 8px;
     }
     label {
         font-size: 12px;
@@ -189,7 +193,7 @@
         &[type='text'] {
             border: none;
             border-bottom: 1.5px solid var(--ns-color-black);
-            font-size: 14px;
+            font-size: var(--ns-size-heading-2);
             padding: 6px 8px 6px 8px;
             width: 100%;
 
@@ -202,7 +206,6 @@
     .button-container {
         display: flex;
         gap: 8px;
-        margin-right: 8px;
         .button {
             min-width: 30px;
             text-align: center;
@@ -279,7 +282,8 @@
         line-height: normal;
         text-wrap: wrap;
         visibility: hidden;
-        width: 240px;
+        width: max-content;
+        max-width: 240px;
         background-color: var(--ns-color-white);
         color: var(--ns-color-black);
         text-align: left;
@@ -294,11 +298,11 @@
             opacity 0.2s,
             visibility 0.2s;
     }
-    .desc-tooltip .desc-tooltip-text {
+    .tooltip-anchor .desc-tooltip-text {
         right: 0;
     }
 
-    .desc-tooltip:hover .desc-tooltip-text {
+    .tooltip-anchor:hover .desc-tooltip-text {
         visibility: visible;
         opacity: 1;
     }

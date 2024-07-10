@@ -26,9 +26,11 @@
     * {
         box-sizing: border-box;
         font-family: var(--ns-font-main);
-        color: var(--ns-color-black);
     }
 
+    a {
+        color: inherit;
+    }
     html,
     body {
         margin: 0;

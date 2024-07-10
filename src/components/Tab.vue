@@ -318,7 +318,7 @@
         height: fit-content;
     }
     .content {
-        padding: 16px;
+        padding: 0px 16px 16px 16px;
         width: 100%;
         overflow-y: scroll;
         overflow-x: hidden;
@@ -364,7 +364,6 @@
         }
 
         .content {
-            padding: 16px;
             position: absolute;
             top: 16px;
             background-color: var(--ns-color-white);

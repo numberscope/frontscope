@@ -97,6 +97,7 @@
         }
 
         .burger-menu {
+            color: var(--ns-color-black);
             display: flex;
             flex-direction: row;
             justify-content: space-between;
@@ -113,6 +114,7 @@
             display: none;
             flex-direction: column;
             margin-top: 8px;
+            color: var(--ns-color-black);
             background-color: var(--ns-color-white);
             &.open {
                 display: flex;

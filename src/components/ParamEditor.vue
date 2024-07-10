@@ -5,15 +5,19 @@
                 {{ error }}
             </p>
         </div>
-        <div class="tab-title-bar">
-            <div>
-                <h1>{{ title }}</h1>
-                <span class="subheading">{{ paramable.name }}</span>
+        <div
+            class="title-and-button-bar button-container"
+            @click="openSwitcher">
+            <div style="flex-grow: 1">
+                <h1>Current {{ title }}</h1>
+                <div class="item-name">{{ paramable.name }}</div>
             </div>
-            <button class="change-button" @click="openSwitcher">
-                <span class="material-icons-sharp">swap_horiz</span>
-                <span class="change-button-text">Change {{ title }}</span>
-            </button>
+            <div class="change-tooltip tooltip-anchor button">
+                <MageExchangeA id="change-icon" />
+                <div class="desc-tooltip-text help-box">
+                    Change {{ title }}
+                </div>
+            </div>
         </div>
         <p class="description">{{ paramable.description }}</p>
         <div v-for="(hierarchy, name) in sortedParams" v-bind:key="name">
@@ -51,6 +55,7 @@
     } from '../shared/Paramable'
     import typeFunctions, {ParamType} from '../shared/ParamType'
     import {ValidationStatus} from '../shared/ValidationStatus'
+    import MageExchangeA from './MageExchangeA.vue'
     import ParamField from './ParamField.vue'
 
     interface ParamHierarchy {
@@ -78,6 +83,7 @@
         },
         emits: ['changed', 'openSwitcher'],
         components: {
+            MageExchangeA,
             ParamField,
         },
         computed: {
@@ -153,19 +159,37 @@
 </script>
 
 <style scoped lang="scss">
+    /* Note some classes are used from SpecimenBar.vue, e.g.
+       title-and-button-bar
+     */
     h1 {
-        font-size: 16px;
+        font-size: var(--ns-size-subheading); // sizes inverted in ParamEditor
+        // because the name of the item is more important than the title
         margin: 0;
     }
 
-    .subheading {
-        color: var(--ns-color-grey);
-        font-size: 14px;
+    .item-name {
+        // designed to mimic input areas
+        border-bottom: 1.5px solid var(--ns-color-black);
+        font-size: var(--ns-size-heading);
+        padding: 6px 8px 6px 8px;
+        width: 100%;
+    }
+
+    .change-tooltip {
+        position: relative;
+        cursor: pointer;
+    }
+
+    #change-icon {
+        position: relative;
+        top: 2px;
     }
 
     .description {
         font-size: 12px;
-        margin-bottom: 32px;
+        margin-top: 0px;
+        margin-bottom: 24px;
     }
 
     .sub-param-box {
@@ -184,35 +208,5 @@
         font-size: var(--ns-size-body);
         margin: 8px 0;
         color: red;
-    }
-
-    .tab-title-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        h1 {
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .subheading {
-            color: var(--ns-color-grey);
-            font-size: 14px;
-        }
-
-        .change-button {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border: 1px solid var(--ns-color-white);
-            background: none;
-            width: min-content;
-            padding: 4px;
-
-            &:hover {
-                border: 1px solid var(--ns-color-light);
-            }
-        }
     }
 </style>
