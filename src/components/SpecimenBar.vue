@@ -1,5 +1,5 @@
 <template>
-    <div class="specimen-bar">
+    <div class="title-and-button-bar">
         <div class="input-container">
             <label>
                 Specimen name
@@ -9,54 +9,57 @@
                     @input="updateName($event)" />
             </label>
 
-            <div class="desc-tooltip">
+            <div class="desc-tooltip tooltip-anchor">
                 <span class="help material-icons-sharp">help</span>
                 <div class="desc-tooltip-text help-box">
                     You can enter the name you want to give this specimen
                 </div>
             </div>
         </div>
-        <div class="button material-icons-sharp" @click="refresh">
-            refresh
-        </div>
-        <div
-            id="pause-button"
-            class="button material-icons-sharp"
-            @click="togglePause">
-            pause
-        </div>
-        <div
-            id="share-button"
-            class="button material-icons-sharp"
-            @click="shareUrl">
-            share
-            <div id="share-popup" class="notification help-box">
-                URL copied to clipboard!
+        <div class="button-container">
+            <div class="button material-icons-sharp" @click="refresh">
+                refresh
             </div>
-        </div>
-        <div>
             <div
-                id="save-button"
+                id="pause-button"
                 class="button material-icons-sharp"
-                @click="checkSave()">
-                save
-            </div>
-            <div id="save-popup" class="notification help-box">
-                Saved to gallery!
-            </div>
-            <div id="overwrite-popup" class="notification help-box">
-                <div id="overwrite-text">
-                    You already have a specimen with the same name, do you
-                    want to overwrite it?
+                v-html="
+                    specimen.visualizer.isDrawing ? 'pause' : 'play_arrow'
+                "
+                @click="togglePause" />
+            <div
+                id="share-button"
+                class="button material-icons-sharp"
+                @click="shareUrl">
+                share
+                <div id="share-popup" class="notification help-box">
+                    URL copied to clipboard!
                 </div>
-                <div id="confirm-overwrite">
-                    <div class="overwrite-button" @click="saveCurrent">
-                        yes
+            </div>
+            <div>
+                <div
+                    id="save-button"
+                    class="button material-icons-sharp"
+                    @click="checkSave()">
+                    save
+                </div>
+                <div id="save-popup" class="notification help-box">
+                    Saved to gallery!
+                </div>
+                <div id="overwrite-popup" class="notification help-box">
+                    <div id="overwrite-text">
+                        You already have a specimen with the same name, do you
+                        want to overwrite it?
                     </div>
-                    <div
-                        class="overwrite-button"
-                        @click="removeOverwritePopup">
-                        no
+                    <div id="confirm-overwrite">
+                        <div class="overwrite-button" @click="saveCurrent">
+                            yes
+                        </div>
+                        <div
+                            class="overwrite-button"
+                            @click="removeOverwritePopup">
+                            no
+                        </div>
                     </div>
                 </div>
             </div>
@@ -85,27 +88,12 @@
             },
             refresh() {
                 this.specimen.updateSequence()
-                paused = false
-                this.updateButtons()
-            },
-            updateButtons() {
-                // find the pause button and change the icon based on 'paused'.
-                const playButton = document.getElementById('pause-button')
-                if (!(playButton instanceof HTMLElement)) return
-                playButton.innerHTML = paused ? 'play_arrow' : 'pause'
             },
             // toggles the pause state
             togglePause() {
-                if (paused) {
-                    // continue the visualizer
-                    this.specimen.visualizer.continue()
-                    paused = false
-                } else {
-                    // pause the visualizer
+                if (this.specimen.visualizer.isDrawing) {
                     this.specimen.visualizer.stop()
-                    paused = true
-                }
-                this.updateButtons()
+                } else this.specimen.visualizer.continue()
             },
             shareUrl() {
                 //get url
@@ -182,20 +170,20 @@
             },
         },
     })
-
-    // true if paused, false if playing
-    let paused = false
-    // refreshes the specimen
 </script>
 
 <style>
-    .specimen-bar {
+    /* Note NOT scoped, these are global styles, used also (for example)
+       in ParamEditor.vue.
+     */
+    .title-and-button-bar {
         display: flex;
         flex-direction: row;
         gap: 8px;
         justify-content: space-between;
-        align-items: flex-end;
-        padding: 8px;
+        align-items: end;
+        padding-top: 8px;
+        padding-bottom: 8px;
     }
     label {
         font-size: 12px;
@@ -205,7 +193,7 @@
         &[type='text'] {
             border: none;
             border-bottom: 1.5px solid var(--ns-color-black);
-            font-size: 14px;
+            font-size: var(--ns-size-heading-2);
             padding: 6px 8px 6px 8px;
             width: 100%;
 
@@ -215,19 +203,28 @@
             }
         }
     }
-    .button {
-        min-width: 30px;
-        text-align: center;
-        width: 30px;
-        height: 30px;
-        line-height: 30px;
-        vertical-align: middle;
-        font-size: 24px;
-        border: 1px solid var(--ns-color-black);
-        color: var(--ns-color-grey);
-        cursor: pointer;
-        user-select: none;
+    .button-container {
+        display: flex;
+        gap: 8px;
+        .button {
+            min-width: 30px;
+            text-align: center;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            vertical-align: middle;
+            font-size: 24px;
+            border: 1px solid var(--ns-color-black);
+            color: var(--ns-color-grey);
+            cursor: pointer;
+            user-select: none;
+
+            &:hover {
+                color: var(--ns-color-black);
+            }
+        }
     }
+
     .help {
         color: var(--ns-color-black);
     }
@@ -285,7 +282,8 @@
         line-height: normal;
         text-wrap: wrap;
         visibility: hidden;
-        width: 240px;
+        width: max-content;
+        max-width: 240px;
         background-color: var(--ns-color-white);
         color: var(--ns-color-black);
         text-align: left;
@@ -300,11 +298,11 @@
             opacity 0.2s,
             visibility 0.2s;
     }
-    .desc-tooltip .desc-tooltip-text {
+    .tooltip-anchor .desc-tooltip-text {
         right: 0;
     }
 
-    .desc-tooltip:hover .desc-tooltip-text {
+    .tooltip-anchor:hover .desc-tooltip-text {
         visibility: visible;
         opacity: 1;
     }

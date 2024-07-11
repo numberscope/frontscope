@@ -61,6 +61,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         _sketch?: p5
         _canvas?: p5.Renderer
         _size: {width: number; height: number}
+        isDrawing = false
 
         within?: HTMLElement
         get sketch(): p5 {
@@ -174,13 +175,16 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             // again
             const displayTimeout = 5
 
-            if (this._canvas) this._sketch?.draw()
-            else {
+            if (this._canvas) {
+                this.isDrawing = true
+                this._sketch?.draw()
+            } else {
                 // If the rendering context is not yet ready, start an interval
                 // that waits until the canvas is ready and shows when finished
                 const interval = setInterval(() => {
                     if (this._canvas) {
                         clearInterval(interval)
+                        this.isDrawing = true
                         this._sketch?.draw()
                     }
                 }, displayTimeout)
@@ -191,6 +195,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * Stop displaying the visualizer
          */
         stop(): void {
+            this.isDrawing = false
             this._sketch?.noLoop()
         }
 
@@ -198,6 +203,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * Continue displaying the visualizer
          */
         continue(): void {
+            this.isDrawing = true
             this._sketch?.loop()
         }
 
@@ -231,6 +237,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 throw 'Attempt to dispose P5Visualizer that is not on view.'
             }
             if (this.within !== element) return // that view already departed
+            this.isDrawing = false
             this._sketch.remove()
             this._sketch = undefined
             this._canvas = undefined

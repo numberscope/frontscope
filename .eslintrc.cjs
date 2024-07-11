@@ -29,4 +29,10 @@ module.exports = {
         // For the Paramable interface, v-model directives need type annotation
         'vue/valid-v-model': 'off',
     },
+    overrides: [
+        {
+            files: ['src/components/MageExchangeA.vue'],
+            rules: {'max-len': 'off'},
+        },
+    ],
 }
