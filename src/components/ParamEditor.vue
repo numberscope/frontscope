@@ -5,8 +5,20 @@
                 {{ error }}
             </p>
         </div>
-        <h1>{{ title }}</h1>
-        <span class="subheading">{{ paramable.name }}</span>
+        <div
+            class="title-and-button-bar button-container"
+            @click="openSwitcher">
+            <div style="flex-grow: 1">
+                <h1>Current {{ title }}</h1>
+                <div class="item-name">{{ paramable.name }}</div>
+            </div>
+            <div class="change-tooltip tooltip-anchor button">
+                <MageExchangeA id="change-icon" />
+                <div class="desc-tooltip-text help-box">
+                    Change {{ title }}
+                </div>
+            </div>
+        </div>
         <p class="description">{{ paramable.description }}</p>
         <div v-for="(hierarchy, name) in sortedParams" v-bind:key="name">
             <ParamField
@@ -43,6 +55,7 @@
     } from '../shared/Paramable'
     import typeFunctions, {ParamType} from '../shared/ParamType'
     import {ValidationStatus} from '../shared/ValidationStatus'
+    import MageExchangeA from './MageExchangeA.vue'
     import ParamField from './ParamField.vue'
 
     interface ParamHierarchy {
@@ -51,6 +64,13 @@
     }
 
     type Paramable = () => ParamableInterface<GenericParamDescription>
+
+    function resetStatuses(
+        items: {[key: string]: unknown},
+        statuses: {[key: string]: ValidationStatus}
+    ) {
+        for (const item in items) statuses[item] = ValidationStatus.ok()
+    }
 
     export default defineComponent({
         name: 'ParamEditor',
@@ -61,39 +81,41 @@
                 required: true,
             },
         },
+        emits: ['changed', 'openSwitcher'],
         components: {
+            MageExchangeA,
             ParamField,
         },
+        computed: {
+            sortedParams() {
+                const sortedParams: {[key: string]: ParamHierarchy} = {}
+                Object.keys(this.paramable.params).forEach(key => {
+                    const param = this.paramable.params[key]
+                    if (!param.visibleDependency)
+                        sortedParams[key] = {param, children: {}}
+                })
+                Object.keys(this.paramable.params).forEach(key => {
+                    const param = this.paramable.params[key]
+                    if (param.visibleDependency)
+                        sortedParams[param.visibleDependency].children[key] =
+                            param
+                })
+                return sortedParams
+            },
+        },
         data() {
-            const paramStatuses: {[key: string]: ValidationStatus} = {}
             const status = ValidationStatus.ok()
-
-            Object.keys(this.paramable.params).forEach(
-                key => (paramStatuses[key] = ValidationStatus.ok())
-            )
-
-            const sortedParams: {[key: string]: ParamHierarchy} = {}
-            Object.keys(this.paramable.params).forEach(key => {
-                const param = this.paramable.params[key]
-                if (!param.visibleDependency)
-                    sortedParams[key] = {param, children: {}}
-            })
-            Object.keys(this.paramable.params).forEach(key => {
-                const param = this.paramable.params[key]
-                if (param.visibleDependency)
-                    sortedParams[param.visibleDependency].children[key] =
-                        param
-            })
-
-            return {paramStatuses, status, sortedParams}
+            const paramStatuses: {[key: string]: ValidationStatus} = {}
+            resetStatuses(this.paramable.params, paramStatuses)
+            return {paramStatuses, status}
         },
         created() {
+            const pstatus = this.paramStatuses
+            resetStatuses(this.paramable.params, pstatus)
             let good = true
             for (const param in this.paramable.params) {
-                const newStatus = ValidationStatus.ok()
-                this.paramable.validateIndividual(param, newStatus)
-                this.paramStatuses[param] = newStatus
-                good &&= newStatus.isValid()
+                this.paramable.validateIndividual(param, pstatus[param])
+                good &&= pstatus[param].isValid()
             }
             if (good) {
                 // The argument '.' to validate below skips all
@@ -124,24 +146,50 @@
                     return param.visiblePredicate(v as never)
                 else return param.visibleValue! === v
             },
+            openSwitcher() {
+                this.$emit('openSwitcher')
+            },
+        },
+        watch: {
+            paramable() {
+                resetStatuses(this.paramable.params, this.paramStatuses)
+            },
         },
     })
 </script>
 
 <style scoped lang="scss">
+    /* Note some classes are used from SpecimenBar.vue, e.g.
+       title-and-button-bar
+     */
     h1 {
-        font-size: 16px;
-        margin-bottom: 0;
+        font-size: var(--ns-size-subheading); // sizes inverted in ParamEditor
+        // because the name of the item is more important than the title
+        margin: 0;
     }
 
-    .subheading {
-        color: var(--ns-color-grey);
-        font-size: 14px;
+    .item-name {
+        // designed to mimic input areas
+        border-bottom: 1.5px solid var(--ns-color-black);
+        font-size: var(--ns-size-heading);
+        padding: 6px 8px 6px 8px;
+        width: 100%;
+    }
+
+    .change-tooltip {
+        position: relative;
+        cursor: pointer;
+    }
+
+    #change-icon {
+        position: relative;
+        top: 2px;
     }
 
     .description {
         font-size: 12px;
-        margin-bottom: 32px;
+        margin-top: 0px;
+        margin-bottom: 24px;
     }
 
     .sub-param-box {
