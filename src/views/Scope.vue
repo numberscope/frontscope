@@ -7,6 +7,26 @@
         </SpecimenBar>
     </NavBar>
     <div id="specimen-container">
+        <SwitcherModal
+            category="sequence"
+            v-if="changeSequenceOpen"
+            @close="
+                () => {
+                    continueVisualizer()
+                    changeSequenceOpen = false
+                }
+            "
+            :specimen="specimen" />
+        <SwitcherModal
+            category="visualizer"
+            v-if="changeVisualizerOpen"
+            @close="
+                () => {
+                    continueVisualizer()
+                    changeVisualizerOpen = false
+                }
+            "
+            :specimen="specimen" />
         <tab
             id="sequenceTab"
             class="tab docked"
@@ -16,6 +36,12 @@
             <ParamEditor
                 title="Sequence"
                 :paramable="specimen.sequence"
+                @openSwitcher="
+                    () => {
+                        pauseVisualizer()
+                        changeSequenceOpen = true
+                    }
+                "
                 @changed="
                     () => {
                         specimen.updateSequence()
@@ -33,6 +59,12 @@
             <ParamEditor
                 title="Visualizer"
                 :paramable="specimen.visualizer"
+                @openSwitcher="
+                    () => {
+                        pauseVisualizer()
+                        changeVisualizerOpen = true
+                    }
+                "
                 @changed="() => updateURL()" />
         </tab>
         <SpecimenBar
@@ -94,6 +126,7 @@
     import NavBar from './minor/NavBar.vue'
     import SpecimenBar from '../components/SpecimenBar.vue'
     import {openCurrent, updateCurrent} from '@/shared/browserCaching'
+    import {isMobile} from '@/shared/layoutUtilities'
 
     /**
      * Positions a tab to be inside a dropzone
@@ -105,7 +138,7 @@
         tab: HTMLElement,
         dropzone: HTMLElement
     ): void {
-        if (window.innerWidth < 700) return
+        if (isMobile()) return
 
         const dropzoneContainer = dropzone.parentElement?.parentElement
         const dropzoneRect = dropzone.getBoundingClientRect()
@@ -175,6 +208,12 @@
      * Used when the window is resized.
      */
     export function positionAndSizeAllTabs(): void {
+        document
+            .querySelectorAll('.dropzone')
+            .forEach((dropzone: Element) => {
+                dropzone.classList.add('empty')
+            })
+
         document.querySelectorAll('.tab').forEach((tab: Element) => {
             if (!(tab instanceof HTMLElement)) return
             if (tab.getAttribute('docked') === 'none') return
@@ -183,9 +222,19 @@
                 '#' + tab.getAttribute('docked') + '-dropzone'
             )
             if (!(dropzone instanceof HTMLElement)) return
-
+            dropzone.classList.remove('empty')
             positionAndSizeTab(tab, dropzone)
         })
+
+        document
+            .querySelectorAll('.dropzone-container')
+            .forEach((container: Element) => {
+                if (container.querySelectorAll('.empty').length == 2) {
+                    container.classList.add('empty')
+                } else {
+                    container.classList.remove('empty')
+                }
+            })
     }
     // selects a tab
     export function selectTab(tab: HTMLElement): void {
@@ -213,13 +262,18 @@
 </script>
 
 <script setup lang="ts">
-    import Tab from '@/components/Tab.vue'
     import interact from 'interactjs'
-    import {onMounted, onUnmounted} from 'vue'
+    import {onMounted, onUnmounted, reactive, ref} from 'vue'
     import {useRoute, useRouter} from 'vue-router'
-    import ParamEditor from '@/components/ParamEditor.vue'
-    import {reactive} from 'vue'
+
     import {Specimen} from '@/shared/Specimen'
+
+    import ParamEditor from '@/components/ParamEditor.vue'
+    import SwitcherModal from '@/components/SwitcherModal.vue'
+    import Tab from '@/components/Tab.vue'
+
+    const changeSequenceOpen = ref(false)
+    const changeVisualizerOpen = ref(false)
 
     const router = useRouter()
     const route = useRoute()
@@ -251,7 +305,17 @@
         updateURL()
     }
 
+    function pauseVisualizer() {
+        specimen.visualizer.stop()
+    }
+    function continueVisualizer() {
+        specimen.visualizer.continue()
+    }
+
     let canvasContainer: HTMLElement = document.documentElement
+    type IntervalID = ReturnType<typeof setInterval>
+    let resizePoll: IntervalID
+
     onMounted(() => {
         const specimenContainer = document.getElementById(
             'specimen-container'
@@ -265,7 +329,7 @@
         canvasContainer = document.getElementById('canvas-container')!
         specimen.setup(canvasContainer)
 
-        setInterval(() => {
+        resizePoll = setInterval(() => {
             specimen.resized(
                 canvasContainer.clientWidth,
                 canvasContainer.clientHeight
@@ -274,6 +338,7 @@
     })
 
     onUnmounted(() => {
+        clearInterval(resizePoll)
         specimen.visualizer.depart(canvasContainer)
     })
 
@@ -407,14 +472,13 @@
         height: 100%;
     }
     #specimen-container {
-        height: calc(100vh - 54px);
         position: relative;
-    }
-    #main {
         display: flex;
-        height: 100%;
+        flex-direction: column;
+        min-height: fit-content;
+        padding-left: auto;
+        padding-right: auto;
     }
-
     #canvas-container {
         flex: 1;
         position: relative;
@@ -422,8 +486,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        order: 1;
+        z-index: -1;
+        border-bottom: 1px solid var(--ns-color-black);
+        height: 300px;
+        width: 100%;
     }
-
     .dropzone-container {
         display: flex;
         flex-direction: column;
@@ -434,13 +502,6 @@
     }
     .dropzone-container {
         display: none;
-    }
-    #canvas-container {
-        order: 1;
-        border-bottom: 1px solid var(--ns-color-black);
-        height: 301px;
-        width: 100%;
-        z-index: -1;
     }
     #sequenceTab {
         width: 100%;
@@ -464,8 +525,8 @@
         padding-right: auto;
         border-bottom: 1px solid var(--ns-color-black);
     }
-    // desktop styles
-    @media (min-width: 700px) {
+    // tablet & desktop styles
+    @media (min-width: $tablet-breakpoint) {
         #specimen-bar-desktop {
             display: flex;
         }
@@ -482,7 +543,6 @@
         }
         #specimen-container {
             height: calc(100vh - 54px);
-            position: relative;
         }
         #main {
             display: flex;

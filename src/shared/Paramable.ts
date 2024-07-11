@@ -39,6 +39,12 @@ export interface ParamInterface<T extends ParamType> {
     // a blank input in the UI will use the `default` property instead of
     // displaying an error to the user.
     required: boolean
+    // The placeholder text that appears in the entry box for the parameter
+    // when that box is empty. This is really only applicable to non-required
+    // parameters, because for required ones, that box is not allowed to be
+    // empty. The placeholder defaults to the string representation of the
+    // default value for the parameter.
+    placeholder?: string
     /* If you want the control for this parameter only to be visible when
      * some other parameter has a specific value (because it is otherwise
      * irrelevant), set this `visibleDependency` property to the name of
@@ -366,10 +372,12 @@ export class Paramable<PD extends GenericParamDescription>
 
             const tentative = this.tentativeValues[prop]
             const status = ValidationStatus.ok()
-            typeFunctions[param.type].validate(tentative, status)
+            // No need to validate empty optional params
+            if (tentative || param.required)
+                typeFunctions[param.type].validate(tentative, status)
             if (status.isValid()) {
-                const realized = typeFunctions[param.type].realize(tentative)
-                if (realized === me[prop]) continue
+                // Skip any parameters that already produce the current value
+                if (me[prop] === realizeOne(param, tentative)) continue
             }
 
             // Circumventing typescript a bit as we do above

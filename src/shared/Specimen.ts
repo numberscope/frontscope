@@ -166,11 +166,8 @@ export class Specimen {
      *     the key of the desired visualizer's export module
      */
     set visualizerKey(visualizerKey: string) {
-        // TODO: Do we need to check if the previous visualizer is already
-        // inhabiting an HTML element and .depart it if so, before it is
-        // setup again? Or will garbage collection of the old visualizer take
-        // care of that?
         this._visualizerKey = visualizerKey
+        this._visualizer.depart(this.location!)
         this._visualizer = new vizMODULES[visualizerKey].visualizer(
             this._sequence
         )

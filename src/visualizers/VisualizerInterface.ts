@@ -52,9 +52,13 @@ export interface VisualizerInterface<PD extends GenericParamDescription>
      */
     inhabit(element: HTMLElement, size: {width: number; height: number}): void
     /**
-     * Show the sequence according to this visualizer.
+     * Show the sequence according to this visualizer, i.e. start drawing
      */
     show(): void
+    /**
+     * Is the visualizer currently drawing?
+     */
+    isDrawing: boolean
     /**
      * Stop drawing the visualization
      */
