@@ -1,5 +1,5 @@
 <template>
-    <NavBar class="navbar">
+    <NavBar class="navbar" @goToScope="resetSpecimen">
         <SpecimenBar
             id="specimen-bar-desktop"
             :specimen
@@ -308,9 +308,14 @@
         updateURL()
     }
 
+    function resetSpecimen() {
+        specimen.updateSequence()
+    }
+
     function pauseVisualizer() {
         specimen.visualizer.stop()
     }
+
     function continueVisualizer() {
         specimen.visualizer.continue()
     }
@@ -545,7 +550,7 @@
             width: var(--ns-desktop-tab-width);
         }
         #specimen-container {
-            height: calc(100vh - 54px);
+            height: calc(100vh - var(--ns-desktop-navbar-height));
         }
         #main {
             display: flex;
