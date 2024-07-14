@@ -277,10 +277,18 @@
 
     const router = useRouter()
     const route = useRoute()
-    const parts = route.fullPath.split('?') // hacky
+
+    function extractQueryFromPath(path: string) {
+        // See https://www.rfc-editor.org/rfc/rfc3986#section-3.4
+        const start = path.indexOf('?')
+        if (start < 0) return ''
+        const end = path.indexOf('#', start)
+        return path.substring(start + 1, end > start ? end : undefined)
+    }
+    const urlQuery = extractQueryFromPath(route.fullPath)
 
     const specimen = reactive(
-        Specimen.fromQuery(parts.length > 1 ? parts[1] : getCurrent().query)
+        Specimen.fromQuery(urlQuery ? urlQuery : getCurrent().query)
     )
     updateCurrent(specimen)
 
