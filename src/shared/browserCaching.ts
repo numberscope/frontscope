@@ -65,7 +65,7 @@ export const defaultQuery = specimenQuery(
 )
 
 // For backward compatibility:
-export function newSIMfromOld(oldSim: {date: string; en64: string}): SIM {
+function newSIMfromOld(oldSim: {date: string; en64: string}): SIM {
     const data = JSON.parse(window.atob(oldSim.en64))
     if (!('name' in data && 'sequence' in data && 'visualizer' in data))
         return {

@@ -56,7 +56,7 @@ be the same length.
         default: 20,
         type: ParamType.INTEGER,
         displayName: 'Step Size',
-        required: true,
+        required: false,
     },
     /**
 - start: x,y coordinates of the point where drawing will start
@@ -65,7 +65,7 @@ be the same length.
         default: new p5.Vector(),
         type: ParamType.VECTOR,
         displayName: 'Start',
-        required: true,
+        required: false,
         description: 'coordinates of the point where drawing will start',
     },
     /**
@@ -75,7 +75,7 @@ be the same length.
         default: 5,
         type: ParamType.INTEGER,
         displayName: 'Stroke Width',
-        required: true,
+        required: false,
     },
     /**
 - bgColor: The background color of the visualizer canvas

@@ -1,27 +1,68 @@
-/* eslint-disable max-len */
-import {newSIMfromOld} from './browserCaching'
+import {specimenQuery} from './browserCaching'
 
-// Use the array below to define the featured specimens.
-// TODO: Change the entrues to the query strings of new URLS.
+// Encodings of the featured specimens
 
 const featuredSIMs = [
-    // Basic Modfill
-    'eyJuYW1lIjoiQmFzaWMgTW9kZmlsbCIsInNlcXVlbmNlIjoiUmFuZG9tIiwic2VxdWVuY2VQYXJhbXMiOiJleUp0YVc0aU9pSXlJaXdpYldGNElqb2lNVFFpZlE9PSIsInZpc3VhbGl6ZXIiOiJNb2RGaWxsIiwidmlzdWFsaXplclBhcmFtcyI6ImV5SnRiMlJFYVcxbGJuTnBiMjRpT2lJeE1pSjkifQ==',
-    // Twelve
-    'eyJuYW1lIjoiVHdlbHZlIiwic2VxdWVuY2UiOiJSYW5kb20iLCJzZXF1ZW5jZVBhcmFtcyI6ImV5SnRhVzRpT2lJeE1pSXNJbTFoZUNJNklqRXlJbjA9IiwidmlzdWFsaXplciI6Ik1vZEZpbGwiLCJ2aXN1YWxpemVyUGFyYW1zIjoiZXlKdGIyUkVhVzFsYm5OcGIyNGlPaUl4TWlKOSJ9',
-    // Latticework
-    'eyJuYW1lIjoiTGF0dGljZXdvcmsiLCJzZXF1ZW5jZSI6IlJhbmRvbSIsInNlcXVlbmNlUGFyYW1zIjoiZXlKdGFXNGlPaUl3SWl3aWJXRjRJam9pTVNKOSIsInZpc3VhbGl6ZXIiOiJUdXJ0bGUiLCJ2aXN1YWxpemVyUGFyYW1zIjoiZXlKa2IyMWhhVzRpT2lJd0xDQXhJaXdpY21GdVoyVWlPaUkwTlN3Z01UTTFJaXdpYzNSbGNGTnBlbVVpT2lJeU1DSXNJbk4wWVhKMElqb2lNQ3dnTUNJc0luTjBjbTlyWlZkbGFXZG9kQ0k2SWpNaUxDSmlaME52Ykc5eUlqb2lJelppTVdFeFlTSXNJbk4wY205clpVTnZiRzl5SWpvaUkyTTVPRGM0TnlKOSJ9',
-    // Residue Rise
-    'eyJuYW1lIjoiUmVzaWR1ZSBSaXNlIiwic2VxdWVuY2UiOiJSYW5kb20iLCJzZXF1ZW5jZVBhcmFtcyI6ImV5SnRhVzRpT2lJd0lpd2liV0Y0SWpvaU9UQXdNREFpZlE9PSIsInZpc3VhbGl6ZXIiOiJNb2RGaWxsIiwidmlzdWFsaXplclBhcmFtcyI6ImV5SnRiMlJFYVcxbGJuTnBiMjRpT2lJeE1EQXdNQ0o5In0=',
-    // Chaos Game
-    'eyJuYW1lIjoiQ2hhb3MgR2FtZSIsInNlcXVlbmNlIjoiUmFuZG9tIiwic2VxdWVuY2VQYXJhbXMiOiJleUp0YVc0aU9pSXdJaXdpYldGNElqb2lNaUo5IiwidmlzdWFsaXplciI6IkNoYW9zIiwidmlzdWFsaXplclBhcmFtcyI6ImV5SmpiM0p1WlhKeklqb2lNeUlzSW1aeVlXTWlPaUl3TGpVaUxDSjNZV3hyWlhKeklqb2lNU0lzSW1OdmJHOXlVM1I1YkdVaU9pSXhJaXdpWjNKaFpHbGxiblJNWlc1bmRHZ2lPaUl4TURBd01DSXNJbWhwWjJoc2FXZG9kRmRoYkd0bGNpSTZJakFpTENKbWFYSnpkQ0k2SWpBaUxDSnNZWE4wSWpvaUlpd2laSFZ0YlhsRWIzUkRiMjUwY205c0lqb2lkSEoxWlNJc0ltTnBjbU5UYVhwbElqb2lNaUlzSW1Gc2NHaGhJam9pTUM0MElpd2ljR2w0Wld4elVHVnlSbkpoYldVaU9pSTBNREFpTENKemFHOTNUR0ZpWld4eklqb2labUZzYzJVaUxDSmtZWEpyVFc5a1pTSTZJblJ5ZFdVaWZRPT0ifQ==',
-    // Polyfactors
-    'eyJuYW1lIjoiUG9seWZhY3RvcnMiLCJzZXF1ZW5jZSI6IkZvcm11bGEiLCJzZXF1ZW5jZVBhcmFtcyI6ImV5Sm1iM0p0ZFd4aElqb2libDR6TFc1ZU1pSjkiLCJ2aXN1YWxpemVyIjoiSGlzdG9ncmFtIiwidmlzdWFsaXplclBhcmFtcyI6ImV5SmlhVzVUYVhwbElqb2lNU0lzSW1acGNuTjBTVzVrWlhnaU9pSWlMQ0owWlhKdGN5STZJakV3TURBaUxDSnRiM1Z6WlU5MlpYSWlPaUowY25WbEluMD0ifQ==',
-    // Wait For It
-    'eyJuYW1lIjoiV2FpdCBGb3IgSXQiLCJzZXF1ZW5jZSI6IkZvcm11bGEiLCJzZXF1ZW5jZVBhcmFtcyI6ImV5Sm1iM0p0ZFd4aElqb2ljMmxuYmloemFXNG9iaXN4S1NraWZRPT0iLCJ2aXN1YWxpemVyIjoiVHVydGxlIiwidmlzdWFsaXplclBhcmFtcyI6ImV5SmtiMjFoYVc0aU9pSXRNU3dnTVNJc0luSmhibWRsSWpvaU16QXNJREV5TUNJc0luTjBaWEJUYVhwbElqb2lNekFpTENKemRHRnlkQ0k2SWpBc0lEQWlMQ0p6ZEhKdmEyVlhaV2xuYUhRaU9pSXlJaXdpWW1kRGIyeHZjaUk2SWlNMVpEVXdPV1lpTENKemRISnZhMlZEYjJ4dmNpSTZJaU0zWVRsbU5tWWlmUT09In0=',
+    // This first one is a candidate for removal from Featured, I would say
+    specimenQuery(
+        'Basic Modfill',
+        'ModFill',
+        'Random',
+        'modDimension=12',
+        'min=3&max=14'
+    ),
+    specimenQuery(
+        'Twelve',
+        'ModFill',
+        'Constant',
+        'modDimension=12',
+        'constant=12'
+    ),
+    specimenQuery(
+        'Latticework',
+        'Turtle',
+        'Random',
+        'domain=0,1&range=45,135&strokeWeight=3'
+            + '&bgColor=%236b1a1a&strokeColor=%23c98787',
+        'min=0&max=1'
+    ),
+    specimenQuery(
+        'Residue Rise',
+        'ModFill',
+        'Random',
+        'modDimension=10000',
+        'min=0&max=90000'
+    ),
+    specimenQuery(
+        'Chaos Game',
+        'Chaos',
+        'Random',
+        'corners=3&colorStyle=1&dummyDotControl=true'
+            + '&circSize=2&alpha=0.4&darkMode=true',
+        'min=0&max=2'
+    ),
+    specimenQuery(
+        'Polyfactors',
+        'Histogram',
+        'Formula',
+        'binSize=1&terms=1000',
+        'formula=n%5E3-n%5E2'
+    ),
+    specimenQuery(
+        'Wait For It',
+        'Turtle',
+        'Formula',
+        'domain=-1,1&range=30,120&stepSize=30&strokeWeight=2'
+            + '&bgColor=%235d509f&strokeColor=%237a9f6f',
+        'formula=sign%28sin%28n%2B1%29%29'
+    ),
 ]
 
-const theSIMs = featuredSIMs.map(en64 => newSIMfromOld({en64, date: ''}))
+// Is there any reason for us to associate dates with featured specimens? Do
+// we want to record when they were added and show that information somehow?
+const theSIMs = featuredSIMs.map(query => {
+    return {query, date: ''}
+})
 
 export function getFeatured() {
     return theSIMs
