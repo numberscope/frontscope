@@ -1,4 +1,4 @@
-import {hasField, hasStringFields, makeStringFields} from './fields'
+import {hasField, makeStringFields} from './fields'
 import type {StringFields} from './fields'
 import typeFunctions, {ParamType} from './ParamType'
 import type {RealizedParamType} from './ParamType'
@@ -192,16 +192,15 @@ export interface ParamableInterface<PD extends GenericParamDescription> {
      */
     refreshParams(): void
     /**
-     * toBase64() should encode the current state of the tentative parameters
-     * into a string in an reversible way.
+     * The query property should have the value of the tentative parameters in
+     * URL query string format
      */
-    toBase64(): string
+    readonly query: string
     /**
-     * loadFromBase64() should decode the string and restore the state of
-     * the tentative parameters to the values that produced the given
-     * encoding via a toBase64() call.
+     * loadQuery() should restore the state of the tentative parameters
+     * to those specified in the query
      */
-    loadFromBase64(base64: string): void
+    loadQuery(query: string): void
 }
 
 /* Helper functions to realize parameters given parameter description(s)
@@ -398,37 +397,25 @@ export class Paramable<PD extends GenericParamDescription>
     parameterChanged(_name: string): void {
         return
     }
-
     /**
-     * Encodes the tentative parameter values of a given paramable
-     * into a base64 string.
-     *
-     * @return the base 64 string containing encoded parameters
+     * Provides the tentative parameter values in URL query string format
      */
-    toBase64(): string {
-        return window.btoa(JSON.stringify(this.tentativeValues))
+    get query(): string {
+        const params = new URLSearchParams(this.tentativeValues)
+        return params.toString()
     }
-
     /**
-     * Parses the tentative parameter values from a base64 string
-     * and updates the tentative values of the given paramable
-     * accordingly. If the string is invalid for the given paramble
-     * (i.e. a parameter is not given), then an error is thrown.
-     * Note that the values are not validated or assigned in this
-     * process.
-     *
-     * @param base64 the string from which to decode parameters
+     * Updates the tentative values of the parameter to those specified in
+     * the given URL query string. Note that the values are not validated or
+     * assigned in this process.
+     * @param {string} query  the URL query string containing parameters
      */
-    loadFromBase64(base64: string): void {
-        const tentativeValues = JSON.parse(window.atob(base64))
-        if (hasStringFields(tentativeValues, this.tentativeValues)) {
-            for (const key in this.tentativeValues) {
-                // Be a little paranoid: Only use "own" properties
-                if (!hasField(this.tentativeValues, key)) continue
-                this.tentativeValues[key] = tentativeValues[key]
-            }
-        } else {
-            throw new Error('Invalid base64 string for given paramable')
+    loadQuery(query: string): void {
+        const params = new URLSearchParams(query)
+        for (const [key, value] of params) {
+            if (key in this.tentativeValues)
+                this.tentativeValues[key as keyof PD] = value
+            else throw new Error(`Invalid property ${key} for ${this.name}`)
         }
     }
 }

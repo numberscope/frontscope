@@ -1,15 +1,16 @@
-import {Specimen} from './Specimen'
+/* A "SIM" (Specimen In Memory) is an object with two string properties:
+   query - gives the url-query-encoding of the specimen
+   date - gives the date on which it was last saved.
 
-/* A "SIM" (Specimen In Memory) is a triple of strings,
-    The first string contains the specimen encoded in base64
-    The second string contains the specimen name
-    The third string contains the date on which it was last saved
+   In a prior version of the code, SIMs used a base64-encoding of specimens,
+   so there is code below that reinterprets such encoding into query strings
+   on the fly, for backwards compatibility with specimens that may have been
+   saved before the switch to query-encoding.
 */
 
 // NON MEMORY RELATED HELPER FUNCTIONS
 export interface SIM {
-    en64: string
-    name: string
+    query: string
     date: string
 }
 
@@ -27,6 +28,28 @@ function getCurrentDate(): string {
     return new Intl.DateTimeFormat('en-US', options).format(currentDate)
 }
 
+// QUERY ENCODING OF SPECIMENS
+export const vizKey = 'viz'
+export const seqKey = 'seq'
+export const vizQueryKey = vizKey + 'Q'
+export const seqQueryKey = seqKey + 'Q'
+export function specimenQuery(
+    name: string,
+    visualizerKind: string,
+    sequenceKind: string,
+    visualizerQuery?: string,
+    sequenceQuery?: string
+): string {
+    const query = new URLSearchParams({
+        name,
+        [vizKey]: visualizerKind,
+        [seqKey]: sequenceKind,
+    })
+    if (visualizerQuery) query.append(vizQueryKey, visualizerQuery)
+    if (sequenceQuery) query.append(seqQueryKey, sequenceQuery)
+    return query.toString()
+}
+
 // MEMORY RELATED HELPER FUNCTIONS AND VARIABLES
 
 // Keys of where the SIMs are saved (is arbitrary)
@@ -35,7 +58,43 @@ const currentKey = 'currentSpecimen'
 
 // The default specimen
 // Will be displayed when the user visits the website for the first time
-export const defaultSpecimen = new Specimen('Specimen', 'ModFill', 'Random')
+export const defaultQuery = specimenQuery(
+    'Default Specimen',
+    'ModFill',
+    'Random'
+)
+
+// For backward compatibility:
+export function newSIMfromOld(oldSim: {date: string; en64: string}): SIM {
+    const data = JSON.parse(window.atob(oldSim.en64))
+    if (!('name' in data && 'sequence' in data && 'visualizer' in data))
+        return {
+            query: specimenQuery('Conversion Error', 'Unknown', 'Unknown'),
+            date: '',
+        }
+    let vizQuery = ''
+    if ('visualizerParams' in data && data.visualizerParams) {
+        const vizData = JSON.parse(window.atob(data.visualizerParams))
+        const vizParams = new URLSearchParams(vizData)
+        vizQuery = vizParams.toString()
+    }
+    let seqQuery = ''
+    if ('sequenceParams' in data && data.sequenceParams) {
+        const seqData = JSON.parse(window.atob(data.sequenceParams))
+        const seqParams = new URLSearchParams(seqData)
+        seqQuery = seqParams.toString()
+    }
+    return {
+        date: oldSim.date,
+        query: specimenQuery(
+            data.name,
+            data.visualizer,
+            data.sequence,
+            vizQuery,
+            seqQuery
+        ),
+    }
+}
 
 /**
  * Fetches the array of SIMs represented in memory.
@@ -45,12 +104,14 @@ export function getSIMs(): SIM[] {
     // Retrieves the saved SIMs from browser cache
     const savedSIMsJson = localStorage.getItem(cacheKey)
     // Creates empty list in case none is found in browser storage
-    let savedSIMs: SIM[] = []
+    const savedSIMs: SIM[] = []
 
     // Parses the saved SIMs if they exist
-    if (savedSIMsJson) {
-        savedSIMs = JSON.parse(savedSIMsJson)
-    }
+    if (savedSIMsJson)
+        for (const sim of JSON.parse(savedSIMsJson))
+            if ('date' in sim)
+                if ('query' in sim) savedSIMs.push(sim)
+                else if ('en64' in sim) savedSIMs.push(newSIMfromOld(sim))
 
     return savedSIMs
 }
@@ -63,25 +124,25 @@ function putSIMs(sims: SIM[]) {
     localStorage.setItem(cacheKey, JSON.stringify(sims))
 }
 
+export function nameOfQuery(query: string): string {
+    const params = new URLSearchParams(query)
+    return params.get('name') || 'Error: name not specified'
+}
+
 /**
  * Fetches the SIM associated with a certain name.
  *
  * @param {string} name  Name of SIM to look up
- * @return {SIM} Associated SIM
+ * @param {SIM[]?} sims  Optional list to look in, defaults to getSIMs()
+ * @return {SIM|undefined} Associated SIM, or undefined if none
  */
-export function getSIMByName(name: string): SIM {
-    const savedSIMs = getSIMs()
-
+export function getSIMByName(name: string, sims = getSIMs()) {
     // Finds the SIM that matches the given name
-    const SIM = savedSIMs.find(SIM => SIM.name === name)
+    const theSIM = sims.find(s => name === nameOfQuery(s.query))
 
     // Return the found SIM object or null if not found
-    if (SIM) {
-        return SIM
-    } else {
-        // Throws an error if that name is not assigned to any SIM
-        throw new Error('Name not found')
-    }
+    if (theSIM) return theSIM
+    return undefined
 }
 
 //MAIN FUNCTIONS
@@ -95,56 +156,51 @@ export function getCurrent(): SIM {
     // Retrieves the saved SIM in the current slot
     const savedCurrent = localStorage.getItem(currentKey)
 
-    //Creates an empty saved SIM in case the slot is somehow empty
-    let currentSIM: SIM = {en64: '', name: '', date: ''}
-
-    //Overrides the empty SIM with whatever is in the memory
     if (savedCurrent) {
-        currentSIM = JSON.parse(savedCurrent)
+        const data = JSON.parse(savedCurrent)
+        if ('query' in data) return data
+        if ('en64' in data) return newSIMfromOld(data)
     }
 
-    return currentSIM
+    return {query: defaultQuery, date: ''}
 }
 
 // Helper type for updateCurrent
-interface SpecNameEncode {
-    name: string
-    encode64(): string
+interface Queryable {
+    query: string
 }
 
 /**
- * Overrides the base64 encoding and inferred name in the current slot.
+ * Overrides query in the current slot.
  * To be called whenever changes are made to the current specimen.
  *
- * @param {{name: string, encode64():string}} specimen  new current specimen
+ * @param {{query: string}} specimen  new current specimen
  */
-export function updateCurrent(specimen: SpecNameEncode): void {
-    // Overrides the current slot
+export function updateCurrent(specimen: Queryable): void {
     const current = getCurrent()
-    current.name = specimen.name
-    current.en64 = specimen.encode64()
+    current.query = specimen.query
     localStorage.setItem(currentKey, JSON.stringify(current))
 }
 
 /**
- * Packages the base64 encoding and name into a new SIM and saves it.
- * It also updates the "last saved" property of the SIM.
- * If the name corresponds to an already existing SIM, it is overriden.
+ * Saves the specimen corresponding to the given query, updating its
+ * "last saved" property.
+ * If the name in the query corresponds to an already existing SIM,
+ * it is overwritten.
  * It should be called when the user presses the save button.
  *
- * @param {string} base64  encoding of the specimen to save
- * @param {string} name  name to save specimen under
+ * @param {string} query  encoding of the specimen to save
  */
 
-export function saveSpecimen(en64: string, name: string): void {
+export function saveSpecimen(query: string): void {
     const date = getCurrentDate()
     const savedSIMs = getSIMs()
-    const existing = savedSIMs.find(SIM => SIM.name === name)
+    const existing = getSIMByName(nameOfQuery(query), savedSIMs)
     if (existing) {
-        existing.en64 = en64
-        existing.date = getCurrentDate()
+        existing.query = query
+        existing.date = date
     } else {
-        savedSIMs.push({name, en64, date})
+        savedSIMs.push({query, date})
     }
     putSIMs(savedSIMs)
 }
@@ -157,32 +213,8 @@ export function saveSpecimen(en64: string, name: string): void {
  */
 export function deleteSpecimen(name: string): void {
     const savedSIMs = getSIMs()
-    const index = savedSIMs.findIndex(SIM => SIM.name === name)
+    const index = savedSIMs.findIndex(s => name === nameOfQuery(s.query))
     // If the SIM object is found, remove it from the array
     if (index !== -1) savedSIMs.splice(index, 1)
     putSIMs(savedSIMs)
-}
-
-/**
- * Loads the parameter of a SIM specified by name into current.
- * It should be called when the user presses a specimen in the gallery.
- * If the name is not found in memory it will throw an error.
- *
- * @param {string} name  Name of specimen to make current
- */
-export function loadSIMToCurrent(name: string): void {
-    const SIM = getSIMByName(name)
-    localStorage.setItem(currentKey, JSON.stringify(SIM))
-}
-
-/**
- * Returns the Specimen specified by the current SIM
- * @return {Specimen} the current specimen
- */
-export function openCurrent(): Specimen {
-    const currentSIM = getCurrent()
-    if (currentSIM.en64 == '') {
-        return defaultSpecimen
-    }
-    return Specimen.decode64(currentSIM.en64)
 }

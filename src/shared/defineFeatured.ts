@@ -1,8 +1,8 @@
 /* eslint-disable max-len */
+import {newSIMfromOld} from './browserCaching'
 
 // Use the array below to define the featured specimens.
-// The entries are the base64 encodings of the desired specimens, which
-// can be found as the value of the `specimen=` query string in the URL.
+// TODO: Change the entrues to the query strings of new URLS.
 
 const featuredSIMs = [
     // Basic Modfill
@@ -21,6 +21,8 @@ const featuredSIMs = [
     'eyJuYW1lIjoiV2FpdCBGb3IgSXQiLCJzZXF1ZW5jZSI6IkZvcm11bGEiLCJzZXF1ZW5jZVBhcmFtcyI6ImV5Sm1iM0p0ZFd4aElqb2ljMmxuYmloemFXNG9iaXN4S1NraWZRPT0iLCJ2aXN1YWxpemVyIjoiVHVydGxlIiwidmlzdWFsaXplclBhcmFtcyI6ImV5SmtiMjFoYVc0aU9pSXRNU3dnTVNJc0luSmhibWRsSWpvaU16QXNJREV5TUNJc0luTjBaWEJUYVhwbElqb2lNekFpTENKemRHRnlkQ0k2SWpBc0lEQWlMQ0p6ZEhKdmEyVlhaV2xuYUhRaU9pSXlJaXdpWW1kRGIyeHZjaUk2SWlNMVpEVXdPV1lpTENKemRISnZhMlZEYjJ4dmNpSTZJaU0zWVRsbU5tWWlmUT09In0=',
 ]
 
+const theSIMs = featuredSIMs.map(en64 => newSIMfromOld({en64, date: ''}))
+
 export function getFeatured() {
-    return featuredSIMs
+    return theSIMs
 }

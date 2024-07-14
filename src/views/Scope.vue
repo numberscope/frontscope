@@ -125,7 +125,7 @@
 <script lang="ts">
     import NavBar from './minor/NavBar.vue'
     import SpecimenBar from '../components/SpecimenBar.vue'
-    import {openCurrent, updateCurrent} from '@/shared/browserCaching'
+    import {getCurrent, updateCurrent} from '@/shared/browserCaching'
     import {isMobile} from '@/shared/layoutUtilities'
 
     /**
@@ -277,11 +277,10 @@
 
     const router = useRouter()
     const route = useRoute()
+    const parts = route.fullPath.split('?') // hacky
 
     const specimen = reactive(
-        typeof route.query.specimen === 'string'
-            ? Specimen.decode64(route.query.specimen)
-            : openCurrent()
+        Specimen.fromQuery(parts.length > 1 ? parts[1] : getCurrent().query)
     )
     updateCurrent(specimen)
 
@@ -293,11 +292,7 @@
 
     const updateURL = () => {
         updateCurrent(specimen)
-        router.push({
-            query: {
-                specimen: specimen.encode64(),
-            },
-        })
+        router.push(`/?${specimen.query}`)
     }
 
     function handleSpecimenUpdate(newName: string) {

@@ -1,6 +1,6 @@
 <template>
     <div class="card-body" v-on:click="openSpecimen">
-        <Thumbnail :base64 />
+        <Thumbnail :query />
         <div class="card-title-box">
             <div>
                 <h5 class="card-title">
@@ -25,7 +25,7 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import {Specimen} from '../shared/Specimen'
-    import {deleteSpecimen} from '../shared/browserCaching'
+    import {deleteSpecimen, nameOfQuery} from '../shared/browserCaching'
     import Thumbnail from './Thumbnail.vue'
 
     let cid_count = 0
@@ -33,7 +33,7 @@
     export default defineComponent({
         name: 'SpecimenCard',
         props: {
-            base64: {type: String, required: true},
+            query: {type: String, required: true},
             lastEdited: {type: String},
             subtitle: {type: String},
             permanent: {type: Boolean},
@@ -50,12 +50,7 @@
         methods: {
             openSpecimen() {
                 this.$router
-                    .push({
-                        path: '/',
-                        query: {
-                            specimen: this.base64,
-                        },
-                    })
+                    .push(`/?${this.query}`)
                     .then(_value => window.location.reload())
             },
             deleteSpecimen() {
@@ -64,9 +59,9 @@
             },
         },
         mounted() {
-            this.specimenName = Specimen.getNameFrom64(this.base64)
+            this.specimenName = nameOfQuery(this.query)
             if (this.subtitle) this.useSub = this.subtitle
-            else this.useSub = Specimen.getSequenceNameFrom64(this.base64)
+            else this.useSub = Specimen.getSequenceNameFromQuery(this.query)
         },
         components: {
             Thumbnail,
