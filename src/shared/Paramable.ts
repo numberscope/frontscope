@@ -1,3 +1,4 @@
+import {seqKey} from './browserCaching'
 import {hasField, makeStringFields} from './fields'
 import type {StringFields} from './fields'
 import typeFunctions, {ParamType} from './ParamType'
@@ -239,8 +240,11 @@ export class Paramable<PD extends GenericParamDescription>
     isValid = false
 
     constructor(params: PD) {
-        this.params = params
+        // Hack: make sure Specimen URLs remain unambiguous
+        if (seqKey in params)
+            throw new Error(`Paramable objects may not use key '${seqKey}'`)
 
+        this.params = params
         // Start with empty string for every tentative value
         this.tentativeValues = makeStringFields(params)
         // Now fill in the string forms of all of the default values of
@@ -401,8 +405,20 @@ export class Paramable<PD extends GenericParamDescription>
      * Provides the tentative parameter values in URL query string format
      */
     get query(): string {
-        const params = new URLSearchParams(this.tentativeValues)
-        return params.toString()
+        const tv = this.tentativeValues // just because we use it so many times
+        const saveParams: Record<string, string> = {}
+        for (const key in tv) {
+            // leave out blank/default parameters
+            if (tv[key]) {
+                const param = this.params[key]
+                const defaultString = typeFunctions[param.type].derealize(
+                    param.default as never
+                )
+                if (tv[key] !== defaultString) saveParams[key] = tv[key]
+            }
+        }
+        const urlParams = new URLSearchParams(saveParams)
+        return urlParams.toString()
     }
     /**
      * Updates the tentative values of the parameter to those specified in
@@ -415,7 +431,7 @@ export class Paramable<PD extends GenericParamDescription>
         for (const [key, value] of params) {
             if (key in this.tentativeValues)
                 this.tentativeValues[key as keyof PD] = value
-            else throw new Error(`Invalid property ${key} for ${this.name}`)
+            else console.warn(`Invalid property ${key} for ${this.name}`)
         }
     }
 }

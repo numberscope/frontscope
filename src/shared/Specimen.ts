@@ -1,10 +1,4 @@
-import {
-    specimenQuery,
-    vizKey,
-    seqKey,
-    vizQueryKey,
-    seqQueryKey,
-} from './browserCaching'
+import {specimenQuery, parseSpecimenQuery} from './browserCaching'
 import type {GenericParamDescription} from './Paramable'
 
 import {SequenceExportKind} from '../sequences/SequenceInterface'
@@ -252,13 +246,13 @@ export class Specimen {
      * @return {Specimen} the corresponding specimen
      */
     static fromQuery(query: string): Specimen {
-        const params = new URLSearchParams(query)
+        const specs = parseSpecimenQuery(query)
         const specimen = new Specimen(
-            params.get('name') || 'Error: Unknown Name',
-            params.get(vizKey) || 'Error: No visualizer kind specified',
-            params.get(seqKey) || 'Error: No sequence kind specified',
-            params.get(vizQueryKey) || undefined,
-            params.get(seqQueryKey) || undefined
+            specs.name,
+            specs.visualizerKind,
+            specs.sequenceKind,
+            specs.visualizerQuery,
+            specs.sequenceQuery
         )
         specimen.sequence.validate()
         specimen.visualizer.validate()
@@ -271,12 +265,10 @@ export class Specimen {
      * @return {string} the name of the sequence variety the specimen uses
      */
     static getSequenceNameFromQuery(query: string): string {
-        const params = new URLSearchParams(query)
-        if (!params.has(seqKey))
-            return `Error: ${seqKey} not specified in query`
+        const specs = parseSpecimenQuery(query)
         const sequence = Specimen.makeSequence(
-            params.get(seqKey) || 'This cannot actually happen',
-            params.get(seqQueryKey) || undefined
+            specs.sequenceKind,
+            specs.sequenceQuery
         )
         sequence.validate()
         return sequence.name

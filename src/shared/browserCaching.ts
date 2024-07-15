@@ -29,10 +29,18 @@ function getCurrentDate(): string {
 }
 
 // QUERY ENCODING OF SPECIMENS
-export const vizKey = 'viz'
+const vizKey = 'viz'
 export const seqKey = 'seq'
-export const vizQueryKey = vizKey + 'Q'
-export const seqQueryKey = seqKey + 'Q'
+/**
+ * Generates a URL query string from the information specifying a specimen.
+ *
+ * @param {string} name  The name of the specimen
+ * @param {string} visualizerKind  The kind of Visualizer
+ * @param {string} sequenceKind  The kind of Sequence
+ * @param {string?} visualizerQuery  Optional visualizer query parameter string
+ * @param {string?} sequenceQuery  Optional sequence query parameter string
+ * @return {string} the URL query string encoding of the parameter
+ */
 export function specimenQuery(
     name: string,
     visualizerKind: string,
@@ -40,14 +48,54 @@ export function specimenQuery(
     visualizerQuery?: string,
     sequenceQuery?: string
 ): string {
-    const query = new URLSearchParams({
+    const leadQuery = new URLSearchParams({
         name,
         [vizKey]: visualizerKind,
-        [seqKey]: sequenceKind,
     })
-    if (visualizerQuery) query.append(vizQueryKey, visualizerQuery)
-    if (sequenceQuery) query.append(seqQueryKey, sequenceQuery)
-    return query.toString()
+    const sepQuery = new URLSearchParams({[seqKey]: sequenceKind})
+    const queries = [leadQuery.toString()]
+    if (visualizerQuery) queries.push(visualizerQuery)
+    queries.push(sepQuery.toString())
+    if (sequenceQuery) queries.push(sequenceQuery)
+    return queries.join('&')
+}
+/**
+ * Splits a URL query string for a specimen into its constituent parts
+ * Returns an object with keys `name`, `visualizerKind`, `specimenKind`,
+ * `visualizerQuery`, and `sequenceQuery`, corresponding to the five
+ * arguments of specimenQuery(). I.e., this function inverts specimenQuery().
+ *
+ * @param {string} query  A URL query string encoding a specimen
+ * @return {object} representation of components as decribed above.
+ */
+export function parseSpecimenQuery(query: string) {
+    const params = new URLSearchParams(query)
+    const name = params.get('name') || 'Error: Unknown Name'
+    const visualizerKind =
+        params.get(vizKey) || 'Error: No visualizer kind specified'
+    const sequenceKind =
+        params.get(seqKey) || 'Error: No sequence kind specified'
+    const vizPat = new RegExp(`&${vizKey}=[^&]*&`, 'd')
+    const seqPat = new RegExp(`&${seqKey}=[^&]*&?`, 'd')
+    let visualizerQuery = ''
+    let sequenceQuery = ''
+    const vizMatch = query.match(vizPat)
+    const seqMatch = query.match(seqPat)
+    if (vizMatch?.indices && seqMatch?.index && seqMatch?.indices) {
+        const firstAfterViz = vizMatch.indices[0][1]
+        if (seqMatch.index > firstAfterViz)
+            visualizerQuery = query.substring(firstAfterViz, seqMatch.index)
+        const firstAfterSeq = seqMatch.indices[0][1]
+        if (firstAfterSeq < query.length)
+            sequenceQuery = query.substring(firstAfterSeq)
+    }
+    return {
+        name,
+        visualizerKind,
+        sequenceKind,
+        visualizerQuery,
+        sequenceQuery,
+    }
 }
 
 // MEMORY RELATED HELPER FUNCTIONS AND VARIABLES
