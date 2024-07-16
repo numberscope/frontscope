@@ -1,4 +1,4 @@
-import {hasStringFields} from './fields'
+import {specimenQuery, parseSpecimenQuery} from './browserCaching'
 import type {GenericParamDescription} from './Paramable'
 
 import {SequenceExportKind} from '../sequences/SequenceInterface'
@@ -11,25 +11,14 @@ import seqMODULES from '../sequences/sequences'
 import type {VisualizerInterface} from '../visualizers/VisualizerInterface'
 import vizMODULES from '../visualizers/visualizers'
 
-// Convenience constant to provide fields and types needed to specify
-// a Specimen
-const dummySpecifier = {
-    name: '',
-    sequence: '',
-    sequenceParams: '',
-    visualizer: '',
-    visualizerParams: '',
-} as const
-type SpecimenSpecifier = Record<keyof typeof dummySpecifier, string>
-
 /**
  * This class represents a specimen, containing a visualizer,
  * a sequence, and the set of all parameters that make both of them up.
- * Specimens can be converted to and from base64 encodings so that they
- * can be saved.
+ * Specimens can be converted to and from URL query string encodings so that
+ * they can be saved.
  */
 export class Specimen {
-    private _name: string
+    name: string
     private _visualizerKey: string
     private _sequenceKey: string
     private _visualizer: VisualizerInterface<GenericParamDescription>
@@ -42,45 +31,45 @@ export class Specimen {
      * Constructs a new specimen from a visualizer and a sequence.
      * The string arguments passed in are expected to be keys
      * for the visualizer/sequences' export modules.
-     * Optionally the base64 encodings of the visualizer and sequence
+     * Optionally the URL query string encodings of the visualizer and sequence
      * parameters can be passed in as well.
      * @param {string} name
      * @param {string} visualizerKey  the specimen's variety of visualizer
      * @param {string} sequenceKey  the specimen's variety of sequence
-     * @param {string?} vis64  base64 encoding of visualizer parameters
-     * @param {string?} seq64  base64 encoding of sequence parameters
+     * @param {string?} vizQuery  query string encoding visualizer parameters
+     * @param {string?} seqQuery  query string encoding sequence parameters
      */
     constructor(
         name: string,
         visualizerKey: string,
         sequenceKey: string,
-        vis64?: string,
-        seq64?: string
+        vizQuery?: string,
+        seqQuery?: string
     ) {
-        this._name = name
+        this.name = name
         this._visualizerKey = visualizerKey
         this._sequenceKey = sequenceKey
-        this._sequence = Specimen.makeSequence(sequenceKey, seq64)
+        this._sequence = Specimen.makeSequence(sequenceKey, seqQuery)
 
         this._visualizer = new vizMODULES[visualizerKey].visualizer(
             this._sequence
         )
         this.size = {width: 0, height: 0}
-        if (vis64) this._visualizer.loadFromBase64(vis64)
+        if (vizQuery) this._visualizer.loadQuery(vizQuery)
     }
 
     // Helper for constructor and for extracting sequence name
-    static makeSequence(sequenceKey: string, seq64?: string) {
+    static makeSequence(sequenceKey: string, seqQuery?: string) {
         type SeqIntf = SequenceInterface<GenericParamDescription>
         if (seqMODULES[sequenceKey].kind === SequenceExportKind.FAMILY) {
             const sequence = new (seqMODULES[sequenceKey]
                 .sequenceOrConstructor as SequenceConstructor)(0)
-            if (seq64) sequence.loadFromBase64(seq64)
+            if (seqQuery) sequence.loadQuery(seqQuery)
             return sequence
         }
         const sequence = seqMODULES[sequenceKey]
             .sequenceOrConstructor as SeqIntf
-        if (seq64) sequence.loadFromBase64(seq64)
+        if (seqQuery) sequence.loadQuery(seqQuery)
         return sequence
     }
     /**
@@ -117,13 +106,6 @@ export class Specimen {
         this.visualizer.show()
     }
     /**
-     * Returns the name of this specimen
-     * @return {string} name of the specimen
-     */
-    get name(): string {
-        return this._name
-    }
-    /**
      * Returns the key of the specimen's visualizer
      * @return {string} the variety of visualizer used in this specimen
      */
@@ -138,6 +120,19 @@ export class Specimen {
         return this._sequenceKey
     }
     /**
+     * Returns the query-encoding of the specimen
+     * @return {string} a URL query string that specifies this specimen
+     */
+    get query(): string {
+        return specimenQuery(
+            this.name,
+            this._visualizerKey,
+            this._sequenceKey,
+            this._visualizer.query,
+            this._sequence.query
+        )
+    }
+    /**
      * Returns the specimen's visualizer
      * @returns {VisualizerInterface} the visualizer displaying this specimen
      */
@@ -150,13 +145,6 @@ export class Specimen {
      */
     get sequence(): SequenceInterface<GenericParamDescription> {
         return this._sequence
-    }
-    /**
-     * Assigns a new name to this specimen
-     * @param {string} name  New name
-     */
-    set name(name: string) {
-        this._name = name
     }
     /**
      * Assigns a new visualizer to this specimen and updates its sequence
@@ -252,76 +240,35 @@ export class Specimen {
         }
     }
     /**
-     * Encodes the specimen to a base64 string, recording all information
-     * about the specimen.
-     * @return {string} A string encoding all information about the specimen
+     * Generates a specimen from a URL query string (as produced by the
+     * query getter of a Specimen instance).
+     * @param {string} query  the URL query string encoding of a specimen
+     * @return {Specimen} the corresponding specimen
      */
-    encode64(): string {
-        const data = {
-            name: this.name,
-            sequence: this.sequenceKey,
-            sequenceParams: this.sequence.toBase64(),
-            visualizer: this.visualizerKey,
-            visualizerParams: this.visualizer.toBase64(),
-        }
-
-        return window.btoa(JSON.stringify(data))
-    }
-    /**
-     * Parses a base64 encoding of a specimen into a SpecimenSpecifier object
-     * that has all of the string values needed to generate a Specimen. Throws
-     * an error if the encoded string cannot be decoded appropriately.
-     * @param {string} base64  the encoded string to parse
-     * @return {SpecimenSpecifier} data specifying the specimen
-     */
-    private static parse64(base64: string): SpecimenSpecifier {
-        const data = JSON.parse(window.atob(base64)) as {
-            [key: string]: string
-        }
-        if (hasStringFields(data, dummySpecifier)) return data
-        throw new Error('Invalid base64 encoding of a Specimen')
-    }
-    /**
-     * Decodes a base 64 encoded string (as produced by encode64()) back
-     * into a `Specimen` object. Validates and assigns the resulting
-     * parameter values of the sequence and visualizer of the specimen.
-     *
-     * @param {string} base64  A string produced by encoding a specimen
-     * @return {Specimen} the corresponding Specimen
-     */
-    static decode64(base64: string): Specimen {
-        const data = this.parse64(base64)
+    static fromQuery(query: string): Specimen {
+        const specs = parseSpecimenQuery(query)
         const specimen = new Specimen(
-            data.name,
-            data.visualizer,
-            data.sequence,
-            data.visualizerParams,
-            data.sequenceParams
+            specs.name,
+            specs.visualizerKind,
+            specs.sequenceKind,
+            specs.visualizerQuery,
+            specs.sequenceQuery
         )
         specimen.sequence.validate()
         specimen.visualizer.validate()
         return specimen
     }
     /**
-     * Extracts the name of a specimen from its base64 string encoding
-     * @param {string} base64  A string produced by encoding a specimen
-     * @return {string} the name of the specimen
-     */
-    static getNameFrom64(base64: string): string {
-        return this.parse64(base64)['name']
-    }
-
-    /**
      * Extracts the name of the variety of sequence a specimen is showing
-     * from its base64 string encoding
-     * @param {string} base64  A string produced by encoding a specimen
+     * from its query string encoding
+     * @param {string} query  The URL query string encoding a specimen
      * @return {string} the name of the sequence variety the specimen uses
      */
-    static getSequenceNameFrom64(base64: string): string {
-        const data = this.parse64(base64)
+    static getSequenceNameFromQuery(query: string): string {
+        const specs = parseSpecimenQuery(query)
         const sequence = Specimen.makeSequence(
-            data.sequence,
-            data.sequenceParams
+            specs.sequenceKind,
+            specs.sequenceQuery
         )
         sequence.validate()
         return sequence.name

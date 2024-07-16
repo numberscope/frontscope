@@ -62,7 +62,7 @@
                 this.menuOpen = false
             },
             toUrl: function () {
-                return `/?specimen=${getCurrent().en64}`
+                return `/?${getCurrent().query}`
             },
         },
     })
