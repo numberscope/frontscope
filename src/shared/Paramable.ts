@@ -414,7 +414,14 @@ export class Paramable<PD extends GenericParamDescription>
                 const defaultString = typeFunctions[param.type].derealize(
                     param.default as never
                 )
-                if (tv[key] !== defaultString) saveParams[key] = tv[key]
+                if (tv[key] !== defaultString) {
+                    // Avoid percent-encoding for colors
+                    let qv = tv[key]
+                    if (param.type === ParamType.COLOR && qv[0] === '#') {
+                        qv = qv.substring(1)
+                    }
+                    saveParams[key] = qv
+                }
             }
         }
         const urlParams = new URLSearchParams(saveParams)
@@ -429,9 +436,16 @@ export class Paramable<PD extends GenericParamDescription>
     loadQuery(query: string): void {
         const params = new URLSearchParams(query)
         for (const [key, value] of params) {
-            if (key in this.tentativeValues)
-                this.tentativeValues[key as keyof PD] = value
-            else console.warn(`Invalid property ${key} for ${this.name}`)
+            if (key in this.tentativeValues) {
+                const param = this.params[key]
+                const pdKey = key as keyof PD
+                if (
+                    param.type === ParamType.COLOR
+                    && value.match(/^[0-9a-fA-F]{6}$/)
+                )
+                    this.tentativeValues[pdKey] = '#' + value
+                else this.tentativeValues[pdKey] = value
+            } else console.warn(`Invalid property ${key} for ${this.name}`)
         }
     }
 }
