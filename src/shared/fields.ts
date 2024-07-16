@@ -2,20 +2,6 @@
    of objects
 */
 
-export function hasStringFields<T extends string>(
-    obj: Record<string, unknown>,
-    fields: Record<T, unknown>
-): obj is Record<T, string> {
-    if (typeof obj !== 'object') return false
-    if (obj == null) return false
-    for (const field in fields) {
-        if (Object.prototype.hasOwnProperty.call(obj, field))
-            if (typeof obj[field] === 'string') continue
-        return false
-    }
-    return true
-}
-
 export type StringFields<T extends {[key: string]: unknown}> = {
     [K in keyof T]: string
 }

@@ -50,6 +50,7 @@
     import type {CardSpecimen} from '../components/SpecimensGallery.vue'
     import seqMODULES from '../sequences/sequences'
     import vizMODULES from '../visualizers/visualizers'
+    import {specimenQuery} from '../shared/browserCaching'
     import {isMobile} from '../shared/layoutUtilities'
     import {Specimen} from '../shared/Specimen'
 
@@ -153,22 +154,12 @@
                 cat === 'sequence' ? props.specimen.visualizerKey : module
             const seqKey =
                 cat === 'sequence' ? module : props.specimen.sequenceKey
-            const vis64 =
-                cat === 'sequence' ? props.specimen.visualizer.toBase64() : ''
-            const seq64 =
-                cat === 'sequence' ? '' : props.specimen.sequence.toBase64()
-            // TODO: Way to produce Specimen _encodings_ without having to
-            // actually construct the Specimen; maybe do this if/when we
-            // switch to human-readable encodings
-            const alteredSpec = new Specimen(
-                module,
-                visKey,
-                seqKey,
-                vis64,
-                seq64
-            )
+            const visQ =
+                cat === 'sequence' ? props.specimen.visualizer.query : ''
+            const seqQ =
+                cat === 'sequence' ? '' : props.specimen.sequence.query
             const newCard: CardSpecimen = {
-                base64: alteredSpec.encode64(),
+                query: specimenQuery(module, visKey, seqKey, visQ, seqQ),
                 subtitle: options[module],
             }
             cards.push(newCard)

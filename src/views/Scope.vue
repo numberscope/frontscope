@@ -125,7 +125,7 @@
 <script lang="ts">
     import NavBar from './minor/NavBar.vue'
     import SpecimenBar from '../components/SpecimenBar.vue'
-    import {openCurrent, updateCurrent} from '@/shared/browserCaching'
+    import {getCurrent, updateCurrent} from '@/shared/browserCaching'
     import {isMobile} from '@/shared/layoutUtilities'
 
     /**
@@ -278,10 +278,17 @@
     const router = useRouter()
     const route = useRoute()
 
+    function extractQueryFromPath(path: string) {
+        // See https://www.rfc-editor.org/rfc/rfc3986#section-3.4
+        const start = path.indexOf('?')
+        if (start < 0) return ''
+        const end = path.indexOf('#', start)
+        return path.substring(start + 1, end > start ? end : undefined)
+    }
+    const urlQuery = extractQueryFromPath(route.fullPath)
+
     const specimen = reactive(
-        typeof route.query.specimen === 'string'
-            ? Specimen.decode64(route.query.specimen)
-            : openCurrent()
+        Specimen.fromQuery(urlQuery ? urlQuery : getCurrent().query)
     )
     updateCurrent(specimen)
 
@@ -293,11 +300,7 @@
 
     const updateURL = () => {
         updateCurrent(specimen)
-        router.push({
-            query: {
-                specimen: specimen.encode64(),
-            },
-        })
+        router.push(`/?${specimen.query}`)
     }
 
     function handleSpecimenUpdate(newName: string) {

@@ -63,7 +63,7 @@ const paramDesc = {
         default: 0.5,
         type: ParamType.NUMBER,
         displayName: 'Fraction to walk',
-        required: true,
+        required: false,
         description:
             'What fraction of the way each step takes you toward the '
             + 'vertex specified by the entry. It should be a '
@@ -73,7 +73,7 @@ const paramDesc = {
         default: 1,
         type: ParamType.INTEGER,
         displayName: 'Number of walkers',
-        required: true,
+        required: false,
         description:
             'The number w of walkers. The sequence will be broken into '
             + 'subsequences based on the residue mod w '
@@ -131,7 +131,7 @@ const paramDesc = {
         default: 1,
         type: ParamType.NUMBER,
         displayName: 'Size (pixels)',
-        required: true,
+        required: false,
         visibleDependency: 'dummyDotControl',
         visibleValue: true,
     },
@@ -139,7 +139,7 @@ const paramDesc = {
         default: 0.9,
         type: ParamType.NUMBER,
         displayName: 'Alpha',
-        required: true,
+        required: false,
         description:
             'Alpha factor (from 0.0=transparent to 1.0=solid) of the dots.',
         visibleDependency: 'dummyDotControl',
@@ -149,7 +149,7 @@ const paramDesc = {
         default: 400,
         type: ParamType.INTEGER,
         displayName: 'Dots to draw per frame',
-        required: true,
+        required: false,
         description: '(more = faster).',
         visibleDependency: 'dummyDotControl',
         visibleValue: true,

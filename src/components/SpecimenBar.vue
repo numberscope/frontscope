@@ -120,35 +120,22 @@
                 if (!(name instanceof HTMLInputElement)) return
                 const specimenName = name.value
 
-                try {
-                    // check if specimen with that name already exists
-                    // if it exists, we should ask the user
-                    // if they want to overwrite it
-                    getSIMByName(specimenName)
+                const existingSpecimen = getSIMByName(specimenName)
+                if (existingSpecimen) {
                     const overwrite =
                         document.getElementById('overwrite-popup')
                     if (!(overwrite instanceof HTMLElement)) return
                     overwrite.style.visibility = 'visible'
                     overwrite.style.opacity = '1'
-                } catch (e) {
+                } else {
                     // not in database, so we can save it without repercussions
                     this.saveCurrent()
                 }
             },
             saveCurrent() {
-                //get rid of overwrite popup (if it is visible)
                 this.removeOverwritePopup()
-                // get specimen encoding
-                const base64 = this.specimen.encode64()
-                // get specimen name
-                const name = document.querySelector('input[type="text"]')
-                if (!(name instanceof HTMLInputElement)) return
-                const specimenName = name.value
+                saveSpecimen(this.specimen.query)
 
-                //save to browser
-                saveSpecimen(base64, specimenName)
-
-                //get notification element
                 const notification = document.getElementById('save-popup')
                 if (!(notification instanceof HTMLElement)) return
 
