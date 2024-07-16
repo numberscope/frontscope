@@ -22,8 +22,8 @@ const featuredSIMs = [
         'Latticework',
         'Turtle',
         'Random',
-        'domain=0,1&range=45,135&strokeWeight=3'
-            + '&bgColor=%236b1a1a&strokeColor=%23c98787',
+        'domain=0+1&range=45+135&strokeWeight=3'
+            + '&bgColor=6b1a1a&strokeColor=c98787',
         'min=0&max=1'
     ),
     specimenQuery(
@@ -52,8 +52,8 @@ const featuredSIMs = [
         'Wait For It',
         'Turtle',
         'Formula',
-        'domain=-1,1&range=30,120&stepSize=30&strokeWeight=2'
-            + '&bgColor=%235d509f&strokeColor=%237a9f6f',
+        'domain=-1+1&range=30+120&stepSize=30&strokeWeight=2'
+            + '&bgColor=5d509f&strokeColor=7a9f6f',
         'formula=sign%28sin%28n%2B1%29%29'
     ),
 ]
