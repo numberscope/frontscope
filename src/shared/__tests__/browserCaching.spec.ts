@@ -4,8 +4,6 @@ import {
     updateCurrent,
     saveSpecimen,
     deleteSpecimen,
-    loadSIMToCurrent,
-    openCurrent,
 } from '../browserCaching'
 
 // Mocks localStorage
@@ -34,7 +32,13 @@ Object.defineProperty(global, 'localStorage', {
 
 // Mock date
 const mockDate = '06/27/2024, 10:00:00'
-const mockNoncoding = 'ThisIsNotReallyASpecimenEncoding'
+const mockQuery = 'name=Test&viz=ModFill&seq=Random'
+const anotherQuery = 'name=Test&viz=Turtle&seq=Formula'
+const twoSIMs = [
+    {query: mockQuery, date: mockDate},
+    {query: 'name=Another', date: mockDate},
+]
+
 vi.useFakeTimers()
 vi.setSystemTime(new Date(mockDate))
 
@@ -44,82 +48,42 @@ beforeEach(() => {
 
 describe('SIM functions', () => {
     it('should get the current SIM', () => {
-        const current = {
-            en64: mockNoncoding,
-            name: 'Example',
-            date: mockDate,
-        }
+        const current = {query: mockQuery, date: mockDate}
         localStorage.setItem('currentSpecimen', JSON.stringify(current))
         expect(getCurrent()).toEqual(current)
     })
 
     it('should update the current SIM', () => {
-        updateCurrent({name: 'Test', encode64: () => mockNoncoding})
+        updateCurrent({query: mockQuery})
         const current = JSON.parse(
             localStorage.getItem('currentSpecimen') as string
         )
-        expect(current.en64).toBe(mockNoncoding)
-        expect(current.name).toBe('Test')
+        expect(current.query).toBe(mockQuery)
     })
 
     it('should save a new specimen', () => {
-        saveSpecimen(mockNoncoding, 'Example')
+        saveSpecimen(mockQuery)
         const savedUrls = JSON.parse(
             localStorage.getItem('savedSpecimens') as string
         )
-        expect(savedUrls).toEqual([
-            {en64: mockNoncoding, name: 'Example', date: mockDate},
-        ])
+        expect(savedUrls).toEqual([{query: mockQuery, date: mockDate}])
     })
 
     it('should update an existing specimen', () => {
-        saveSpecimen(mockNoncoding + 'Different', 'Example')
-        saveSpecimen(mockNoncoding, 'Example')
+        saveSpecimen(mockQuery)
+        saveSpecimen(anotherQuery)
         const savedUrls = JSON.parse(
             localStorage.getItem('savedSpecimens') as string
         )
-        expect(savedUrls).toEqual([
-            {en64: mockNoncoding, name: 'Example', date: mockDate},
-        ])
+        expect(savedUrls).toEqual([{query: anotherQuery, date: mockDate}])
     })
 
     it('should delete a specimen by name', () => {
-        const savedUrls = [
-            {en64: mockNoncoding, name: 'Example1', date: mockDate},
-            {en64: mockNoncoding + 'Two', name: 'Example2', date: mockDate},
-        ]
-        localStorage.setItem('savedSpecimens', JSON.stringify(savedUrls))
-        deleteSpecimen('Example1')
+        localStorage.setItem('savedSpecimens', JSON.stringify(twoSIMs))
+        deleteSpecimen('Test')
         const updatedUrls = JSON.parse(
             localStorage.getItem('savedSpecimens') as string
         )
-        expect(updatedUrls).toEqual([savedUrls[1]])
-    })
-
-    it('should make a named specimen current', () => {
-        const savedUrls = [
-            {en64: mockNoncoding, name: 'Example1', date: mockDate},
-            {en64: mockNoncoding + 'Two', name: 'Example2', date: mockDate},
-        ]
-        localStorage.setItem('savedSpecimens', JSON.stringify(savedUrls))
-        loadSIMToCurrent('Example2')
-        expect(getCurrent().en64).toEqual(mockNoncoding + 'Two')
-        expect(getCurrent().name).toEqual('Example2')
-    })
-
-    it('should generate the current Specimen', () => {
-        updateCurrent({
-            name: 'Twelve',
-            encode64: () =>
-                'eyJuYW1lIjoiVHdlbHZlIiwic2VxdWVuY2UiOiJSYW5kb20iLCJzZXF1ZW5jZ'
-                + 'VBhcmFtcyI6ImV5SnRhVzRpT2lJeE1pSXNJbTFoZUNJNklqRXlJbjA9Iiwi'
-                + 'dmlzdWFsaXplciI6Ik1vZEZpbGwiLCJ2aXN1YWxpemVyUGFyYW1zIjoiZXl'
-                + 'KdGIyUkVhVzFsYm5OcGIyNGlPaUl4TWlKOSJ9',
-        })
-        const specimen = openCurrent()
-        expect(specimen.name).toEqual('Twelve')
-        expect(specimen.visualizerKey).toEqual('ModFill')
-        expect(specimen.sequenceKey).toEqual('Random')
-        // Anything else we should check? The mod dimension?
+        expect(updatedUrls).toEqual([twoSIMs[1]])
     })
 })

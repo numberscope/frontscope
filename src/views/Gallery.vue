@@ -43,15 +43,14 @@
 
 <script setup lang="ts">
     import SpecimensGallery from '../components/SpecimensGallery.vue'
-    import type {CardSpecimen} from '../components/SpecimensGallery.vue'
     import {ref, onMounted, computed} from 'vue'
     import {getSIMs} from '../shared/browserCaching'
     import {getFeatured} from '../shared/defineFeatured'
     import type {SIM} from '../shared/browserCaching'
     import NavBar from '../views/minor/NavBar.vue'
 
-    const saved = ref<CardSpecimen[]>([])
-    const featured = ref<CardSpecimen[]>([])
+    const saved = ref<SIM[]>([])
+    const featured = ref<SIM[]>([])
 
     const showFeatured = ref(true)
     const showSaved = ref(true)
@@ -71,28 +70,11 @@
     }
 
     function loadFeatured() {
-        featured.value = getFeatured().map(base64 => {
-            return {base64}
-        })
+        featured.value = getFeatured()
     }
 
     function loadSaved() {
-        saved.value = SIMstoCards(getSIMs())
-    }
-
-    function SIMstoCards(savedSIMs: SIM[]): CardSpecimen[] {
-        const cardSpecs: CardSpecimen[] = []
-        for (const SIM of savedSIMs) {
-            let base64 = SIM.en64
-            // Backwards compatibility hack for specimens that may
-            // have been saved as URLs in prior versions of software:
-            if (!base64 && 'url' in SIM) {
-                const urlObj = new URL(SIM.url as string)
-                base64 = urlObj.searchParams.get('specimen') || ''
-            }
-            cardSpecs.push({base64, lastEdited: SIM.date})
-        }
-        return cardSpecs
+        saved.value = getSIMs()
     }
 
     onMounted(() => {

@@ -24,8 +24,8 @@ const vizDescription =
 
 const paramDesc = {
     /** md
-- domain: A comma-separated list of all of the values that may occur in the
-sequence. (One way to ensure a small number of possible values is to use a
+- domain: A list of all of the values that may occur in the sequence.
+(One way to ensure a small number of possible values is to use a
 sequence that has been reduced with respect to some small modulus. But
 some sequences, like A014577 "The regular paper-folding sequence", naturally
 have a small domain.)
@@ -35,19 +35,18 @@ have a small domain.)
         type: ParamType.BIGINT_ARRAY,
         displayName: 'Sequence Domain',
         required: true,
-        description: '(comma-separated list of values)',
+        description: '(list of possible entry values)',
     },
     /** md
-- range: a comma-separated list of numbers. These are turning angles,
-corresponding positionally to the domain elements. Range and domain must
-be the same length.
+- range: a list of numbers. These are turning angles, corresponding
+positionally to the domain elements. Range and domain must be the same length.
      **/
     range: {
         default: [30, 45, 60, 90, 120] as number[],
         type: ParamType.NUMBER_ARRAY,
         displayName: 'Angles',
         required: true,
-        description: '(comma-separated list of values in degrees)',
+        description: '(list of corresponding angles in degrees)',
     },
     /** md
 - stepSize: a number. Gives the length of the segment drawn for each entry.
@@ -56,7 +55,7 @@ be the same length.
         default: 20,
         type: ParamType.INTEGER,
         displayName: 'Step Size',
-        required: true,
+        required: false,
     },
     /**
 - start: x,y coordinates of the point where drawing will start
@@ -65,7 +64,7 @@ be the same length.
         default: new p5.Vector(),
         type: ParamType.VECTOR,
         displayName: 'Start',
-        required: true,
+        required: false,
         description: 'coordinates of the point where drawing will start',
     },
     /**
@@ -75,7 +74,7 @@ be the same length.
         default: 5,
         type: ParamType.INTEGER,
         displayName: 'Stroke Width',
-        required: true,
+        required: false,
     },
     /**
 - bgColor: The background color of the visualizer canvas

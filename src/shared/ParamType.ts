@@ -42,21 +42,21 @@ export enum ParamType {
      */
     STRING,
     /**
-     * An array of numbers realized as a `number[]`. It is rendered
-     * as a standard input field, but is expected to take the form
-     * of a comma separated list of floating point numbers.
+     * An array of numbers realized as a `number[]`. It is rendered as a
+     * standard input field, but is expected to take the form of a list
+     * of floating point numbers separated by whitespace or commas.
      */
     NUMBER_ARRAY,
     /**
      * An array of integers realized as a `bigint[]`. It is rendered
      * as a standard input field, but is expected to take the form
-     * of a comma separated list of integers.
+     * of a list of integers spearated by whitespace or commas.
      */
     BIGINT_ARRAY,
     /**
      * A two-element vector, realized as `p5.Vector`. It is rendered
-     * as a standard input field, but is expected to take the form
-     * of two floating point numbers separated by a comma.
+     * as a standard input field, but is expected to take the form of
+     * two floating point numbers separated by whitespace or a comma.
      */
     VECTOR,
 }
@@ -103,6 +103,26 @@ export interface ParamTypeFunctions<T> {
      * @return the derealized parameter value
      */
     derealize(value: T): string
+}
+
+// Helper function for arrays:
+const validateNumbers = (
+    value: string,
+    status: ValidationStatus,
+    nParts?: number
+) => {
+    const parts = value.trim().split(/\s*[\s,]\s*/)
+    let bad = parts.some(part => isNaN(Number(part)))
+    let many = ' '
+    if (nParts && nParts > 1 && parts.length !== nParts) {
+        bad = true
+        many = `${nParts} `
+    }
+    if (bad)
+        status.addError(
+            `Input must be a list of ${many}`
+                + 'numbers separated by whitespace or commas'
+        )
 }
 
 const typeFunctions: {
@@ -172,62 +192,37 @@ const typeFunctions: {
         derealize: value => `${value}`,
     },
     [ParamType.NUMBER_ARRAY]: {
-        validate: (value, status) => {
-            if (
-                value
-                    .trim()
-                    .match(
-                        /^(-?(\d+\.\d*|\.?\d+)(\s*,\s*-?(\d+\.\d*|\.?\d+))*)?$/
-                    ) === null
-            )
-                status.addError(
-                    'Input must be a comma-separated list of numbers'
-                )
-        },
-        realize: value => {
-            const numbers = value.split(',')
-            const array = []
-            for (const number of numbers)
-                array.push(parseFloat(number.trim()))
-            return array
-        },
-        derealize: value => (value as number[]).join(', '),
+        validate: validateNumbers,
+        realize: value =>
+            value
+                .trim()
+                .split(/\s*[\s,]\s*/)
+                .map(part => parseFloat(part)),
+        derealize: value => (value as number[]).join(' '),
     },
     [ParamType.BIGINT_ARRAY]: {
         validate: (value, status) => {
-            if (value.trim().match(/^(-?\d+(\s*,\s*-?\d+)*)?$/) === null)
+            if (value.trim().match(/^(-?\d+(\s*[\s,]\s*-?\d+)*)?$/) === null)
                 status.addError(
-                    'Input must be a comma-separated list of integers'
+                    'Input must be a list of integers '
+                        + 'separated by whitespace or commas'
                 )
         },
-        realize: value => {
-            const numbers = value.split(',')
-            const array = []
-            for (const number of numbers) array.push(BigInt(number.trim()))
-            return array
-        },
-        derealize: value => (value as bigint[]).join(', '),
+        realize: value =>
+            value
+                .trim()
+                .split(/\s*[\s,]\s*/)
+                .map(part => BigInt(part)),
+        derealize: value => (value as bigint[]).join(' '),
     },
     [ParamType.VECTOR]: {
-        validate: (value, status) => {
-            if (
-                value
-                    .trim()
-                    .match(
-                        /^-?(\d+\.\d*|\.?\d+)\s*,\s*-?(\d+\.\d*|\.?\d+)$/
-                    ) === null
-            )
-                status.addError('Input must be two comma-separated numbers')
-        },
+        validate: (value, status) => validateNumbers(value, status, 2),
         realize: value => {
-            const numbers = value.split(',')
-            return new p5.Vector(
-                parseFloat(numbers[0].trim()),
-                parseFloat(numbers[1].trim())
-            )
+            const coords = value.split(/\s*[\s,]\s*/)
+            return new p5.Vector(parseFloat(coords[0]), parseFloat(coords[1]))
         },
         derealize: value =>
-            `${(value as p5.Vector).x}, ${(value as p5.Vector).y}`,
+            `${(value as p5.Vector).x} ${(value as p5.Vector).y}`,
     },
 }
 
