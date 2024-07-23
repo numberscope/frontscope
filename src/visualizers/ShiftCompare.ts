@@ -20,11 +20,6 @@ modulus). The pixel is colored black otherwise.
 ## Parameters
 **/
 
-const vizName = 'Shift Compare'
-const vizDescription =
-    'A grid showing pairwise congruence '
-    + 'of sequence entries, to some modulus'
-
 const paramDesc = {
     /** md
 - mod: The modulus to use when comparing entries.
@@ -41,8 +36,10 @@ const paramDesc = {
 // CAUTION: This is unstable with some sequences
 // Using it may crash your browser
 class ShiftCompare extends P5Visualizer(paramDesc) {
-    name = vizName
-    description = vizDescription
+    static category = 'Shift Compare'
+    static description =
+        'A grid showing pairwise congruence '
+        + 'of sequence entries, to some modulus'
 
     private img: p5.Image = new p5.Image(1, 1) // just a dummy
     mod = 2n
@@ -128,8 +125,4 @@ class ShiftCompare extends P5Visualizer(paramDesc) {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    ShiftCompare,
-    vizName,
-    vizDescription
-)
+export const exportModule = new VisualizerExportModule(ShiftCompare)

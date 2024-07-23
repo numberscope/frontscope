@@ -15,9 +15,6 @@ the sequence, and below each term, its prime factors.
 ## Parameters
 **/
 
-const vizName = 'Show Factors'
-const vizDescription = 'Produces a table of factors of a sequence'
-
 const paramDesc = {
     /** md
 - start: The index of the first entry to display
@@ -40,8 +37,8 @@ const paramDesc = {
 } as const
 
 class ShowFactors extends P5Visualizer(paramDesc) {
-    name = vizName
-    description = vizDescription
+    static category = 'Show Factors'
+    static description = 'Produces a table of factors of a sequence'
 
     first = 0
 
@@ -94,8 +91,4 @@ class ShowFactors extends P5Visualizer(paramDesc) {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    ShowFactors,
-    vizName,
-    vizDescription
-)
+export const exportModule = new VisualizerExportModule(ShowFactors)

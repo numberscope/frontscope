@@ -1,5 +1,5 @@
 <template>
-    <NavBar class="navbar">
+    <NavBar class="navbar" @goToScope="resetSpecimen">
         <SpecimenBar
             id="specimen-bar-desktop"
             :specimen
@@ -146,7 +146,14 @@
         const {x, y} = translateCoords(dropzoneRect.x, dropzoneRect.y)
 
         tab.style.top = y + 'px'
-        tab.style.left = x + 'px'
+        if (dropzone.id.includes('right')) {
+            tab.style.removeProperty('left')
+            tab.style.right = '0px'
+        } else {
+            // left zone
+            tab.style.removeProperty('right')
+            tab.style.left = x + 'px'
+        }
         tab.style.height = dropzoneRect.height + 'px'
 
         // update the classlist with "minimized"
@@ -308,9 +315,14 @@
         updateURL()
     }
 
+    function resetSpecimen() {
+        specimen.updateSequence()
+    }
+
     function pauseVisualizer() {
         specimen.visualizer.stop()
     }
+
     function continueVisualizer() {
         specimen.visualizer.continue()
     }
@@ -545,7 +557,7 @@
             width: var(--ns-desktop-tab-width);
         }
         #specimen-container {
-            height: calc(100vh - 54px);
+            height: calc(100vh - var(--ns-desktop-navbar-height));
         }
         #main {
             display: flex;

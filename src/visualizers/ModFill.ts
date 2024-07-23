@@ -20,10 +20,6 @@ occur by watching the order the cells are filled in as the diagram is drawn.
 ## Parameters
 **/
 
-const vizName = 'Mod Fill'
-const vizDescription =
-    'A triangular grid showing which residues occur, to each modulus'
-
 const paramDesc = {
     /** md
 - modDimension: The number of rows to display, which corresponds to the largest
@@ -39,8 +35,9 @@ modulus to consider.
 } as const
 
 class ModFill extends P5Visualizer(paramDesc) {
-    name = vizName
-    description = vizDescription
+    static category = 'Mod Fill'
+    static description =
+        'A triangular grid showing which residues occur, to each modulus'
 
     rectWidth = 0
     rectHeight = 0
@@ -94,8 +91,4 @@ class ModFill extends P5Visualizer(paramDesc) {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    ModFill,
-    vizName,
-    vizDescription
-)
+export const exportModule = new VisualizerExportModule(ModFill)

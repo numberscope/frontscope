@@ -23,11 +23,6 @@ that each difference appears between and below the two numbers it's the
 difference of.
 **/
 
-const vizName = 'Differences'
-const vizDescription =
-    'Produces a table of differences '
-    + 'between consecutive entries, potentially iterated several times'
-
 const paramDesc = {
     /** md
 - **Entries in top row:** How many sequence entries to display in the top
@@ -58,8 +53,10 @@ than 'Entries in top row.')_
 } as const
 
 class Differences extends P5Visualizer(paramDesc) {
-    name = vizName
-    description = vizDescription
+    static category = 'Differences'
+    static description =
+        'Produces a table of differences '
+        + 'between consecutive entries, potentially iterated several times'
 
     first = 0
 
@@ -76,7 +73,7 @@ class Differences extends P5Visualizer(paramDesc) {
         return status
     }
 
-    setup(): void {
+    setup() {
         super.setup()
         if (this.seq.last - this.seq.first + 1 < this.levels) {
             throw Error(
@@ -138,8 +135,4 @@ class Differences extends P5Visualizer(paramDesc) {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    Differences,
-    vizName,
-    vizDescription
-)
+export const exportModule = new VisualizerExportModule(Differences)

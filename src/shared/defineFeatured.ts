@@ -14,9 +14,9 @@ const featuredSIMs = [
     specimenQuery(
         'Twelve',
         'ModFill',
-        'Constant',
+        'Formula',
         'modDimension=12',
-        'constant=12'
+        'formula=12'
     ),
     specimenQuery(
         'Latticework',

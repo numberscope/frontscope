@@ -3,13 +3,11 @@
         <main>
             <RouterView />
         </main>
-        <Footer />
     </div>
 </template>
 
 <script setup lang="ts">
     import {RouterView} from 'vue-router'
-    import Footer from './views/minor/Footer.vue'
 </script>
 
 <!-- Global styles. This style tag is explicitly unscoped. -->
@@ -17,9 +15,14 @@
     #container {
         display: flex;
         flex-direction: column;
+        min-height: 100vh;
+        max-height: 100vh;
 
         main {
             height: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
     }
 
@@ -61,6 +64,7 @@
         --ns-font-weight-medium: 500;
 
         /* Dimensions */
+        --ns-desktop-navbar-height: 76px;
         --ns-desktop-tab-width: 300px;
         --ns-specimen-card-width: 216px;
 
