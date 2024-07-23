@@ -146,7 +146,14 @@
         const {x, y} = translateCoords(dropzoneRect.x, dropzoneRect.y)
 
         tab.style.top = y + 'px'
-        tab.style.left = x + 'px'
+        if (dropzone.id.includes('right')) {
+            tab.style.removeProperty('left')
+            tab.style.right = '0px'
+        } else {
+            // left zone
+            tab.style.removeProperty('right')
+            tab.style.left = x + 'px'
+        }
         tab.style.height = dropzoneRect.height + 'px'
 
         // update the classlist with "minimized"
