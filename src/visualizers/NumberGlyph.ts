@@ -52,11 +52,6 @@ exceeds \( 2^{53}-1 \) to be 0.
 ### Parameters
  **/
 
-const vizName = 'Number Glyphs'
-const vizDescription =
-    'Map entries to colorful glyphs '
-    + 'using their magnitudes and prime factors'
-
 const paramDesc = {
     /** md
 ##### Number of Terms
@@ -137,12 +132,14 @@ The default value is 25.
 } as const
 
 class NumberGlyph extends P5Visualizer(paramDesc) {
-    name = vizName
-    description = vizDescription
+    static category = 'Number Glyphs'
+    static description =
+        'Map entries to colorful glyphs '
+        + 'using their magnitudes and prime factors'
 
     private evaluator: math.EvalFunction
 
-    colorMap = new Map()
+    hueMap = new Map()
     private last = 0
     private currentIndex = 0
     private position = new p5.Vector()
@@ -152,7 +149,6 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     private boxIsShow = false
     private primeNum: bigint[] = []
     private countPrime = 0
-    private firstDraw = true
     private showLabel = false
     private brightAdjust = 100
 
@@ -202,43 +198,15 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         return this.evaluator.evaluate({n: n, x: x})
     }
 
-    setup() {
-        super.setup()
-
-        this.currentIndex = this.seq.first
-        this.position = this.sketch.createVector(0, 0)
-        const canvasSize = this.sketch.createVector(
-            this.sketch.width,
-            this.sketch.height
-        )
-        this.columns = Math.ceil(Math.sqrt(this.n))
-        this.last = this.n + this.seq.first // adjust for offset
+    async presketch() {
+        await super.presketch()
+        this.last = this.seq.first + this.n - 1 // adjust for offset
         if (this.last > this.seq.last) {
             this.last = this.seq.last
         }
-        this.positionIncrement = Math.floor(
-            Math.min(canvasSize.x, canvasSize.y) / this.columns
-        )
-        this.initialRadius = Math.floor(this.positionIncrement / 2)
-        this.radii = this.initialRadius
-
-        this.sketch
-            .background('black')
-            .colorMode(this.sketch.HSB, 360, 100, 100)
-            .frameRate(30)
-
-        this.firstDraw = true
-
-        // Set position of the circle
-        this.initialPosition = this.sketch.createVector(
-            this.initialRadius,
-            this.initialRadius
-        )
-        this.position = this.sketch.createVector(
-            this.initialPosition.x,
-            this.initialPosition.y
-        )
-
+        // NumberGlyph needs access to its entire range of values
+        // before the sketch setup is even called
+        await this.seq.fill(this.last, 'factors')
         // Obtain all prime numbers that appear as factors in the sequence
         for (let i = this.seq.first; i < this.last; i++) {
             const checkCurrentFactors = this.seq.getFactors(i)
@@ -259,36 +227,58 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
                 }
             }
         }
+        //assign hue to each prime number
+        const hueIncrement = 360 / this.countPrime
 
-        //assign color to each prime number
-        const colorNum = 360 / this.countPrime
-
-        this.colorMap.set(1, 0)
-        let tmp = 0
+        this.hueMap.set(1, 0)
+        let hue = 0
 
         for (let i = 0; i < this.primeNum.length; i++) {
-            if (this.colorMap.has(this.primeNum[i]) == false) {
-                tmp += colorNum
-                this.colorMap.set(this.primeNum[i], tmp)
+            if (this.hueMap.has(this.primeNum[i]) == false) {
+                hue += hueIncrement
+                this.hueMap.set(this.primeNum[i], hue)
             }
         }
     }
 
+    setup() {
+        super.setup()
+
+        this.currentIndex = this.seq.first
+        this.position = this.sketch.createVector(0, 0)
+        const canvasSize = this.sketch.createVector(
+            this.sketch.width,
+            this.sketch.height
+        )
+        this.columns = Math.ceil(Math.sqrt(this.n))
+
+        this.positionIncrement = Math.floor(
+            Math.min(canvasSize.x, canvasSize.y) / this.columns
+        )
+        this.initialRadius = Math.floor(this.positionIncrement / 2)
+        this.radii = this.initialRadius
+
+        this.sketch
+            .background('black')
+            .colorMode(this.sketch.HSB, 360, 100, 100)
+            .frameRate(30)
+
+        // Set position of the circle
+        this.initialPosition = this.sketch.createVector(
+            this.initialRadius,
+            this.initialRadius
+        )
+        this.position = this.sketch.createVector(
+            this.initialPosition.x,
+            this.initialPosition.y
+        )
+    }
+
     draw() {
-        if (this.firstDraw == true && this.currentIndex < this.last) {
-            this.sketch.noStroke()
-
-            this.drawCircle(this.currentIndex)
-
-            this.changePosition()
-
-            this.currentIndex++
-
-            // Check if drawing finished
-            if (this.currentIndex >= this.last) {
-                this.firstDraw = false
-            }
-        }
+        this.sketch.noStroke()
+        this.drawCircle(this.currentIndex)
+        this.changePosition()
+        if (this.currentIndex++ > this.last) this.sketch.noLoop()
     }
 
     drawCircle(ind: number) {
@@ -308,15 +298,15 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         let bright = 0
 
         // Obtain the color of the circle
-        let combinedColor = this.factorColor(ind)
+        let combinedHue = this.factorHue(ind)
         let saturation = 100
         // greyscale if no primes
         // (occurs for -1,0,1 or couldn't factor)
-        if (combinedColor == -1) {
+        if (combinedHue == -1) {
             saturation = 0
-            combinedColor = 0
+            combinedHue = 0
         }
-        this.sketch.fill(combinedColor, saturation, bright)
+        this.sketch.fill(combinedHue, saturation, bright)
 
         // iterate smaller and smaller circles
         for (let x = 0; x < this.radii; x++) {
@@ -332,7 +322,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
             bright = this.brightAdjust * (bright / this.brightCap)
 
             // draw the circle
-            this.sketch.fill(combinedColor, saturation, bright)
+            this.sketch.fill(combinedHue, saturation, bright)
             this.sketch.ellipse(
                 this.position.x,
                 this.position.y,
@@ -376,40 +366,35 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     }
 
     //return a number which represents the color
-    factorColor(ind: number) {
+    factorHue(ind: number) {
         const factors = this.seq.getFactors(ind)
         if (factors === null) {
             return -1
         } // factoring failed
 
         //Combine color for each prime factor
-        let colorAll = -1
+        let hue = -1
         for (let i = 0; i < factors.length; i++) {
             const thisPrime = factors[i][0]
             const thisExp = factors[i][1]
             for (let j = 0; j < this.primeNum.length; j++) {
                 if (thisPrime == this.primeNum[j]) {
                     for (let k = 0; k < thisExp; k++) {
-                        if (colorAll == -1) {
-                            colorAll = this.colorMap.get(thisPrime)
+                        if (hue == -1) {
+                            hue = this.hueMap.get(thisPrime)
                         } else {
-                            colorAll =
-                                (colorAll + this.colorMap.get(thisPrime)) / 2
+                            hue = (hue + this.hueMap.get(thisPrime)) / 2
                         }
                     }
                 }
             }
         }
 
-        return colorAll
+        return hue
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    NumberGlyph,
-    vizName,
-    vizDescription
-)
+export const exportModule = new VisualizerExportModule(NumberGlyph)
 
 /** md
 

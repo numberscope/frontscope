@@ -11,8 +11,6 @@ export type Factorization = [bigint, bigint][] | null
 
 export interface SequenceInterface<PD extends GenericParamDescription>
     extends ParamableInterface<PD> {
-    sequenceID: number
-
     /**
      * first gives the lower limit for valid indices into the Sequence.
      * In other words, an integer number n is a valid index only if
@@ -36,6 +34,15 @@ export interface SequenceInterface<PD extends GenericParamDescription>
      * set up the sequence for computation.
      */
     initialize(): void
+
+    /**
+     * Fill provides an opportunity for sequences that need significant
+     * time to prepare to return values to perform that preparation
+     * asynchronously. It should not be necessary to call, but calling
+     * it should ensure that future getElement and getFactors calls
+     * return promptly.
+     */
+    fill(n?: number, what?: string): Promise<void>
 
     /**
      * getElement is what clients of SequenceInterface call to get
@@ -65,61 +72,34 @@ export interface SequenceInterface<PD extends GenericParamDescription>
     getFactors(n: number): Factorization
 }
 
-export interface SequenceConstructor {
-    /**
-     * Constructs a sequence.
-     * @param sequenceID the ID of the sequence
-     */
-    new (sequenceID: number): SequenceInterface<GenericParamDescription>
+interface SequenceConstructor {
+    new (): SequenceInterface<GenericParamDescription>
+    category: string
+    description: string
 }
 
-/**
- *
- * @enum SequenceExportKind
- * A collection of constant values to select among different kinds of
- * buttons that can appear in the SequenceMenu. Each SequenceExportModule
- * corresponds to such a button and must have one of these kinds.
- *
- */
-export enum SequenceExportKind {
-    FAMILY, // A single entry in the SequenceMenu that needs parameters
-    // whenever used
-    INSTANCE, // A single sequence in the SequenceMenu, generally imported
-    // by OEIS
-}
+type SequenceFactory = () => SequenceInterface<GenericParamDescription>
 /**
  *
  * @class SequenceExportModule
  * A lightweight container for an entry in the list of sequences in the
- * menu on the main tool. If the kind is GETTER or FAMILY it holds a
- * sequence constructor and if it is an INSTANCE then it holds one
- * specific sequence.
- *
- * The difference between a GETTER and a FAMILY is that the former creates
- * a new INSTANCE selector in the menu, whereas the former starts out in the
- * menu and you fill out the parameters each time you use it.
+ * menu on the main tool. Records a factory for producing corresponding
+ * Sequence objects on demand.
  *
  */
 export class SequenceExportModule {
-    sequenceOrConstructor:
-        | SequenceConstructor
-        | SequenceInterface<GenericParamDescription>
-    name: string
+    factory: SequenceFactory
+    category: string
     description: string
-    kind: SequenceExportKind
 
-    private constructor(
-        sequenceOrConstructor:
-            | SequenceConstructor
-            | SequenceInterface<GenericParamDescription>,
-        name: string,
-        description: string,
-        kind: SequenceExportKind
+    constructor(
+        factory: SequenceFactory,
+        category: string,
+        description: string
     ) {
-        this.sequenceOrConstructor = sequenceOrConstructor
-        this.name = name
+        this.factory = factory
+        this.category = category
         this.description = description
-        this.kind = kind
     }
 
     /**
@@ -131,15 +111,14 @@ export class SequenceExportModule {
      * @return an appropriate sequence export module
      */
     static family(
-        constructor: SequenceConstructor,
-        name: string,
-        description: string
+        ctor: SequenceConstructor,
+        category?: string,
+        description?: string
     ): SequenceExportModule {
         return new SequenceExportModule(
-            constructor,
-            name,
-            description,
-            SequenceExportKind.FAMILY
+            () => new ctor(),
+            category || ctor.category,
+            description || ctor.description
         )
     }
 
@@ -153,10 +132,9 @@ export class SequenceExportModule {
         sequence: SequenceInterface<GenericParamDescription>
     ): SequenceExportModule {
         return new SequenceExportModule(
-            sequence,
+            () => sequence,
             sequence.name,
-            sequence.description,
-            SequenceExportKind.INSTANCE
+            sequence.description
         )
     }
 }

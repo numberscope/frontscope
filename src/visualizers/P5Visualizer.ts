@@ -58,6 +58,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         extends WithP5<PD>
         implements VisualizerInterface<PD>
     {
+        name = 'uninitialized P5-based visualizer'
         _sketch?: p5
         _canvas?: p5.Renderer
         _size: {width: number; height: number}
@@ -87,6 +88,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          */
         constructor(seq: SequenceInterface<GenericParamDescription>) {
             super(desc)
+            this.name = this.category // Not currently using per-instance names
             this.seq = seq
             this._size = {width: 0, height: 0}
             Object.assign(this, defaultObject)
@@ -103,10 +105,10 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * @param element HTMLElement  Where the visualizer should inject itself
          * @param size The width and height the visualizer should occupy
          */
-        inhabit(
+        async inhabit(
             element: HTMLElement,
             size: {width: number; height: number}
-        ): void {
+        ) {
             if (this.within === element) return // already inhabiting there
             if (this.within) {
                 // oops, already inhabiting somewhere else; depart there
@@ -114,18 +116,27 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             }
             this._size = size
             this.within = element
+            // Perform any necessary asynchronous preparation before
+            // creating sketch. For example, some Visualizers need sequence
+            // factorizations in setup().
+            await this.presketch()
+            // TODO: Can presketch() sometimes take so long that we should
+            // show an hourglass icon in the meantime, or something like that?
+
+            // Now we can create the sketch
             this._sketch = new p5(sketch => {
-                this._sketch = sketch // must assign here,  as setup is called
-                // before the `new p5` returns; I think that makes the outer
-                // (re-) assigning of that result to this._sketch redundant, but
-                // I also think it makes this code a bit clearer than if
-                // inhabit() simply calls `new p5(...)` and discards the result,
-                // so I left that outer reassignment there.
+                this._sketch = sketch // must assign here,  as setup is
+                // called before the `new p5` returns; I think that makes
+                // the outer (re-) assigning of that result to this._sketch
+                // redundant, but I also think it makes this code a bit
+                // clearer than if inhabit() simply calls `new p5(...)` and
+                // discards the result, so I left that outer reassignment
+                // there as well.
 
                 // Now, a little bit of gymnastics to set all of the p5 methods
-                // in the sketch that exist on the Visualizser. Since TypeScript
-                // seems to require that they be methods in this base class, I
-                // couldn't find a way to arrange the code so that the below
+                // in the sketch that exist on the Visualizer. Since TypeScript
+                // seems to require that they be methods in this base class,
+                // I couldn't find a way to arrange the code so that the below
                 // could be simplified to just check whether or not
                 // `this[method]` is defined or undefined:
                 for (const method of p5methods) {
@@ -136,8 +147,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                         sketch[method] = definition.bind(this)
                     }
                 }
-                // And draw is special because of the error handling, so we
-                // treat it separately.
+                // And draw is special because of the error handling:
                 sketch.draw = () => {
                     try {
                         this.draw()
@@ -154,6 +164,15 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                     )
                 }
             }, element)
+        }
+
+        /**
+         * Extend this default presketch() function if you have other
+         * things that must happen asynchronously before a p5 visualizer
+         * can create its sketch.
+         */
+        async presketch() {
+            await this.seq.fill()
         }
 
         /**
@@ -262,8 +281,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             a div that it's already inhabiting, nothing will happen.
         */
 
-        parameterChanged(_name: string): void {
-            super.parameterChanged(_name)
+        async parameterChanged(_name: string) {
+            await super.parameterChanged(_name)
             this.reset()
         }
 
@@ -282,12 +301,12 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * have any of its internal state be reset during a hard reset event,
          * it should override this function.
          */
-        reset() {
+        async reset() {
             if (!this._sketch) return
             const element = this.within!
             this.stop()
             this.depart(element)
-            this.inhabit(element, this._size)
+            await this.inhabit(element, this._size)
             this.show()
         }
     }

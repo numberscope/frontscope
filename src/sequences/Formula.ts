@@ -5,9 +5,6 @@ import simpleFactor from './simpleFactor'
 import * as math from 'mathjs'
 import type {ParamValues} from '@/shared/Paramable'
 
-const seqName = 'Formula: empty'
-const seqDescription = 'A sequence defined by a formula in n'
-
 const paramDesc = {
     formula: {
         default: 'n',
@@ -26,8 +23,9 @@ const paramDesc = {
  * either to be tailored.
  */
 class Formula extends Cached(paramDesc) {
-    name = seqName
-    description = seqDescription
+    static category = 'Formula'
+    name = `${Formula.category}: ${paramDesc.formula.default}`
+    static description = 'A sequence defined by a formula in n'
 
     private evaluator: math.EvalFunction
 
@@ -35,8 +33,8 @@ class Formula extends Cached(paramDesc) {
      *Creates an instance of Formula
      * @param {*} sequenceID the sequence identifier of the sequence
      */
-    constructor(sequenceID: number) {
-        super(sequenceID)
+    constructor() {
+        super()
         // It is mandatory to initialize the `evaluator` property here,
         // so just use a simple dummy formula until the user provides one.
         this.evaluator = math.compile(this.formula)
@@ -89,8 +87,4 @@ class Formula extends Cached(paramDesc) {
     }
 }
 
-export const exportModule = SequenceExportModule.family(
-    Formula,
-    seqName,
-    seqDescription
-)
+export const exportModule = SequenceExportModule.family(Formula)

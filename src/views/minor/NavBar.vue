@@ -2,7 +2,7 @@
     <header>
         <nav>
             <div id="navbar-main">
-                <RouterLink id="logo" :to="toUrl()" v-on:click="closeMenu">
+                <RouterLink id="logo" :to="toUrl()" v-on:click="goToScope">
                     <img :src="LogoWithMicroscope" alt="A microscope icon." />
                 </RouterLink>
                 <button
@@ -61,6 +61,12 @@
             closeMenu: function () {
                 this.menuOpen = false
             },
+
+            goToScope: function () {
+                this.closeMenu()
+                this.$emit('goToScope')
+            },
+
             toUrl: function () {
                 return `/?${getCurrent().query}`
             },
@@ -153,7 +159,7 @@
             justify-content: space-between;
             align-items: center;
             flex-direction: row;
-            height: 76px;
+            height: var(--ns-desktop-navbar-height);
             #navbar-main {
                 #navbar-toggler {
                     display: none;
@@ -166,9 +172,9 @@
                 margin-top: 0;
                 border-bottom: none;
                 width: unset;
+                gap: 24px;
                 .nav-link {
                     margin-top: 0;
-                    margin-left: 16px;
                 }
             }
         }
