@@ -423,11 +423,6 @@ const propertyIndicatorFunction: {
     Semi_Prime: isSemiPrime,
 }
 
-const vizName = 'Grid'
-const vizDescription =
-    'Puts numbers in a grid, '
-    + 'highlighting cells based on various properties'
-
 const paramDesc = {
     /** md
 ### Presets: Which preset to display
@@ -544,8 +539,9 @@ checked.
 } as const
 
 class Grid extends P5Visualizer(paramDesc) {
-    name = vizName
-    description = vizDescription
+    static category = 'Grid'
+    static description =
+        'Puts numbers in a grid, highlighting cells based on various properties'
 
     // Grid variables
     amountOfNumbers = 4096
@@ -911,11 +907,7 @@ earlier ones that use the _same_ style.)
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    Grid,
-    vizName,
-    vizDescription
-)
+export const exportModule = new VisualizerExportModule(Grid)
 
 /** md
 

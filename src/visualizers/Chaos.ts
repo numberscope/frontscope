@@ -46,9 +46,6 @@ enum ColorStyle {
     Highlighting_one_walker,
 }
 
-const vizName = 'Chaos'
-const vizDescription = 'Chaos game played using a sequence to select moves'
-
 const paramDesc = {
     corners: {
         default: 4,
@@ -174,8 +171,8 @@ const paramDesc = {
 // circles fade to the outside
 
 class Chaos extends P5Visualizer(paramDesc) {
-    name = vizName
-    description = vizDescription
+    static category = 'Chaos'
+    static description = 'Chaos game played using a sequence to select moves'
 
     // current state variables (used in setup and draw)
     private seqLength = 0
@@ -366,12 +363,14 @@ class Chaos extends P5Visualizer(paramDesc) {
 
     draw() {
         const sketch = this.sketch
-        // we do pixelsPerFrame pixels each time through the draw cycle;
-        // this speeds things up essentially
+        // We attempt to do pixelsPerFrame pixels each time through the
+        // draw cycle; this speeds things up essentially. Note that we
+        // might end up doing fewer pixels if, for example, we hit a
+        // cache boundary during a frame (at which point getElement will
+        // throw a CachingError, breaking out of draw() altogether).
         const pixelsLimit =
             this.myIndex
             + Math.min(this.last - this.myIndex + 1, this.pixelsPerFrame)
-
         for (; this.myIndex < pixelsLimit; this.myIndex++) {
             // get the term
             const myTerm = this.seq.getElement(this.myIndex)
@@ -440,8 +439,4 @@ class Chaos extends P5Visualizer(paramDesc) {
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    Chaos,
-    vizName,
-    vizDescription
-)
+export const exportModule = new VisualizerExportModule(Chaos)

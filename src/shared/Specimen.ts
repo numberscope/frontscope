@@ -1,16 +1,8 @@
 import {specimenQuery, parseSpecimenQuery} from './browserCaching'
 import type {GenericParamDescription} from './Paramable'
 
-import OEISSequence from '@/sequences/OEIS'
-import {
-    SequenceExportKind,
-    SequenceExportModule,
-} from '@/sequences/SequenceInterface'
-import type {
-    SequenceConstructor,
-    SequenceInterface,
-} from '@/sequences/SequenceInterface'
-import seqMODULES from '@/sequences/sequences'
+import {produceSequence} from '@/sequences/sequences'
+import type {SequenceInterface} from '@/sequences/SequenceInterface'
 
 import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
 import vizMODULES from '@/visualizers/visualizers'
@@ -63,26 +55,9 @@ export class Specimen {
     }
 
     // Helper for constructor and for extracting sequence name
-    static makeSequence(sequenceKey: string, seqQuery?: string) {
-        type SeqIntf = SequenceInterface<GenericParamDescription>
-        // Load OEIS sequence if it is not already
-        // OEIS sequence keys start with '.'
-        if (sequenceKey.startsWith('.') && !(sequenceKey in seqMODULES))
-            seqMODULES[sequenceKey] = SequenceExportModule.instance(
-                new OEISSequence(0) // stand in til OEIS fixed;
-                // Delft PR had:
-                // OEISSequence.fromSequenceExportKey(sequenceKey)
-            )
-
-        if (seqMODULES[sequenceKey].kind === SequenceExportKind.FAMILY) {
-            const sequence = new (seqMODULES[sequenceKey]
-                .sequenceOrConstructor as SequenceConstructor)(0)
-            if (seqQuery) sequence.loadQuery(seqQuery)
-            return sequence
-        }
-        const sequence = seqMODULES[sequenceKey]
-            .sequenceOrConstructor as SeqIntf
-        if (seqQuery) sequence.loadQuery(seqQuery)
+    static makeSequence(key: string, query?: string) {
+        const sequence = produceSequence(key)
+        if (query) sequence.loadQuery(query)
         return sequence
     }
     /**
@@ -90,7 +65,7 @@ export class Specimen {
      * element has been mounted
      * @param {HTMLElement} location  where in the DOM to insert the specimen
      */
-    setup(location: HTMLElement) {
+    async setup(location: HTMLElement) {
         this.location = location
         this.size = this.calculateSize(
             this.location.clientWidth,
@@ -100,14 +75,14 @@ export class Specimen {
 
         this.sequence.initialize()
         this.visualizer.view(this.sequence)
-        this.visualizer.inhabit(this.location, this.size)
+        await this.visualizer.inhabit(this.location, this.size)
         this.visualizer.show()
         this.isSetup = true
     }
     /**
      * Hard resets the specimen
      */
-    reset() {
+    async reset() {
         if (!this.location) return
         this.size = this.calculateSize(
             this.location.clientWidth,
@@ -116,7 +91,7 @@ export class Specimen {
         )
 
         if (this.isSetup) this.visualizer.depart(this.location)
-        this.visualizer.inhabit(this.location, this.size)
+        await this.visualizer.inhabit(this.location, this.size)
         this.visualizer.show()
     }
     /**

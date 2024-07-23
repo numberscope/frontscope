@@ -48,7 +48,7 @@
 <script setup lang="ts">
     import SpecimensGallery from '../components/SpecimensGallery.vue'
     import type {CardSpecimen} from '../components/SpecimensGallery.vue'
-    import seqMODULES from '../sequences/sequences'
+    import {seqMODULES} from '../sequences/sequences'
     import vizMODULES from '../visualizers/visualizers'
     import {specimenQuery} from '../shared/browserCaching'
     import {isMobile} from '../shared/layoutUtilities'

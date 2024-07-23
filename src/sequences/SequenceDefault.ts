@@ -12,22 +12,19 @@ export class SequenceDefault<PD extends GenericParamDescription>
     extends Paramable<PD>
     implements SequenceInterface<PD>
 {
-    sequenceID: number
-    name = 'Base'
-    description = 'A Base sequence class'
+    name = 'An uninitialized generic sequence'
     first = 0
     last = 0
     ready: boolean
 
-    constructor(params: PD, sequenceID: number) {
+    constructor(params: PD) {
         super(params)
-        this.sequenceID = sequenceID
         this.ready = false
         this.isValid = false
     }
 
     /**
-     * initialize() provides an opportunity to do pre-computation
+     * initialize() provides an opportunity to do quick pre-computation
      * before any elements are requested; for a generic sequence there
      * is not necessarily any way to do this.
      */
@@ -44,6 +41,17 @@ export class SequenceDefault<PD extends GenericParamDescription>
             return
         }
         throw Error('Sequence invalid. Run validate and address any errors.')
+    }
+
+    /**
+     * fill() provides an opportunity to do lengthier asynchronous
+     * pre-computation before any elements are requested; it should not
+     * be necessary to call this to get correct values from the sequence,
+     * but calling it should ensure future requests for elements/factors
+     * return rapidly.
+     */
+    async fill(_n?: number) {
+        return
     }
 
     /**

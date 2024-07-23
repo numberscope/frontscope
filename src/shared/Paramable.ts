@@ -130,8 +130,16 @@ export type ParamValues<PD extends GenericParamDescription> = {
 }
 
 export interface ParamableInterface<PD extends GenericParamDescription> {
+    // A per-instance identification of the paramable object. Note that
+    // all derived classes of the "Paramable" implementation of this
+    // interface will also have a _static_ `category` property identifying
+    // that particular kind of Paramable object.
     name: string
-    description: string
+    // Make the per-class description of the category of paramable objects
+    // available via instances; note that by convention it should only
+    // depend on the class.
+    readonly description: string
+    // Was the last check of tentative values successful?:
     isValid: boolean
     /**
      * params determines the parameters that will be settable via the
@@ -233,8 +241,8 @@ function realizeAll<PD extends GenericParamDescription>(
 export class Paramable<PD extends GenericParamDescription>
     implements ParamableInterface<PD>
 {
-    name = 'Paramable'
-    description = 'A class which can have parameters set'
+    name = 'A generic object with parameters'
+    static description = 'An object with dynamically-specifiable parameters'
     params: PD
     tentativeValues: StringFields<PD>
     isValid = false
@@ -260,6 +268,26 @@ export class Paramable<PD extends GenericParamDescription>
                     param.type
                 ].derealize(param.default as never)
         }
+    }
+
+    /* All leaf derived classes of Paramable should have a static
+       property called 'description' to fulfill the ParamableInterface
+    */
+    get description() {
+        // Need to let Typescript know there is a static description property
+        // and then need to suppress eslint's dislike of Function
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        return (this.constructor as Function & {description: string})
+            .description
+    }
+    /* All leaf derived classes of Paramable should have a static
+       property called 'category' that gives the name of that particular
+       class of Paramable object
+    */
+    get category() {
+        // See comments in description getter
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        return (this.constructor as Function & {category: string}).category
     }
     /**
      * All implementations based on this default delegate the aggregate
@@ -398,7 +426,7 @@ export class Paramable<PD extends GenericParamDescription>
      * be called a single time with the name value '#all'
      * @param _name the name of the parameter which has been changed
      */
-    parameterChanged(_name: string): void {
+    async parameterChanged(_name: string) {
         return
     }
     /**
@@ -432,8 +460,9 @@ export class Paramable<PD extends GenericParamDescription>
      * the given URL query string. Note that the values are not validated or
      * assigned in this process.
      * @param {string} query  the URL query string containing parameters
+     * @return {ParamableInterface}  the updated paramable itself
      */
-    loadQuery(query: string): void {
+    loadQuery(query: string): Paramable<PD> {
         const params = new URLSearchParams(query)
         for (const [key, value] of params) {
             if (key in this.tentativeValues) {
@@ -447,5 +476,6 @@ export class Paramable<PD extends GenericParamDescription>
                 else this.tentativeValues[pdKey] = value
             } else console.warn(`Invalid property ${key} for ${this.name}`)
         }
+        return this
     }
 }

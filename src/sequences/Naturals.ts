@@ -2,9 +2,6 @@ import {SequenceExportModule} from './SequenceInterface'
 import {Cached} from './Cached'
 import {ParamType} from '../shared/ParamType'
 
-const seqName = 'Natural Numbers'
-const seqDescription = 'A sequence of the natural numbers'
-
 const paramDesc = {
     includeZero: {
         default: false,
@@ -21,18 +18,11 @@ const paramDesc = {
  * example of using Cached.
  */
 class Naturals extends Cached(paramDesc) {
-    name = seqName
-    description = seqDescription
+    name = 'uninitialized natural number sequence'
+    static category = 'Natural Numbers'
+    static description = 'A sequence of the natural numbers'
 
     private begin = 1
-
-    /**
-     *Creates an instance of Naturals
-     * @param {*} sequenceID the sequence identifier of the sequence
-     */
-    constructor(sequenceID: number) {
-        super(sequenceID)
-    }
 
     initialize() {
         if (this.ready) return
@@ -50,8 +40,4 @@ class Naturals extends Cached(paramDesc) {
     }
 }
 
-export const exportModule = SequenceExportModule.family(
-    Naturals,
-    seqName,
-    seqDescription
-)
+export const exportModule = SequenceExportModule.family(Naturals)
