@@ -363,11 +363,16 @@ class Chaos extends P5Visualizer(paramDesc) {
 
     draw() {
         const sketch = this.sketch
-        // We attempt to do pixelsPerFrame pixels each time through the
-        // draw cycle; this speeds things up essentially. Note that we
-        // might end up doing fewer pixels if, for example, we hit a
-        // cache boundary during a frame (at which point getElement will
-        // throw a CachingError, breaking out of draw() altogether).
+        // We attempt to draw pixelsPerFrame pixels each time through the
+        // draw cycle; this "chunking" speeds things up -- that's essential,
+        // because otherwise the overall patterns created by the chaos are
+        // much too slow to show up, especially at small pixel sizes.
+        // Note that we might end up drawing fewer pixels if, for example,
+        // we hit a cache boundary during a frame (at which point getElement
+        // will throw a CachingError, breaking out of draw() altogether). But
+        // in the next frame, likely the caching is done (or at least has moved
+        // to significantly higher indices), and drawing just picks up where
+        // it left off.
         const pixelsLimit =
             this.myIndex
             + Math.min(this.last - this.myIndex + 1, this.pixelsPerFrame)

@@ -134,7 +134,6 @@
             .nav-link {
                 font-family: var(--ns-font-display);
                 font-size: var(--ns-size-display);
-                font-weight: bold;
 
                 margin-top: 8px;
                 text-decoration: none;
