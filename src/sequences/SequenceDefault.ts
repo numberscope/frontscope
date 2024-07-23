@@ -49,8 +49,12 @@ export class SequenceDefault<PD extends GenericParamDescription>
      * be necessary to call this to get correct values from the sequence,
      * but calling it should ensure future requests for elements/factors
      * return rapidly.
+     * @param {number?} n  what index to fill up to, defaults to one cache block
+     * @param {string?} what
+     *     specifies what data to to fill; currently values are always filled,
+     *     and one may also get factors by specifying 'factors'
      */
-    async fill(_n?: number) {
+    async fill(_n?: number, _what?: string) {
         return
     }
 
