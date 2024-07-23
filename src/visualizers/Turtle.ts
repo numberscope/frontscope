@@ -17,11 +17,6 @@ straight segment. It displays the resulting polygonal path.
 ## Parameters
 **/
 
-const vizName = 'Turtle'
-const vizDescription =
-    'Use a sequence to steer a virtual '
-    + 'turtle that leaves a visible trail'
-
 const paramDesc = {
     /** md
 - domain: A list of all of the values that may occur in the sequence.
@@ -99,8 +94,9 @@ positionally to the domain elements. Range and domain must be the same length.
 // Turtle needs work
 // Throwing the same error on previous Numberscope website
 class Turtle extends P5Visualizer(paramDesc) {
-    name = vizName
-    description = vizDescription
+    static category = 'Turtle'
+    static description =
+        'Use a sequence to steer a virtual turtle that leaves a visible trail'
 
     private rotMap = new Map<string, number>()
 
@@ -146,7 +142,7 @@ class Turtle extends P5Visualizer(paramDesc) {
     }
 
     draw() {
-        const currElement = this.seq.getElement(this.currentIndex++)
+        const currElement = this.seq.getElement(this.currentIndex)
         const angle = this.rotMap.get(currElement.toString())
 
         if (angle == undefined) {
@@ -162,12 +158,8 @@ class Turtle extends P5Visualizer(paramDesc) {
         this.Y += this.stepSize * Math.sin(this.orientation)
 
         this.sketch.line(oldX, oldY, this.X, this.Y)
-        if (this.currentIndex > this.seq.last) this.sketch.noLoop()
+        if (++this.currentIndex > this.seq.last) this.sketch.noLoop()
     }
 }
 
-export const exportModule = new VisualizerExportModule(
-    Turtle,
-    vizName,
-    vizDescription
-)
+export const exportModule = new VisualizerExportModule(Turtle)

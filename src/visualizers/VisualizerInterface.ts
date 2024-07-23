@@ -12,21 +12,24 @@ interface VisualizerConstructor {
     new (
         seq: SequenceInterface<GenericParamDescription>
     ): VisualizerInterface<GenericParamDescription>
+    // Enforce that all visualizers have standard static properties
+    category: string
+    description: string
 }
 
 export class VisualizerExportModule {
     visualizer: VisualizerConstructor
-    name: string
+    category: string
     description: string
 
     constructor(
         viz: VisualizerConstructor,
-        name: string,
-        description: string
+        category?: string,
+        description?: string
     ) {
         this.visualizer = viz
-        this.name = name
-        this.description = description
+        this.category = category || viz.category
+        this.description = description || viz.description
     }
 }
 
@@ -50,7 +53,10 @@ export interface VisualizerInterface<PD extends GenericParamDescription>
      *     insert itself.
      * @param size The width and height the visualizer should occupy
      */
-    inhabit(element: HTMLElement, size: {width: number; height: number}): void
+    inhabit(
+        element: HTMLElement,
+        size: {width: number; height: number}
+    ): Promise<void>
     /**
      * Show the sequence according to this visualizer, i.e. start drawing
      */
@@ -87,11 +93,13 @@ export interface VisualizerInterface<PD extends GenericParamDescription>
      * aspect ratio.
      *
      * Not implementing this function will mean that the visualizer is reset
-     * on resize
+     * on resize. If it is implemented, returning true means the
+     * visualizer will **not** be reset, and resolving to false means that
+     * it will be reset.
      * @param width The new width of the visualizer (in pixels)
      * @param height The new height of the visualizer (in pixels)
      */
-    resized?(width: number, height: number): void
+    resized?(width: number, height: number): boolean
     /**
      * Provides a way for visualizers to request a specific aspect ratio for
      * its canvas. This aspect ratio is specified as a positive n > 0 where

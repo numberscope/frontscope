@@ -38,14 +38,13 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
         Object.keys(desc).map(param => [param, desc[param].default])
     )
     const Cached = class extends SequenceDefault<PD> {
-        name = 'Cached Base'
-        description = 'A base class for cached sequences'
+        name = 'A generic uninitialized sequence with value caching'
         cache: bigint[] = []
         factorCache: Factorization[] = []
         lastValueCached: number
         lastFactorCached: number
-        cachingValuesTo: number
-        cachingFactorsTo: number
+        valueCachingPromise = Promise.resolve()
+        factorCachingPromise = Promise.resolve()
         cacheBlock: number
 
         /**
@@ -60,33 +59,24 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
          * @param {number} cacheBlock
          *     specifies how many values to put in cache at each fill (128)
          */
-        constructor(
-            sequenceID: number,
-            first?: number,
-            last?: number,
-            cacheBlock?: number
-        ) {
-            super(desc, sequenceID)
+        constructor(first?: number, last?: number, cacheBlock?: number) {
+            super(desc)
             this.first = first ?? 0
             this.last = last ?? Infinity
             this.cacheBlock = cacheBlock ?? 128
             this.lastValueCached = this.first - 1
             this.lastFactorCached = this.first - 1
-            this.cachingValuesTo = this.lastValueCached
-            this.cachingFactorsTo = this.lastFactorCached
             Object.assign(this, defaultObject)
         }
 
-        initialize(): void {
-            if (this.ready) return
-            super.initialize()
-            this.ready = false
-            this.cachingValuesTo = min(
-                this.lastValueCached + this.cacheBlock,
-                this.last
-            )
-            this.fillValueCache()
-            this.ready = true
+        async fill(
+            n = isFinite(this.lastValueCached)
+                ? this.lastValueCached + this.cacheBlock
+                : 0,
+            what?: string
+        ) {
+            await this.cacheValues(n)
+            if (what === 'factors') await this.cacheFactors(n)
         }
 
         newCacheSize(n: number, lastCached: number): number {
@@ -104,14 +94,21 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
             return newLimit
         }
 
-        fillValueCache(): void {
-            for (
-                let i: number = this.lastValueCached + 1;
-                i <= this.cachingValuesTo;
-                i++
-            ) {
+        async fillValueCache(n: number) {
+            for (let i = this.lastValueCached + 1; i <= n; i++) {
                 this.cache[i] = this.calculate(i)
                 this.lastValueCached = i
+            }
+        }
+
+        async cacheValues(n: number) {
+            // Let any existing value caching complete
+            await this.valueCachingPromise
+            if (n > this.lastValueCached) {
+                this.valueCachingPromise = this.fillValueCache(n)
+                await this.valueCachingPromise
+            } else {
+                this.valueCachingPromise = Promise.resolve()
             }
         }
 
@@ -124,49 +121,41 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
             if (n <= this.lastValueCached) {
                 return this.cache[n]
             }
-            /* Check for a race condition: attempting to get a value while it's
-            in the midst of being cached. It's also possible this could
-            occur if a prior fillCache() threw an uncaught exception, for
-            example.
-            */
-            if (this.lastValueCached != this.cachingValuesTo) {
-                throw new CachingError(
-                    `Currently caching ${this.lastValueCached} to `
-                        + `${this.cachingValuesTo}.`
-                )
-            }
-            this.cachingValuesTo = this.newCacheSize(n, this.lastValueCached)
-            this.fillValueCache()
-            return this.cache[n]
+            this.cacheValues(this.newCacheSize(n, this.lastValueCached))
+            throw new CachingError(`Filling cache to get value at index ${n}`)
         }
 
-        fillFactorCache(): void {
-            for (
-                let i: number = this.lastFactorCached + 1;
-                i <= this.cachingFactorsTo;
-                i++
-            ) {
+        async fillFactorCache(n: number) {
+            // Make sure we have all of the values we need:
+            await this.cacheValues(n)
+            for (let i = this.lastFactorCached + 1; i <= n; ++i) {
                 this.factorCache[i] = this.factor(i, this.getElement(i))
                 this.lastFactorCached = i
             }
         }
 
+        async cacheFactors(n: number) {
+            // Let any existing factor caching complete
+            await this.factorCachingPromise
+            if (n <= this.last && n > this.lastFactorCached) {
+                this.factorCachingPromise = this.fillFactorCache(n)
+                await this.factorCachingPromise
+            } else {
+                this.factorCachingPromise = Promise.resolve()
+            }
+        }
+
         getFactors(n: number): Factorization {
+            if (n < this.first || n > this.last) {
+                throw RangeError(
+                    `Cached: Index ${n} not in ${this.first}..${this.last}.`
+                )
+            }
             if (n <= this.lastFactorCached) {
                 return this.factorCache[n]
             }
-            if (this.lastFactorCached != this.cachingFactorsTo) {
-                throw new CachingError(
-                    `Currently factoring ${this.lastFactorCached} to `
-                        + `${this.cachingFactorsTo}.`
-                )
-            }
-            this.cachingFactorsTo = this.newCacheSize(
-                n,
-                this.lastFactorCached
-            )
-            this.fillFactorCache()
-            return this.factorCache[n]
+            this.cacheFactors(this.newCacheSize(n, this.lastFactorCached))
+            throw new CachingError(`Factoring value at index ${n}.`)
         }
 
         /**
@@ -195,19 +184,18 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
          * different. As a result, we want to reset the cache and reinitialize
          * the sequence so that every element is recomputed when queried.
          */
-        parameterChanged(_name: string): void {
-            super.parameterChanged(_name)
+        async parameterChanged(_name: string) {
+            await super.parameterChanged(_name)
             this.ready = false
+            await this.valueCachingPromise
+            await this.factorCachingPromise
             this.lastValueCached = this.first - 1
             this.lastFactorCached = this.first - 1
-            this.cachingValuesTo = this.lastValueCached
-            this.cachingFactorsTo = this.lastFactorCached
             this.initialize()
         }
     }
 
-    return Cached as new (
-        sequenceID: number,
+    return Cached as unknown as new (
         first?: number,
         last?: number,
         cacheBlock?: number
