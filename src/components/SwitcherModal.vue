@@ -37,7 +37,7 @@
                         <SpecimensGallery
                             class="results"
                             :specimens="altered(category)"
-                            :canDelete="false" />
+                            @removeSpecimen="deleteModule" />
                     </div>
                 </div>
             </div>
@@ -48,23 +48,32 @@
 <script setup lang="ts">
     import SpecimensGallery from '../components/SpecimensGallery.vue'
     import type {CardSpecimen} from '../components/SpecimensGallery.vue'
-    import {seqMODULES} from '../sequences/sequences'
+    import {seqMODULES, disableOEIS} from '../sequences/sequences'
     import vizMODULES from '../visualizers/visualizers'
-    import {specimenQuery} from '../shared/browserCaching'
+    import {specimenQuery, getIDs} from '../shared/browserCaching'
     import {isMobile} from '../shared/layoutUtilities'
     import {Specimen} from '../shared/Specimen'
 
     import {ref, onMounted} from 'vue'
     import type {PropType, UnwrapNestedRefs} from 'vue'
 
-    function descriptions(mods: {[key: string]: {description: string}}) {
-        return Object.fromEntries(
-            Object.keys(mods).map(k => [k, mods[k].description])
-        )
-    }
-    const modules = {
-        sequence: descriptions(seqMODULES),
-        visualizer: descriptions(vizMODULES),
+    function descriptions(
+        mods: {[key: string]: {description: string}},
+        order?: string[]
+    ) {
+        // The control over the order is needed so that Sequences appear
+        // with the "always-there" ones first, followed by the OEIS ones
+        // in order from most recently added to longest-ago added.
+        const descArray: [string, string][] = []
+        for (const key in mods) {
+            if (order && order.includes(key)) break
+            descArray.push([key, mods[key].description])
+        }
+        if (order)
+            // Add the rest of the keys in order
+            for (const key of order)
+                if (key in mods) descArray.push([key, mods[key].description])
+        return Object.fromEntries(descArray)
     }
 
     const emit = defineEmits(['close'])
@@ -80,6 +89,14 @@
             required: true,
         },
     })
+
+    const modules = {
+        sequence: descriptions(
+            seqMODULES,
+            getIDs().map(id => `OEIS ${id}`)
+        ),
+        visualizer: descriptions(vizMODULES),
+    }
 
     const switcher = ref<HTMLElement | null>(null)
     const galleryWrap = ref<HTMLElement | null>(null)
@@ -161,10 +178,16 @@
             const newCard: CardSpecimen = {
                 query: specimenQuery(module, visKey, seqKey, visQ, seqQ),
                 subtitle: options[module],
+                canDelete: cat === 'sequence' && module.startsWith('OEIS'),
             }
             cards.push(newCard)
         }
         return cards
+    }
+
+    function deleteModule(name: string) {
+        if (props.category !== 'sequence' || !name.startsWith('OEIS')) return
+        disableOEIS(name)
     }
 </script>
 
