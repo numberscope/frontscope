@@ -110,7 +110,8 @@ export interface VisualizerInterface<PD extends GenericParamDescription>
      * If the visualizer does not wish to request a specific aspect ratio and
      * will instead work with whatever is given, this function may return
      * `undefined` instead.
-     * @return the aspect ratio requested by the visualizer, or undefined if any
+     * @return the aspect ratio (width/height) requested by the visualizer,
+     * or undefined if no requested ratio
      */
     requestedAspectRatio(): number | undefined
 }

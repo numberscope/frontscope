@@ -76,13 +76,13 @@ changes one of those top-level properties while the visualizer is running, you
 should refresh the corresponding parameter by calling `this.refreshParams()`
 so the person interacting with it can see the change.
 
-Below the list of these parameter properties, the visualizer class also needs
-a `params` property that describes how the parameters should appear in the UI.
-Look in `src/shared/Paramable.ts`, or in other visualizers, to learn about the
-options you can set in `paramDesc` -- labels for the parameter, allowed values
-for a dropdown menu, and so on.
+A parameter must specify a `default` value, a `type`, a name (`displayName`),
+and specify whether it is `required` (required parameters are displayed more
+prominently). Look in `src/shared/Paramable.ts`, or in other visualizers, to
+learn about the other options you can set in `paramDesc`, such as longer
+descriptions.
 
--   **p5 Template:** `stepSize`. This is required to be a positive integer.
+-   **p5 Template:** `stepSize`.
 
 #### 💡️ Other properties _(often used)_
 
@@ -113,7 +113,7 @@ typed as an integer may run a validation to check if the integer entered is
 positive. Any errors on such checks will immediately be displayed to the user
 next to the relevant parameter entry field.
 
-The other is an opportunity to check global consistency among many parameters.
+The third is an opportunity to check global consistency among many parameters.
 For example, it may be that the number of items in two separate list
 parameters must be equal. Such checks can be performed in the function
 `checkParameters()`, which is called whenever parameters are changed by the
@@ -182,11 +182,11 @@ must appear in every p5 setup function.
 
 When a visualizer is resized, or the restart button on Numberscope is pressed,
 the class function `reset()` is called. By default, this calls both
-`presketch()` and `setup()`, and a new canvas is created.  
-However, the visualizer object constructor is not re-run and any data stored
-in variables in the visualizer object persists. That means that you have the
-option to forgo re-doing expensive pre-computations, by overriding `reset()`
-from the `P5Visualizer` base class.
+`presketch()` and `setup()`, and a new canvas is created. However, the
+visualizer object constructor is not re-run and any data stored in variables
+in the visualizer object persists. That means that you have the option to
+forgo re-doing expensive pre-computations, by overriding `reset()` from the
+`P5Visualizer` base class.
 
 -   **p5 Template:** Go to the beginning of the sequence. Create palette
     colors. Set text alignment.

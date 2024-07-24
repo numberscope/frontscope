@@ -19,7 +19,7 @@
 // further information on what these each do.
 //
 // Standard parameter functionality:
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
+import type {GenericParamDescription} from '../shared/Paramable'
 import {ParamType} from '../shared/ParamType'
 // ValidationStatus allows for validation checking in parameters
 import {ValidationStatus} from '@/shared/ValidationStatus'
