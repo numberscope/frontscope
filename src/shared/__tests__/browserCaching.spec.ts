@@ -35,8 +35,8 @@ const mockDate = '06/27/2024, 10:00:00'
 const mockQuery = 'name=Test&viz=ModFill&seq=Random'
 const anotherQuery = 'name=Test&viz=Turtle&seq=Formula'
 const twoSIMs = [
-    {query: mockQuery, date: mockDate},
-    {query: 'name=Another', date: mockDate},
+    {query: mockQuery, date: mockDate, canDelete: true},
+    {query: 'name=Another', date: mockDate, canDelete: true},
 ]
 
 vi.useFakeTimers()
@@ -48,7 +48,7 @@ beforeEach(() => {
 
 describe('SIM functions', () => {
     it('should get the current SIM', () => {
-        const current = {query: mockQuery, date: mockDate}
+        const current = {query: mockQuery, date: mockDate, canDelete: true}
         localStorage.setItem('currentSpecimen', JSON.stringify(current))
         expect(getCurrent()).toEqual(current)
     })
@@ -66,7 +66,9 @@ describe('SIM functions', () => {
         const savedUrls = JSON.parse(
             localStorage.getItem('savedSpecimens') as string
         )
-        expect(savedUrls).toEqual([{query: mockQuery, date: mockDate}])
+        expect(savedUrls).toEqual([
+            {query: mockQuery, date: mockDate, canDelete: true},
+        ])
     })
 
     it('should update an existing specimen', () => {
@@ -75,7 +77,9 @@ describe('SIM functions', () => {
         const savedUrls = JSON.parse(
             localStorage.getItem('savedSpecimens') as string
         )
-        expect(savedUrls).toEqual([{query: anotherQuery, date: mockDate}])
+        expect(savedUrls).toEqual([
+            {query: anotherQuery, date: mockDate, canDelete: true},
+        ])
     })
 
     it('should delete a specimen by name', () => {
