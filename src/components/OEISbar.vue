@@ -3,19 +3,37 @@
         <div>
             <label for="oeis">Search the OEIS</label>
             <br />
-            <input type="text" id="oeis" placeholder="id, keyword, etc..." />
+            <input
+                type="text"
+                id="oeis"
+                v-model="term"
+                placeholder="id, keyword, etc..." />
         </div>
-        <button class="material-icons-sharp">search</button>
+        <button class="material-icons-sharp" @click="srch">search</button>
+        <div v-if="term" id="results">
+            These are <br />
+            dummy <br />
+            results.
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
+    import {ref} from 'vue'
+
     const emit = defineEmits(['addID'])
     console.log(emit)
+
+    const term = ref('')
+
+    function srch() {
+        window.alert('Searching for ' + term.value)
+    }
 </script>
 
 <style scoped lang="scss">
     #search-bar {
+        position: relative;
         display: flex;
         align-items: center;
 
@@ -51,5 +69,13 @@
             background: none;
             aspect-ratio: 1 / 1;
         }
+    }
+    #results {
+        position: absolute;
+        top: 50px;
+        right: -8px;
+        border: 1px solid var(--ns-color-black);
+        z-index: 2000;
+        background: var(--ns-color-white);
     }
 </style>
