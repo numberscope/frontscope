@@ -18,20 +18,7 @@
                 <div id="content">
                     <div class="switcher-title-bar">
                         <h1>Choose {{ category }}</h1>
-
-                        <div v-if="category === 'sequence'" id="search-bar">
-                            <div>
-                                <label for="oeis">Search the OEIS</label>
-                                <br />
-                                <input
-                                    type="text"
-                                    id="oeis"
-                                    placeholder="A037161" />
-                            </div>
-                            <button class="material-icons-sharp">
-                                search
-                            </button>
-                        </div>
+                        <OEISbar v-if="category === 'sequence'" />
                     </div>
                     <div ref="galleryWrap" class="results">
                         <SpecimensGallery
@@ -46,8 +33,9 @@
 </template>
 
 <script setup lang="ts">
-    import SpecimensGallery from '../components/SpecimensGallery.vue'
-    import type {CardSpecimen} from '../components/SpecimensGallery.vue'
+    import SpecimensGallery from './SpecimensGallery.vue'
+    import OEISbar from './OEISbar.vue'
+    import type {CardSpecimen} from './SpecimensGallery.vue'
     import {seqMODULES, disableOEIS} from '../sequences/sequences'
     import vizMODULES from '../visualizers/visualizers'
     import {specimenQuery, getIDs} from '../shared/browserCaching'
@@ -250,44 +238,6 @@
             cursor: pointer;
             padding: 4px;
             color: var(--ns-color-black);
-        }
-    }
-
-    #search-bar {
-        display: flex;
-        align-items: center;
-
-        div {
-            margin-right: 8px;
-        }
-
-        label {
-            font-size: var(--ns-size-subheading);
-        }
-
-        input[type='text'] {
-            font-size: var(--ns-size-heading-2);
-            margin-bottom: 8px;
-            margin-right: 8px;
-            border: none;
-            border-bottom: var(--ns-color-black);
-            border-bottom-width: 1px;
-            border-bottom-style: solid;
-            padding: 6px 8px;
-        }
-        input[type='text']:focus {
-            outline: none;
-            border-bottom-color: var(--ns-color-primary);
-        }
-        input[type='text']::placeholder {
-            color: var(--ns-color-light);
-        }
-
-        button {
-            font-size: 24px;
-            border: 1px solid var(--ns-color-black);
-            background: none;
-            aspect-ratio: 1 / 1;
         }
     }
 
