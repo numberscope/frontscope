@@ -3,13 +3,18 @@ import {specimenQuery} from './browserCaching'
 // Encodings of the featured specimens
 
 const featuredSIMs = [
-    // This first one is a candidate for removal from Featured, I would say
     specimenQuery(
-        'Basic Modfill',
-        'ModFill',
-        'Random',
-        'modDimension=12',
-        'min=3&max=14'
+        'Thue Trellis',
+        'Turtle',
+        'OEIS A010060',
+        'domain=0+1&range=15+180&stepSize=10&start=0+200'
+            + '&strokeWeight=1&bgColor=e0def7&strokeColor=5e8d85'
+    ),
+    specimenQuery(
+        'Divisor Square',
+        'Chaos',
+        'OEIS A000005',
+        'corners=8&walkers=8&alpha=0.7&pixelsPerFrame=2000'
     ),
     specimenQuery(
         'Twelve',
