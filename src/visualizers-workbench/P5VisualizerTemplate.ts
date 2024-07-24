@@ -19,7 +19,6 @@
 // further information on what these each do.
 //
 // Standard parameter functionality:
-import type {GenericParamDescription} from '../shared/Paramable'
 import {ParamType} from '../shared/ParamType'
 // ValidationStatus allows for validation checking in parameters
 import {ValidationStatus} from '@/shared/ValidationStatus'
@@ -27,8 +26,6 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
 // INVALID_COLOR allows for initializing p5 color variables
 import {P5Visualizer, INVALID_COLOR} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
-// Standard sequence functionality:
-import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
 # Entries (p5 Template)
@@ -100,18 +97,16 @@ class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
     textColor = INVALID_COLOR
     outlineColor = INVALID_COLOR
 
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(seq)
-    }
-
     async presketch() {
         // === Asynchronous setup ===
         // If any pre-computations must be run before the sketch is created,
-        // placing them in the `preSketch()` function will allow them
+        // placing them in the `presketch()` function will allow them
         // to run asynchronously, i.e. without blocking the browser.
         // The sketch will not be created until this function completes.
         // By default, intializing the sequence occurs here.
-        super.presketch()
+        // However, this entire function is not needed if you have no
+        // such computations.
+        await super.presketch()
     }
 
     setup() {

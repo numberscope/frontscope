@@ -2,8 +2,7 @@ import p5 from 'p5'
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
+import type {ParamValues} from '../shared/Paramable'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
@@ -112,10 +111,6 @@ class Turtle extends P5Visualizer(paramDesc) {
     private orientation = 0
     private X = 0
     private Y = 0
-
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(seq)
-    }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)

@@ -71,16 +71,16 @@ presenting visualizers to the user to choose from.
 Parameters are the user-facing structures that ask for control values when a
 visualizer is created. When someone running your visualizer sets a parameter
 in the graphical interface (UI), its value is written to a corresponding
-property of the `paramDesc` object. Conversely, if your code internally
-changes one of those top-level properties while the visualizer is running, you
-should refresh the corresponding parameter by calling `this.refreshParams()`
-so the person interacting with it can see the change.
+top-level property of the visualizer object. Conversely, if your code
+internally changes one of those top-level properties while the visualizer is
+running, you should refresh the corresponding parameter by calling
+`this.refreshParams()` so the person interacting with it can see the change.
 
-A parameter must specify a `default` value, a `type`, a name (`displayName`),
-and specify whether it is `required` (required parameters are displayed more
-prominently). Look in `src/shared/Paramable.ts`, or in other visualizers, to
-learn about the other options you can set in `paramDesc`, such as longer
-descriptions.
+The parameters are described in the `paramDesc` object. A parameter must
+specify a `default` value, a `type`, a name (`displayName`), and specify
+whether it is `required` (required parameters are displayed more prominently).
+Look in `src/shared/Paramable.ts`, or in other visualizers, to learn about the
+other options you can set in `paramDesc`, such as longer descriptions.
 
 -   **p5 Template:** `stepSize`.
 
@@ -160,8 +160,8 @@ through frames of the drawing. The first is `presketch()`, which runs
 asynchronously, meaning that the browser will not be blocked while this
 function completes. This is not a part of p5.js, but a part of Numberscope.
 
-If you implement `presketch()`, begin by calling `super.presketch()`, which
-will initialize the sequence. After this call, you have access to the
+If you implement `presketch()`, begin by calling `await super.presketch()`,
+which will initialize the sequence. After this call, you have access to the
 sequence, so you can do sequence-dependent validation and initialization here.
 You do have the opportunity to set up private state variables. For example,
 this is a good place to populate an array with time-consuming precomputed
@@ -252,10 +252,15 @@ will show it in an error dialog.
 
 ### How to document your visualizer
 
-Documentation should be included in the source file between markdown tags.
-This will be scraped from the source and automatically compiled into the
-online documentation. The p5 Template visualizer demonstrates our
-documentation conventions.
+Documentation should be included in the source file between markdown tags
+`/** md` and `**/`. This will be scraped from the source and automatically
+compiled into the online documentation. The p5 Template visualizer
+demonstrates our documentation conventions. That template also includes other
+helpful comments marked with `// ===`; these are not compiled into the online
+documentation and are only provided in the template to augment this guide (you
+need not imitate this).  
+You should also provide any additional code documentation in place as you
+normally would.
 
 #### Name, sample image, and description
 
@@ -318,5 +323,6 @@ and compile it at runtime.
 If running `npm run dev`, visualizers in `src/visualizers` will be available.
 As discussed [earlier](#develop-your-visualizer-on-the-workbench), visualizers
 that aren't ready for Numberscope users should go in
-`src/visualizers-workbench`. You can load them to see how they work by running
-with `npm run dev:workbench`.
+`src/visualizers-workbench`. You can load them (and the P5Template visualizer
+discussed in this guide) to see how they work by running with
+`npm run dev:workbench`.
