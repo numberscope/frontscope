@@ -2,13 +2,17 @@ import p5 from 'p5'
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
+import type {ParamValues} from '../shared/Paramable'
+import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
 # Turtle Visualizer
 
-[image should go here]
+[<img
+  src="../../assets/img/Turtle/turtle-waitforit.png"
+  width=500
+  style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/Turtle/turtle-waitforit.png)
 
 This visualizer interprets a sequence as instructions for a drawing machine,
 with each entry determining what angle to turn before drawing the next
@@ -30,7 +34,8 @@ have a small domain.)
         type: ParamType.BIGINT_ARRAY,
         displayName: 'Sequence Domain',
         required: true,
-        description: '(list of possible entry values)',
+        description: 'list of possible entry values',
+        hideDescription: true,
     },
     /** md
 - range: a list of numbers. These are turning angles, corresponding
@@ -41,7 +46,37 @@ positionally to the domain elements. Range and domain must be the same length.
         type: ParamType.NUMBER_ARRAY,
         displayName: 'Angles',
         required: true,
-        description: '(list of corresponding angles in degrees)',
+        description: 'list of corresponding angles in degrees',
+        hideDescription: true,
+    },
+    /**
+- strokeWeight: a number. Gives the width of the segment drawn for each entry.
+     **/
+    strokeWeight: {
+        default: 2,
+        type: ParamType.INTEGER,
+        displayName: 'Stroke Width',
+        required: false,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(n <= 0, 'Stroke width must be positive'),
+    },
+    /**
+- bgColor: The background color of the visualizer canvas
+     **/
+    bgColor: {
+        default: '#6b1a1a',
+        type: ParamType.COLOR,
+        displayName: 'Background Color',
+        required: true,
+    },
+    /**
+- strokeColor: The color used for drawing the path.
+     **/
+    strokeColor: {
+        default: '#c98787',
+        type: ParamType.COLOR,
+        displayName: 'Stroke Color',
+        required: true,
     },
     /** md
 - stepSize: a number. Gives the length of the segment drawn for each entry.
@@ -61,38 +96,10 @@ positionally to the domain elements. Range and domain must be the same length.
         displayName: 'Start',
         required: false,
         description: 'coordinates of the point where drawing will start',
-    },
-    /**
-- strokeWeight: a number. Gives the width of the segment drawn for each entry.
-     **/
-    strokeWeight: {
-        default: 5,
-        type: ParamType.INTEGER,
-        displayName: 'Stroke Width',
-        required: false,
-    },
-    /**
-- bgColor: The background color of the visualizer canvas
-     **/
-    bgColor: {
-        default: '#666666',
-        type: ParamType.COLOR,
-        displayName: 'Background Color',
-        required: true,
-    },
-    /**
-- strokeColor: The color used for drawing the path.
-     **/
-    strokeColor: {
-        default: '#ff0000',
-        type: ParamType.COLOR,
-        displayName: 'Stroke Color',
-        required: true,
+        hideDescription: true,
     },
 } as const
 
-// Turtle needs work
-// Throwing the same error on previous Numberscope website
 class Turtle extends P5Visualizer(paramDesc) {
     static category = 'Turtle'
     static description =
@@ -104,10 +111,6 @@ class Turtle extends P5Visualizer(paramDesc) {
     private orientation = 0
     private X = 0
     private Y = 0
-
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(seq)
-    }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
