@@ -13,10 +13,21 @@
 //
 // These comments get compiled into the Visualizer's user guide page.
 
+// === Import statements ===
+// These import functionality that is used to implement aspects of
+// the visualizer.  See the referenced files for
+// further information on what these each do.
+//
+// Standard parameter functionality:
 import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
 import {ParamType} from '../shared/ParamType'
+// ValidationStatus allows for validation checking in parameters
+import {ValidationStatus} from '@/shared/ValidationStatus'
+// Standard visualizer class and export:
+// INVALID_COLOR allows for initializing p5 color variables
 import {P5Visualizer, INVALID_COLOR} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
+// Standard sequence functionality:
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
@@ -36,16 +47,33 @@ the p5.js library. It includes explanatory comments and minimal examples of
 required and commonly used features._
 **/
 
+// === User-modifiable parameters ===
 const paramDesc = {
+    // Will be interpreted by the UI and presented to the user
+    // in the form of controls such as fields, drop-downs and
+    // color-pickers.  More information can be found in
+    // src/shared/Paramable.ts
     /** md
 - **Step size:** How far to step when the user presses an arrow key. _(Positive
 integer.)_
      **/
     stepSize: {
-        default: 1, // === Default value ===
-        type: ParamType.INTEGER,
-        displayName: 'Step size',
+        default: 1, // Default value
+        type: ParamType.INTEGER, // Type validated by UI on user input
+        displayName: 'Step size', // Title of the field
+        description: 'The increment between subsequent values',
+        hideDescription: true, // put the description in a tooltip
+        // If required = true, default value is entered in field
+        // If required = false, a greyed-out default or
+        // placeholder is shown until user interacts with field
+        // In both cases, default value is used, but the visual
+        // impact of the variable in the parameter panel differs
         required: true,
+        // The type is validated automatically, but any further
+        // restriction on the input should be validated with
+        // a custom function here
+        validate: (n: number) =>
+            ValidationStatus.errorIf(n <= 0, 'Step size must be positive'),
     },
 } as const
 
@@ -76,14 +104,14 @@ class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
         super(seq)
     }
 
-    checkParameters(params: ParamValues<typeof paramDesc>) {
-        const status = super.checkParameters(params)
-
-        // make sure the step size is positive
-        if (params.stepSize <= 0)
-            status.addError('Step size must be positive')
-
-        return status
+    async presketch() {
+        // === Asynchronous setup ===
+        // If any pre-computations must be run before the sketch is created,
+        // placing them in the `preSketch()` function will allow them
+        // to run asynchronously, i.e. without blocking the browser.
+        // The sketch will not be created until this function completes.
+        // By default, intializing the sequence occurs here.
+        super.presketch()
     }
 
     setup() {
