@@ -103,10 +103,20 @@ class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
         // placing them in the `presketch()` function will allow them
         // to run asynchronously, i.e. without blocking the browser.
         // The sketch will not be created until this function completes.
-        // By default, intializing the sequence occurs here.
-        // However, this entire function is not needed if you have no
-        // such computations.
+
         await super.presketch()
+        // The above call performs the default behavior of intializing the
+        // first cache block of the sequence.
+        // So down here is where you can do any computation-heavy preparation
+        // for your visualization; for example, you could ask that the
+        // _entire_ sequence and its factorizations be preloaded via
+        // `await this.seq.fill(this.seq.last)`.
+        // (But don't do that unless you really need _all_ the sequence
+        // values before you can draw anything at all, as for some sequences
+        // it would create a noticeable delay before the sketch appears.)
+        // Note also that this entire function is not needed if, as in this
+        // case, you have no such computations. (We only included it in this
+        // template for the sake of discussion.)
     }
 
     setup() {
