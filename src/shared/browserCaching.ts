@@ -1,3 +1,9 @@
+/* This file is responsible for all of the state of Numberscope that is kept
+   in browser localStorage. Currently that consists of a collection of saved
+   Specimens, and the list of IDs of OEIS sequences that will be shown in
+   the Sequence Switcher.
+*/
+
 /* A "SIM" (Specimen In Memory) is an object with two string properties:
    query - gives the url-query-encoding of the specimen
    date - gives the date on which it was last saved.
@@ -12,6 +18,7 @@
 export interface SIM {
     query: string
     date: string
+    canDelete: boolean
 }
 
 function getCurrentDate(): string {
@@ -100,9 +107,10 @@ export function parseSpecimenQuery(query: string) {
 
 // MEMORY RELATED HELPER FUNCTIONS AND VARIABLES
 
-// Keys of where the SIMs are saved (is arbitrary)
+// Keys of where the SIMs and IDs are saved (are arbitrary)
 const cacheKey = 'savedSpecimens'
 const currentKey = 'currentSpecimen'
+const idKey = 'activeIDs'
 
 // The default specimen
 // Will be displayed when the user visits the website for the first time
@@ -119,6 +127,7 @@ function newSIMfromOld(oldSim: {date: string; en64: string}): SIM {
         return {
             query: specimenQuery('Conversion Error', 'Unknown', 'Unknown'),
             date: '',
+            canDelete: true,
         }
     let vizQuery = ''
     if ('visualizerParams' in data && data.visualizerParams) {
@@ -141,6 +150,7 @@ function newSIMfromOld(oldSim: {date: string; en64: string}): SIM {
             vizQuery,
             seqQuery
         ),
+        canDelete: true,
     }
 }
 
@@ -210,7 +220,7 @@ export function getCurrent(): SIM {
         if ('en64' in data) return newSIMfromOld(data)
     }
 
-    return {query: defaultQuery, date: ''}
+    return {query: defaultQuery, date: '', canDelete: true}
 }
 
 // Helper type for updateCurrent
@@ -248,7 +258,7 @@ export function saveSpecimen(query: string): void {
         existing.query = query
         existing.date = date
     } else {
-        savedSIMs.push({query, date})
+        savedSIMs.push({query, date, canDelete: true})
     }
     putSIMs(savedSIMs)
 }
@@ -265,4 +275,44 @@ export function deleteSpecimen(name: string): void {
     // If the SIM object is found, remove it from the array
     if (index !== -1) savedSIMs.splice(index, 1)
     putSIMs(savedSIMs)
+}
+
+/**
+ * Fetches the array of IDs stored locally.
+ * @return {string[]}
+ */
+export function getIDs(): string[] {
+    // Retrieves the saved SIMs from browser cache
+    const savedIDsJson = localStorage.getItem(idKey)
+    // Creates default list in case none is found in browser storage
+    let savedIDs: string[] = ['A000040', 'A000045']
+
+    // Parses the saved IDs if they exist
+    if (savedIDsJson) savedIDs = JSON.parse(savedIDsJson)
+    return savedIDs
+}
+
+/**
+ * Adds another ID to the ones stored locally, if it is not already present.
+ * @param {string} id  The id to potentially add
+ */
+export function addID(id: string): void {
+    const savedIDs = getIDs()
+    if (!savedIDs.includes(id)) {
+        savedIDs.unshift(id)
+        localStorage.setItem(idKey, JSON.stringify(savedIDs))
+    }
+}
+
+/**
+ * Removes an ID from the ones stored locally, if it is present.
+ * @param {string} id  The id to potentially delete
+ */
+export function deleteID(id: string): void {
+    const savedIDs = getIDs()
+    const index = savedIDs.indexOf(id)
+    if (index !== -1) {
+        savedIDs.splice(index, 1)
+        localStorage.setItem(idKey, JSON.stringify(savedIDs))
+    }
 }
