@@ -13,11 +13,19 @@
 //
 // These comments get compiled into the Visualizer's user guide page.
 
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
+// === Import statements ===
+// These import functionality that is used to implement aspects of
+// the visualizer.  See the referenced files for
+// further information on what these each do.
+//
+// Standard parameter functionality:
 import {ParamType} from '../shared/ParamType'
+// ValidationStatus allows for validation checking in parameters
+import {ValidationStatus} from '@/shared/ValidationStatus'
+// Standard visualizer class and export:
+// INVALID_COLOR allows for initializing p5 color variables
 import {P5Visualizer, INVALID_COLOR} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
 
 /** md
 # Entries (p5 Template)
@@ -36,16 +44,33 @@ the p5.js library. It includes explanatory comments and minimal examples of
 required and commonly used features._
 **/
 
+// === User-modifiable parameters ===
 const paramDesc = {
+    // Will be interpreted by the UI and presented to the user
+    // in the form of controls such as fields, drop-downs and
+    // color-pickers.  More information can be found in
+    // src/shared/Paramable.ts
     /** md
 - **Step size:** How far to step when the user presses an arrow key. _(Positive
 integer.)_
      **/
     stepSize: {
-        default: 1, // === Default value ===
-        type: ParamType.INTEGER,
-        displayName: 'Step size',
+        default: 1, // Default value
+        type: ParamType.INTEGER, // Type validated by UI on user input
+        displayName: 'Step size', // Title of the field
+        description: 'The increment between subsequent values',
+        hideDescription: true, // put the description in a tooltip
+        // If required = true, default value is entered in field
+        // If required = false, a greyed-out default or
+        // placeholder is shown until user interacts with field
+        // In both cases, default value is used, but the visual
+        // impact of the variable in the parameter panel differs
         required: true,
+        // The type is validated automatically, but any further
+        // restriction on the input should be validated with
+        // a custom function here
+        validate: (n: number) =>
+            ValidationStatus.errorIf(n <= 0, 'Step size must be positive'),
     },
 } as const
 
@@ -72,18 +97,26 @@ class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
     textColor = INVALID_COLOR
     outlineColor = INVALID_COLOR
 
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(seq)
-    }
+    async presketch() {
+        // === Asynchronous setup ===
+        // If any pre-computations must be run before the sketch is created,
+        // placing them in the `presketch()` function will allow them
+        // to run asynchronously, i.e. without blocking the browser.
+        // The sketch will not be created until this function completes.
 
-    checkParameters(params: ParamValues<typeof paramDesc>) {
-        const status = super.checkParameters(params)
-
-        // make sure the step size is positive
-        if (params.stepSize <= 0)
-            status.addError('Step size must be positive')
-
-        return status
+        await super.presketch()
+        // The above call performs the default behavior of intializing the
+        // first cache block of the sequence.
+        // So down here is where you can do any computation-heavy preparation
+        // for your visualization; for example, you could ask that the
+        // _entire_ sequence and its factorizations be preloaded via
+        // `await this.seq.fill(this.seq.last)`.
+        // (But don't do that unless you really need _all_ the sequence
+        // values before you can draw anything at all, as for some sequences
+        // it would create a noticeable delay before the sketch appears.)
+        // Note also that this entire function is not needed if, as in this
+        // case, you have no such computations. (We only included it in this
+        // template for the sake of discussion.)
     }
 
     setup() {
