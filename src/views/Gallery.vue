@@ -37,7 +37,7 @@
                 keyboard_arrow_up
             </span>
         </div>
-        <SpecimensGallery v-if="showSaved" :specimens="saved" canDelete />
+        <SpecimensGallery v-if="showSaved" :specimens="saved" />
     </div>
 </template>
 

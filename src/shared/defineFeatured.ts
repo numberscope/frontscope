@@ -61,7 +61,7 @@ const featuredSIMs = [
 // Is there any reason for us to associate dates with featured specimens? Do
 // we want to record when they were added and show that information somehow?
 const theSIMs = featuredSIMs.map(query => {
-    return {query, date: ''}
+    return {query, date: '', canDelete: false}
 })
 
 export function getFeatured() {

@@ -7,7 +7,7 @@
             :subtitle="specimen.subtitle"
             :lastEdited="specimen.lastEdited"
             @specimenDeleted="removeSpecimen"
-            :permanent="!canDelete" />
+            :permanent="'canDelete' in specimen && !specimen.canDelete" />
     </div>
 </template>
 
@@ -20,12 +20,14 @@
         query: string
         subtitle?: string
         lastEdited?: string
+        canDelete: boolean
     }
 
     const props = defineProps<{
-        canDelete: boolean
         specimens: CardSpecimen[]
     }>()
+
+    const emit = defineEmits(['removeSpecimen'])
 
     const currentSpecimens = ref(props.specimens)
 
@@ -40,6 +42,7 @@
             spec => name === nameOfQuery(spec.query)
         )
         if (index > -1) currentSpecimens.value.splice(index, 1)
+        emit('removeSpecimen', name)
     }
 </script>
 

@@ -14,7 +14,9 @@
                 v-if="!permanent"
                 v-on:click.stop="deleteSpecimen"
                 style="padding-right: 15px">
-                <span class="material-icons-sharp" style="user-select: none">
+                <span
+                    class="material-icons-sharp"
+                    style="user-select: none; margin-top: 1ex">
                     delete
                 </span>
             </div>
@@ -85,7 +87,7 @@
         align-items: left;
         text-align: left;
         display: flex;
-        align-items: center;
+        align-items: start;
         justify-content: space-between;
     }
     .card-title {
