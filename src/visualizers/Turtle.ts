@@ -4,6 +4,7 @@ import {VisualizerExportModule} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
 import type {ParamValues} from '../shared/Paramable'
 import {ValidationStatus} from '@/shared/ValidationStatus'
+import {modulo} from '../shared/math'
 
 /** md
 # Turtle Visualizer
@@ -30,30 +31,101 @@ some sequences, like A014577 "The regular paper-folding sequence", naturally
 have a small domain.)
      **/
     domain: {
-        default: [0n, 1n, 2n, 3n, 4n] as bigint[],
-        type: ParamType.BIGINT_ARRAY,
-        displayName: 'Sequence Domain',
+        default: 5,
+        type: ParamType.INTEGER,
+        displayName: 'Sequence Modulus',
         required: true,
-        description: 'list of possible entry values',
+        description: 'modulus to consider sequence values',
+        hideDescription: true,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(
+                n < 2 || n > 20,
+                'Modulus should be between 2 and 20.'
+            ),
+    },
+    /** md
+- turns: a list of numbers. These are turning angles, corresponding
+positionally to the domain elements. Must contain the same number of elements
+as domain.
+     **/
+    turns: {
+        default: [30, 45, 60, 90, 120] as number[],
+        type: ParamType.NUMBER_ARRAY,
+        displayName: 'Turning angles',
+        required: true,
+        description:
+            'list of angles in degrees, corresponding to sequence values'
+            + ' 0, 1, ... (up to modulus)',
         hideDescription: true,
     },
     /** md
-- range: a list of numbers. These are turning angles, corresponding
-positionally to the domain elements. Range and domain must be the same length.
+- steps: a list of numbers. These are step lengths, corresponding
+positionally to the domain elements.  Must contain the same number of elements 
+as domain.
      **/
-    range: {
-        default: [30, 45, 60, 90, 120] as number[],
+    steps: {
+        default: [20, 20, 20, 20, 20] as number[],
         type: ParamType.NUMBER_ARRAY,
-        displayName: 'Angles',
+        displayName: 'Step lengths',
         required: true,
-        description: 'list of corresponding angles in degrees',
+        description:
+            'list of step lengths in pixels, corresponding to sequence values'
+            + ' 0, 1, ... (up to modulus)',
         hideDescription: true,
     },
+    /**
+- pathLength: a number. Gives the number of sequence terms to use.
+     **/
+    pathLength: {
+        default: 100,
+        type: ParamType.INTEGER,
+        displayName: 'Path length',
+        required: true,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(n <= 0, 'Path length must be positive'),
+    },
+    /**
+- growth: a number.  If zero, a static path length.  Otherwise, number of terms
+to grow per frame, up to pathLength above.
+     **/
+    growth: {
+        default: 0,
+        type: ParamType.INTEGER,
+        displayName: 'Path growth',
+        required: false,
+        description:
+            'turns on animation: how many more terms to show per frame',
+        hideDescription: true,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(
+                n < 0,
+                'Path growth must be non-negative'
+            ),
+    },
+
+    /** md
+- folding: a list of numbers. These are angle increments added to the turning 
+angles each frame, corresponding
+positionally to the domain elements.  Must contain the same number of elements 
+as domain.  The units is 1/100th of a degree.
+     **/
+    folding: {
+        default: [0, 0, 0, 0, 0] as number[],
+        type: ParamType.NUMBER_ARRAY,
+        displayName: 'Turning angle increments',
+        required: false,
+        description:
+            'turns on animation:  list of angle increments per frame in units'
+            + ' of 0.01 degree, corresponding to sequence values'
+            + ' 0, 1, ... (up to modulus)',
+        hideDescription: true,
+    },
+
     /**
 - strokeWeight: a number. Gives the width of the segment drawn for each entry.
      **/
     strokeWeight: {
-        default: 2,
+        default: 1,
         type: ParamType.INTEGER,
         displayName: 'Stroke Width',
         required: false,
@@ -78,15 +150,6 @@ positionally to the domain elements. Range and domain must be the same length.
         displayName: 'Stroke Color',
         required: true,
     },
-    /** md
-- stepSize: a number. Gives the length of the segment drawn for each entry.
-     **/
-    stepSize: {
-        default: 20,
-        type: ParamType.INTEGER,
-        displayName: 'Step Size',
-        required: false,
-    },
     /**
 - start: x,y coordinates of the point where drawing will start
      **/
@@ -105,63 +168,182 @@ class Turtle extends P5Visualizer(paramDesc) {
     static description =
         'Use a sequence to steer a virtual turtle that leaves a visible trail'
 
+    // maps from domain to rotations and steps
     private rotMap = new Map<string, number>()
+    private stepMap = new Map<string, number>()
+    private foldingMap = new Map<string, number>()
 
-    private currentIndex = 0
-    private orientation = 0
-    private X = 0
-    private Y = 0
+    // variables controlling path to draw in a given frame
+    private begin = 0 // path step at which drawing begins
+    private currentLength = 0 // length of path
+    private path: p5.Vector[] = [] // array of path info
+    private pathIsStatic = true // whether there's any folding
+    private growthInternal = 0 // growth
+
+    // this sets the units for increments; 0.1 means 1/10th of a degree
+    private incrementFactor = 0.01
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-        if (params.domain.length != params.range.length)
-            status.addError(
-                'Domain and range must have the same number of entries'
-            )
+        // for each of the rule arrays, adjust them to the length params.domain
+        const paramArrays: number[][] = [
+            params.turns,
+            params.steps,
+            params.folding,
+        ]
+
+        paramArrays.forEach(subarray => {
+            while (subarray.length < params.domain) {
+                subarray.push(0)
+            }
+            while (subarray.length > params.domain) {
+                subarray.pop()
+            }
+        })
+
+        // cannot request a path longer than the sequence provides
+        params.pathLength = Math.min(
+            params.pathLength,
+            this.seq.last - this.seq.first
+        )
 
         return status
     }
 
-    setup() {
-        super.setup()
-        this.currentIndex = this.seq.first
-        this.orientation = 0
-        this.X = this.sketch.width / 2 + this.start.x
-        this.Y = this.sketch.height / 2 + this.start.y
+    async presketch() {
+        await super.presketch()
 
-        for (let i = 0; i < this.domain.length; i++) {
-            this.rotMap.set(
-                this.domain[i].toString(),
-                (Math.PI / 180) * this.range[i]
-            )
+        this.refreshParams()
+
+        // create a map from sequence values to rotations
+        for (let i = 0; i < this.domain; i++) {
+            this.rotMap.set(i.toString(), (Math.PI / 180) * this.turns[i])
         }
 
+        // create a map from sequence values to step lengths
+        for (let i = 0; i < this.domain; i++) {
+            this.stepMap.set(i.toString(), this.steps[i])
+        }
+
+        // create a map from sequence values to turn increments
+        // notice if path is static
+        this.pathIsStatic = true
+        for (let i = 0; i < this.domain; i++) {
+            if (i != 0) this.pathIsStatic = false
+            this.foldingMap.set(
+                i.toString(),
+                this.folding[i] // in units of 0.1 degree
+            )
+        }
+    }
+
+    setup() {
+        super.setup()
+
+        // reset variables
+        this.begin = 0
+        this.currentLength = 0
+        this.growthInternal = this.growth
+
+        // if not growing, set to full length immediately
+        if (this.growthInternal == 0) this.currentLength = this.pathLength
+
+        // create initial path
+        // must be in setup since uses p5.Vector
+        // in case we are not static, we will recompute anyway,
+        // so use current length only, for efficiency
+        this.createpath(
+            0,
+            this.pathIsStatic ? this.pathLength : this.currentLength
+        )
+
+        // prepare sketch
         this.sketch
             .background(this.bgColor)
+            .fill(this.bgColor)
             .stroke(this.strokeColor)
             .strokeWeight(this.strokeWeight)
             .frameRate(30)
     }
 
     draw() {
-        const currElement = this.seq.getElement(this.currentIndex)
-        const angle = this.rotMap.get(currElement.toString())
-
-        if (angle == undefined) {
-            this.sketch.noLoop()
-            return
+        // if path is changing, clear and reset draw to beginning of path
+        if (!this.pathIsStatic) {
+            this.sketch.clear().background(this.bgColor)
+            this.begin = 0
         }
 
-        const oldX = this.X
-        const oldY = this.Y
+        // draw path from this.begin
+        this.sketch.beginShape()
+        for (let i = this.begin; i < this.currentLength; i++) {
+            const pt = this.path[i]
+            this.sketch.vertex(pt.x, pt.y)
+        }
+        this.sketch.endShape()
+        this.begin = this.currentLength // advance this.begin
 
-        this.orientation = this.orientation + angle
-        this.X += this.stepSize * Math.cos(this.orientation)
-        this.Y += this.stepSize * Math.sin(this.orientation)
+        // stop drawing if the path is static
+        if (this.pathIsStatic && this.growthInternal == 0)
+            this.sketch.noLoop()
+        // if path is growing, lengthen path
+        this.currentLength += this.growthInternal
+        if (this.currentLength > this.pathLength) {
+            this.currentLength = this.pathLength
+            this.growthInternal = 0
+        }
+        // if angles are dynamic, recreate entire path
+        if (!this.pathIsStatic)
+            this.createpath(this.sketch.frameCount, this.currentLength)
+    }
 
-        this.sketch.line(oldX, oldY, this.X, this.Y)
-        if (++this.currentIndex > this.seq.last) this.sketch.noLoop()
+    createpath(increment: number, length: number) {
+        // initialize turtle position
+        let orientation = 0
+        const position = new p5.Vector(
+            this.sketch.width / 2,
+            this.sketch.height / 2
+        )
+        position.add(this.start)
+
+        // clear path
+        this.path = []
+
+        // read sequence to create path
+        for (
+            let i = this.seq.first;
+            i < this.seq.first + Math.min(length, this.pathLength);
+            i++
+        ) {
+            // get the current sequence element and infer
+            // the rotation/step/increment
+            // this takes the input integer modulo domain size
+            const currElement = this.seq.getElement(i)
+            const currElementModString = Number(
+                modulo(currElement, this.domain)
+            ).toString()
+            const turnAngle = this.rotMap.get(currElementModString)
+            const stepLength = this.stepMap.get(currElementModString)
+            const turnIncrement = this.foldingMap.get(currElementModString)
+
+            // turn
+            orientation
+                += (turnAngle ?? 0)
+                + Number(modulo(increment * (turnIncrement ?? 0), 360))
+                    * (Math.PI / 180)
+                    * this.incrementFactor
+
+            // step
+            const step = new p5.Vector(
+                Math.cos(orientation),
+                Math.sin(orientation)
+            )
+            step.mult(stepLength ?? 0)
+            position.add(step)
+
+            // add the new position to the path
+            this.path.push(position.copy())
+        }
     }
 }
 
