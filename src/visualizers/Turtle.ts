@@ -155,9 +155,9 @@ to grow per frame, until the path reaches its maximum length (give by
 These are angle increments added to the turning 
 angles each frame.  They correspond
 positionally to the domain elements.  Must contain the same number of elements 
-as domain.  The units is 1/100th of a degree.  For example, if the first
+as domain.  The units is 1/10^5th of a degree.  For example, if the first
 entry here is a `2`, then in each frame of the animation, the turn angle for 
-the first domain element will increase by 2/100-th of a degree.  The result
+the first domain element will increase by 2/10^5-th of a degree.  The result
 looks a little like protein folding.
      **/
     folding: {
