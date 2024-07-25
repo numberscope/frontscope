@@ -57,7 +57,8 @@ have a small domain.)
         hideDescription: true,
     },
     /**
-- modulus: the modulus to apply to any incoming sequence.  This is one way
+- modulus: the modulus to apply to any incoming sequence.  This is the most
+common way
 to ensure the sequence values will lie in your domain.  A value of 0 means 
 that no modulus is applied.
      **/
@@ -108,8 +109,9 @@ will be interpreted as the step length for the n-th domain element.
         hideDescription: true,
     },
     /**
-- pathLength: a number. Gives the number of sequence terms to use.  Zero
-means use all available terms, and will force 'growth' animation.  
+- pathLength: a number. Gives the number of sequence terms to use.  
+Entering a 0 means to use all available terms (possibly forever), and 
+will force the 'growth' animation to turn on.
 If the user enters a number exceeding the number of terms available, 
 this will default to the max number of terms available.
      **/
@@ -237,6 +239,7 @@ class Turtle extends P5Visualizer(paramDesc) {
     private path: p5.Vector[] = [] // array of path info
     private pathIsStatic = true // whether there's any folding
     private growthInternal = 0 // growth
+    private pathLengthInternal = 1 // can be infinity
 
     // controlling the folding smoothness/speed/units
     // the units of the folding entry field are 1/denom degrees
@@ -280,17 +283,18 @@ class Turtle extends P5Visualizer(paramDesc) {
             }
         })
 
-        // if path length is zero, force growth
-        if (params.pathLength == 0) {
-            params.pathLength = this.seq.last - this.seq.first
-            params.growth = 1
-        }
-
         // cannot request a path longer than the sequence provides
         params.pathLength = Math.min(
             params.pathLength,
             this.seq.last - this.seq.first
         )
+        this.pathLengthInternal = params.pathLength
+
+        // if path length is zero, force growth
+        if (params.pathLength == 0) {
+            this.pathLengthInternal = this.seq.last - this.seq.first
+            if (params.growth == 0) params.growth = 1
+        }
 
         return status
     }
@@ -332,8 +336,8 @@ class Turtle extends P5Visualizer(paramDesc) {
         // right now it avoids crashes caused by that issue
         // but ideally we should never be in a state where
         // this.pathLength exceeds this.seq.last - this.seq.first
-        this.pathLength = Math.min(
-            this.pathLength,
+        this.pathLengthInternal = Math.min(
+            this.pathLengthInternal,
             this.seq.last - this.seq.first
         )
 
@@ -344,7 +348,8 @@ class Turtle extends P5Visualizer(paramDesc) {
 
         // if not growing, set to full length immediately
         // pathLength should always be finite if growth is zero
-        if (this.growthInternal == 0) this.currentLength = this.pathLength
+        if (this.growthInternal == 0)
+            this.currentLength = this.pathLengthInternal
 
         // create initial path
         // must be in setup since uses p5.Vector
@@ -396,8 +401,8 @@ class Turtle extends P5Visualizer(paramDesc) {
             this.currentLength += this.growthInternal
         }
         // if reached full length, stop growing
-        if (this.currentLength > this.pathLength) {
-            this.currentLength = this.pathLength
+        if (this.currentLength > this.pathLengthInternal) {
+            this.currentLength = this.pathLengthInternal
             this.growthInternal = 0
         }
 
@@ -422,7 +427,7 @@ class Turtle extends P5Visualizer(paramDesc) {
         // read sequence to create path
         for (
             let i = this.seq.first;
-            i < this.seq.first + Math.min(length, this.pathLength);
+            i < this.seq.first + Math.min(length, this.pathLengthInternal);
             i++
         ) {
             // get the current sequence element and infer
