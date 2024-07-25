@@ -57,7 +57,8 @@ const featuredSIMs = [
         'Wait For It',
         'Turtle',
         'Formula',
-        'domain=-1+1&modulus=0&turns=30+120&steps=30+30&strokeWeight=2&bgColor=5d509f&growth=1&strokeColor=7a9f6f',
+        'domain=-1+1&modulus=0&turns=30+120&steps=30+30&strokeWeight=2'
+            + '&bgColor=5d509f&growth=1&strokeColor=7a9f6f',
         'formula=sign%28sin%28n%2B1%29%29'
     ),
     specimenQuery(
@@ -70,14 +71,16 @@ const featuredSIMs = [
         'VFib Snowflake',
         'Turtle',
         'OEIS A000045',
-        'domain=0+1+2+3+4+5+6+7+8&modulus=9&turns=8+120+0+0+0+0+0+0+0&steps=20+200+0+0+0+0+0+0+0&pathLength=1000&folding=200+0+0+0+0+0+0+0+0&bgColor=4f4875&strokeColor=cec0c0'
+        'domain=0+1+2+3+4+5+6+7+8&modulus=9&turns=8+120+0+0+0+0+0+0+0'
+            + '&steps=20+200+0+0+0+0+0+0+0&pathLength=1000'
+            + '&folding=200+0+0+0+0+0+0+0+0&bgColor=4f4875&strokeColor=cec0c0'
     ),
     specimenQuery(
         'Beatty DNA',
         'Turtle',
         'OEIS A001951',
-        'domain=0+1+2&modulus=3&turns=79+0+45&steps=5+2+6&pathLength=6000&folding=0+10+00&bgColor=e9eee3&strokeColor=4b7a81&start=0+200'
->>>>>>> 71a7307 (fixes)
+        'domain=0+1+2&modulus=3&turns=79+0+45&steps=5+2+6&pathLength=6000'
+            + '&folding=0+10+00&bgColor=e9eee3&strokeColor=4b7a81&start=0+200'
     ),
 ]
 

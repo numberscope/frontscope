@@ -380,7 +380,8 @@ class Turtle extends P5Visualizer(paramDesc) {
             sketch.line(startPt.x, startPt.y, endPt.x, endPt.y)
             startPt = endPt.copy()
         }
-        if (!this.pathFailure) this.begin = this.currentLength - 1 // advance this.begin
+        // advance this.begin
+        if (!this.pathFailure) this.begin = this.currentLength - 1
 
         // stop drawing if no animation
         if (this.pathIsStatic && !this.growthInternal && !this.pathFailure) {
@@ -430,7 +431,7 @@ class Turtle extends P5Visualizer(paramDesc) {
             try {
                 let currElement = this.seq.getElement(i)
                 currElement = this.modulus
-                    ? Number(modulo(currElement, this.modulus))
+                    ? modulo(currElement, this.modulus)
                     : currElement
                 const currElementString = currElement.toString()
                 const turnAngle = this.rotMap.get(currElementString)
@@ -438,7 +439,7 @@ class Turtle extends P5Visualizer(paramDesc) {
                 const turnIncrement = this.foldingMap.get(currElementString)
 
                 // turn
-                const thisIncrement = frames * (turnIncrement ?? 0) // raw increment
+                const thisIncrement = frames * (turnIncrement ?? 0) // raw inc
                 orientation
                     += (turnAngle ?? 0)
                     + (Number(modulo(thisIncrement, 360 * this.denom))
