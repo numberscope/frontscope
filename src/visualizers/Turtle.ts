@@ -73,6 +73,25 @@ have a small domain.)
             + ' matching any term here are ignored',
         hideDescription: false,
     },
+    /**
+- modulus: the modulus to apply to any incoming sequence.  This is the most
+common way
+to ensure the sequence values will lie in your domain.  A value of 0 means 
+that no modulus is applied.
+     **/
+    modulus: {
+        default: 5,
+        type: ParamType.INTEGER,
+        displayName: 'Sequence Modulus',
+        required: true,
+        description: 'consider sequence values modulo this; 0 means none',
+        hideDescription: true,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(
+                n < 0,
+                'Modulus should be non-negative; 0 means none.'
+            ),
+    },
     /** md
 - turns: a list of numbers. These are turning angles, in degrees, 
 corresponding positionally to the domain elements. Must contain 
@@ -114,6 +133,28 @@ will be interpreted as the step length for the n-th domain element.
         type: ParamType.BOOLEAN,
         displayName: 'Turtle movement controls ↴',
         required: false,
+    },
+    /**
+	- pathLength: a number. Gives the number of sequence terms to use.  
+Entering a 0 means to use all available terms (possibly forever), and 
+will force the 'growth' animation to turn on.
+If the user enters a number exceeding the number of terms available, 
+this will default to the max number of terms available.
+     **/
+    pathLength: {
+        default: 0,
+        type: ParamType.INTEGER,
+        displayName: 'Path length',
+        required: true,
+        description:
+            'cannot exceed available number of terms from sequence;'
+            + ' entering 0 will indicate infinity',
+        hideDescription: true,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(
+                n < 0,
+                'Path length must be non-negative'
+            ),
     },
     /**
 - growth: a number.  If zero, the full path is drawn all at once.  
@@ -417,7 +458,6 @@ class Turtle extends P5Visualizer(paramDesc) {
         ruleParams.forEach(rule => {
             rule.local = [...rule.param]
         })
-
         ruleParams.forEach(rule => {
             while (rule.local.length < params.domain.length) {
                 rule.local.push(0)
