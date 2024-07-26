@@ -116,9 +116,9 @@ class FactorFence extends P5Visualizer(paramDesc) {
     private first = 0
     private last = 0
     private heightScale = 55
-    private graphCorner = this.sketch.createVector(0, 0)
-    private textCorner = this.sketch.createVector(0, 0)
-    private recSpace = this.sketch.createVector(0, 0)
+    private graphCorner = new p5.Vector() //this.sketch.createVector(0, 0)
+    private textCorner = new p5.Vector() //this.sketch.createVector(0, 0)
+    private recSpace = new p5.Vector() // this.sketch.createVector(0, 0)
     private recWidth = 12
     private textInterval = 0
     private textSize = 0
@@ -479,15 +479,15 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
     }
 
-    mouseClicked() {
-        // currently this function doesn't work
-        // but it is ready to go when issue #120 is resolved
-        if (this.mouseOn) {
-            this.highlight = this.mousePrime
-        } else {
-            this.highlight = 0n
-        }
-    }
+    //    mouseClicked() {
+    //        // currently this function doesn't work
+    //        // but it is ready to go when issue #120 is resolved
+    //        if (this.mouseOn) {
+    //            this.highlight = this.mousePrime
+    //        } else {
+    //            this.highlight = 0n
+    //        }
+    //    }
 
     grad_rect(
         x: number,
