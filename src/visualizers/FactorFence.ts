@@ -1,5 +1,5 @@
 import p5 from 'p5'
-import {P5Visualizer} from './P5Visualizer'
+import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
 import type {ParamValues} from '../shared/Paramable'
@@ -18,7 +18,52 @@ This visualizer shows the factorization of the terms of the sequence
 as a sort of coloured graph.  At position n horizontally, there is a bar,
 or fencepost, which is of height log(n) and broken into different pieces
 of height log(p) for each prime divisor p (with multiplicity).
+**/
+//
+// p5 factor Visualizer colour palette class
+class factorPalette {
+    gradientBar: {[key: string]: p5.Color} = {}
+    gradientHighlight: {[key: string]: p5.Color} = {}
+    gradientMouse: {[key: string]: p5.Color} = {}
+    backgroundColor: p5.Color
+    constructor(
+        sketch: p5 | undefined = undefined,
+        // bottom to top
+        hexBar: string[] = ['#876BB8', '#C3B7DB'], // violet, dark bottom
+        // orange, dark bottom
+        hexHighlight: string[] = ['#EC7E2B', '#F5CD95'],
+        hexMouse: string[] = ['#589C48', '#7BB662'], // green, dark bottom
+        hexBack = '#EBEAF3' // light violet
+    ) {
+        if (sketch) {
+            this.gradientBar = {
+                bottom: sketch.color(hexBar[0]),
+                top: sketch.color(hexBar[1]),
+            }
+            this.gradientHighlight = {
+                bottom: sketch.color(hexHighlight[0]),
+                top: sketch.color(hexHighlight[1]),
+            }
+            this.gradientMouse = {
+                bottom: sketch.color(hexMouse[0]),
+                top: sketch.color(hexMouse[1]),
+            }
+            this.backgroundColor = sketch.color(hexBack)
+        } else {
+            this.gradientBar = {
+                bottom: INVALID_COLOR,
+                top: INVALID_COLOR,
+            }
+            this.gradientHighlight = {
+                bottom: INVALID_COLOR,
+                top: INVALID_COLOR,
+            }
+            this.backgroundColor = INVALID_COLOR
+        }
+    }
+}
 
+/** md
 ## Parameters
 **/
 
@@ -78,6 +123,9 @@ class FactorFence extends P5Visualizer(paramDesc) {
     private textInterval = 0
     private textSize = 0
 
+    // colour palette
+    private palette = new factorPalette()
+
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
@@ -109,43 +157,10 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
     }
 
-    // p5 factor Visualizer colour palette class
-    static factorPalette = class {
-        gradientBar: {[key: string]: p5.Color} = {}
-        gradientHighlight: {[key: string]: p5.Color} = {}
-        gradientMouse: {[key: string]: p5.Color} = {}
-        backgroundColor: p5.Color
-        constructor(
-            sketch: p5,
-            // bottom to top
-            hexBar: string[] = ['#876BB8', '#C3B7DB'], // violet, dark bottom
-            // orange, dark bottom
-            hexHighlight: string[] = ['#EC7E2B', '#F5CD95'],
-            hexMouse: string[] = ['#589C48', '#7BB662'], // green, dark bottom
-            hexBack = '#EBEAF3' // light violet
-        ) {
-            this.gradientBar = {
-                bottom: sketch.color(hexBar[0]),
-                top: sketch.color(hexBar[1]),
-            }
-            this.gradientHighlight = {
-                bottom: sketch.color(hexHighlight[0]),
-                top: sketch.color(hexHighlight[1]),
-            }
-            this.gradientMouse = {
-                bottom: sketch.color(hexMouse[0]),
-                top: sketch.color(hexMouse[1]),
-            }
-            this.backgroundColor = sketch.color(hexBack)
-        }
-    }
-
-    private palette = new FactorFence.factorPalette(this.sketch)
-
     setup() {
         super.setup()
 
-        this.palette = new FactorFence.factorPalette(this.sketch)
+        this.palette = new factorPalette(this.sketch)
 
         // must be set so barsShowing() works
         this.scaleFactor = 1
