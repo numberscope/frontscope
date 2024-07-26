@@ -45,8 +45,8 @@ some sequences, like A014577 "The regular paper-folding sequence", naturally
 have a small domain.)
      **/
     domain: {
-        default: [0, 1, 2, 3, 4, 5] as number[],
-        type: ParamType.NUMBER_ARRAY,
+        default: [0n, 1n, 2n, 3n, 4n] as bigint[],
+        type: ParamType.BIGINT_ARRAY,
         displayName: 'Sequence Domain',
         required: true,
         description:
@@ -254,8 +254,11 @@ class Turtle extends P5Visualizer(paramDesc) {
         // If number is entered, immediately populate
         if (params.domain.length === 1) {
             if (params.domain[0] > 0 && params.domain[0] < 10) {
-                params.modulus = params.domain[0]
-                params.domain = [...Array(params.modulus).keys()]
+                params.modulus = Number(params.domain[0])
+                params.domain = Array.from(
+                    {length: params.modulus},
+                    (_, index) => BigInt(index)
+                )
             } else {
                 status.addError(
                     'If you enter only one integer for'
