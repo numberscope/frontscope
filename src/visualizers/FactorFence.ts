@@ -646,6 +646,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         } else {
             this.highlight = 0n
         }
+        this.refreshParams()
     }
 
     // draw a gradient rectangle
