@@ -598,6 +598,18 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
         this.scaleFactor *= scaleFac
         this.graphCorner.y = this.graphCorner.y / scaleFac
+        this.resetLoop()
+    }
+
+    // set highlight prime by click
+    mouseClicked() {
+        if (this.mouseOn) {
+            this.highlight = this.mousePrime
+        } else {
+            this.highlight = 0n
+        }
+        this.refreshParams()
+        this.resetLoop()
     }
 
     bottomText() {
@@ -690,16 +702,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
             // make sure mouseover disappears when not on graph
             this.mousePrime = 0n
         }
-    }
-
-    // set highlight prime by click
-    mouseClicked() {
-        if (this.mouseOn) {
-            this.highlight = this.mousePrime
-        } else {
-            this.highlight = 0n
-        }
-        this.refreshParams()
     }
 
     // draw a gradient rectangle
