@@ -9,10 +9,10 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
 # Factor Fence Visualizer
 
 [<img
-  src="../../assets/img/Turtle/turtle-waitforit.png"
+  src="../../assets/img/FactorFence/ramanujan-tau.png"
   width=500
   style="margin-left: 1em; margin-right: 0.5em"
-/>](../assets/img/Turtle/turtle-waitforit.png)
+/>](../assets/img/FactorFence/ramanujan-tau.png)
 
 This visualizer shows the factorization of the terms of the sequence
 as a sort of coloured graph.  At position n horizontally, there is a bar,
