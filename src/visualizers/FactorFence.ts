@@ -129,6 +129,13 @@ interface bar {
     log: number
 }
 
+// data on which bars on screen
+interface barsData {
+    minBars: number
+    maxBars: number
+    numBars: number
+}
+
 class FactorFence extends P5Visualizer(paramDesc) {
     static category = 'FactorFence'
     static description = 'Show the factors of your sequence log-visually.'
@@ -166,13 +173,14 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
     // for issues of caching taking time
     private collectFailed = false
-    private factorizationFailed = false
 
     // colour palette
     private palette = new factorPalette()
 
     // frame counter for timeout on loop()
+    // first factorization failure
     private frame = 0
+    private firstFailure = Number.POSITIVE_INFINITY
 
     barsShowing() {
         // determine which terms will be on the screen
@@ -217,16 +225,15 @@ class FactorFence extends P5Visualizer(paramDesc) {
         return status
     }
 
-    collectDataForScale() {
+    collectDataForScale(barsInfo: barsData) {
         // collect some info on the sequence in order to decide
         // how best to vertically scale the initial graph
         this.collectFailed = false
-        const barsInfo = this.barsShowing()
         const seqVals = Array.from(Array(barsInfo.numBars), (_, i) => {
             let elt = 1n
             try {
                 elt = this.seq.getElement(i + barsInfo.minBars)
-            } catch (CacheError) {
+            } catch {
                 this.collectFailed = true
             }
             let sig = 1n // sign of element
@@ -264,16 +271,24 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.graphCorner.y = this.graphCorner.y + heightMin * this.heightScale
     }
 
-    storeFactors() {
+    storeFactors(barsInfo: barsData) {
         // put all factorizations into an array for easy access
-        this.factorizations = []
-        this.factorizationFailed = false
-        for (let myIndex = this.first; myIndex < this.last; myIndex++) {
+
+        // track factorization progress in case backend is slow
+        let firstFailure = barsInfo.maxBars
+
+        // only try to store the factorizations of the bars that are showing,
+        // and we have not previously done
+        for (
+            let myIndex = this.firstFailure;
+            myIndex < barsInfo.maxBars;
+            myIndex++
+        ) {
             let facsRaw: bigint[][] = []
             try {
                 facsRaw = this.seq.getFactors(myIndex) ?? []
-            } catch (CacheError) {
-                this.factorizationFailed = true
+            } catch {
+                if (firstFailure > myIndex) firstFailure = myIndex
             }
 
             // change the factors into just a list of factors with repeats
@@ -293,6 +308,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
             }
             this.factorizations[myIndex] = factors
         }
+        return firstFailure
     }
 
     setup() {
@@ -314,7 +330,21 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // set up terms first and last
         this.first = this.seq.first
+        this.firstFailure = this.first // set factoring needed pointer
         this.last = this.terms
+
+        // warn the backend we plan to factor
+        try {
+            this.seq.getFactors(this.last)
+            // we only wanted to send info to the backend,
+            // we don't care what we get
+            // eslint-disable-next-line  no-empty
+        } catch {}
+        // make an empty factoring array
+        for (let myIndex = this.first; myIndex < this.last; myIndex++) {
+            const factors: bar[] = []
+            this.factorizations[myIndex] = factors
+        }
 
         // text formatting
 
@@ -334,9 +364,9 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.sketch.strokeWeight(0)
         this.sketch.frameRate(30)
 
-        this.collectDataForScale()
-
-        this.storeFactors()
+        // initial scaling
+        const barsInfo = this.barsShowing()
+        this.collectDataForScale(barsInfo)
     }
 
     keyPresses() {
@@ -371,27 +401,36 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
         if (this.sketch.keyIsDown(85)) {
             // stretch up U
-            this.heightScale += 5
+            this.heightScale += 1
         }
         if (this.sketch.keyIsDown(79)) {
             // contract down O
-            this.heightScale -= 5
+            this.heightScale -= 1
         }
     }
 
     draw() {
-        // try again if need more terms from cache
-        if (this.factorizationFailed || this.collectFailed) {
-            this.collectDataForScale()
-            this.storeFactors()
-        }
-
+        // countdown to timeout when no key pressed
         // if key is pressing, do what it directs
-        if (this.sketch.keyIsPressed) this.keyPresses()
+        // there's a bug here that when the keyboard is
+        // pressed in this window but
+        // released in another window, keyIsPressed stays
+        // positive and the sketch keeps computing,
+        // e.g. if you tab away from the window
+        if (this.sketch.keyIsPressed) {
+            this.keyPresses()
+        } else {
+            ++this.frame
+        }
 
         // clear the sketch
         this.sketch.clear(0, 0, 0, 0)
         this.sketch.background(this.palette.backgroundColor)
+
+        // determine which terms will be on the screen so we only
+        // bother with those
+        // resets this.scaleFactor
+        const barsInfo = this.barsShowing()
 
         // this scales the whole sketch
         // must compensate when using invariant sketch elements
@@ -400,9 +439,11 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         this.mouseOn = false // flag mouse is not on graph by default
 
-        // determine which terms will be on the screen so we only
-        // bother with those
-        const barsInfo = this.barsShowing()
+        // try again if need more terms from cache
+        if (this.collectFailed) this.collectDataForScale(barsInfo)
+
+        // set factoring needed pointer
+        this.firstFailure = this.storeFactors(barsInfo)
 
         // loop through the terms of the seq and draw the bars for each
         for (
@@ -533,14 +574,17 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
     }
 
-    keyPressed() {
+    resetLoop() {
         this.frame = 0
         this.sketch.loop()
     }
 
+    keyPressed() {
+        this.resetLoop()
+    }
+
     mouseMoved() {
-        this.frame = 0
-        this.sketch.loop()
+        this.resetLoop()
     }
 
     // right now I can't access type p5.MouseEvent
