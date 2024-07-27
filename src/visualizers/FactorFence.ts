@@ -99,6 +99,18 @@ too high, will decrease to number of terms available.
         hideDescription: true,
     },
     /**
+- labels: show text info 
+     **/
+    labels: {
+        default: true,
+        type: ParamType.BOOLEAN,
+        displayName: 'Show text info',
+        required: true,
+        description: 'If true, some text info appears onscreen',
+        hideDescription: true,
+    },
+
+    /**
 - signs: take into account signs 
      **/
     signs: {
@@ -169,6 +181,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // minimum bar to compute
         // no less than first term
+        console.log(this.first)
         const minBars = Math.max(
             Math.floor(
                 this.first - Math.min(0, this.graphCorner.x / this.recSpace.x)
@@ -212,6 +225,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // how best to vertically scale the initial graph
         this.collectFailed = false
         const barsInfo = this.barsShowing()
+        console.log(barsInfo)
         const seqVals = Array.from(Array(barsInfo.numBars), (_, i) => {
             let elt = 1n
             try {
@@ -289,6 +303,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     setup() {
         super.setup()
 
+        console.log('...firstfirst', this.first)
         this.refreshParams()
 
         this.palette = new factorPalette(this.sketch)
@@ -305,6 +320,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // set up terms first and last
         this.first = this.seq.first
+        console.log('...firstfirst', this.first)
         this.last = this.terms
 
         // text formatting
@@ -406,7 +422,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
             this.drawTerm(myIndex)
 
         // text at base of sketch, if not small canvas
-        if (this.sketch.height > 400) this.bottomText()
+        if (this.sketch.height > 400 && this.labels) this.bottomText()
 
         // stop drawing if no input from user
         if (this.frame > 3) this.sketch.noLoop()
