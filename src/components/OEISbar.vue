@@ -7,10 +7,11 @@
                 type="text"
                 id="oeis"
                 v-model="term"
+                v-on:input="doSearch($event)"
                 placeholder="id, keyword, etc..." />
         </div>
         <button class="material-icons-sharp" @click="srch">search</button>
-        <div v-if="term" id="results">
+        <div v-if="results.length" id="oeis-results">
             These are <br />
             dummy <br />
             results.
@@ -25,9 +26,23 @@
     console.log(emit)
 
     const term = ref('')
+    const resultList: string[] = []
+    const results = ref(resultList)
 
     function srch() {
         window.alert('Searching for ' + term.value)
+    }
+
+    function doSearch(_e: Event) {
+        if (term.value.length === 0) {
+            results.value = []
+            return
+        }
+        results.value = [
+            'These are',
+            'results generated',
+            `by ${term.value}.`,
+        ]
     }
 </script>
 
@@ -70,7 +85,7 @@
             aspect-ratio: 1 / 1;
         }
     }
-    #results {
+    #oeis-results {
         position: absolute;
         top: 50px;
         right: -8px;
