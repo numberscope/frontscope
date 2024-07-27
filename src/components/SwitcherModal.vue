@@ -18,12 +18,14 @@
                 <div id="content">
                     <div class="switcher-title-bar">
                         <h1>Choose {{ category }}</h1>
-                        <OEISbar v-if="category === 'sequence'" />
+                        <OEISbar
+                            v-if="category === 'sequence'"
+                            @addID="addModule" />
                     </div>
                     <div ref="galleryWrap" class="results">
                         <SpecimensGallery
                             class="results"
-                            :specimens="altered(category)"
+                            :specimens="cards"
                             @removeSpecimen="deleteModule" />
                     </div>
                 </div>
@@ -36,7 +38,7 @@
     import SpecimensGallery from './SpecimensGallery.vue'
     import OEISbar from './OEISbar.vue'
     import type {CardSpecimen} from './SpecimensGallery.vue'
-    import {seqMODULES, disableOEIS} from '../sequences/sequences'
+    import {seqMODULES, enableOEIS, disableOEIS} from '../sequences/sequences'
     import vizMODULES from '../visualizers/visualizers'
     import {specimenQuery, getIDs} from '../shared/browserCaching'
     import {isMobile} from '../shared/layoutUtilities'
@@ -78,13 +80,17 @@
         },
     })
 
-    const modules = {
-        sequence: descriptions(
+    function getSequences() {
+        return descriptions(
             seqMODULES,
             getIDs().map(id => `OEIS ${id}`)
-        ),
+        )
+    }
+    const modules = {
+        sequence: getSequences(),
         visualizer: descriptions(vizMODULES),
     }
+    const cards = ref(altered(props.category))
 
     const switcher = ref<HTMLElement | null>(null)
     const galleryWrap = ref<HTMLElement | null>(null)
@@ -171,6 +177,21 @@
             cards.push(newCard)
         }
         return cards
+    }
+
+    function addModule(id: string) {
+        const seqLoad = enableOEIS(id)
+        modules.sequence = getSequences()
+        const nCards = cards.value.length
+        cards.value.splice(0, nCards, ...altered(props.category))
+        // Redo once we have the description of the sequence:
+        if (seqLoad)
+            seqLoad.then(() => {
+                modules.sequence = getSequences()
+                const newCards = altered(props.category)
+                const nCards = cards.value.length
+                cards.value.splice(0, nCards, ...newCards)
+            })
     }
 
     function deleteModule(name: string) {

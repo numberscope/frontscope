@@ -12,7 +12,10 @@
         </div>
         <button class="material-icons-sharp" @click="srch">search</button>
         <div v-if="results.length" id="oeis-results">
-            <p v-for="item in results" :key="item[0]">
+            <p
+                v-for="item in results"
+                :key="item[0]"
+                @click="select(item[0])">
                 <a :href="`https://oeis.org/${item[0]}`" target="_blank">
                     {{ item[0] }}
                 </a>
@@ -26,7 +29,6 @@
     import {ref} from 'vue'
 
     const emit = defineEmits(['addID'])
-    console.log(emit)
 
     const term = ref('')
     const resultList: [string, string][] = []
@@ -58,6 +60,11 @@
                     + "ought to go, don't you think?",
             ],
         ]
+    }
+
+    function select(id: string) {
+        emit('addID', id)
+        results.value = []
     }
 </script>
 
