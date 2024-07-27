@@ -111,7 +111,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
     // mouse control
     private mousePrime = 0n
-    private mouseOn = false
+    private mouseOn = false // mouse on graph
+    private mouseIndex = 0 // term mouse is hovering over
 
     // store factorizations
     private factorizations: bar[][] = []
@@ -145,6 +146,9 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
     // colour palette
     private palette = new factorPalette()
+
+    // frame counter for timeout on loop()
+    private frame = 0
 
     barsShowing() {
         // determine which terms will be on the screen
@@ -314,30 +318,24 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.storeFactors()
     }
 
-    draw() {
-        // try again if need more terms from cache
-        if (this.factorizationFailed || this.collectFailed) {
-            this.collectDataForScale()
-            this.storeFactors()
-        }
-
+    keyPresses() {
         // keyboard control for zoom, pan, stretch
-        if (this.sketch.keyIsDown(73)) {
-            // zoom in I
+        if (this.sketch.keyIsDown(this.sketch.UP_ARROW)) {
+            // zoom in UP
             this.scaleFactor *= 1.03
             this.graphCorner.y = this.graphCorner.y / 1.03
         }
-        if (this.sketch.keyIsDown(75)) {
-            // zoom out K
+        if (this.sketch.keyIsDown(this.sketch.DOWN_ARROW)) {
+            // zoom out DOWN
             this.scaleFactor *= 0.97
             this.graphCorner.y = this.graphCorner.y / 0.97
         }
-        if (this.sketch.keyIsDown(74)) {
-            // pan left J
+        if (this.sketch.keyIsDown(this.sketch.LEFT_ARROW)) {
+            // pan left LEFT
             this.graphCorner.x -= 10 / this.scaleFactor
         }
-        if (this.sketch.keyIsDown(76)) {
-            // pan right L
+        if (this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)) {
+            // pan right RIGHT
             this.graphCorner.x += 10 / this.scaleFactor
         }
         if (this.sketch.keyIsDown(89)) {
@@ -356,209 +354,267 @@ class FactorFence extends P5Visualizer(paramDesc) {
             // contract down O
             this.heightScale -= 5
         }
+    }
 
+    draw() {
+        // try again if need more terms from cache
+        if (this.factorizationFailed || this.collectFailed) {
+            this.collectDataForScale()
+            this.storeFactors()
+        }
+
+        // if key is pressing, do what it directs
+        if (this.sketch.keyIsPressed) this.keyPresses()
+
+        // clear the sketch
         this.sketch.clear(0, 0, 0, 0)
         this.sketch.background(this.palette.backgroundColor)
 
         // this scales the whole sketch
         // must compensate when using invariant sketch elements
+        // like text
         this.sketch.scale(this.scaleFactor)
 
-        this.mouseOn = false // flag whether mouse is over the graph or not
-        let mouseIndex = 0 // the term the mouse is hovering over
+        this.mouseOn = false // flag mouse is not on graph by default
 
-        let bottomColor = this.palette.gradientBar.bottom
-        let topColor = this.palette.gradientBar.top
-
-        // determine which terms will be on the screen so we only graph those
+        // determine which terms will be on the screen so we only
+        // bother with those
         const barsInfo = this.barsShowing()
 
-        // loop through the terms of the seq
+        // loop through the terms of the seq and draw the bars for each
         for (
             let myIndex = barsInfo.minBars;
             myIndex < barsInfo.maxBars;
             myIndex++
-        ) {
-            let mySign = 1
-            if (this.seq.getElement(myIndex) < 0) {
-                mySign = -1
-            }
-            const factors = this.factorizations[myIndex] // get factors
-            let cumulHt = 0 // how much of the bar we've drawn so far
-
-            // primeType = 0 means the highlighted one (draw first)
-            // primeType = 1 means the rest of the primes
-            for (let primeType = 0; primeType < 2; primeType++) {
-                // loop through bars to draw for term
-                for (
-                    let facIndex = 0;
-                    facIndex < factors.length;
-                    facIndex++
-                ) {
-                    const factor = factors[facIndex]
-
-                    // Select the primes based on primeType
-                    if (
-                        (primeType == 0 && factor.prime == this.highlight)
-                        || (primeType == 1 && factor.prime != this.highlight)
-                    ) {
-                        // height of rectangle is log of factor
-                        // times scaling parameter
-                        const recHeight =
-                            mySign * factor.log * this.heightScale
-
-                        // set colour gradient for rectangle
-                        let gradient = this.palette.gradientBar
-                        if (primeType == 0) {
-                            gradient = this.palette.gradientHighlight
-                        }
-                        if (factor.prime == this.mousePrime) {
-                            gradient = this.palette.gradientMouse
-                        }
-                        bottomColor = gradient.bottom
-                        topColor = gradient.top
-
-                        // determine where to put the rectangle
-                        const barStart = this.graphCorner.copy()
-                        const moveOver = this.recSpace.copy()
-                        moveOver.mult(myIndex - this.first)
-                        const moveUp = this.sketch.createVector(0, -cumulHt)
-                        barStart.add(moveOver)
-                        barStart.add(moveUp)
-                        const barDiag = this.sketch.createVector(
-                            this.recWidth,
-                            recHeight
-                        )
-                        // draw the rectangle
-                        this.grad_rect(
-                            barStart.x,
-                            barStart.y,
-                            barDiag.x,
-                            barDiag.y,
-                            topColor,
-                            bottomColor
-                        )
-
-                        // if the mouse is over the rectangle being drawn
-                        // then we make note of the prime factor
-                        // and term we are hovering over
-                        const testVec = this.sketch.createVector(
-                            this.sketch.mouseX,
-                            this.sketch.mouseY
-                        )
-                        testVec.mult(1 / this.scaleFactor).sub(barStart)
-                        testVec.y = testVec.y * mySign
-                        const barDiagAbs = barDiag.copy()
-                        barDiagAbs.y = -barDiagAbs.y * mySign
-                        if (
-                            testVec.x >= 0
-                            && testVec.x <= barDiagAbs.x
-                            && testVec.y <= 0
-                            && testVec.y >= barDiagAbs.y
-                        ) {
-                            this.mousePrime = factor.prime
-                            mouseIndex = myIndex
-                            this.mouseOn = true
-                        }
-
-                        // bookkeeping
-                        cumulHt += recHeight
-                    }
-                }
-            }
-        }
+        )
+            this.drawTerm(myIndex)
 
         // text at base of sketch, if not small canvas
-        if (this.sketch.height > 400) {
-            this.sketch.textSize(this.textSize / this.scaleFactor)
-            const textPosition = this.textCorner.copy()
-            textPosition.mult(1 / this.scaleFactor)
-            const textIntervalVec = this.sketch.createVector(
-                0,
-                this.textInterval
-            )
-            textIntervalVec.mult(1 / this.scaleFactor)
-            const info = [
-                'Click select; J/L pan; I/K zoom; U/O stretch; Y/H raise/lower',
-                'Highlighted prime: ' + this.highlight.toString(),
-            ]
-            const infoColors = [
-                this.palette.gradientBar.bottom,
-                this.palette.gradientHighlight.bottom,
-            ]
-            for (let i = 0; i < info.length; i++) {
-                this.sketch.fill(infoColors[i])
-                this.sketch.text(info[i], textPosition.x, textPosition.y)
-                textPosition.add(textIntervalVec)
-            }
-            if (this.mouseOn) {
-                const factorizationPrimes = this.factorizations[
-                    mouseIndex
-                ].map(factor => factor.prime)
-                const factorizationPrimesPre = factorizationPrimes.filter(
-                    factor => factor < this.mousePrime
-                )
-                const factorizationPrimesMouse = factorizationPrimes.filter(
-                    factor => factor == this.mousePrime
-                )
-                const factorizationPrimesPost = factorizationPrimes.filter(
-                    factor => factor > this.mousePrime
-                )
-                const factorStringParts = [
-                    'S('
-                        + mouseIndex.toString()
-                        + ') = '
-                        + this.seq.getElement(mouseIndex).toString()
-                        + ' = '
-                        + factorizationPrimesPre.toString()
-                        + `${factorizationPrimesPre.length > 0 ? ',' : ''}`,
-                    factorizationPrimesMouse.toString(),
-                    `${factorizationPrimesPost.length > 0 ? ',' : ''}`
-                        + factorizationPrimesPost.toString(),
-                ]
-                const factorStringColors = [
-                    this.palette.gradientBar.bottom,
-                    this.palette.gradientMouse.bottom,
-                    this.palette.gradientBar.bottom,
-                ]
-                for (let i = 0; i < factorStringParts.length; i++) {
-                    this.sketch.fill(factorStringColors[i])
-                    this.sketch.text(
-                        factorStringParts[i],
-                        textPosition.x,
-                        textPosition.y
+        if (this.sketch.height > 400) this.bottomText()
+
+        // stop drawing if no input from user
+        if (this.frame > 3) this.sketch.noLoop()
+    }
+
+    drawTerm(myIndex: number) {
+        // This function draws the full bars for a single term
+        // Input is index of the term
+
+        // set colours
+        let bottomColor = this.palette.gradientBar.bottom
+        let topColor = this.palette.gradientBar.top
+
+        // get sign of term
+        let mySign = 1
+        if (this.seq.getElement(myIndex) < 0) mySign = -1
+
+        // get factors of term
+        const factors = this.factorizations[myIndex] // get factors
+
+        // we are drawing several bars
+        // on top of each other,
+        // so this height counter moves up as we go
+        let cumulHt = 0
+
+        for (const primeIsHigh of [true, false]) {
+            // first we do this with primeIsHigh = true
+            // (that means highlighted prime is at hand)
+            // then with primeIsHigh = false
+
+            // loop through bars to draw for this term
+            for (let facIndex = 0; facIndex < factors.length; facIndex++) {
+                // get the next prime factor
+                const factor = factors[facIndex]
+
+                // Select the primes based on primeIsHigh flag
+                if (
+                    (primeIsHigh && factor.prime == this.highlight)
+                    || (!primeIsHigh && factor.prime != this.highlight)
+                ) {
+                    // height of rectangle is log of factor
+                    // times scaling parameter
+                    const recHeight = mySign * factor.log * this.heightScale
+
+                    // set colour gradient for rectangle
+                    let gradient = this.palette.gradientBar
+                    if (primeIsHigh) {
+                        gradient = this.palette.gradientHighlight
+                    }
+                    if (factor.prime == this.mousePrime) {
+                        gradient = this.palette.gradientMouse
+                    }
+                    bottomColor = gradient.bottom
+                    topColor = gradient.top
+
+                    // determine where to put the rectangle
+                    const barStart = this.graphCorner.copy()
+                    const moveOver = this.recSpace.copy()
+                    moveOver.mult(myIndex - this.first)
+                    const moveUp = this.sketch.createVector(0, -cumulHt)
+                    barStart.add(moveOver)
+                    barStart.add(moveUp)
+                    const barDiag = this.sketch.createVector(
+                        this.recWidth,
+                        recHeight
                     )
-                    textPosition.add(
-                        this.sketch.createVector(
-                            this.sketch.textWidth(factorStringParts[i]),
-                            0
-                        )
+                    // draw the rectangle
+                    this.grad_rect(
+                        barStart.x,
+                        barStart.y,
+                        barDiag.x,
+                        barDiag.y,
+                        topColor,
+                        bottomColor
                     )
+
+                    // if the mouse is over the rectangle being drawn
+                    // then we make note of the prime factor
+                    // and term we are hovering over
+                    const testVec = this.sketch.createVector(
+                        this.sketch.mouseX,
+                        this.sketch.mouseY
+                    )
+                    testVec.mult(1 / this.scaleFactor).sub(barStart)
+                    testVec.y = testVec.y * mySign
+                    const barDiagAbs = barDiag.copy()
+                    barDiagAbs.y = -barDiagAbs.y * mySign
+                    if (
+                        testVec.x >= 0
+                        && testVec.x <= barDiagAbs.x
+                        && testVec.y <= 0
+                        && testVec.y >= barDiagAbs.y
+                    ) {
+                        this.mousePrime = factor.prime
+                        this.mouseIndex = myIndex
+                        this.mouseOn = true
+                    }
+
+                    // move upward in preparation for next bar
+                    cumulHt += recHeight
                 }
-            } else {
-                // make sure mouseover disappears when not on graph
-                this.mousePrime = 0n
             }
         }
     }
 
-    //    mouseClicked() {
-    //        // currently this function doesn't work
-    //        // but it is ready to go when issue #120 is resolved
-    //        if (this.mouseOn) {
-    //            this.highlight = this.mousePrime
-    //        } else {
-    //            this.highlight = 0n
-    //        }
-    //    }
+    keyPressed() {
+        this.frame = 0
+        this.sketch.loop()
+    }
 
+    mouseMoved() {
+        this.frame = 0
+        this.sketch.loop()
+    }
+
+    bottomText() {
+        // text size and position
+        this.sketch.textSize(this.textSize / this.scaleFactor)
+        const textPosition = this.textCorner.copy()
+        textPosition.mult(1 / this.scaleFactor)
+
+        // spacing between lines
+        const textIntervalVec = this.sketch.createVector(0, this.textInterval)
+        textIntervalVec.mult(1 / this.scaleFactor)
+
+        // always visible static text info, line by line
+        const info = [
+            'Click select; arrow keys to move; U/O stretch; Y/H raise/lower',
+            'Highlighted prime: ' + this.highlight.toString(),
+        ]
+
+        // colours match graph colours
+        const infoColors = [
+            this.palette.gradientBar.bottom,
+            this.palette.gradientHighlight.bottom,
+        ]
+
+        // display static info line by line
+        for (let i = 0; i < info.length; i++) {
+            this.sketch.fill(infoColors[i])
+            this.sketch.text(info[i], textPosition.x, textPosition.y)
+            textPosition.add(textIntervalVec)
+        }
+
+        // factorization text shown upon mouseover of graph
+        if (this.mouseOn) {
+            // parse out the factorization, categorizing
+            // into primes (a) smaller than the highlighted one,
+            // (b) highlighted one, and (c) bigger ones
+            const factorizationPrimes = this.factorizations[
+                this.mouseIndex
+            ].map(factor => factor.prime)
+            const factorizationPrimesPre = factorizationPrimes.filter(
+                factor => factor < this.mousePrime
+            )
+            const factorizationPrimesMouse = factorizationPrimes.filter(
+                factor => factor == this.mousePrime
+            )
+            const factorizationPrimesPost = factorizationPrimes.filter(
+                factor => factor > this.mousePrime
+            )
+
+            // factorization info string, broken into pre/highlight/post
+            const factorStringParts = [
+                'S('
+                    + this.mouseIndex.toString()
+                    + ') = '
+                    + this.seq.getElement(this.mouseIndex).toString()
+                    + ' = '
+                    + factorizationPrimesPre.toString()
+                    // primes before highlighted prime
+                    + `${factorizationPrimesPre.length > 0 ? ',' : ''}`,
+                // highlighted prime
+                factorizationPrimesMouse.toString(),
+                // primes after highlighted prime
+                `${factorizationPrimesPost.length > 0 ? ',' : ''}`
+                    + factorizationPrimesPost.toString(),
+            ]
+
+            // colours for factorization
+            const factorStringColors = [
+                this.palette.gradientBar.bottom, // before highlighted
+                this.palette.gradientMouse.bottom, // highlighted
+                this.palette.gradientBar.bottom, // after highlighted
+            ]
+
+            // display mouseover info line, chunk by chunk
+            for (let i = 0; i < factorStringParts.length; i++) {
+                this.sketch.fill(factorStringColors[i])
+                this.sketch.text(
+                    factorStringParts[i],
+                    textPosition.x,
+                    textPosition.y
+                )
+                textPosition.add(
+                    this.sketch.createVector(
+                        this.sketch.textWidth(factorStringParts[i]),
+                        0
+                    )
+                )
+            }
+        } else {
+            // make sure mouseover disappears when not on graph
+            this.mousePrime = 0n
+        }
+    }
+
+    // set highlight prime by click
+    mouseClicked() {
+        if (this.mouseOn) {
+            this.highlight = this.mousePrime
+        } else {
+            this.highlight = 0n
+        }
+    }
+
+    // draw a gradient rectangle
     grad_rect(
         x: number,
         y: number,
         width: number,
         height: number,
-        color1: p5.Color,
-        color2: p5.Color
+        colorTop: p5.Color,
+        colorBottom: p5.Color
     ) {
         const barGradient = this.sketch.drawingContext.createLinearGradient(
             x,
@@ -566,8 +622,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
             x,
             y - height
         )
-        barGradient.addColorStop(0, color1)
-        barGradient.addColorStop(1, color2)
+        barGradient.addColorStop(0, colorTop)
+        barGradient.addColorStop(1, colorBottom)
         this.sketch.drawingContext.fillStyle = barGradient
         this.sketch.rect(x, y - height, width, height)
     }
