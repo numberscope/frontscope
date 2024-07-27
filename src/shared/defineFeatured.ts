@@ -61,6 +61,12 @@ const featuredSIMs = [
             + '&bgColor=5d509f&strokeColor=7a9f6f',
         'formula=sign%28sin%28n%2B1%29%29'
     ),
+    specimenQuery(
+        'Tau Many Primes',
+        'FactorFence',
+        'OEIS A000594',
+        'terms=1000&signs=false'
+    ),
 ]
 
 // Is there any reason for us to associate dates with featured specimens? Do

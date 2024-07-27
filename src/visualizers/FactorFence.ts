@@ -98,6 +98,17 @@ too high, will decrease to number of terms available.
             + ' If you put 0 or a non-prime, we highlight none.',
         hideDescription: true,
     },
+    /**
+- signs: take into account signs 
+     **/
+    signs: {
+        default: true,
+        type: ParamType.BOOLEAN,
+        displayName: 'Take into account signs?',
+        required: true,
+        description: 'If true, negative terms display below axis',
+        hideDescription: true,
+    },
 } as const
 
 // vertical bar representing factor
@@ -209,7 +220,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 this.collectFailed = true
             }
             let sig = 1n // sign of element
-            if (elt < 0n) {
+            if (elt < 0n && this.signs) {
                 sig = -1n
             }
             // can I simplify this??
@@ -223,7 +234,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         //console.log(seqVals)
         this.maxVal = Math.max(...seqVals)
         this.minVal = Math.min(...seqVals)
-        //
+
         // we compute the graphHeight to scale graph to fit
         let heightMax =
             Math.sign(this.maxVal) * Math.max(2, Math.abs(this.maxVal))
@@ -411,7 +422,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // get sign of term
         let mySign = 1
-        if (this.seq.getElement(myIndex) < 0) mySign = -1
+        if (this.seq.getElement(myIndex) < 0 && this.signs) mySign = -1
 
         // get factors of term
         const factors = this.factorizations[myIndex]
