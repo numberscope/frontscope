@@ -16,7 +16,10 @@
                 v-for="item in results"
                 :key="item[0]"
                 @click="select(item[0])">
-                <a :href="`https://oeis.org/${item[0]}`" target="_blank">
+                <a
+                    :href="`https://oeis.org/${item[0]}`"
+                    @click.stop
+                    target="_blank">
                     {{ item[0] }}
                 </a>
                 &nbsp; {{ item[1] }}
