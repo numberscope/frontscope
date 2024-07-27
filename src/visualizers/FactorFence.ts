@@ -181,7 +181,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // minimum bar to compute
         // no less than first term
-        console.log(this.first)
         const minBars = Math.max(
             Math.floor(
                 this.first - Math.min(0, this.graphCorner.x / this.recSpace.x)
@@ -201,7 +200,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // maximum bar to compute
         const maxBars = minBars + numBars
 
-        //console.log('bars', this.first, this.last, minBars, maxBars, numBars)
         return {
             minBars: minBars,
             maxBars: maxBars,
@@ -213,7 +211,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
         const status = super.checkParameters(params)
 
         if (this.seq.last < this.terms) {
-            //console.log('this.seq.last', this.seq.last)
             this.terms = this.seq.last
         }
 
@@ -225,7 +222,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // how best to vertically scale the initial graph
         this.collectFailed = false
         const barsInfo = this.barsShowing()
-        console.log(barsInfo)
         const seqVals = Array.from(Array(barsInfo.numBars), (_, i) => {
             let elt = 1n
             try {
@@ -245,7 +241,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
             // store height of bar (log) but with sign info
             return BigLog(elt * sig) * Number(sig)
         })
-        //console.log(seqVals)
         this.maxVal = Math.max(...seqVals)
         this.minVal = Math.min(...seqVals)
 
@@ -303,7 +298,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
     setup() {
         super.setup()
 
-        console.log('...firstfirst', this.first)
         this.refreshParams()
 
         this.palette = new factorPalette(this.sketch)
@@ -320,7 +314,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // set up terms first and last
         this.first = this.seq.first
-        console.log('...firstfirst', this.first)
         this.last = this.terms
 
         // text formatting
