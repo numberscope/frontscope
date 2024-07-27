@@ -12,9 +12,12 @@
         </div>
         <button class="material-icons-sharp" @click="srch">search</button>
         <div v-if="results.length" id="oeis-results">
-            These are <br />
-            dummy <br />
-            results.
+            <p v-for="item in results" :key="item[0]">
+                <a :href="`https://oeis.org/${item[0]}`" target="_blank">
+                    {{ item[0] }}
+                </a>
+                &nbsp; {{ item[1] }}
+            </p>
         </div>
     </div>
 </template>
@@ -26,7 +29,7 @@
     console.log(emit)
 
     const term = ref('')
-    const resultList: string[] = []
+    const resultList: [string, string][] = []
     const results = ref(resultList)
 
     function srch() {
@@ -39,9 +42,21 @@
             return
         }
         results.value = [
-            'These are',
-            'results generated',
-            `by ${term.value}.`,
+            [
+                'A000001',
+                'I think it is always best to start with the very first '
+                    + 'sequence, because that is how everything started.',
+            ],
+            [
+                'A375000',
+                'On the other hand, some people like to begin with the very '
+                    + 'latest, coolest thing; and who can blame them?',
+            ],
+            [
+                'A099999',
+                `This is where something related to ${term.value} really `
+                    + "ought to go, don't you think?",
+            ],
         ]
     }
 </script>
@@ -89,8 +104,17 @@
         position: absolute;
         top: 50px;
         right: -8px;
-        border: 1px solid var(--ns-color-black);
-        z-index: 2000;
+        width: 200%;
+        z-index: 2;
         background: var(--ns-color-white);
+
+        p {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            border: 1px solid var(--ns-color-black);
+            padding: 4px;
+            margin: 0px;
+        }
     }
 </style>
