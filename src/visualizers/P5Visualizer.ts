@@ -21,7 +21,11 @@ class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
     mouseMoved() {}
     mousePressed() {}
     mouseReleased() {}
-    mouseWheel() {}
+    // right now I can't access type p5.MouseEvent
+    // This worked but is probably not the correct solution
+    // eslint-disable-next-line  max-len
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+    mouseWheel(event?: any) {}
     setup() {}
     touchEnded() {}
     touchMoved() {}

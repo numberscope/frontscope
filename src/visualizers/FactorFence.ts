@@ -100,6 +100,7 @@ too high, will decrease to number of terms available.
     },
 } as const
 
+// vertical bar representing factor
 interface bar {
     prime: bigint
     log: number
@@ -320,15 +321,17 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
     keyPresses() {
         // keyboard control for zoom, pan, stretch
-        if (this.sketch.keyIsDown(this.sketch.UP_ARROW)) {
+        if (
+            this.sketch.keyIsDown(this.sketch.UP_ARROW)
+            || this.sketch.keyIsDown(this.sketch.DOWN_ARROW)
+        ) {
             // zoom in UP
-            this.scaleFactor *= 1.03
-            this.graphCorner.y = this.graphCorner.y / 1.03
-        }
-        if (this.sketch.keyIsDown(this.sketch.DOWN_ARROW)) {
             // zoom out DOWN
-            this.scaleFactor *= 0.97
-            this.graphCorner.y = this.graphCorner.y / 0.97
+            const keyScale = this.sketch.keyIsDown(this.sketch.UP_ARROW)
+                ? 1.03
+                : 0.97
+            this.scaleFactor *= keyScale
+            this.graphCorner.y = this.graphCorner.y / keyScale
         }
         if (this.sketch.keyIsDown(this.sketch.LEFT_ARROW)) {
             // pan left LEFT
@@ -387,6 +390,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
             myIndex < barsInfo.maxBars;
             myIndex++
         )
+            // note that this also watches for mouseover as each bar
+            // is drawn
             this.drawTerm(myIndex)
 
         // text at base of sketch, if not small canvas
@@ -397,7 +402,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     }
 
     drawTerm(myIndex: number) {
-        // This function draws the full bars for a single term
+        // This function draws the full stacked bars for a single term
         // Input is index of the term
 
         // set colours
@@ -409,7 +414,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         if (this.seq.getElement(myIndex) < 0) mySign = -1
 
         // get factors of term
-        const factors = this.factorizations[myIndex] // get factors
+        const factors = this.factorizations[myIndex]
 
         // we are drawing several bars
         // on top of each other,
@@ -420,13 +425,18 @@ class FactorFence extends P5Visualizer(paramDesc) {
             // first we do this with primeIsHigh = true
             // (that means highlighted prime is at hand)
             // then with primeIsHigh = false
+            // in this way the highlighted prime sits
+            // at the bottom of the stack
 
-            // loop through bars to draw for this term
+            // loop through factor to draw for this term
+            // from smaller to larger
             for (let facIndex = 0; facIndex < factors.length; facIndex++) {
                 // get the next prime factor
                 const factor = factors[facIndex]
 
                 // Select the primes based on primeIsHigh flag
+                // First time through the loop we only draw highlighted prime
+                // Second time we draw everything else
                 if (
                     (primeIsHigh && factor.prime == this.highlight)
                     || (!primeIsHigh && factor.prime != this.highlight)
@@ -446,17 +456,24 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     bottomColor = gradient.bottom
                     topColor = gradient.top
 
-                    // determine where to put the rectangle
+                    // determine where to put lower left corner
                     const barStart = this.graphCorner.copy()
+
+                    // move over based on which term
                     const moveOver = this.recSpace.copy()
                     moveOver.mult(myIndex - this.first)
+
+                    // move up based on cumulative height so far
                     const moveUp = this.sketch.createVector(0, -cumulHt)
                     barStart.add(moveOver)
                     barStart.add(moveUp)
+
+                    // figure out upper right corner
                     const barDiag = this.sketch.createVector(
                         this.recWidth,
                         recHeight
                     )
+
                     // draw the rectangle
                     this.grad_rect(
                         barStart.x,
@@ -504,6 +521,19 @@ class FactorFence extends P5Visualizer(paramDesc) {
     mouseMoved() {
         this.frame = 0
         this.sketch.loop()
+    }
+
+    // right now I can't access type p5.MouseEvent
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    mouseWheel(event: any) {
+        let scaleFac = 1
+        if (event.delta > 0) {
+            scaleFac = 1.03
+        } else {
+            scaleFac = 0.97
+        }
+        this.scaleFactor *= scaleFac
+        this.graphCorner.y = this.graphCorner.y / scaleFac
     }
 
     bottomText() {
@@ -630,6 +660,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
 }
 
 // bigint logarithm base 10
+// would be good to put this in shared math later
 // from https://stackoverflow.com/questions/70382306/logarithm-of-a-bigint
 function BigLog10(n: bigint) {
     if (n < 0) return NaN
