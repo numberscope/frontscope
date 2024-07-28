@@ -1,6 +1,6 @@
 <template>
     <div id="search-bar">
-        <div>
+        <div @click="doSearch($event)">
             <label for="oeis">Search the OEIS</label>
             <br />
             <input
@@ -41,6 +41,7 @@
     const term = ref('')
     const resultList: [string, string][] = []
     const results = ref(resultList)
+    const resultCache: Record<string, typeof resultList> = {}
 
     function srch() {
         window.alert('Searching for ' + term.value)
@@ -51,6 +52,10 @@
             results.value = []
             return
         }
+        if (term.value in resultCache) {
+            results.value = resultCache[term.value]
+            return
+        }
         results.value = [['..???..', `... searching for ${term.value} ...`]]
         const searchUrl =
             OEIS.urlPrefix + `search_oeis/${encodeURIComponent(term.value)}`
@@ -58,6 +63,7 @@
         const reslt = searchResponse.data.results
         for (const pair of reslt)
             if (pair[0] === 'A000045') pair[1] = 'Virahāṅka-' + pair[1]
+        resultCache[term.value] = reslt
         results.value = reslt
     }
 
