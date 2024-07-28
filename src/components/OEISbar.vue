@@ -17,11 +17,13 @@
                 :key="item[0]"
                 @click="select(item[0])">
                 <a
+                    v-if="item[0].startsWith('A')"
                     :href="`https://oeis.org/${item[0]}`"
                     @click.stop
                     target="_blank">
                     {{ item[0] }}
                 </a>
+                <span v-if="!item[0].startsWith('A')"> {{ item[0] }} </span>
                 &nbsp; {{ item[1] }}
             </p>
         </div>
@@ -29,6 +31,9 @@
 </template>
 
 <script setup lang="ts">
+    import {OEIS} from '../sequences/OEIS'
+
+    import axios from 'axios'
     import {ref} from 'vue'
 
     const emit = defineEmits(['addID'])
@@ -41,28 +46,19 @@
         window.alert('Searching for ' + term.value)
     }
 
-    function doSearch(_e: Event) {
+    async function doSearch(_e: Event) {
         if (term.value.length === 0) {
             results.value = []
             return
         }
-        results.value = [
-            [
-                'A000001',
-                'I think it is always best to start with the very first '
-                    + 'sequence, because that is how everything started.',
-            ],
-            [
-                'A375000',
-                'On the other hand, some people like to begin with the very '
-                    + 'latest, coolest thing; and who can blame them?',
-            ],
-            [
-                'A099999',
-                `This is where something related to ${term.value} really `
-                    + "ought to go, don't you think?",
-            ],
-        ]
+        results.value = [['..???..', `... searching for ${term.value} ...`]]
+        const searchUrl =
+            OEIS.urlPrefix + `search_oeis/${encodeURIComponent(term.value)}`
+        const searchResponse = await axios.get(searchUrl)
+        const reslt = searchResponse.data.results
+        for (const pair of reslt)
+            if (pair[0] === 'A000045') pair[1] = 'Virahāṅka-' + pair[1]
+        results.value = reslt
     }
 
     function select(id: string) {

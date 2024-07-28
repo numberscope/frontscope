@@ -41,7 +41,7 @@ export class OEIS extends Cached(paramDesc) {
     // import.meta.env is basically your configuration.
     // It's set up by Vite automatically
     // See https://vitejs.dev/guide/env-and-mode.html.
-    static _urlPrefix = `${import.meta.env.VITE_BACKSCOPE_URL}/api/`
+    static urlPrefix = `${import.meta.env.VITE_BACKSCOPE_URL}/api/`
 
     constructor(id: string) {
         super()
@@ -71,8 +71,7 @@ export class OEIS extends Cached(paramDesc) {
             // Catch HTTP errors. (This function has multiple HTTP requests.)
             try {
                 const backendUrl =
-                    OEIS._urlPrefix
-                    + `get_oeis_name_and_values/${this.oeisID}`
+                    OEIS.urlPrefix + `get_oeis_name_and_values/${this.oeisID}`
                 const response = await axios.get(backendUrl)
                 let name = response.data.name
                 if (this.oeisID == 'A000045') name = 'Virahāṅka-' + name
@@ -128,7 +127,7 @@ export class OEIS extends Cached(paramDesc) {
             const facList: Factorization[] = []
             try {
                 const factorUrl =
-                    OEIS._urlPrefix
+                    OEIS.urlPrefix
                     + `get_oeis_factors/${this.oeisID}/`
                     + (this.last - this.first + 1).toString()
                 const factorResponse = await axios.get(factorUrl)
