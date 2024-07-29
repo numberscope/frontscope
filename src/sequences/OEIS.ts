@@ -84,7 +84,10 @@ export class OEIS extends Cached(paramDesc) {
                     if (index > last) last = index
                     values[index] = BigInt(response.data.values[k])
                 }
-                OEIS.vCache[this.oeisID] = {name, first, last, values}
+                if (isFinite(first)) {
+                    // Never cache with infinite indices
+                    OEIS.vCache[this.oeisID] = {name, first, last, values}
+                }
             } catch (e) {
                 window.alert(alertMessage(e))
             }
