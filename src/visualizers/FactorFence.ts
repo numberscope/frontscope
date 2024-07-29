@@ -587,14 +587,11 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.resetLoop()
     }
 
-    // right now I can't access type p5.MouseEvent
-    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    mouseWheel(event: any) {
+    mouseWheel(event: MouseEvent) {
         let scaleFac = 1
-        if (event.delta > 0) {
-            scaleFac = 1.03
-        } else {
-            scaleFac = 0.97
+        if (event instanceof WheelEvent) {
+            if (event.deltaY > 0) scaleFac = 1.03
+            else scaleFac = 0.97
         }
         this.scaleFactor *= scaleFac
         this.graphCorner.y = this.graphCorner.y / scaleFac
