@@ -167,7 +167,7 @@ export interface ParamableInterface<PD extends GenericParamDescription> {
      * @param {string?} param  Optional, specific parameter needing validation
      * @return the result of the validation
      */
-    validate(param?: string): ValidationStatus
+    validate(param?: string): Promise<ValidationStatus>
     /**
      * Validates one individual parameter, specified by name, updating the
      * status argument. Does not perform interdependent validation checks
@@ -192,7 +192,7 @@ export interface ParamableInterface<PD extends GenericParamDescription> {
      * call. In contrast, values taken directly from the tentativeValues
      * are unvalidated, and they can change from valid to invalid at any time.
      */
-    assignParameters(): void
+    assignParameters(): Promise<void>
     /**
      * refreshParams() should copy the current working values of all of the
      * params back into the tentativeValues, in case they have changed.
@@ -300,7 +300,7 @@ export class Paramable<PD extends GenericParamDescription>
      * This validate() should generally not need to be overridden or extended;
      * extend checkParameters() instead.
      */
-    validate(param?: string): ValidationStatus {
+    async validate(param?: string) {
         // Presumption of guilt:
         this.isValid = false
         // first handle the individual validations
@@ -318,7 +318,7 @@ export class Paramable<PD extends GenericParamDescription>
         status = this.checkParameters(realized)
         if (status.invalid()) return status
         this.isValid = true
-        this.assignParameters(realized)
+        await this.assignParameters(realized)
         return status
     }
     /**
@@ -356,8 +356,9 @@ export class Paramable<PD extends GenericParamDescription>
      * check based on the input strings as opposed to realized values, derived
      * classes should essenitally always override this checkParameters() method,
      * rather than `validate()`.
-     * @param _params the list of realized parameter values to be validated
-     * @return the result of the validation
+     * @param {ParamValues} params
+     *     the collection of realized parameter values to be validated
+     * @return {ValidationStatus} the result of the validation
      */
     checkParameters(_params: ParamValues<PD>): ValidationStatus {
         return ValidationStatus.ok()
@@ -368,7 +369,7 @@ export class Paramable<PD extends GenericParamDescription>
      * only be called when isValid is true.
      * @param {ParamValues?} realized  Optionally supply pre-realized parameters
      */
-    assignParameters(realized?: ParamValues<PD>): void {
+    async assignParameters(realized?: ParamValues<PD>) {
         if (!realized)
             realized = realizeAll(this.params, this.tentativeValues)
 
@@ -385,8 +386,8 @@ export class Paramable<PD extends GenericParamDescription>
             }
         }
         if (changed.length < props.length)
-            for (const prop of changed) this.parameterChanged(prop)
-        else this.parameterChanged('#all')
+            for (const prop of changed) await this.parameterChanged(prop)
+        else await this.parameterChanged('#all')
     }
     /**
      * refreshParams() copies the current values of top-level properties into
@@ -417,6 +418,7 @@ export class Paramable<PD extends GenericParamDescription>
             )
         }
     }
+
     /**
      * parameterChanged() is called whenever the value of a particular parameter
      * is changed. By default, this does nothing, but may be overriden to
@@ -424,11 +426,12 @@ export class Paramable<PD extends GenericParamDescription>
      *
      * Note that if all parameters have changed at once, this function will only
      * be called a single time with the name value '#all'
-     * @param _name the name of the parameter which has been changed
+     * @param {string} name  the name of the parameter which has been changed
      */
     async parameterChanged(_name: string) {
         return
     }
+
     /**
      * Provides the tentative parameter values in URL query string format
      */

@@ -109,7 +109,7 @@
             resetStatuses(this.paramable.params, paramStatuses)
             return {paramStatuses, status}
         },
-        created() {
+        async created() {
             const pstatus = this.paramStatuses
             resetStatuses(this.paramable.params, pstatus)
             let good = true
@@ -120,19 +120,19 @@
             if (good) {
                 // The argument '.' to validate below skips all
                 // individual validation because we just checked them
-                this.status = this.paramable.validate('.')
+                this.status = await this.paramable.validate('.')
             }
             this.$emit('changed')
         },
         methods: {
-            updateParam(paramName: string, value: string) {
+            async updateParam(paramName: string, value: string) {
                 const paramable = this.paramable
                 paramable.tentativeValues[paramName] = value
                 const newStatus = ValidationStatus.ok()
                 paramable.validateIndividual(paramName, newStatus)
                 this.paramStatuses[paramName] = newStatus
                 if (newStatus.invalid()) return
-                this.status = paramable.validate()
+                this.status = await paramable.validate()
                 if (paramable.isValid) this.$emit('changed')
             },
             checkDependency(param: ParamInterface<ParamType>): boolean {

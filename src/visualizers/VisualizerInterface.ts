@@ -38,7 +38,7 @@ export interface VisualizerInterface<PD extends GenericParamDescription>
     /**
      * Change the sequence the visualizer is showing.
      */
-    view(seq: SequenceInterface<GenericParamDescription>): void
+    view(seq: SequenceInterface<GenericParamDescription>): Promise<void>
     /**
      * Cause the visualizer to realize itself within a DOM element.
      * The visualizer should remove itself from any other location it might

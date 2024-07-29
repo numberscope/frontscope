@@ -43,8 +43,8 @@
                     }
                 "
                 @changed="
-                    () => {
-                        specimen.updateSequence()
+                    async () => {
+                        await specimen.updateSequence()
                         updateURL()
                     }
                 " />

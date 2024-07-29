@@ -632,8 +632,8 @@ earlier ones that use the _same_ style.)
         }
     }
 
-    assignParameters(): void {
-        super.assignParameters()
+    async assignParameters() {
+        await super.assignParameters()
 
         // NOTE: This is commented out because it breaks the new type safety
         // of the parameters. I wasn't able to figure out exactly what the
