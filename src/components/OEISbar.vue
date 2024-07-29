@@ -1,16 +1,28 @@
 <template>
     <div id="search-bar">
-        <div @click="doSearch($event)">
-            <label for="oeis">Search the OEIS</label>
-            <br />
-            <input
-                type="text"
-                id="oeis"
-                v-model="term"
-                v-on:input="doSearch($event)"
-                placeholder="id, keyword, etc..." />
+        <div id="search-wrapper" @click="doSearch($event)">
+            <div id="search-input">
+                <label for="oeis">
+                    <b>Search the encyclopedia</b>
+                    (<a href="https://oeis.org">OEIS.org</a>):
+                </label>
+                <br />
+                <input
+                    type="text"
+                    id="oeis"
+                    v-model="term"
+                    v-on:input="doSearch($event)"
+                    placeholder="id, keyword, etc..." />
+            </div>
+            <button class="tooltip-anchor">
+                <MageSearchSquare />
+                <div class="desc-tooltip-text help-box">
+                    Type a word, phrase, or sequence ID number. A list of
+                    related OEIS sequences will pop up. Click on any item to
+                    add it as a sequence option.
+                </div>
+            </button>
         </div>
-        <button class="material-icons-sharp" @click="srch">search</button>
         <div v-if="results.length" id="oeis-results">
             <p
                 v-for="item in results"
@@ -19,11 +31,14 @@
                 <a
                     v-if="item[0].startsWith('A')"
                     :href="`https://oeis.org/${item[0]}`"
+                    class="mono"
                     @click.stop
                     target="_blank">
                     {{ item[0] }}
                 </a>
-                <span v-if="!item[0].startsWith('A')"> {{ item[0] }} </span>
+                <span class="mono" v-if="!item[0].startsWith('A')">
+                    {{ item[0] }}
+                </span>
                 &nbsp; {{ item[1] }}
             </p>
         </div>
@@ -32,6 +47,7 @@
 
 <script setup lang="ts">
     import {OEIS} from '../sequences/OEIS'
+    import MageSearchSquare from './MageSearchSquare.vue'
 
     import axios from 'axios'
     import {ref} from 'vue'
@@ -42,10 +58,6 @@
     const resultList: [string, string][] = []
     const results = ref(resultList)
     const resultCache: Record<string, typeof resultList> = {}
-
-    function srch() {
-        window.alert('Searching for ' + term.value)
-    }
 
     async function doSearch(_e: Event) {
         if (term.value.length === 0) {
@@ -76,11 +88,29 @@
 <style scoped lang="scss">
     #search-bar {
         position: relative;
+        min-width: 35%;
         display: flex;
         align-items: center;
 
         div {
             margin-right: 8px;
+        }
+
+        #search-wrapper {
+            width: 100%;
+            display: flex;
+            border-bottom: var(--ns-color-black);
+            border-bottom-width: 1px;
+            border-bottom-style: solid;
+        }
+
+        #search-wrapper:focus-within {
+            outline: none;
+            border-bottom-color: var(--ns-color-primary);
+        }
+
+        #search-input {
+            width: calc(100% - 24px);
         }
 
         label {
@@ -89,13 +119,10 @@
 
         input[type='text'] {
             font-size: var(--ns-size-heading-2);
-            margin-bottom: 8px;
+            margin-bottom: 0px;
             margin-right: 8px;
             border: none;
-            border-bottom: var(--ns-color-black);
-            border-bottom-width: 1px;
-            border-bottom-style: solid;
-            padding: 6px 8px;
+            padding: 2px 8px;
         }
         input[type='text']:focus {
             outline: none;
@@ -107,8 +134,10 @@
 
         button {
             font-size: 24px;
-            border: 1px solid var(--ns-color-black);
+            border: none;
             background: none;
+            position: relative;
+            top: 8px;
             aspect-ratio: 1 / 1;
         }
     }
@@ -119,6 +148,10 @@
         width: 200%;
         z-index: 2;
         background: var(--ns-color-white);
+
+        .mono {
+            font-family: monospace, monospace;
+        }
 
         p {
             text-overflow: ellipsis;
