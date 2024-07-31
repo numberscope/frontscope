@@ -148,6 +148,7 @@
         width: 200%;
         z-index: 2;
         background: var(--ns-color-white);
+        cursor: pointer;
 
         .mono {
             font-family: monospace, monospace;
