@@ -21,7 +21,7 @@ class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
     mouseMoved() {}
     mousePressed() {}
     mouseReleased() {}
-    mouseWheel(_event: MouseEvent) {}
+    mouseWheel(_event: WheelEvent) {}
     setup() {}
     touchEnded() {}
     touchMoved() {}

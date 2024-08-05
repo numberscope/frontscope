@@ -201,25 +201,22 @@ class FactorFence extends P5Visualizer(paramDesc) {
         const numBars = Math.floor(
             Math.min(
                 this.sketch.width / this.scaleFactor / this.recSpace.x + 2,
-                this.last - minBars
+                this.last - minBars + 1
             )
         )
 
         // maximum bar to compute
-        const maxBars = minBars + numBars
+        const maxBars = minBars + numBars - 1
 
-        return {
-            minBars: minBars,
-            maxBars: maxBars,
-            numBars: numBars,
-        }
+        return {minBars, maxBars, numBars}
     }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-        if (this.seq.last < this.terms) {
-            this.terms = this.seq.last
+        const maxTerms = this.seq.last - this.seq.first + 1
+        if (maxTerms < this.terms) {
+            this.terms = maxTerms
         }
 
         return status
@@ -235,16 +232,14 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 elt = this.seq.getElement(i + barsInfo.minBars)
             } catch {
                 this.collectFailed = true
+                return 0
             }
             let sig = 1n // sign of element
-            if (elt < 0n && this.signs) {
-                sig = -1n
-            }
-            // can I simplify this??
-            if (elt * sig < 1n) {
-                // in case elt = 0, store 1
-                elt = sig
-            }
+            if (elt < 0n && this.signs) sig = -1n
+            if (elt < 0n && !this.signs) elt = -1n * elt
+            // in case elt = 0, store 1
+            if (elt == 0n) elt = 1n
+
             // store height of bar (log) but with sign info
             return BigLog(elt * sig) * Number(sig)
         })
@@ -298,9 +293,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
             if (facsRaw) {
                 for (const [base, power] of facsRaw) {
                     if (base != -1n && base != 0n) {
+                        const thisBar = {prime: base, log: BigLog(base)}
                         for (let i = 0; i < power; i++) {
-                            const logPrime = BigLog(base)
-                            const thisBar = {prime: base, log: logPrime}
                             factors.push(thisBar)
                         }
                     }
@@ -331,15 +325,11 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // set up terms first and last
         this.first = this.seq.first
         this.firstFailure = this.first // set factoring needed pointer
-        this.last = this.terms
+        this.last = this.seq.first + this.terms - 1
 
         // warn the backend we plan to factor
-        try {
-            this.seq.getFactors(this.last)
-            // we only wanted to send info to the backend,
-            // we don't care what we get
-            // eslint-disable-next-line  no-empty
-        } catch {}
+        this.seq.fill(this.last)
+
         // make an empty factoring array
         for (let myIndex = this.first; myIndex < this.last; myIndex++) {
             const factors: bar[] = []
@@ -491,10 +481,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
             // loop through factor to draw for this term
             // from smaller to larger
-            for (let facIndex = 0; facIndex < factors.length; facIndex++) {
-                // get the next prime factor
-                const factor = factors[facIndex]
-
+            for (const factor of factors) {
                 // Select the primes based on primeIsHigh flag
                 // First time through the loop we only draw highlighted prime
                 // Second time we draw everything else
@@ -587,12 +574,10 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.resetLoop()
     }
 
-    mouseWheel(event: MouseEvent) {
+    mouseWheel(event: WheelEvent) {
         let scaleFac = 1
-        if (event instanceof WheelEvent) {
-            if (event.deltaY > 0) scaleFac = 1.03
-            else scaleFac = 0.97
-        }
+        if (event.deltaY > 0) scaleFac = 1.03
+        else scaleFac = 0.97
         this.scaleFactor *= scaleFac
         this.graphCorner.y = this.graphCorner.y / scaleFac
         this.resetLoop()
