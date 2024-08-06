@@ -631,14 +631,20 @@ class FactorFence extends P5Visualizer(paramDesc) {
             const factorizationPrimes = this.factorizations[
                 this.mouseIndex
             ].map(factor => factor.prime)
-            const factorizationPrimesPre = factorizationPrimes.filter(
-                factor => factor < this.mousePrime
+            const firstBreak = factorizationPrimes.indexOf(this.mousePrime)
+            const secondBreak = factorizationPrimes.lastIndexOf(
+                this.mousePrime
             )
-            const factorizationPrimesMouse = factorizationPrimes.filter(
-                factor => factor == this.mousePrime
+            const factorizationPrimesPre = factorizationPrimes.slice(
+                0,
+                firstBreak
             )
-            const factorizationPrimesPost = factorizationPrimes.filter(
-                factor => factor > this.mousePrime
+            const factorizationPrimesMouse = factorizationPrimes.slice(
+                firstBreak,
+                secondBreak + 1
+            )
+            const factorizationPrimesPost = factorizationPrimes.slice(
+                secondBreak + 1
             )
 
             // factorization info string, broken into pre/highlight/post
