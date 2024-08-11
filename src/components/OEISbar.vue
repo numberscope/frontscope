@@ -4,7 +4,7 @@
             <div id="search-input">
                 <label for="oeis">
                     <b>Search the encyclopedia</b>
-                    (<a href="https://oeis.org">OEIS.org</a>):
+                    (<a href="https://oeis.org" target="_blank">OEIS.org</a>):
                 </label>
                 <br />
                 <input
