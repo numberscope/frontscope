@@ -28,13 +28,16 @@
                 v-for="item in results"
                 :key="item[0]"
                 @click="select(item[0])">
+                <span v-if="item[0].startsWith('A')" class="mono">
+                    {{ item[0] }}
+                </span>
                 <a
                     v-if="item[0].startsWith('A')"
                     :href="`https://oeis.org/${item[0]}`"
                     class="mono"
                     @click.stop
                     target="_blank">
-                    {{ item[0] }}
+                    <div class="info material-icons-sharp">info</div>
                 </a>
                 <span class="mono" v-if="!item[0].startsWith('A')">
                     {{ item[0] }}
