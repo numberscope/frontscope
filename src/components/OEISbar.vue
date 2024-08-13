@@ -24,6 +24,7 @@
             </button>
         </div>
         <div v-if="results.length" id="oeis-results">
+            <div id="results-backdrop" @click="results = []" />
             <p
                 v-for="item in results"
                 :key="item[0]"
@@ -165,5 +166,16 @@
             padding: 4px;
             margin: 0px;
         }
+    }
+
+    #results-backdrop {
+        position: fixed;
+        padding: 0;
+        margin: 0;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.1);
     }
 </style>
