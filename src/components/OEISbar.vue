@@ -23,8 +23,11 @@
                 </div>
             </button>
         </div>
+        <div
+            v-if="results.length"
+            id="results-backdrop"
+            @click="results = []" />
         <div v-if="results.length" id="oeis-results">
-            <div id="results-backdrop" @click="results = []" />
             <p
                 v-for="item in results"
                 :key="item[0]"
@@ -150,7 +153,7 @@
         top: 50px;
         right: -8px;
         width: 200%;
-        z-index: 2;
+        z-index: 3;
         background: var(--ns-color-white);
         cursor: pointer;
 
@@ -160,6 +163,7 @@
 
         p {
             text-overflow: ellipsis;
+            z-index: 3;
             overflow: hidden;
             white-space: nowrap;
             border: 1px solid var(--ns-color-black);
@@ -170,12 +174,13 @@
 
     #results-backdrop {
         position: fixed;
+        z-index: 2;
         padding: 0;
         margin: 0;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.2);
     }
 </style>
