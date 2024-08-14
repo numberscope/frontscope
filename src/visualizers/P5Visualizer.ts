@@ -16,10 +16,10 @@ class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
     keyPressed() {}
     keyReleased() {}
     keyTyped() {}
-    mouseClicked() {}
+    mouseClicked(_event: MouseEvent) {}
     mouseDragged() {}
     mouseMoved() {}
-    mousePressed() {}
+    mousePressed(_event: MouseEvent) {}
     mouseReleased() {}
     mouseWheel(_event: WheelEvent) {}
     setup() {}
@@ -28,6 +28,15 @@ class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
     touchStarted() {}
     windowResized() {}
 }
+
+// The following is used to check if a visualizer has defined
+// any of the above methods:
+const dummyP5 = new WithP5<GenericParamDescription>({})
+const ignoreOffCanvas = new Set([
+    'mousePressed',
+    'mouseClicked',
+    'mouseWheel',
+])
 
 type P5Methods<PD extends GenericParamDescription> = Exclude<
     keyof WithP5<PD>,
@@ -141,10 +150,23 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 // `this[method]` is defined or undefined:
                 for (const method of p5methods) {
                     const definition = this[method]
-                    const dummyText = method + '(){}'
-                    const defText = definition.toString().replace(/\s/g, '')
-                    if (defText !== dummyText) {
-                        sketch[method] = definition.bind(this)
+                    if (definition !== dummyP5[method]) {
+                        if (!ignoreOffCanvas.has(method)) {
+                            sketch[method] = definition.bind(this)
+                            continue
+                        }
+                        // OK, one of the special methods where we must
+                        // manually ignore if the event occurs off canvas:
+                        sketch[method] = (event: MouseEvent) => {
+                            if (!this.within) return true
+                            const rect = this.within.getBoundingClientRect()
+                            const x = event.clientX
+                            if (x < rect.left || x >= rect.right) return true
+                            const y = event.clientY
+                            if (y < rect.top || y >= rect.bottom) return true
+                            return this[method](event as WheelEvent)
+                            // Cast makes typescript happy :-/
+                        }
                     }
                 }
                 // And draw is special because of the error handling:
