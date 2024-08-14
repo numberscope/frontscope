@@ -32,21 +32,21 @@
                 v-for="item in results"
                 :key="item[0]"
                 @click="select(item[0])">
-                <span v-if="item[0].startsWith('A')" class="mono">
-                    {{ item[0] }}
-                </span>
                 <a
                     v-if="item[0].startsWith('A')"
                     :href="`https://oeis.org/${item[0]}`"
                     class="mono"
                     @click.stop
                     target="_blank">
-                    <div class="info material-icons-sharp">info</div>
+                    {{ item[0] }}&nbsp;
+                    <div class="info material-icons-sharp external">
+                        launch
+                    </div>
                 </a>
                 <span class="mono" v-if="!item[0].startsWith('A')">
                     {{ item[0] }}
                 </span>
-                &nbsp; {{ item[1] }}
+                <span class="result-desc">{{ item[1] }}</span>
             </p>
         </div>
     </div>
@@ -75,15 +75,21 @@
             results.value = resultCache[term.value]
             return
         }
-        results.value = [['..???..', `... searching for ${term.value} ...`]]
+        const srch = term.value // make sure stays constant despite typing
+        results.value = [['..???.. ', `... searching for ${srch} ...`]]
         const searchUrl =
-            OEIS.urlPrefix + `search_oeis/${encodeURIComponent(term.value)}`
+            OEIS.urlPrefix + `search_oeis/${encodeURIComponent(srch)}`
         const searchResponse = await axios.get(searchUrl)
-        const reslt = searchResponse.data.results
+        let reslt = searchResponse.data.results
         for (const pair of reslt)
             if (pair[0] === 'A000045') pair[1] = 'Virahāṅka-' + pair[1]
-        resultCache[term.value] = reslt
-        results.value = reslt
+        if (reslt.length === 0) {
+            reslt = [
+                ['....... ', `search for ${srch} gave no/too many results`],
+            ]
+        }
+        resultCache[srch] = reslt
+        if (srch === term.value) results.value = reslt
     }
 
     function select(id: string) {
@@ -148,6 +154,7 @@
             aspect-ratio: 1 / 1;
         }
     }
+
     #oeis-results {
         position: absolute;
         top: 50px;
@@ -182,5 +189,20 @@
         width: 100%;
         height: 100%;
         background: rgba(255, 255, 255, 0.2);
+    }
+
+    .external {
+        transform: scale(0.6);
+        position: relative;
+        top: 5px;
+        left: -20px;
+    }
+
+    .result-desc:hover {
+        background-color: color-mix(
+            in srgb,
+            var(--ns-color-primary),
+            white 50%
+        );
     }
 </style>
