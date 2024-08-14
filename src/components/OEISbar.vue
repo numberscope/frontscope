@@ -93,7 +93,7 @@
     }
 
     function select(id: string) {
-        emit('addID', id)
+        if (id.startsWith('A')) emit('addID', id)
         results.value = []
     }
 </script>
