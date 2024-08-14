@@ -85,7 +85,11 @@
             if (pair[0] === 'A000045') pair[1] = 'Virahāṅka-' + pair[1]
         if (reslt.length === 0) {
             reslt = [
-                ['....... ', `search for ${srch} gave no/too many results`],
+                [
+                    '....... ',
+                    `search for ${srch} produced no results `
+                        + 'or too many results',
+                ],
             ]
         }
         resultCache[srch] = reslt
@@ -115,6 +119,8 @@
             border-bottom: var(--ns-color-black);
             border-bottom-width: 1px;
             border-bottom-style: solid;
+            position: relative;
+            z-index: 3;
         }
 
         #search-wrapper:focus-within {
@@ -157,7 +163,7 @@
 
     #oeis-results {
         position: absolute;
-        top: 50px;
+        top: 43px;
         right: -8px;
         width: 200%;
         z-index: 3;
