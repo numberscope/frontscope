@@ -57,6 +57,7 @@
     import MageSearchSquare from './MageSearchSquare.vue'
 
     import axios from 'axios'
+    import type {AxiosResponse} from 'axios'
     import {ref} from 'vue'
 
     const emit = defineEmits(['addID'])
@@ -65,6 +66,9 @@
     const resultList: [string, string][] = []
     const results = ref(resultList)
     const resultCache: Record<string, typeof resultList> = {}
+    const errResult = [
+        ['....... ', 'search temporarily unavailable, please try again'],
+    ] as typeof resultList
 
     async function doSearch(_e: Event) {
         if (term.value.length === 0) {
@@ -79,7 +83,17 @@
         results.value = [['..???.. ', `... searching for ${srch} ...`]]
         const searchUrl =
             OEIS.urlPrefix + `search_oeis/${encodeURIComponent(srch)}`
-        const searchResponse = await axios.get(searchUrl)
+        let searchResponse: AxiosResponse | undefined = undefined
+        try {
+            searchResponse = await axios.get(searchUrl)
+        } catch {
+            if (srch === term.value) results.value = errResult
+            return
+        }
+        if (!searchResponse) {
+            if (srch === term.value) results.value = errResult
+            return
+        }
         let reslt = searchResponse.data.results
         for (const pair of reslt)
             if (pair[0] === 'A000045') pair[1] = 'Virahāṅka-' + pair[1]
