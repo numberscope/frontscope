@@ -4,6 +4,7 @@ import {VisualizerExportModule} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
 import type {ParamValues} from '../shared/Paramable'
 import {ValidationStatus} from '@/shared/ValidationStatus'
+import {modulo} from '../shared/math'
 
 /** md
 # Factor Fence Visualizer
@@ -89,14 +90,19 @@ too high, will decrease to number of terms available.
 - highlight: the prime factor to highlight 
      **/
     highlight: {
-        default: 2,
+        default: 1,
         type: ParamType.BIGINT,
-        displayName: 'Your favourite prime',
+        displayName: 'Your favourite number',
         required: true,
         description:
-            'Which prime should we highlight?'
-            + ' If you put 0 or a non-prime, we highlight none.',
+            'We highlight primes dividing this number.'
+            + ' To highlight none, put 1.',
         hideDescription: true,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(
+                n <= 0,
+                'Your favourite number must be positive.'
+            ),
     },
     /**
 - labels: show text info 
@@ -381,12 +387,12 @@ class FactorFence extends P5Visualizer(paramDesc) {
             // pan right RIGHT
             this.graphCorner.x += 10 / this.scaleFactor
         }
-        if (this.sketch.keyIsDown(89)) {
-            // pan up Y
+        if (this.sketch.keyIsDown(73)) {
+            // pan up I
             this.graphCorner.y -= 10 / this.scaleFactor
         }
-        if (this.sketch.keyIsDown(72)) {
-            // pan down H
+        if (this.sketch.keyIsDown(75)) {
+            // pan down K
             this.graphCorner.y += 10 / this.scaleFactor
         }
         if (this.sketch.keyIsDown(85)) {
@@ -474,20 +480,22 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         for (const primeIsHigh of [true, false]) {
             // first we do this with primeIsHigh = true
-            // (that means highlighted prime is at hand)
+            // (that means a highlighted prime is at hand)
             // then with primeIsHigh = false
-            // in this way the highlighted prime sits
+            // in this way the highlighted primes sit
             // at the bottom of the stack
 
             // loop through factor to draw for this term
             // from smaller to larger
             for (const factor of factors) {
                 // Select the primes based on primeIsHigh flag
-                // First time through the loop we only draw highlighted prime
+                // First time through the loop we only draw highlighted primes
                 // Second time we draw everything else
                 if (
-                    (primeIsHigh && factor.prime == this.highlight)
-                    || (!primeIsHigh && factor.prime != this.highlight)
+                    (primeIsHigh
+                        && Number(modulo(this.highlight, factor.prime)) === 0)
+                    || (!primeIsHigh
+                        && Number(modulo(this.highlight, factor.prime)) !== 0)
                 ) {
                     // height of rectangle is log of factor
                     // times scaling parameter
@@ -606,8 +614,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // always visible static text info, line by line
         const info = [
-            'Click select; arrow keys to move; U/O stretch; Y/H raise/lower',
-            'Highlighted prime: ' + this.highlight.toString(),
+            'Click select; arrow keys to move; U/O stretch; I/K raise/lower',
+            'Highlighting prime factors of ' + this.highlight.toString(),
         ]
 
         // colours match graph colours
@@ -625,66 +633,58 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // factorization text shown upon mouseover of graph
         if (this.mouseOn) {
-            // parse out the factorization, categorizing
-            // into primes (a) smaller than the highlighted one,
-            // (b) highlighted one, and (c) bigger ones
             const factorizationPrimes = this.factorizations[
                 this.mouseIndex
             ].map(factor => factor.prime)
-            const firstBreak = factorizationPrimes.indexOf(this.mousePrime)
-            const secondBreak = factorizationPrimes.lastIndexOf(
-                this.mousePrime
-            )
-            const factorizationPrimesPre = factorizationPrimes.slice(
-                0,
-                firstBreak
-            )
-            const factorizationPrimesMouse = factorizationPrimes.slice(
-                firstBreak,
-                secondBreak + 1
-            )
-            const factorizationPrimesPost = factorizationPrimes.slice(
-                secondBreak + 1
-            )
 
-            // factorization info string, broken into pre/highlight/post
-            const factorStringParts = [
+            // display mouseover info line
+            const infoLineStart =
                 'S('
-                    + this.mouseIndex.toString()
-                    + ') = '
-                    + this.seq.getElement(this.mouseIndex).toString()
-                    + ' = '
-                    + factorizationPrimesPre.toString()
-                    // primes before highlighted prime
-                    + `${factorizationPrimesPre.length > 0 ? ',' : ''}`,
-                // highlighted prime
-                factorizationPrimesMouse.toString(),
-                // primes after highlighted prime
-                `${factorizationPrimesPost.length > 0 ? ',' : ''}`
-                    + factorizationPrimesPost.toString(),
-            ]
+                + this.mouseIndex.toString()
+                + ') = '
+                + this.seq.getElement(this.mouseIndex).toString()
+                + ' = '
+            this.sketch.fill(infoColors[0])
+            this.sketch.text(infoLineStart, textPosition.x, textPosition.y)
+            textPosition.add(
+                this.sketch.createVector(
+                    this.sketch.textWidth(infoLineStart),
+                    0
+                )
+            )
 
-            // colours for factorization
-            const factorStringColors = [
-                this.palette.gradientBar.bottom, // before highlighted
-                this.palette.gradientMouse.bottom, // highlighted
-                this.palette.gradientBar.bottom, // after highlighted
-            ]
+            let first = true
+            for (const prime of factorizationPrimes) {
+                if (!first) {
+                    this.sketch.fill(infoColors[0])
+                    this.sketch.text('*', textPosition.x, textPosition.y)
+                    textPosition.add(
+                        this.sketch.createVector(
+                            this.sketch.textWidth('*'),
+                            0
+                        )
+                    )
+                }
 
-            // display mouseover info line, chunk by chunk
-            for (let i = 0; i < factorStringParts.length; i++) {
-                this.sketch.fill(factorStringColors[i])
+                this.sketch.fill(
+                    Number(modulo(this.highlight, prime)) === 0
+                        ? this.palette.gradientHighlight.bottom
+                        : prime == this.mousePrime
+                          ? this.palette.gradientMouse.bottom
+                          : this.palette.gradientBar.bottom
+                )
                 this.sketch.text(
-                    factorStringParts[i],
+                    prime.toString(),
                     textPosition.x,
                     textPosition.y
                 )
                 textPosition.add(
                     this.sketch.createVector(
-                        this.sketch.textWidth(factorStringParts[i]),
+                        this.sketch.textWidth(prime.toString()),
                         0
                     )
                 )
+                first = false
             }
         } else {
             // make sure mouseover disappears when not on graph
