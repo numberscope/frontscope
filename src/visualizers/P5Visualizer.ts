@@ -13,9 +13,9 @@ class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
     deviceShaken() {}
     deviceTurned() {}
     doubleClicked() {}
-    keyPressed() {}
-    keyReleased() {}
-    keyTyped() {}
+    keyPressed(_event: KeyboardEvent) {}
+    keyReleased(_event: KeyboardEvent) {}
+    keyTyped(_event: KeyboardEvent) {}
     mouseClicked(_event: MouseEvent) {}
     mouseDragged() {}
     mouseMoved() {}
@@ -36,6 +36,11 @@ const ignoreOffCanvas = new Set([
     'mousePressed',
     'mouseClicked',
     'mouseWheel',
+])
+const ignoreFocusedElsewhere = new Set([
+    'keyPressed',
+    'keyReleased',
+    'keyTyped',
 ])
 
 type P5Methods<PD extends GenericParamDescription> = Exclude<
@@ -151,22 +156,36 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 for (const method of p5methods) {
                     const definition = this[method]
                     if (definition !== dummyP5[method]) {
-                        if (!ignoreOffCanvas.has(method)) {
-                            sketch[method] = definition.bind(this)
+                        if (ignoreOffCanvas.has(method)) {
+                            sketch[method] = (event: MouseEvent) => {
+                                if (!this.within) return true
+                                const rect =
+                                    this.within.getBoundingClientRect()
+                                const x = event.clientX
+                                if (x < rect.left || x >= rect.right) {
+                                    return true
+                                }
+                                const y = event.clientY
+                                if (y < rect.top || y >= rect.bottom) {
+                                    return true
+                                }
+                                return this[method](event as never)
+                                // Cast makes typescript happy :-/
+                            }
                             continue
                         }
-                        // OK, one of the special methods where we must
-                        // manually ignore if the event occurs off canvas:
-                        sketch[method] = (event: MouseEvent) => {
-                            if (!this.within) return true
-                            const rect = this.within.getBoundingClientRect()
-                            const x = event.clientX
-                            if (x < rect.left || x >= rect.right) return true
-                            const y = event.clientY
-                            if (y < rect.top || y >= rect.bottom) return true
-                            return this[method](event as WheelEvent)
-                            // Cast makes typescript happy :-/
+                        if (ignoreFocusedElsewhere.has(method)) {
+                            sketch[method] = (event: KeyboardEvent) => {
+                                const active = document.activeElement
+                                if (active && active.tagName === 'INPUT') {
+                                    return true
+                                }
+                                return this[method](event as never)
+                            }
+                            continue
                         }
+                        // Otherwise no special condition, just forward event
+                        sketch[method] = definition.bind(this)
                     }
                 }
                 // And draw is special because of the error handling:
