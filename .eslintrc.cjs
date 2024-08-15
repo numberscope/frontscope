@@ -31,7 +31,10 @@ module.exports = {
     },
     overrides: [
         {
-            files: ['src/components/MageExchangeA.vue'],
+            files: [
+                'src/components/MageExchangeA.vue',
+                'src/components/MageSearchSquare.vue',
+            ],
             rules: {'max-len': 'off'},
         },
     ],

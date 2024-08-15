@@ -166,7 +166,7 @@ export class Specimen {
      * updated.
      */
     updateSequence() {
-        this.visualizer.view(this.sequence)
+        return this.visualizer.view(this.sequence)
     }
 
     /**
