@@ -179,9 +179,9 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * Change the sequence being shown by the visualizer
          * @param seq SequenceInterface  The sequence to show
          */
-        view(seq: SequenceInterface<GenericParamDescription>): void {
+        async view(seq: SequenceInterface<GenericParamDescription>) {
             this.seq = seq
-            this.reset()
+            await this.reset()
         }
 
         /**
@@ -283,7 +283,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
 
         async parameterChanged(_name: string) {
             await super.parameterChanged(_name)
-            this.reset()
+            await this.reset()
         }
 
         /* By default, a P5 visualizer returns undefined from this function,
