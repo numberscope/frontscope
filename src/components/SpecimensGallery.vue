@@ -2,7 +2,7 @@
     <div class="gallery">
         <SpecimenCard
             v-for="specimen in currentSpecs()"
-            :key="specimen.query"
+            :key="specimen.subtitle + specimen.query"
             :query="specimen.query"
             :subtitle="specimen.subtitle"
             :lastEdited="specimen.lastEdited"
@@ -12,6 +12,8 @@
 </template>
 
 <script setup lang="ts">
+    // Note the :key above needs to include the subtitle so that
+    // when the subtitle loads, the card will be replaced.
     import SpecimenCard from './SpecimenCard.vue'
     import {nameOfQuery} from '../shared/browserCaching'
     import {ref} from 'vue'

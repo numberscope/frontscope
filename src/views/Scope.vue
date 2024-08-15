@@ -34,7 +34,7 @@
             :last-coords-x="Math.floor(tabWidth / 3)"
             :last-coords-y="Math.floor(tabWidth / 3)">
             <ParamEditor
-                title="Sequence"
+                title="sequence"
                 :paramable="specimen.sequence"
                 @openSwitcher="
                     () => {
@@ -43,8 +43,8 @@
                     }
                 "
                 @changed="
-                    () => {
-                        specimen.updateSequence()
+                    async () => {
+                        await specimen.updateSequence()
                         updateURL()
                     }
                 " />
@@ -57,7 +57,7 @@
             :last-coords-x="Math.floor((2 * tabWidth) / 3)"
             :last-coords-y="Math.floor((2 * tabWidth) / 3)">
             <ParamEditor
-                title="Visualizer"
+                title="visualizer"
                 :paramable="specimen.visualizer"
                 @openSwitcher="
                     () => {
