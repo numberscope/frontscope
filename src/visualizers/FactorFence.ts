@@ -286,7 +286,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // and we have not previously done
         for (
             let myIndex = this.firstFailure;
-            myIndex < barsInfo.maxBars;
+            myIndex <= barsInfo.maxBars;
             myIndex++
         ) {
             let facsRaw: bigint[][] = []
@@ -446,7 +446,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // loop through the terms of the seq and draw the bars for each
         for (
             let myIndex = barsInfo.minBars;
-            myIndex < barsInfo.maxBars;
+            myIndex <= barsInfo.maxBars;
             myIndex++
         )
             // note that this also watches for mouseover as each bar
@@ -598,7 +598,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         if (this.mouseOn) {
             this.highlight = this.mousePrime
         } else {
-            this.highlight = 0n
+            this.highlight = 1n
         }
         this.refreshParams()
         this.resetLoop()
