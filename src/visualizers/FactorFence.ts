@@ -678,10 +678,10 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 }
 
                 this.sketch.fill(
-                    Number(modulo(this.highlight, prime)) === 0
-                        ? this.palette.gradientHighlight.bottom
-                        : prime == this.mousePrime
-                          ? this.palette.gradientMouse.bottom
+                    prime == this.mousePrime
+                        ? this.palette.gradientMouse.bottom
+                        : Number(modulo(this.highlight, prime)) === 0
+                          ? this.palette.gradientHighlight.bottom
                           : this.palette.gradientBar.bottom
                 )
                 this.sketch.text(
