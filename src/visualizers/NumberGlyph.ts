@@ -276,9 +276,12 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
 
     draw() {
         this.sketch.noStroke()
-        this.drawCircle(this.currentIndex)
+        if (this.currentIndex > this.last) {
+            this.sketch.noLoop()
+            return
+        }
+        this.drawCircle(this.currentIndex++)
         this.changePosition()
-        if (this.currentIndex++ > this.last) this.sketch.noLoop()
     }
 
     drawCircle(ind: number) {

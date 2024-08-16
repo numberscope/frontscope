@@ -10,8 +10,8 @@
     let specimen: Specimen | undefined = undefined
     const props = defineProps(['query'])
 
-    onMounted(() => {
-        specimen = Specimen.fromQuery(props.query)
+    onMounted(async () => {
+        specimen = await Specimen.fromQuery(props.query)
         if (!(canvasContainer.value instanceof HTMLElement)) return
         specimen.setup(canvasContainer.value)
         setTimeout(() => specimen?.visualizer.stop(), 4000)

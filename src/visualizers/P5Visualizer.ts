@@ -159,6 +159,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                         if (ignoreOffCanvas.has(method)) {
                             sketch[method] = (event: MouseEvent) => {
                                 if (!this.within) return true
+                                // Check that the event position is in bounds
                                 const rect =
                                     this.within.getBoundingClientRect()
                                 const x = event.clientX
@@ -167,6 +168,15 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                                 }
                                 const y = event.clientY
                                 if (y < rect.top || y >= rect.bottom) {
+                                    return true
+                                }
+                                // Check also that the event element is OK
+                                const where = document.elementFromPoint(x, y)
+                                if (!where) return true
+                                if (
+                                    where !== this.within
+                                    && !where.contains(this.within)
+                                ) {
                                     return true
                                 }
                                 return this[method](event as never)

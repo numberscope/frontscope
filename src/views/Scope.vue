@@ -295,7 +295,7 @@
     const urlQuery = extractQueryFromPath(route.fullPath)
 
     const specimen = reactive(
-        Specimen.fromQuery(urlQuery ? urlQuery : getCurrent().query)
+        await Specimen.fromQuery(urlQuery ? urlQuery : getCurrent().query)
     )
     updateCurrent(specimen)
 

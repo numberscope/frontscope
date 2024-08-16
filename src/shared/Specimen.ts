@@ -74,6 +74,7 @@ export class Specimen {
         )
 
         this.sequence.initialize()
+        await this.sequence.fill()
         this.visualizer.view(this.sequence)
         await this.visualizer.inhabit(this.location, this.size)
         this.visualizer.show()
@@ -229,7 +230,7 @@ export class Specimen {
      * @param {string} query  the URL query string encoding of a specimen
      * @return {Specimen} the corresponding specimen
      */
-    static fromQuery(query: string): Specimen {
+    static async fromQuery(query: string) {
         const specs = parseSpecimenQuery(query)
         const specimen = new Specimen(
             specs.name,
@@ -239,6 +240,7 @@ export class Specimen {
             specs.sequenceQuery
         )
         specimen.sequence.validate()
+        await specimen.sequence.fill() // may determine sequence limits
         specimen.visualizer.validate()
         return specimen
     }
