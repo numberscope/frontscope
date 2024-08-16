@@ -55,6 +55,12 @@
             v-bind:key="error">
             {{ error }}
         </p>
+        <p
+            class="warning-message"
+            v-for="warning in status.warnings"
+            v-bind:key="warning">
+            {{ warning }}
+        </p>
     </div>
 </template>
 
@@ -185,6 +191,11 @@
 
     .error-message {
         color: red;
+        font-size: var(--ns-size-body);
+    }
+
+    .warning-message {
+        color: orange;
         font-size: var(--ns-size-body);
     }
 

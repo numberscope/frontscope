@@ -77,7 +77,7 @@ too high, will decrease to number of terms available.
         default: 100,
         type: ParamType.INTEGER,
         displayName: 'Number of terms',
-        required: true,
+        required: false,
         description: 'How many terms of the sequence should we show?',
         hideDescription: true,
         validate: (n: number) =>
@@ -156,6 +156,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
     // scaling control
     private scaleFactor = 1.0 // zooming
+    private seqTerms = 0 // total number of terms in sequence
     private first = 0 // first term
     private last = 0 // last term
     private heightScale = 55 // stretching
@@ -220,9 +221,12 @@ class FactorFence extends P5Visualizer(paramDesc) {
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-        const maxTerms = this.seq.last - this.seq.first + 1
-        if (maxTerms < this.terms) {
-            this.terms = maxTerms
+        this.seqTerms = this.seq.last - this.seq.first + 1
+        if (this.seqTerms < params.terms) {
+            status.addWarning(
+                `Displaying all ${this.seqTerms} terms of sequence, fewer `
+                    + `than the ${params.terms} requested.`
+            )
         }
 
         return status
@@ -314,8 +318,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
     setup() {
         super.setup()
 
-        this.refreshParams()
-
         this.palette = new factorPalette(this.sketch)
 
         // must be set so barsShowing() works; begin with no zoom
@@ -331,7 +333,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // set up terms first and last
         this.first = this.seq.first
         this.firstFailure = this.first // set factoring needed pointer
-        this.last = this.seq.first + this.terms - 1
+        this.last = this.seq.first + Math.min(this.terms, this.seqTerms) - 1
 
         // warn the backend we plan to factor
         this.seq.fill(this.last)
