@@ -463,6 +463,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     drawTerm(myIndex: number) {
         // This function draws the full stacked bars for a single term
         // Input is index of the term
+        const myTerm = this.seq.getElement(myIndex)
 
         // set colours
         let bottomColor = this.palette.gradientBar.bottom
@@ -470,15 +471,34 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // get sign of term
         let mySign = 1
-        if (this.seq.getElement(myIndex) < 0 && this.signs) mySign = -1
+        if (myTerm < 0 && this.signs) mySign = -1
 
         // get factors of term
         const factors = this.factorizations[myIndex]
 
-        // we are drawing several bars
-        // on top of each other,
-        // so this height counter moves up as we go
-        let cumulHt = 0
+        // determine where to put lower left corner of graph
+        const barStart = this.graphCorner.copy()
+
+        // move over based on which term
+        const moveOver = this.recSpace.copy()
+        moveOver.mult(myIndex - this.first)
+        barStart.add(moveOver)
+
+        // draw a one pixel high placeholder bar for 0/1/-1
+        if (myTerm === 0n || myTerm === 1n || myTerm === -1n) {
+            const barDiagPlaceholder = this.sketch.createVector(
+                this.recWidth,
+                1
+            )
+            this.grad_rect(
+                barStart.x,
+                barStart.y,
+                barDiagPlaceholder.x,
+                barDiagPlaceholder.y,
+                this.palette.gradientBar.top,
+                this.palette.gradientBar.bottom
+            )
+        }
 
         for (const primeIsHigh of [true, false]) {
             // first we do this with primeIsHigh = true
@@ -513,18 +533,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     }
                     bottomColor = gradient.bottom
                     topColor = gradient.top
-
-                    // determine where to put lower left corner
-                    const barStart = this.graphCorner.copy()
-
-                    // move over based on which term
-                    const moveOver = this.recSpace.copy()
-                    moveOver.mult(myIndex - this.first)
-
-                    // move up based on cumulative height so far
-                    const moveUp = this.sketch.createVector(0, -cumulHt)
-                    barStart.add(moveOver)
-                    barStart.add(moveUp)
 
                     // figure out upper right corner
                     const barDiag = this.sketch.createVector(
@@ -564,8 +572,9 @@ class FactorFence extends P5Visualizer(paramDesc) {
                         this.mouseOn = true
                     }
 
-                    // move upward in preparation for next bar
-                    cumulHt += recHeight
+                    // move up in preparation for next bar
+                    const moveUp = this.sketch.createVector(0, -recHeight)
+                    barStart.add(moveUp)
                 }
             }
         }
