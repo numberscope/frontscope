@@ -2,7 +2,7 @@ import p5 from 'p5'
 import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
-import type {ParamValues} from '../shared/Paramable'
+import type {ParamValues, ParamInterface} from '../shared/Paramable'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 import {modulo} from '../shared/math'
 
@@ -222,6 +222,12 @@ class FactorFence extends P5Visualizer(paramDesc) {
         const status = super.checkParameters(params)
 
         this.seqTerms = this.seq.last - this.seq.first + 1
+        if (isFinite(this.seqTerms)) {
+            const termsParams =
+                paramDesc.terms as ParamInterface<ParamType.INTEGER>
+            termsParams.displayName = `Number of terms (max: ${this.seqTerms})`
+        }
+
         if (this.seqTerms < params.terms) {
             status.addWarning(
                 `Displaying all ${this.seqTerms} terms of sequence, fewer `
