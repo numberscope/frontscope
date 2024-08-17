@@ -91,7 +91,6 @@ export class Specimen {
             this.visualizer.requestedAspectRatio()
         )
 
-        if (this.isSetup) this.visualizer.depart(this.location)
         await this.visualizer.inhabit(this.location, this.size)
         this.visualizer.show()
     }

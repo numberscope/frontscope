@@ -123,17 +123,19 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             element: HTMLElement,
             size: {width: number; height: number}
         ) {
-            if (this.within === element) return // already inhabiting there
+            let needsPresketch = true
             if (this.within) {
                 // oops, already inhabiting somewhere else; depart there
                 this.depart(this.within)
+                // Only do the presketch initialization once, though:
+                needsPresketch = false
             }
             this._size = size
             this.within = element
             // Perform any necessary asynchronous preparation before
             // creating sketch. For example, some Visualizers need sequence
             // factorizations in setup().
-            await this.presketch()
+            if (needsPresketch) await this.presketch()
             // TODO: Can presketch() sometimes take so long that we should
             // show an hourglass icon in the meantime, or something like that?
 
@@ -356,7 +358,6 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             if (!this._sketch) return
             const element = this.within!
             this.stop()
-            this.depart(element)
             await this.inhabit(element, this._size)
             this.show()
         }

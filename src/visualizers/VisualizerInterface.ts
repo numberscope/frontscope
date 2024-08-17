@@ -44,7 +44,8 @@ export interface VisualizerInterface<PD extends GenericParamDescription>
      * The visualizer should remove itself from any other location it might
      * have been displaying, and prepare to draw within the provided element.
      * It is safe to call this with the same element in which the visualizer
-     * is already displaying.
+     * is already displaying (and the removal and preparation should still
+     * happen).
      * The size provided to the visualizer is the size the visualizer should
      * assume, respecting its aspect ratio preferences. If needed, the
      * visualizer can also query the size of the element for the full container
