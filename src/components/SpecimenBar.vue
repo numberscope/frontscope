@@ -5,7 +5,9 @@
                 Specimen name
                 <input
                     type="text"
+                    id="spec-name"
                     :value="specimen.name"
+                    @keyup.enter="blurName()"
                     @input="updateName($event)" />
             </label>
 
@@ -91,6 +93,9 @@
                     const inputBox = event.target as HTMLInputElement
                     this.$emit('updateSpecimenName', inputBox.value)
                 }
+            },
+            blurName() {
+                window.document.getElementById('spec-name')?.blur()
             },
             refresh() {
                 this.specimen.updateSequence()

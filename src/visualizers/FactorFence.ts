@@ -236,8 +236,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         if (this.seqTerms < params.terms) {
             status.addWarning(
-                `Displaying all ${this.seqTerms} terms of sequence, fewer `
-                    + `than the ${params.terms} requested.`
+                'More terms requested than available; using '
+                    + `all ${this.seqTerms}.`
             )
         }
 

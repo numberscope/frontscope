@@ -39,6 +39,7 @@
                     v-bind:class="!status.isValid() ? 'error-field' : ''"
                     v-bind:value="value"
                     v-bind:placeholder="placehold(param)"
+                    @keyup.enter="blurField(paramName)"
                     v-on:input="updateString($event)" />
             </label>
 
@@ -101,6 +102,7 @@
                 return map
             },
             updateBoolean(e: Event) {
+                window.document.getElementById(this.paramName)?.blur()
                 this.$emit(
                     'updateParam',
                     (e.target as HTMLInputElement).checked + ''
@@ -111,6 +113,9 @@
                     'updateParam',
                     (e.target as HTMLInputElement).value
                 )
+            },
+            blurField(id: string) {
+                window.document.getElementById(id)?.blur()
             },
             placehold(par: ParamInterface<ParamType>) {
                 if (typeof par.placeholder === 'string')
