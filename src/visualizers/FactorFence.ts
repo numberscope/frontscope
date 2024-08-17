@@ -404,10 +404,12 @@ class FactorFence extends P5Visualizer(paramDesc) {
         if (this.sketch.keyIsDown(73)) {
             // pan up I
             this.graphCorner.y -= 10 / this.scaleFactor
+            this.textCorner.y -= 10 / this.scaleFactor
         }
         if (this.sketch.keyIsDown(75)) {
             // pan down K
             this.graphCorner.y += 10 / this.scaleFactor
+            this.textCorner.y += 10 / this.scaleFactor
         }
         if (this.sketch.keyIsDown(85)) {
             // stretch up U
