@@ -645,7 +645,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // colours match graph colours
         const infoColors = [
-            this.palette.gradientBar.bottom,
+            this.palette.gradientMouse.bottom,
             this.palette.gradientHighlight.bottom,
         ]
 
