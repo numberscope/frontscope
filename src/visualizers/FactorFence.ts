@@ -10,6 +10,12 @@ import {modulo} from '../shared/math'
 # Factor Fence Visualizer
 
 [<img
+  src="../../assets/img/FactorFence/naturals.png"
+  width=500
+  style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/FactorFence/naturals.png)
+
+[<img
   src="../../assets/img/FactorFence/ramanujan-tau.png"
   width=500
   style="margin-left: 1em; margin-right: 0.5em"
