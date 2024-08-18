@@ -141,7 +141,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     static description = 'Show the factors of your sequence log-visually.'
 
     // mouse control
-    private mousePrime = 0n
+    private mousePrime = 1n
     private mouseOn = false // mouse on graph
     private mouseIndex = 0 // term mouse is hovering over
 
@@ -503,9 +503,9 @@ class FactorFence extends P5Visualizer(paramDesc) {
         moveOver.mult(myIndex - this.first)
         barStart.add(moveOver)
 
+        const barDiagPlaceholder = this.sketch.createVector(recWidth, 1)
         // draw a one pixel high placeholder bar for 0/1/-1
         if (myTerm === 0n || myTerm === 1n || myTerm === -1n) {
-            const barDiagPlaceholder = this.sketch.createVector(recWidth, 1)
             this.grad_rect(
                 barStart.x,
                 barStart.y,
@@ -516,7 +516,37 @@ class FactorFence extends P5Visualizer(paramDesc) {
             )
             // in case no bars on screen, lowestBar must be set somewhere
             this.lowestBar = Math.max(this.lowestBar, barStart.y)
+
+            // set the mouse to show empty factorization
+            this.mouseSet(barDiagPlaceholder, barStart, myIndex, mySign, 1n)
         }
+
+        // draw a question mark for unknown factorizations
+        if (
+            factors.length == 0
+            && myTerm !== 0n
+            && myTerm !== 1n
+            && myTerm !== -1n
+        ) {
+            this.sketch.textSize(this.textSize / this.scaleFactor)
+            this.sketch.text('?', barStart.x - 1, barStart.y)
+            // in case no bars on screen, lowestBar must be set somewhere
+            this.lowestBar = Math.max(this.lowestBar, barStart.y)
+
+            // set the mouse to show empty factorization
+            this.mouseSet(barDiagPlaceholder, barStart, myIndex, mySign, 1n)
+        }
+
+        // check if we are below the graph
+        const barDiagBelow = this.sketch.createVector(
+            recWidth,
+            this.sketch.height - this.graphCorner.y
+        )
+        const barStartBelow = this.sketch.createVector(
+            barStart.x,
+            this.sketch.height
+        )
+        this.mouseSet(barDiagBelow, barStartBelow, myIndex, mySign, 1n)
 
         for (const primeIsHigh of [true, false]) {
             // first we do this with primeIsHigh = true
@@ -541,6 +571,21 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     // times scaling parameter
                     const recHeight = mySign * factor.log * this.heightScale
 
+                    // figure out upper right corner
+                    const barDiag = this.sketch.createVector(
+                        recWidth,
+                        recHeight
+                    )
+
+                    // check where mouse is
+                    this.mouseSet(
+                        barDiag,
+                        barStart,
+                        myIndex,
+                        mySign,
+                        factor.prime
+                    )
+
                     // set colour gradient for rectangle
                     let gradient = this.palette.gradientBar
                     if (primeIsHigh) {
@@ -551,12 +596,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     }
                     bottomColor = gradient.bottom
                     topColor = gradient.top
-
-                    // figure out upper right corner
-                    const barDiag = this.sketch.createVector(
-                        recWidth,
-                        recHeight
-                    )
 
                     // draw the rectangle
                     this.grad_rect(
@@ -573,33 +612,44 @@ class FactorFence extends P5Visualizer(paramDesc) {
                         this.lowestBar
                     )
 
-                    // if the mouse is over the rectangle being drawn
-                    // then we make note of the prime factor
-                    // and term we are hovering over
-                    const testVec = this.sketch.createVector(
-                        this.sketch.mouseX,
-                        this.sketch.mouseY
-                    )
-                    testVec.mult(1 / this.scaleFactor).sub(barStart)
-                    testVec.y = testVec.y * mySign
-                    const barDiagAbs = barDiag.copy()
-                    barDiagAbs.y = -barDiagAbs.y * mySign
-                    if (
-                        testVec.x >= 0
-                        && testVec.x <= barDiagAbs.x
-                        && testVec.y <= 0
-                        && testVec.y >= barDiagAbs.y
-                    ) {
-                        this.mousePrime = factor.prime
-                        this.mouseIndex = myIndex
-                        this.mouseOn = true
-                    }
-
                     // move up in preparation for next bar
                     const moveUp = this.sketch.createVector(0, -recHeight)
                     barStart.add(moveUp)
                 }
             }
+        }
+        // check if we are above the graph
+        const barDiagAbove = this.sketch.createVector(
+            recWidth,
+            this.sketch.height
+        )
+        this.mouseSet(barDiagAbove, barStart, myIndex, mySign, 1n)
+    }
+
+    mouseSet(
+        barDiag: p5.Vector,
+        barStart: p5.Vector,
+        myIndex: number,
+        mySign: number,
+        prime: bigint
+    ) {
+        // if the mouse is over the rectangle being drawn
+        // then we make note of the prime factor
+        // and term we are hovering over
+        const testVec = this.sketch.createVector(
+            this.sketch.mouseX,
+            this.sketch.mouseY
+        )
+        testVec.mult(1 / this.scaleFactor).sub(barStart)
+        testVec.y = testVec.y * mySign
+        const barDiagAbs = barDiag.copy()
+        barDiagAbs.y = -barDiagAbs.y * mySign
+        if (testVec.x >= 0 && testVec.x <= barDiagAbs.x) {
+            if (testVec.y <= 0 && testVec.y >= barDiagAbs.y) {
+                this.mousePrime = prime
+            }
+            this.mouseIndex = myIndex
+            this.mouseOn = true
         }
     }
 
@@ -632,11 +682,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
     // set highlight prime by click
     mouseClicked() {
-        if (this.mouseOn) {
-            this.highlight = this.mousePrime
-        } else {
-            this.highlight = 1n
-        }
+        this.highlight = this.mousePrime
         this.refreshParams()
         this.resetLoop()
     }
@@ -690,6 +736,13 @@ class FactorFence extends P5Visualizer(paramDesc) {
             this.sketch.text(infoLineStart, textLeft, textBottom)
             textLeft += this.sketch.textWidth(infoLineStart)
 
+            if (factorizationPrimes.length == 0) {
+                this.sketch.text(
+                    this.seq.getElement(this.mouseIndex).toString(),
+                    textLeft,
+                    textBottom
+                )
+            }
             let first = true
             for (const prime of factorizationPrimes) {
                 if (!first) {
@@ -709,9 +762,17 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 textLeft += this.sketch.textWidth(prime.toString()) + 1
                 first = false
             }
+            if (factorizationPrimes.length == 0) {
+                textBottom += lineHeight
+                this.sketch.text(
+                    '(no factorization)',
+                    this.textLeft / this.scaleFactor,
+                    textBottom
+                )
+            }
         } else {
             // make sure mouseover disappears when not on graph
-            this.mousePrime = 0n
+            this.mousePrime = 1n
         }
     }
 
