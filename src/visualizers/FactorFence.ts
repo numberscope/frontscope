@@ -515,12 +515,39 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     barDiagPlaceholder.x,
                     barDiagPlaceholder.y,
                     this.palette.gradientBar.top,
-                    this.palette.gradientBar.bottom
+                    this.palette.gradientBar.bottom,
+                    false
                 )
+                // in case no bars on screen, lowestBar must be set somewhere
+                this.lowestBar = Math.max(this.lowestBar, barStart.y)
             } else {
-                // draw a question mark for unknown factorizations
-                this.sketch.textSize(this.textSize / this.scaleFactor)
-                this.sketch.text('?', barStart.x - 1, barStart.y)
+                // draw an empty bar for unknown factorizations
+
+                // height of rectangle is log of term
+                // times scaling parameter
+                const recHeight =
+                    mySign
+                    * BigLog(myTerm * BigInt(mySign))
+                    * this.heightScale
+
+                // figure out upper right corner
+                const barDiag = this.sketch.createVector(recWidth, recHeight)
+
+                // draw the rectangle
+                this.grad_rect(
+                    barStart.x,
+                    barStart.y,
+                    barDiag.x,
+                    barDiag.y,
+                    this.palette.backgroundColor,
+                    this.palette.backgroundColor,
+                    true
+                )
+                this.lowestBar = Math.max(
+                    barStart.y,
+                    barStart.y - barDiag.y,
+                    this.lowestBar
+                )
             }
             // set the mouse prime as none if we are in this area
             this.mousePrimeSet(
@@ -530,8 +557,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 mySign,
                 1n
             )
-            // in case no bars on screen, lowestBar must be set somewhere
-            this.lowestBar = Math.max(this.lowestBar, barStart.y)
         }
 
         // check if we are below the graph, if so set mouse prime none
@@ -601,7 +626,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
                         barDiag.x,
                         barDiag.y,
                         topColor,
-                        bottomColor
+                        bottomColor,
+                        false
                     )
                     this.lowestBar = Math.max(
                         barStart.y,
@@ -809,7 +835,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
         width: number,
         height: number,
         colorTop: p5.Color,
-        colorBottom: p5.Color
+        colorBottom: p5.Color,
+        edge: boolean
     ) {
         const barGradient = this.sketch.drawingContext.createLinearGradient(
             x,
@@ -820,6 +847,12 @@ class FactorFence extends P5Visualizer(paramDesc) {
         barGradient.addColorStop(0, colorTop)
         barGradient.addColorStop(1, colorBottom)
         this.sketch.drawingContext.fillStyle = barGradient
+        if (edge) {
+            this.sketch.strokeWeight(1)
+            this.sketch.stroke(this.palette.gradientBar.top)
+        } else {
+            this.sketch.strokeWeight(0)
+        }
         this.sketch.rect(x, y - height, width, height)
     }
 }
