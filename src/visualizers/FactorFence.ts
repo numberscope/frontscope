@@ -731,17 +731,28 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 + this.mouseIndex.toString()
                 + ') = '
                 + this.seq.getElement(this.mouseIndex).toString()
-                + ' = '
             this.sketch.fill(infoColors[0])
             this.sketch.text(infoLineStart, textLeft, textBottom)
-            textLeft += this.sketch.textWidth(infoLineStart)
+            textBottom += lineHeight
+            const infoLineContinue = ' = '
+            textLeft = this.textLeft / this.scaleFactor
+            this.sketch.text(infoLineContinue, textLeft, textBottom)
+            textLeft += this.sketch.textWidth(infoLineContinue) + 1
 
-            if (factorizationPrimes.length == 0) {
-                this.sketch.text(
-                    this.seq.getElement(this.mouseIndex).toString(),
-                    textLeft,
-                    textBottom
-                )
+            const myTerm = this.seq.getElement(this.mouseIndex)
+            // get sign of term
+            let mySign = 1n
+            if (myTerm < 0n) mySign = -1n
+
+            if (factorizationPrimes.length == 0 && myTerm * mySign < 2n) {
+                const eltString =
+                    this.seq.getElement(this.mouseIndex).toString() + ' '
+                this.sketch.text(eltString, textLeft, textBottom)
+                textLeft += this.sketch.textWidth(eltString) + 1
+            }
+            if (mySign < 0n && factorizationPrimes.length > 0) {
+                this.sketch.text('-', textLeft, textBottom)
+                textLeft += this.sketch.textWidth('-') + 1
             }
             let first = true
             for (const prime of factorizationPrimes) {
@@ -762,13 +773,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 textLeft += this.sketch.textWidth(prime.toString()) + 1
                 first = false
             }
-            if (factorizationPrimes.length == 0) {
-                textBottom += lineHeight
-                this.sketch.text(
-                    '(no factorization)',
-                    this.textLeft / this.scaleFactor,
-                    textBottom
-                )
+            if (factorizationPrimes.length == 0 && myTerm * mySign >= 2n) {
+                this.sketch.text('(no factorization)', textLeft, textBottom)
             }
         } else {
             // make sure mouseover disappears when not on graph
