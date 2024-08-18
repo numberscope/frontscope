@@ -4,7 +4,11 @@ import type {GenericParamDescription} from './Paramable'
 import {produceSequence} from '@/sequences/sequences'
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
 
-import type {VisualizerInterface} from '@/visualizers/VisualizerInterface'
+import type {
+    VisualizerInterface,
+    ViewSize,
+} from '@/visualizers/VisualizerInterface'
+import {nullSize, sameSize} from '@/visualizers/VisualizerInterface'
 import vizMODULES from '@/visualizers/visualizers'
 
 /**
@@ -21,7 +25,7 @@ export class Specimen {
     private _sequence: SequenceInterface<GenericParamDescription>
     private location?: HTMLElement
     private isSetup: boolean = false
-    private size: {width: number; height: number}
+    private size = nullSize
 
     /**
      * Constructs a new specimen from a visualizer and a sequence.
@@ -50,7 +54,6 @@ export class Specimen {
         this._visualizer = new vizMODULES[visualizerKey].visualizer(
             this._sequence
         )
-        this.size = {width: 0, height: 0}
         if (vizQuery) this._visualizer.loadQuery(vizQuery)
     }
 
@@ -68,8 +71,7 @@ export class Specimen {
     async setup(location: HTMLElement) {
         this.location = location
         this.size = this.calculateSize(
-            this.location.clientWidth,
-            this.location.clientHeight,
+            {width: location.clientWidth, height: location.clientHeight},
             this.visualizer.requestedAspectRatio()
         )
 
@@ -86,8 +88,10 @@ export class Specimen {
     async reset() {
         if (!this.location) return
         this.size = this.calculateSize(
-            this.location.clientWidth,
-            this.location.clientHeight,
+            {
+                width: this.location.clientWidth,
+                height: this.location.clientHeight,
+            },
             this.visualizer.requestedAspectRatio()
         )
 
@@ -176,51 +180,33 @@ export class Specimen {
      * @param {number?} aspectRatio  aspect ratio requested by visualizer
      * @returns {{width: number, height: number}} resulting size of visualizer
      */
-    calculateSize(
-        containerWidth: number,
-        containerHeight: number,
-        aspectRatio: number | undefined
-    ): {width: number; height: number} {
-        if (aspectRatio === undefined)
-            return {
-                width: containerWidth,
-                height: containerHeight,
-            }
-        const constraint = containerWidth / containerHeight < aspectRatio
+    calculateSize(inSize: ViewSize, aspectRatio?: number): ViewSize {
+        if (aspectRatio === undefined) return inSize
+        const constraint = inSize.width / inSize.height < aspectRatio
         return {
-            width: constraint
-                ? containerWidth
-                : containerHeight * aspectRatio,
-            height: constraint
-                ? containerWidth / aspectRatio
-                : containerHeight,
+            width: constraint ? inSize.width : inSize.height * aspectRatio,
+            height: constraint ? inSize.width / aspectRatio : inSize.height,
         }
     }
     /**
      * This function should be called when the size of the visualizer container
      * has changed. It calculates the size of the contents according to the
      * aspect ratio requested and calls the resize function.
-     * @param {number} width  New width of the visualizer container
-     * @param {number} height  New height of the visualizer container
+     * @param {ViewSize} toSize
+     *     New width and height of the visualizer container
      */
-    resized(width: number, height: number): void {
+    async resized(toSize: ViewSize): Promise<void> {
         const newSize = this.calculateSize(
-            width,
-            height,
+            toSize,
             this.visualizer.requestedAspectRatio()
         )
-
-        if (
-            this.size.width === newSize.width
-            && this.size.height === newSize.height
-        )
-            return
-
+        if (sameSize(this.size, newSize)) return
         this.size = newSize
-
-        if (!this.visualizer.resized?.(this.size.width, this.size.height)) {
-            // Reset the visualizer if the resized function isn't implemented
-            this.reset()
+        // Reset the visualizer if the resized function isn't implemented
+        // or returns false, meaning it didn't handle the redisplay
+        if (this.visualizer.resized) {
+            const handled = await this.visualizer.resized(this.size)
+            if (!handled) this.reset()
         }
     }
     /**

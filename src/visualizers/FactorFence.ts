@@ -1,6 +1,7 @@
 import p5 from 'p5'
 import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
+import type {ViewSize} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
 import type {ParamValues, ParamInterface} from '../shared/Paramable'
 import {ValidationStatus} from '@/shared/ValidationStatus'
@@ -136,17 +137,22 @@ too high, will decrease to number of terms available.
 } as const
 
 // vertical bar representing factor
-interface bar {
+interface Bar {
     prime: bigint
     log: number
 }
 
 // data on which bars on screen
-interface barsData {
+interface BarsData {
     minBars: number
     maxBars: number
     numBars: number
 }
+
+// "Natural" width of the factor bars:
+const recWidth = 12
+// Shift from one bar to the next:
+const recSpace = new p5.Vector(recWidth + 2, 0)
 
 class FactorFence extends P5Visualizer(paramDesc) {
     static category = 'FactorFence'
@@ -158,7 +164,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     private mouseIndex = 0 // term mouse is hovering over
 
     // store factorizations
-    private factorizations: bar[][] = []
+    private factorizations: Bar[][] = []
 
     // scaling control
     private scaleFactor = 1.0 // zooming
@@ -173,12 +179,10 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
     // lower left corner of graph
     private graphCorner = new p5.Vector()
-    // lower left corner of text
-    private textCorner = new p5.Vector()
-
-    // vector shift from one bar to the next
-    private recSpace = new p5.Vector()
-    private recWidth = 12 // horizontal shift
+    // left margin of text
+    private textLeft = 0
+    // lowest extent of any bar
+    private lowestBar = 0
 
     // text control
     private textInterval = 0
@@ -195,7 +199,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     private frame = 0
     private firstFailure = Number.POSITIVE_INFINITY
 
-    barsShowing() {
+    barsShowing(size: ViewSize): BarsData {
         // determine which terms will be on the screen
         // in order to decide how to initialize the graph
         // and to be efficient in computing only the portion shown
@@ -204,7 +208,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // no less than first term
         const minBars = Math.max(
             Math.floor(
-                this.first - Math.min(0, this.graphCorner.x / this.recSpace.x)
+                this.first - Math.min(0, this.graphCorner.x / recSpace.x)
             ) - 1,
             this.first
         )
@@ -213,7 +217,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // two extra to slightly bleed over edge
         const numBars = Math.floor(
             Math.min(
-                this.sketch.width / this.scaleFactor / this.recSpace.x + 2,
+                size.width / this.scaleFactor / recSpace.x + 2,
                 this.last - minBars + 1
             )
         )
@@ -244,7 +248,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         return status
     }
 
-    collectDataForScale(barsInfo: barsData) {
+    collectDataForScale(barsInfo: BarsData, size: ViewSize) {
         // collect some info on the sequence in order to decide
         // how best to vertically scale the initial graph
         this.collectFailed = false
@@ -279,16 +283,16 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // scale according to total graph height
         const graphHeight = Math.abs(heightMax - heightMin)
         if (graphHeight != 0) {
-            this.heightScale = (0.4 * this.sketch.height) / graphHeight
+            this.heightScale = (0.4 * size.height) / graphHeight
         } else {
             // should occur only for constant 0 seq
-            this.heightScale = 0.4 * this.sketch.height
+            this.heightScale = 0.4 * size.height
         }
         // adjust the x-axis upward to make room
         this.graphCorner.y = this.graphCorner.y + heightMin * this.heightScale
     }
 
-    storeFactors(barsInfo: barsData) {
+    storeFactors(barsInfo: BarsData) {
         // put all factorizations into an array for easy access
 
         // track factorization progress in case backend is slow
@@ -311,7 +315,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
             // change the factors into just a list of factors with repeats
             // suitable for looping through to make the bars
             // format: [prime, log(prime)]
-            const factors: bar[] = []
+            const factors: Bar[] = []
             if (facsRaw) {
                 for (const [base, power] of facsRaw) {
                     if (base != -1n && base != 0n) {
@@ -327,46 +331,46 @@ class FactorFence extends P5Visualizer(paramDesc) {
         return firstFailure
     }
 
-    setup() {
-        super.setup()
-
-        this.palette = new factorPalette(this.sketch)
-
-        // must be set so barsShowing() works; begin with no zoom
+    // put the view in a good starting state:
+    async standardizeView(size: ViewSize) {
         this.scaleFactor = 1
-        // horiz rectangle spacing vector
-        this.recSpace = this.sketch.createVector(this.recWidth + 2, 0)
         // lower left graph corner as proportion of space avail
-        this.graphCorner = this.sketch.createVector(
-            this.sketch.width * 0.05,
-            this.sketch.height * 0.75
+        this.graphCorner = new p5.Vector(
+            size.width * 0.05,
+            size.height * 0.75
         )
+        // Text sizing:
+        // left margin of text
+        this.textLeft = size.width * 0.05
+        // vertical text spacing
+        this.textInterval = size.height * 0.027
+        this.textSize = size.height * 0.023
+
+        // initial scaling
+        const barsInfo = this.barsShowing(size)
+        this.collectDataForScale(barsInfo, size)
+    }
+
+    async presketch(size: ViewSize) {
+        await super.presketch(size)
+
+        // Warn the backend we plan to factor: (Note we don't await because
+        // we don't actually use the factors until later.)
+        this.seq.fill(this.last)
 
         // set up terms first and last
         this.first = this.seq.first
         this.firstFailure = this.first // set factoring needed pointer
         this.last = this.seq.first + Math.min(this.terms, this.seqTerms) - 1
 
-        // warn the backend we plan to factor
-        this.seq.fill(this.last)
+        await this.standardizeView(size)
+    }
 
-        // make an empty factoring array
-        for (let myIndex = this.first; myIndex < this.last; myIndex++) {
-            const factors: bar[] = []
-            this.factorizations[myIndex] = factors
-        }
+    setup() {
+        super.setup()
 
+        this.palette = new factorPalette(this.sketch)
         // text formatting
-
-        // upper left text corner
-        this.textCorner = this.sketch.createVector(
-            this.sketch.width * 0.05,
-            this.sketch.height * 0.8
-        )
-        // vertical text spacing
-        this.textInterval = this.sketch.height * 0.027
-        this.textSize = this.sketch.height * 0.023
-
         this.sketch.textFont('Courier New')
         this.sketch.textStyle(this.sketch.NORMAL)
 
@@ -374,9 +378,14 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.sketch.strokeWeight(0)
         this.sketch.frameRate(30)
 
-        // initial scaling
-        const barsInfo = this.barsShowing()
-        this.collectDataForScale(barsInfo)
+        // Reset last term (depends on this.terms, which might have changed)
+        this.last = this.seq.first + Math.min(this.terms, this.seqTerms) - 1
+        // Extend factoring array as needed
+        for (let myIndex = this.first; myIndex < this.last; myIndex++) {
+            if (myIndex in this.factorizations) continue
+            const factors: Bar[] = []
+            this.factorizations[myIndex] = factors
+        }
     }
 
     keyPresses() {
@@ -404,12 +413,10 @@ class FactorFence extends P5Visualizer(paramDesc) {
         if (this.sketch.keyIsDown(73)) {
             // pan up I
             this.graphCorner.y -= 10 / this.scaleFactor
-            this.textCorner.y -= 10 / this.scaleFactor
         }
         if (this.sketch.keyIsDown(75)) {
             // pan down K
             this.graphCorner.y += 10 / this.scaleFactor
-            this.textCorner.y += 10 / this.scaleFactor
         }
         if (this.sketch.keyIsDown(85)) {
             // stretch up U
@@ -441,8 +448,10 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // determine which terms will be on the screen so we only
         // bother with those
-        // resets this.scaleFactor
-        const barsInfo = this.barsShowing()
+        const barsInfo = this.barsShowing({
+            width: this.sketch.width,
+            height: this.sketch.height,
+        })
 
         // this scales the whole sketch
         // must compensate when using invariant sketch elements
@@ -452,26 +461,40 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.mouseOn = false // flag mouse is not on graph by default
 
         // try again if need more terms from cache
-        if (this.collectFailed) this.collectDataForScale(barsInfo)
+        if (this.collectFailed) {
+            this.collectDataForScale(barsInfo, {
+                width: this.sketch.width,
+                height: this.sketch.height,
+            })
+        }
 
         // set factoring needed pointer
         this.firstFailure = this.storeFactors(barsInfo)
+        this.lowestBar = 0
 
         // loop through the terms of the seq and draw the bars for each
         for (
             let myIndex = barsInfo.minBars;
             myIndex <= barsInfo.maxBars;
             myIndex++
-        )
+        ) {
             // note that this also watches for mouseover as each bar
-            // is drawn
+            // is drawn, and updates this.lowestBar
             this.drawTerm(myIndex)
+        }
 
         // text at base of sketch, if not small canvas
         if (this.sketch.height > 400 && this.labels) this.bottomText()
 
-        // stop drawing if no input from user
-        if (this.frame > 3) this.sketch.noLoop()
+        // stop drawing if no input from user and not waiting on elements
+        // or factorizations
+        if (
+            this.frame > 3
+            && !this.collectFailed
+            && this.firstFailure >= barsInfo.maxBars
+        ) {
+            this.sketch.noLoop()
+        }
     }
 
     drawTerm(myIndex: number) {
@@ -494,16 +517,13 @@ class FactorFence extends P5Visualizer(paramDesc) {
         const barStart = this.graphCorner.copy()
 
         // move over based on which term
-        const moveOver = this.recSpace.copy()
+        const moveOver = recSpace.copy()
         moveOver.mult(myIndex - this.first)
         barStart.add(moveOver)
 
         // draw a one pixel high placeholder bar for 0/1/-1
         if (myTerm === 0n || myTerm === 1n || myTerm === -1n) {
-            const barDiagPlaceholder = this.sketch.createVector(
-                this.recWidth,
-                1
-            )
+            const barDiagPlaceholder = this.sketch.createVector(recWidth, 1)
             this.grad_rect(
                 barStart.x,
                 barStart.y,
@@ -550,7 +570,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
                     // figure out upper right corner
                     const barDiag = this.sketch.createVector(
-                        this.recWidth,
+                        recWidth,
                         recHeight
                     )
 
@@ -562,6 +582,11 @@ class FactorFence extends P5Visualizer(paramDesc) {
                         barDiag.y,
                         topColor,
                         bottomColor
+                    )
+                    this.lowestBar = Math.max(
+                        barStart.y,
+                        barStart.y - barDiag.y,
+                        this.lowestBar
                     )
 
                     // if the mouse is over the rectangle being drawn
@@ -599,6 +624,11 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.sketch.loop()
     }
 
+    async resized(toSize: ViewSize) {
+        await this.standardizeView(toSize)
+        return false // Let the framework handle the redisplay
+    }
+
     keyPressed() {
         this.resetLoop()
     }
@@ -630,12 +660,15 @@ class FactorFence extends P5Visualizer(paramDesc) {
     bottomText() {
         // text size and position
         this.sketch.textSize(this.textSize / this.scaleFactor)
-        const textPosition = this.textCorner.copy()
-        textPosition.mult(1 / this.scaleFactor)
+        let textLeft = this.textLeft / this.scaleFactor
 
         // spacing between lines
-        const textIntervalVec = this.sketch.createVector(0, this.textInterval)
-        textIntervalVec.mult(1 / this.scaleFactor)
+        const lineHeight = this.textInterval / this.scaleFactor
+
+        let textBottom = Math.min(
+            this.lowestBar + 2 * lineHeight,
+            this.sketch.height / this.scaleFactor - 4 * lineHeight
+        )
 
         // always visible static text info, line by line
         const info = [
@@ -652,8 +685,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // display static info line by line
         for (let i = 0; i < info.length; i++) {
             this.sketch.fill(infoColors[i])
-            this.sketch.text(info[i], textPosition.x, textPosition.y)
-            textPosition.add(textIntervalVec)
+            this.sketch.text(info[i], textLeft, textBottom)
+            textBottom += lineHeight
         }
 
         // factorization text shown upon mouseover of graph
@@ -670,25 +703,15 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 + this.seq.getElement(this.mouseIndex).toString()
                 + ' = '
             this.sketch.fill(infoColors[0])
-            this.sketch.text(infoLineStart, textPosition.x, textPosition.y)
-            textPosition.add(
-                this.sketch.createVector(
-                    this.sketch.textWidth(infoLineStart),
-                    0
-                )
-            )
+            this.sketch.text(infoLineStart, textLeft, textBottom)
+            textLeft += this.sketch.textWidth(infoLineStart)
 
             let first = true
             for (const prime of factorizationPrimes) {
                 if (!first) {
                     this.sketch.fill(infoColors[0])
-                    this.sketch.text('*', textPosition.x, textPosition.y)
-                    textPosition.add(
-                        this.sketch.createVector(
-                            this.sketch.textWidth('*'),
-                            0
-                        )
-                    )
+                    this.sketch.text('×', textLeft, textBottom)
+                    textLeft += this.sketch.textWidth('×') + 1
                 }
 
                 this.sketch.fill(
@@ -698,17 +721,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
                           ? this.palette.gradientHighlight.bottom
                           : this.palette.gradientBar.bottom
                 )
-                this.sketch.text(
-                    prime.toString(),
-                    textPosition.x,
-                    textPosition.y
-                )
-                textPosition.add(
-                    this.sketch.createVector(
-                        this.sketch.textWidth(prime.toString()),
-                        0
-                    )
-                )
+                this.sketch.text(prime.toString(), textLeft, textBottom)
+                textLeft += this.sketch.textWidth(prime.toString()) + 1
                 first = false
             }
         } else {

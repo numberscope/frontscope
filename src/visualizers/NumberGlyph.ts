@@ -3,6 +3,7 @@ import {P5Visualizer} from './P5Visualizer'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
 //import type {Factorization} from '../sequences/SequenceInterface'
 import {VisualizerExportModule} from './VisualizerInterface'
+import type {ViewSize} from './VisualizerInterface'
 import * as math from 'mathjs'
 import {ParamType} from '../shared/ParamType'
 import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
@@ -198,8 +199,8 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         return this.evaluator.evaluate({n: n, x: x})
     }
 
-    async presketch() {
-        await super.presketch()
+    async presketch(size: ViewSize) {
+        await super.presketch(size)
         this.last = this.seq.first + this.n - 1 // adjust for offset
         if (this.last > this.seq.last) {
             this.last = this.seq.last

@@ -345,10 +345,10 @@
         specimen.setup(canvasContainer)
 
         resizePoll = setInterval(() => {
-            specimen.resized(
-                canvasContainer.clientWidth,
-                canvasContainer.clientHeight
-            )
+            specimen.resized({
+                width: canvasContainer.clientWidth,
+                height: canvasContainer.clientHeight,
+            })
         }, 500)
     })
 

@@ -159,14 +159,18 @@ There are two places to do pre-computation before the sketch begins looping
 through frames of the drawing. The first is `presketch()`, which runs
 asynchronously, meaning that the browser will not be blocked while this
 function completes. This is not a part of p5.js, but a part of Numberscope.
+The `presketch()` function is called by the framework with one argument,
+representing the size of the canvas to be created as a ViewSize object with
+number fields `width` and `height`.
 
-If you implement `presketch()`, begin by calling `await super.presketch()`,
-which will initialize the sequence. After this call, you have access to the
-sequence, so you can do sequence-dependent validation and initialization here.
-You do have the opportunity to set up private state variables. For example,
-this is a good place to populate an array with time-consuming precomputed
-values you will use repeatedly during the sketch. However, you still have no
-access to the p5 canvas or the `this.sketch` object.
+If you implement `presketch()`, begin by calling
+`await super.presketch(size)`, which will initialize the sequence. After this
+call, you have access to the sequence, so you can do sequence-dependent
+validation and initialization here. You do have the opportunity to set up
+private state variables. For example, this is a good place to populate an
+array with time-consuming precomputed values you will use repeatedly during
+the sketch. However, you still have no access to the p5 canvas or the
+`this.sketch` object.
 
 Note also that `presketch()` is called when there is a new visualizer, when
 the sequence changes, when you visit a new Numberscope URL, but not when
