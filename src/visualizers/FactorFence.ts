@@ -514,6 +514,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 this.palette.gradientBar.top,
                 this.palette.gradientBar.bottom
             )
+            // in case no bars on screen
+            this.lowestBar = barStart.y
         }
 
         for (const primeIsHigh of [true, false]) {
