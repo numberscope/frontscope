@@ -507,7 +507,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // special cases with no factors
         if (factors.length == 0) {
             const barDiagPlaceholder = this.sketch.createVector(recWidth, 1)
-            if (myTerm === 0n || myTerm === 1n || myTerm === -1n) {
+            if (this.isTrivial(myTerm)) {
                 // draw a one pixel high placeholder bar for 0/1/-1
                 this.grad_rect(
                     barStart.x,
@@ -691,6 +691,11 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.resetLoop()
     }
 
+    isTrivial(term: bigint) {
+        if (term == 0n || term == 1n || term == -1n) return true
+        return false
+    }
+
     bottomText() {
         // text size and position
         this.sketch.textSize(this.textSize / this.scaleFactor)
@@ -729,60 +734,67 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 this.mouseIndex
             ].map(factor => factor.prime)
 
+            // term and sign
+            const myTerm = this.seq.getElement(this.mouseIndex)
+            let mySign = 1n
+            if (myTerm < 0n) mySign = -1n
+
             // display mouseover info line
+            const infoLineFunction = 'S(' + this.mouseIndex.toString() + ')'
             const infoLineStart =
-                'S('
-                + this.mouseIndex.toString()
-                + ') = '
+                infoLineFunction
+                + ' = '
                 + this.seq.getElement(this.mouseIndex).toString()
             this.sketch.fill(infoColors[0])
             this.sketch.text(infoLineStart, textLeft, textBottom)
             textBottom += lineHeight
-            const infoLineContinue = ' = '
-            textLeft = this.textLeft / this.scaleFactor
-            this.sketch.text(infoLineContinue, textLeft, textBottom)
-            textLeft += this.sketch.textWidth(infoLineContinue) + 1
 
-            const myTerm = this.seq.getElement(this.mouseIndex)
-            // get sign of term
-            let mySign = 1n
-            if (myTerm < 0n) mySign = -1n
+            if (!this.isTrivial(myTerm)) {
+                const infoLineContinue = ' = '
+                textLeft = this.textLeft / this.scaleFactor
+                textLeft += this.sketch.textWidth(infoLineFunction)
+                this.sketch.text(infoLineContinue, textLeft, textBottom)
+                textLeft += this.sketch.textWidth(infoLineContinue) + 1
 
-            if (factorizationPrimes.length == 0 && myTerm * mySign < 2n) {
-                const eltString =
-                    this.seq.getElement(this.mouseIndex).toString() + ' '
-                this.sketch.text(eltString, textLeft, textBottom)
-                textLeft += this.sketch.textWidth(eltString) + 1
-            }
-            if (mySign < 0n && factorizationPrimes.length > 0) {
-                this.sketch.text('-', textLeft, textBottom)
-                textLeft += this.sketch.textWidth('-') + 1
-            }
-            let first = true
-            for (const prime of factorizationPrimes) {
-                if (!first) {
-                    this.sketch.fill(infoColors[0])
-                    this.sketch.text('×', textLeft, textBottom)
-                    textLeft += this.sketch.textWidth('×') + 1
+                if (factorizationPrimes.length == 0 && myTerm * mySign < 2n) {
+                    const eltString =
+                        this.seq.getElement(this.mouseIndex).toString() + ' '
+                    this.sketch.text(eltString, textLeft, textBottom)
+                    textLeft += this.sketch.textWidth(eltString) + 1
                 }
+                if (mySign < 0n && factorizationPrimes.length > 0) {
+                    this.sketch.text('-', textLeft, textBottom)
+                    textLeft += this.sketch.textWidth('-') + 1
+                }
+                let first = true
+                for (const prime of factorizationPrimes) {
+                    if (!first) {
+                        this.sketch.fill(infoColors[0])
+                        this.sketch.text('×', textLeft, textBottom)
+                        textLeft += this.sketch.textWidth('×') + 1
+                    }
 
-                this.sketch.fill(
-                    prime == this.mousePrime
-                        ? this.palette.gradientMouse.bottom
-                        : Number(modulo(this.highlight, prime)) === 0
-                          ? this.palette.gradientHighlight.bottom
-                          : this.palette.gradientBar.bottom
-                )
-                this.sketch.text(prime.toString(), textLeft, textBottom)
-                textLeft += this.sketch.textWidth(prime.toString()) + 1
-                first = false
-            }
-            if (factorizationPrimes.length == 0 && myTerm * mySign >= 2n) {
-                this.sketch.text(
-                    '(factorization unknown)',
-                    textLeft,
-                    textBottom
-                )
+                    this.sketch.fill(
+                        prime == this.mousePrime
+                            ? this.palette.gradientMouse.bottom
+                            : Number(modulo(this.highlight, prime)) === 0
+                              ? this.palette.gradientHighlight.bottom
+                              : this.palette.gradientBar.bottom
+                    )
+                    this.sketch.text(prime.toString(), textLeft, textBottom)
+                    textLeft += this.sketch.textWidth(prime.toString()) + 1
+                    first = false
+                }
+                if (
+                    factorizationPrimes.length == 0
+                    && myTerm * mySign >= 2n
+                ) {
+                    this.sketch.text(
+                        '(factorization unknown)',
+                        textLeft,
+                        textBottom
+                    )
+                }
             }
         } else {
             // make sure mouseover disappears when not on graph
