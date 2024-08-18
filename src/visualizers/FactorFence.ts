@@ -3,7 +3,6 @@ import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
-import type {ParamValues, ParamInterface} from '../shared/Paramable'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 import {modulo} from '../shared/math'
 
@@ -77,23 +76,6 @@ class factorPalette {
 
 const paramDesc = {
     /**
-- terms: the number of terms to factor and display; if entered value is
-too high, will decrease to number of terms available.
-     **/
-    terms: {
-        default: 100,
-        type: ParamType.INTEGER,
-        displayName: 'Number of terms',
-        required: false,
-        description: 'How many terms of the sequence should we show?',
-        hideDescription: true,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(
-                n <= 0,
-                'Number of terms must be positive.'
-            ),
-    },
-    /**
 - highlight: the prime factor to highlight 
      **/
     highlight: {
@@ -129,7 +111,7 @@ too high, will decrease to number of terms available.
     signs: {
         default: true,
         type: ParamType.BOOLEAN,
-        displayName: 'Take into account signs?',
+        displayName: 'Take into account signs',
         required: true,
         description: 'If true, negative terms display below axis',
         hideDescription: true,
@@ -168,7 +150,9 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
     // scaling control
     private scaleFactor = 1.0 // zooming
-    private seqTerms = 0 // total number of terms in sequence
+    private initialLimitTerms = 10000 // initial max number of terms
+    private availableTerms = 0 // max number of terms available
+    private seqTerms = 0 // total number of terms we are using
     private first = 0 // first term
     private last = 0 // last term
     private heightScale = 55 // stretching
@@ -226,26 +210,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
         const maxBars = minBars + numBars - 1
 
         return {minBars, maxBars, numBars}
-    }
-
-    checkParameters(params: ParamValues<typeof paramDesc>) {
-        const status = super.checkParameters(params)
-
-        this.seqTerms = this.seq.last - this.seq.first + 1
-        if (isFinite(this.seqTerms)) {
-            const termsParams =
-                paramDesc.terms as ParamInterface<ParamType.INTEGER>
-            termsParams.displayName = `Number of terms (max: ${this.seqTerms})`
-        }
-
-        if (this.seqTerms < params.terms) {
-            status.addWarning(
-                'More terms requested than available; using '
-                    + `all ${this.seqTerms}.`
-            )
-        }
-
-        return status
     }
 
     collectDataForScale(barsInfo: BarsData, size: ViewSize) {
@@ -354,14 +318,21 @@ class FactorFence extends P5Visualizer(paramDesc) {
     async presketch(size: ViewSize) {
         await super.presketch(size)
 
-        // Warn the backend we plan to factor: (Note we don't await because
-        // we don't actually use the factors until later.)
-        this.seq.fill(this.last)
+        // begin by limiting to 10000 terms
+        this.availableTerms = this.seq.last - this.seq.first + 1
+        this.seqTerms = this.availableTerms
+        if (this.seqTerms > this.initialLimitTerms) {
+            this.seqTerms = this.initialLimitTerms
+        }
 
         // set up terms first and last
         this.first = this.seq.first
         this.firstFailure = this.first // set factoring needed pointer
-        this.last = this.seq.first + Math.min(this.terms, this.seqTerms) - 1
+        this.last = this.seq.first + this.seqTerms - 1
+
+        // Warn the backend we plan to factor: (Note we don't await because
+        // we don't actually use the factors until later.)
+        this.seq.fill(this.last)
 
         await this.standardizeView(size)
     }
@@ -378,8 +349,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.sketch.strokeWeight(0)
         this.sketch.frameRate(30)
 
-        // Reset last term (depends on this.terms, which might have changed)
-        this.last = this.seq.first + Math.min(this.terms, this.seqTerms) - 1
         // Extend factoring array as needed
         for (let myIndex = this.first; myIndex < this.last; myIndex++) {
             if (myIndex in this.factorizations) continue
@@ -452,6 +421,19 @@ class FactorFence extends P5Visualizer(paramDesc) {
             width: this.sketch.width,
             height: this.sketch.height,
         })
+
+        // If we are getting close to the hidden max terms, raise it
+        if (
+            3 * barsInfo.maxBars > this.seqTerms
+            && this.seqTerms < this.availableTerms
+        ) {
+            this.seqTerms = Math.min(
+                this.availableTerms,
+                3 * barsInfo.maxBars
+            )
+            this.last = this.seq.first + this.seqTerms - 1
+            this.collectFailed = true // trigger recollect
+        }
 
         // this scales the whole sketch
         // must compensate when using invariant sketch elements
