@@ -432,6 +432,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 3 * barsInfo.maxBars
             )
             this.last = this.seq.first + this.seqTerms - 1
+            this.seq.fill(this.last)
             this.collectFailed = true // trigger recollect
         }
 
