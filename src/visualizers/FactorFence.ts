@@ -504,41 +504,37 @@ class FactorFence extends P5Visualizer(paramDesc) {
         moveOver.mult(myIndex - this.first)
         barStart.add(moveOver)
 
-        const barDiagPlaceholder = this.sketch.createVector(recWidth, 1)
-        // draw a one pixel high placeholder bar for 0/1/-1
-        if (myTerm === 0n || myTerm === 1n || myTerm === -1n) {
-            this.grad_rect(
-                barStart.x,
-                barStart.y,
-                barDiagPlaceholder.x,
-                barDiagPlaceholder.y,
-                this.palette.gradientBar.top,
-                this.palette.gradientBar.bottom
+        // special cases with no factors
+        if (factors.length == 0) {
+            const barDiagPlaceholder = this.sketch.createVector(recWidth, 1)
+            if (myTerm === 0n || myTerm === 1n || myTerm === -1n) {
+                // draw a one pixel high placeholder bar for 0/1/-1
+                this.grad_rect(
+                    barStart.x,
+                    barStart.y,
+                    barDiagPlaceholder.x,
+                    barDiagPlaceholder.y,
+                    this.palette.gradientBar.top,
+                    this.palette.gradientBar.bottom
+                )
+            } else {
+                // draw a question mark for unknown factorizations
+                this.sketch.textSize(this.textSize / this.scaleFactor)
+                this.sketch.text('?', barStart.x - 1, barStart.y)
+            }
+            // set the mouse prime as none if we are in this area
+            this.mousePrimeSet(
+                barDiagPlaceholder,
+                barStart,
+                myIndex,
+                mySign,
+                1n
             )
             // in case no bars on screen, lowestBar must be set somewhere
             this.lowestBar = Math.max(this.lowestBar, barStart.y)
-
-            // set the mouse to show empty factorization
-            this.mouseSet(barDiagPlaceholder, barStart, myIndex, mySign, 1n)
         }
 
-        // draw a question mark for unknown factorizations
-        if (
-            factors.length == 0
-            && myTerm !== 0n
-            && myTerm !== 1n
-            && myTerm !== -1n
-        ) {
-            this.sketch.textSize(this.textSize / this.scaleFactor)
-            this.sketch.text('?', barStart.x - 1, barStart.y)
-            // in case no bars on screen, lowestBar must be set somewhere
-            this.lowestBar = Math.max(this.lowestBar, barStart.y)
-
-            // set the mouse to show empty factorization
-            this.mouseSet(barDiagPlaceholder, barStart, myIndex, mySign, 1n)
-        }
-
-        // check if we are below the graph
+        // check if we are below the graph, if so set mouse prime none
         const barDiagBelow = this.sketch.createVector(
             recWidth,
             this.sketch.height - this.graphCorner.y
@@ -547,7 +543,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
             barStart.x,
             this.sketch.height
         )
-        this.mouseSet(barDiagBelow, barStartBelow, myIndex, mySign, 1n)
+        this.mousePrimeSet(barDiagBelow, barStartBelow, myIndex, mySign, 1n)
 
         for (const primeIsHigh of [true, false]) {
             // first we do this with primeIsHigh = true
@@ -579,7 +575,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     )
 
                     // check where mouse is
-                    this.mouseSet(
+                    this.mousePrimeSet(
                         barDiag,
                         barStart,
                         myIndex,
@@ -619,15 +615,15 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 }
             }
         }
-        // check if we are above the graph
+        // check if we are above the graph, if so set mouse prime none
         const barDiagAbove = this.sketch.createVector(
             recWidth,
             this.sketch.height
         )
-        this.mouseSet(barDiagAbove, barStart, myIndex, mySign, 1n)
+        this.mousePrimeSet(barDiagAbove, barStart, myIndex, mySign, 1n)
     }
 
-    mouseSet(
+    mousePrimeSet(
         barDiag: p5.Vector,
         barStart: p5.Vector,
         myIndex: number,
@@ -650,7 +646,14 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 this.mousePrime = prime
             }
             this.mouseIndex = myIndex
-            this.mouseOn = true
+            // mouseOn determines if the factorization text shows
+            if (
+                this.sketch.mouseY >= 0
+                && this.sketch.mouseY <= this.sketch.height
+                && this.sketch.mouseX >= 0
+                && this.sketch.mouseX <= this.sketch.width
+            )
+                this.mouseOn = true
         }
     }
 
@@ -775,7 +778,11 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 first = false
             }
             if (factorizationPrimes.length == 0 && myTerm * mySign >= 2n) {
-                this.sketch.text('(no factorization)', textLeft, textBottom)
+                this.sketch.text(
+                    '(factorization unknown)',
+                    textLeft,
+                    textBottom
+                )
             }
         } else {
             // make sure mouseover disappears when not on graph
