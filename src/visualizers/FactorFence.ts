@@ -724,6 +724,21 @@ class FactorFence extends P5Visualizer(paramDesc) {
         return false
     }
 
+    textCareful(text: string, textLeft: number, textBottom: number) {
+        const overflow =
+            this.sketch.textWidth(text) - this.sketch.width + textLeft
+        let newText = text
+        if (overflow > 0) {
+            const surplusCharacters =
+                Math.ceil(overflow / this.sketch.textWidth('1')) + 3
+            newText =
+                text.substring(0, text.length - surplusCharacters) + '...'
+            this.sketch.text(newText, textLeft, textBottom)
+        } else {
+            this.sketch.text(text, textLeft, textBottom)
+        }
+    }
+
     bottomText() {
         // text size and position
         this.sketch.textSize(this.textSize / this.scaleFactor)
@@ -775,7 +790,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 + ' = '
                 + this.seq.getElement(this.mouseIndex).toString()
             this.sketch.fill(infoColors[0])
-            this.sketch.text(infoLineStart, textLeft, textBottom)
+            this.textCareful(infoLineStart, textLeft, textBottom)
             textBottom += lineHeight
 
             if (!this.isTrivial(myTerm)) {
@@ -799,7 +814,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 for (const prime of factorizationPrimes) {
                     if (!first) {
                         this.sketch.fill(infoColors[0])
-                        this.sketch.text('×', textLeft, textBottom)
+                        this.textCareful('×', textLeft, textBottom)
                         textLeft += this.sketch.textWidth('×') + 1
                     }
 
@@ -810,7 +825,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                               ? this.palette.gradientHighlight.bottom
                               : this.palette.gradientBar.bottom
                     )
-                    this.sketch.text(prime.toString(), textLeft, textBottom)
+                    this.textCareful(prime.toString(), textLeft, textBottom)
                     textLeft += this.sketch.textWidth(prime.toString()) + 1
                     first = false
                 }
