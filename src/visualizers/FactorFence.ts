@@ -527,21 +527,23 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 // times scaling parameter
                 const recHeight =
                     mySign
-                    * BigLog(myTerm * BigInt(mySign))
+                    * (myTerm < 0 ? BigLog(-myTerm) : BigLog(myTerm))
                     * this.heightScale
 
                 // figure out upper right corner
                 const barDiag = this.sketch.createVector(recWidth, recHeight)
 
                 // draw the rectangle
+                //const emptyColor = this.palette.backgroundColor
+                const emptyColor = this.palette.gradientBar.top
                 this.grad_rect(
                     barStart.x,
                     barStart.y,
                     barDiag.x,
                     barDiag.y,
-                    this.palette.backgroundColor,
-                    this.palette.backgroundColor,
-                    true
+                    emptyColor,
+                    emptyColor,
+                    false
                 )
                 this.lowestBar = Math.max(
                     barStart.y,
@@ -725,6 +727,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     bottomText() {
         // text size and position
         this.sketch.textSize(this.textSize / this.scaleFactor)
+        this.sketch.strokeWeight(0) // no outline
         let textLeft = this.textLeft / this.scaleFactor
 
         // spacing between lines
@@ -849,7 +852,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.sketch.drawingContext.fillStyle = barGradient
         if (edge) {
             this.sketch.strokeWeight(1)
-            this.sketch.stroke(this.palette.gradientBar.top)
+            this.sketch.stroke(this.palette.gradientBar.bottom)
         } else {
             this.sketch.strokeWeight(0)
         }
