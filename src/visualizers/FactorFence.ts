@@ -724,16 +724,30 @@ class FactorFence extends P5Visualizer(paramDesc) {
         return false
     }
 
-    textCareful(text: string, textLeft: number, textBottom: number) {
+    textCareful(
+        text: string,
+        textLeft: number,
+        textBottom: number,
+        showDigits: boolean
+    ) {
+        if (textLeft > this.sketch.width) return
         const overflow =
             this.sketch.textWidth(text) - this.sketch.width + textLeft
-        let newText = text
-        if (textLeft > this.sketch.width) return
         if (overflow > 0) {
-            const surplusCharacters =
+            let surplusCharacters =
                 Math.ceil(overflow / this.sketch.textWidth('1')) + 3
-            newText =
+            let digitCount = 0
+            if (showDigits) {
+                const textNoSign = text
+                textNoSign.replace('-', '')
+                digitCount = textNoSign.length
+                const digitCountDigitCount = digitCount.toString().length
+                surplusCharacters += digitCountDigitCount + 9 // space for dig's
+            }
+            let newText =
                 text.substring(0, text.length - surplusCharacters) + '...'
+            if (showDigits)
+                newText += '[' + digitCount.toString() + ' digits]'
             this.sketch.text(newText, textLeft, textBottom)
         } else {
             this.sketch.text(text, textLeft, textBottom)
@@ -791,7 +805,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 + ' = '
                 + this.seq.getElement(this.mouseIndex).toString()
             this.sketch.fill(infoColors[0])
-            this.textCareful(infoLineStart, textLeft, textBottom)
+            this.textCareful(infoLineStart, textLeft, textBottom, true)
             textBottom += lineHeight
 
             if (!this.isTrivial(myTerm)) {
@@ -815,7 +829,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 for (const prime of factorizationPrimes) {
                     if (!first) {
                         this.sketch.fill(infoColors[0])
-                        this.textCareful('×', textLeft, textBottom)
+                        this.textCareful('×', textLeft, textBottom, false)
                         textLeft += this.sketch.textWidth('×') + 1
                     }
 
@@ -826,7 +840,12 @@ class FactorFence extends P5Visualizer(paramDesc) {
                               ? this.palette.gradientHighlight.bottom
                               : this.palette.gradientBar.bottom
                     )
-                    this.textCareful(prime.toString(), textLeft, textBottom)
+                    this.textCareful(
+                        prime.toString(),
+                        textLeft,
+                        textBottom,
+                        false
+                    )
                     textLeft += this.sketch.textWidth(prime.toString()) + 1
                     first = false
                 }
