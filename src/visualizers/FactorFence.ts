@@ -388,11 +388,11 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
         if (this.sketch.keyIsDown(85)) {
             // stretch up U
-            this.heightScale += 1
+            this.heightScale *= 1.03
         }
         if (this.sketch.keyIsDown(79)) {
             // contract down O
-            this.heightScale -= 1
+            this.heightScale *= 0.97
         }
     }
 
@@ -746,23 +746,63 @@ class FactorFence extends P5Visualizer(paramDesc) {
             this.sketch.height / this.scaleFactor - 4 * lineHeight
         )
 
-        // always visible static text info, line by line
-        const info = [
-            'Click select; arrow keys to move; U/O stretch; I/K raise/lower',
-            'Highlighting prime factors of ' + this.highlight.toString(),
-        ]
-
         // colours match graph colours
         const infoColors = [
             this.palette.gradientMouse.bottom,
             this.palette.gradientHighlight.bottom,
         ]
 
-        // display static info line by line
-        for (let i = 0; i < info.length; i++) {
-            this.sketch.fill(infoColors[i])
-            this.sketch.text(info[i], textLeft, textBottom)
-            textBottom += lineHeight
+        // always visible static text info, line by line
+        // boolean represents whether to line break
+        const info = [
+            {text: 'Click select; ', color: infoColors[0], linebreak: false},
+            {
+                text: 'arrow keys to move',
+                color:
+                    this.sketch.keyIsDown(this.sketch.UP_ARROW)
+                    || this.sketch.keyIsDown(this.sketch.DOWN_ARROW)
+                    || this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
+                    || this.sketch.keyIsDown(this.sketch.LEFT_ARROW)
+                        ? infoColors[1]
+                        : infoColors[0],
+                linebreak: false,
+            },
+            {text: '; ', color: infoColors[0], linebreak: false},
+            {
+                text: 'U/O stretch',
+                color:
+                    this.sketch.keyIsDown(85) || this.sketch.keyIsDown(79)
+                        ? infoColors[1]
+                        : infoColors[0],
+                linebreak: false,
+            },
+            {text: '; ', color: infoColors[0], linebreak: false},
+            {
+                text: 'I/K raise/lower',
+                color:
+                    this.sketch.keyIsDown(73) || this.sketch.keyIsDown(75)
+                        ? infoColors[1]
+                        : infoColors[0],
+                linebreak: true,
+            },
+            {
+                text:
+                    'Highlighting prime factors of '
+                    + this.highlight.toString(),
+                color: infoColors[0],
+                linebreak: true,
+            },
+        ]
+
+        // display mouse invariant info
+        for (const item of info) {
+            this.sketch.fill(item.color)
+            this.sketch.text(item.text, textLeft, textBottom)
+            textLeft += this.sketch.textWidth(item.text)
+            if (item.linebreak) {
+                textBottom += lineHeight
+                textLeft = this.textLeft / this.scaleFactor
+            }
         }
 
         // factorization text shown upon mouseover of graph
