@@ -142,8 +142,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
     // mouse control
     private mousePrime = 1n
-    private mouseOn = false // mouse on graph
-    private mouseIndex = 0 // term mouse is hovering over
+    private mouseIndex = NaN // term mouse is hovering over
 
     // store factorizations
     private factorizations: Bar[][] = []
@@ -441,8 +440,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // like text
         this.sketch.scale(this.scaleFactor)
 
-        this.mouseOn = false // flag mouse is not on graph by default
-
         // try again if need more terms from cache
         if (this.collectFailed) {
             this.collectDataForScale(barsInfo, {
@@ -455,14 +452,36 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.firstFailure = this.storeFactors(barsInfo)
         this.lowestBar = 0
 
+        this.mouseIndex = NaN
+        // Determine what the mouse is over, if anything:
+        const {mouseX, mouseY} = this.sketch
+        if (
+            mouseX >= 0
+            && mouseX < this.sketch.width
+            && mouseY >= 0
+            && mouseY <= this.sketch.height
+        ) {
+            const horiz = mouseX / this.scaleFactor - this.graphCorner.x
+            if (horiz % recSpace.x < recWidth) {
+                const rawIndex = Math.floor(horiz / recSpace.x) + this.first
+                if (
+                    rawIndex >= barsInfo.minBars
+                    && rawIndex <= barsInfo.maxBars
+                ) {
+                    this.mouseIndex = rawIndex
+                    // draw that bar first to find the prime, if any:
+                    this.mousePrime = 1n
+                    this.drawTerm(rawIndex, 'extract prime')
+                }
+            }
+        }
         // loop through the terms of the seq and draw the bars for each
         for (
             let myIndex = barsInfo.minBars;
             myIndex <= barsInfo.maxBars;
             myIndex++
         ) {
-            // note that this also watches for mouseover as each bar
-            // is drawn, and updates this.lowestBar
+            // Note the drawTerm function also updates this.lowestBar
             this.drawTerm(myIndex)
         }
 
@@ -480,7 +499,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
     }
 
-    drawTerm(myIndex: number) {
+    drawTerm(myIndex: number, extractPrime?: string) {
         // This function draws the full stacked bars for a single term
         // Input is index of the term
         const myTerm = this.seq.getElement(myIndex)
@@ -504,6 +523,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         moveOver.mult(myIndex - this.first)
         barStart.add(moveOver)
 
+        // Now draw the bar:
         // special cases with no factors
         if (factors.length == 0) {
             const barDiagPlaceholder = this.sketch.createVector(recWidth, 1)
@@ -551,33 +571,20 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     this.lowestBar
                 )
             }
-            // set the mouse prime as none if we are in this area
-            this.mousePrimeSet(
-                barDiagPlaceholder,
-                barStart,
-                myIndex,
-                mySign,
-                1n
-            )
+            return
         }
 
-        // check if we are below the graph, if so set mouse prime none
-        const barDiagBelow = this.sketch.createVector(
-            recWidth,
-            this.sketch.height - this.graphCorner.y
-        )
-        const barStartBelow = this.sketch.createVector(
-            barStart.x,
-            this.sketch.height
-        )
-        this.mousePrimeSet(barDiagBelow, barStartBelow, myIndex, mySign, 1n)
-
+        // The "usual" case: draw a stack of bars
         for (const primeIsHigh of [true, false]) {
             // first we do this with primeIsHigh = true
             // (that means a highlighted prime is at hand)
             // then with primeIsHigh = false
             // in this way the highlighted primes sit
             // at the bottom of the stack
+
+            // But if we are not highlighting anything, don't bother checking
+            // all the primes.
+            if (primeIsHigh && this.highlight < 2n) continue
 
             // loop through factor to draw for this term
             // from smaller to larger
@@ -602,13 +609,14 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     )
 
                     // check where mouse is
-                    this.mousePrimeSet(
-                        barDiag,
-                        barStart,
-                        myIndex,
-                        mySign,
-                        factor.prime
-                    )
+                    if (extractPrime) {
+                        this.mousePrimeSet(
+                            recHeight,
+                            barStart,
+                            mySign,
+                            factor.prime
+                        )
+                    }
 
                     // set colour gradient for rectangle
                     let gradient = this.palette.gradientBar
@@ -643,46 +651,21 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 }
             }
         }
-        // check if we are above the graph, if so set mouse prime none
-        const barDiagAbove = this.sketch.createVector(
-            recWidth,
-            this.sketch.height
-        )
-        this.mousePrimeSet(barDiagAbove, barStart, myIndex, mySign, 1n)
     }
 
     mousePrimeSet(
-        barDiag: p5.Vector,
+        barHeight: number,
         barStart: p5.Vector,
-        myIndex: number,
         mySign: number,
         prime: bigint
     ) {
         // if the mouse is over the rectangle being drawn
         // then we make note of the prime factor
         // and term we are hovering over
-        const testVec = this.sketch.createVector(
-            this.sketch.mouseX,
-            this.sketch.mouseY
-        )
-        testVec.mult(1 / this.scaleFactor).sub(barStart)
-        testVec.y = testVec.y * mySign
-        const barDiagAbs = barDiag.copy()
-        barDiagAbs.y = -barDiagAbs.y * mySign
-        if (testVec.x >= 0 && testVec.x <= barDiagAbs.x) {
-            if (testVec.y <= 0 && testVec.y >= barDiagAbs.y) {
-                this.mousePrime = prime
-            }
-            this.mouseIndex = myIndex
-            // mouseOn determines if the factorization text shows
-            if (
-                this.sketch.mouseY >= 0
-                && this.sketch.mouseY <= this.sketch.height
-                && this.sketch.mouseX >= 0
-                && this.sketch.mouseX <= this.sketch.width
-            )
-                this.mouseOn = true
-        }
+        const mouseV =
+            mySign * (this.sketch.mouseY / this.scaleFactor - barStart.y)
+        const barLimit = -barHeight * mySign
+        if (mouseV <= 0 && mouseV >= barLimit) this.mousePrime = prime
     }
 
     resetLoop() {
@@ -788,40 +771,39 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
 
         // factorization text shown upon mouseover of graph
-        if (this.mouseOn) {
-            const factorizationPrimes = this.factorizations[
-                this.mouseIndex
-            ].map(factor => factor.prime)
+        const mIndex = this.mouseIndex
+        if (!isNaN(mIndex)) {
+            const factorizationPrimes = this.factorizations[mIndex].map(
+                factor => factor.prime
+            )
 
             // term and sign
-            const myTerm = this.seq.getElement(this.mouseIndex)
-            let mySign = 1n
-            if (myTerm < 0n) mySign = -1n
+            const mTerm = this.seq.getElement(mIndex)
+            let mSign = 1n
+            if (mTerm < 0n) mSign = -1n
 
             // display mouseover info line
-            const infoLineFunction = 'S(' + this.mouseIndex.toString() + ')'
-            const infoLineStart =
-                infoLineFunction
-                + ' = '
-                + this.seq.getElement(this.mouseIndex).toString()
+            const infoLineFunction = `S(${mIndex})`
+            const infoLineStart = `${infoLineFunction} = `
             this.sketch.fill(infoColors[0])
-            this.textCareful(infoLineStart, textLeft, textBottom, true)
+            this.textCareful(infoLineStart, textLeft, textBottom, false)
+            textLeft += this.sketch.textWidth(infoLineStart)
+            this.textCareful(mTerm.toString(), textLeft, textBottom, true)
             textBottom += lineHeight
 
-            if (!this.isTrivial(myTerm)) {
+            if (!this.isTrivial(mTerm)) {
                 const infoLineContinue = ' = '
                 textLeft = this.textLeft / this.scaleFactor
                 textLeft += this.sketch.textWidth(infoLineFunction)
                 this.sketch.text(infoLineContinue, textLeft, textBottom)
                 textLeft += this.sketch.textWidth(infoLineContinue) + 1
 
-                if (factorizationPrimes.length == 0 && myTerm * mySign < 2n) {
-                    const eltString =
-                        this.seq.getElement(this.mouseIndex).toString() + ' '
+                if (factorizationPrimes.length == 0 && mTerm * mSign < 2n) {
+                    const eltString = mTerm.toString() + ' '
                     this.sketch.text(eltString, textLeft, textBottom)
                     textLeft += this.sketch.textWidth(eltString) + 1
                 }
-                if (mySign < 0n && factorizationPrimes.length > 0) {
+                if (mSign < 0n && factorizationPrimes.length > 0) {
                     this.sketch.text('-', textLeft, textBottom)
                     textLeft += this.sketch.textWidth('-') + 1
                 }
@@ -849,10 +831,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     textLeft += this.sketch.textWidth(prime.toString()) + 1
                     first = false
                 }
-                if (
-                    factorizationPrimes.length == 0
-                    && myTerm * mySign >= 2n
-                ) {
+                if (factorizationPrimes.length == 0 && mTerm * mSign >= 2n) {
                     this.sketch.text(
                         '(factorization unknown)',
                         textLeft,
@@ -860,9 +839,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     )
                 }
             }
-        } else {
-            // make sure mouseover disappears when not on graph
-            this.mousePrime = 1n
         }
     }
 
