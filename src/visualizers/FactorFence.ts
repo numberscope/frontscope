@@ -526,14 +526,13 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // Now draw the bar:
         // special cases with no factors
         if (factors.length == 0) {
-            const barDiagPlaceholder = this.sketch.createVector(recWidth, 1)
             if (this.isTrivial(myTerm)) {
                 // draw a one pixel high placeholder bar for 0/1/-1
                 this.grad_rect(
                     barStart.x,
                     barStart.y,
-                    barDiagPlaceholder.x,
-                    barDiagPlaceholder.y,
+                    recWidth,
+                    1,
                     this.palette.gradientBar.top,
                     this.palette.gradientBar.bottom,
                     false
@@ -550,24 +549,20 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     * (myTerm < 0 ? BigLog(-myTerm) : BigLog(myTerm))
                     * this.heightScale
 
-                // figure out upper right corner
-                const barDiag = this.sketch.createVector(recWidth, recHeight)
-
                 // draw the rectangle
-                //const emptyColor = this.palette.backgroundColor
                 const emptyColor = this.palette.gradientBar.top
                 this.grad_rect(
                     barStart.x,
                     barStart.y,
-                    barDiag.x,
-                    barDiag.y,
+                    recWidth,
+                    recHeight,
                     emptyColor,
                     emptyColor,
                     false
                 )
                 this.lowestBar = Math.max(
                     barStart.y,
-                    barStart.y - barDiag.y,
+                    barStart.y - recHeight,
                     this.lowestBar
                 )
             }
@@ -602,12 +597,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     // times scaling parameter
                     const recHeight = mySign * factor.log * this.heightScale
 
-                    // figure out upper right corner
-                    const barDiag = this.sketch.createVector(
-                        recWidth,
-                        recHeight
-                    )
-
                     // check where mouse is
                     if (extractPrime) {
                         this.mousePrimeSet(
@@ -633,21 +622,20 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     this.grad_rect(
                         barStart.x,
                         barStart.y,
-                        barDiag.x,
-                        barDiag.y,
+                        recWidth,
+                        recHeight,
                         topColor,
                         bottomColor,
                         false
                     )
                     this.lowestBar = Math.max(
                         barStart.y,
-                        barStart.y - barDiag.y,
+                        barStart.y - recHeight,
                         this.lowestBar
                     )
 
                     // move up in preparation for next bar
-                    const moveUp = this.sketch.createVector(0, -recHeight)
-                    barStart.add(moveUp)
+                    barStart.y -= recHeight
                 }
             }
         }
