@@ -517,13 +517,15 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // determine where to put lower left corner of graph
         const barStart = this.graphCorner.copy()
+        // for negative terms, bar should extend below "empty" axis
+        if (mySign < 0 || myTerm == 0n) barStart.add(new p5.Vector(0, 1))
 
         // move over based on which term
         const moveOver = recSpace.copy()
         moveOver.mult(myIndex - this.first)
         barStart.add(moveOver)
 
-        // Now draw the bar:
+        // Now draw the bars:
         // special cases with no factors
         if (factors.length == 0) {
             if (this.isTrivial(myTerm)) {
@@ -532,7 +534,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     barStart.x,
                     barStart.y,
                     recWidth,
-                    1,
+                    mySign,
                     this.palette.gradientBar.top,
                     this.palette.gradientBar.bottom,
                     false
@@ -570,6 +572,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
 
         // The "usual" case: draw a stack of bars
+
         for (const primeIsHigh of [true, false]) {
             // first we do this with primeIsHigh = true
             // (that means a highlighted prime is at hand)
@@ -771,7 +774,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
             if (mTerm < 0n) mSign = -1n
 
             // display mouseover info line
-            const infoLineFunction = `S(${mIndex})`
+            const infoLineFunction = `a(${mIndex})`
             const infoLineStart = `${infoLineFunction} = `
             this.sketch.fill(infoColors[0])
             this.textCareful(infoLineStart, textLeft, textBottom, false)
