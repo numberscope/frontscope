@@ -706,10 +706,20 @@ class FactorFence extends P5Visualizer(paramDesc) {
     ) {
         if (textLeft > this.sketch.width) return
         const overflow =
-            this.sketch.textWidth(text) - this.sketch.width + textLeft
+            this.sketch.textWidth(text) * this.scaleFactor
+            - this.sketch.width
+            + textLeft * this.scaleFactor
         if (overflow > 0) {
+            console.log(
+                this.scaleFactor,
+                this.sketch.textWidth(text),
+                this.sketch.width,
+                textLeft
+            )
             let surplusCharacters =
-                Math.ceil(overflow / this.sketch.textWidth('1')) + 3
+                Math.ceil(
+                    overflow / this.scaleFactor / this.sketch.textWidth('1')
+                ) + 3
             let digitCount = 0
             if (showDigits) {
                 const textNoSign = text
