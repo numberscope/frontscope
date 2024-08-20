@@ -710,12 +710,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
             - this.sketch.width
             + textLeft * this.scaleFactor
         if (overflow > 0) {
-            console.log(
-                this.scaleFactor,
-                this.sketch.textWidth(text),
-                this.sketch.width,
-                textLeft
-            )
             let surplusCharacters =
                 Math.ceil(
                     overflow / this.scaleFactor / this.sketch.textWidth('1')
