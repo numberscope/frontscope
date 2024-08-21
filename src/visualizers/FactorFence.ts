@@ -704,7 +704,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         textBottom: number,
         showDigits: boolean
     ) {
-        if (textLeft > this.sketch.width) return
+        if (textLeft * this.scaleFactor > this.sketch.width) return
         const overflow =
             this.sketch.textWidth(text) * this.scaleFactor
             - this.sketch.width
@@ -895,6 +895,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         )
         barGradient.addColorStop(0, colorTop)
         barGradient.addColorStop(1, colorBottom)
+        const fillStyle = this.sketch.drawingContext.fillStyle
         this.sketch.drawingContext.fillStyle = barGradient
         if (edge) {
             this.sketch.strokeWeight(1)
@@ -903,6 +904,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
             this.sketch.strokeWeight(0)
         }
         this.sketch.rect(x, y - height, width, height)
+        this.sketch.drawingContext.fillStyle = fillStyle
     }
 }
 
