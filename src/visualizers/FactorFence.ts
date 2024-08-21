@@ -787,9 +787,10 @@ class FactorFence extends P5Visualizer(paramDesc) {
             },
             {
                 text:
-                    'Highlighting prime factors of '
+                    'Highlighting (and sinking to bottom of bars)'
+                    + 'all prime factors of '
                     + this.highlight.toString(),
-                color: infoColors[0],
+                color: infoColors[1],
                 linebreak: true,
             },
         ]
@@ -808,9 +809,17 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // factorization text shown upon mouseover of graph
         const mIndex = this.mouseIndex
         if (!isNaN(mIndex)) {
-            const factorizationPrimes = this.factorizations[mIndex].map(
+            const factorizationPrimesRaw = this.factorizations[mIndex].map(
                 factor => factor.prime
             )
+            // move the highlighted primes first
+            const highlightedPrimes = factorizationPrimesRaw.filter(
+                prime => Number(modulo(this.highlight, prime)) === 0
+            )
+            const otherPrimes = factorizationPrimesRaw.filter(
+                prime => Number(modulo(this.highlight, prime)) !== 0
+            )
+            const factorizationPrimes = [...highlightedPrimes, ...otherPrimes]
 
             // term and sign
             const mTerm = this.seq.getElement(mIndex)
