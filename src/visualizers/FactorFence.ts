@@ -788,7 +788,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
             {
                 text:
                     'Highlighting (and sinking to bottom of bars)'
-                    + 'all prime factors of '
+                    + ' all prime factors of '
                     + this.highlight.toString(),
                 color: infoColors[1],
                 linebreak: true,
