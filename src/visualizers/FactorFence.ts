@@ -807,6 +807,10 @@ class FactorFence extends P5Visualizer(paramDesc) {
             this.sketch.text('(factorization unknown)', textLeft, textBottom)
             return
         }
+        if (reorderedFactors.length === 1) {
+            this.sketch.text('(prime)', textLeft, textBottom)
+            return
+        }
         if (mSign < 0n) {
             this.sketch.text('-', textLeft, textBottom)
             textLeft += this.sketch.textWidth('-') + 1
