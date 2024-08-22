@@ -17,6 +17,7 @@ import {
     safeNumber,
     floorSqrt,
     modulo,
+    divides,
     powmod,
     natlog
 } from '../shared/math'
@@ -36,6 +37,9 @@ const negativeTwo: bigint = floorSqrt(-2n)
 
 const three: bigint = modulo(-7n, 5)
 const two: bigint = modulo(7, 5n)
+
+const isFactor: boolean = divides(6, 24n) // true
+const isntFactor: boolean = divides(7n, 12) // false
 
 const six: bigint = powmod(6, 2401n, 7n)
 // n to the p is congruent to n mod a prime p,
@@ -99,6 +103,19 @@ export function modulo(n: number | bigint, modulus: number | bigint): bigint {
     }
     const result = bn % bmodulus
     return result < 0n ? result + bmodulus : result
+}
+
+/** md
+#### divides(a: number| bigint, b: number | bigint): boolean
+
+Returns true if and only if the integer _a_ divides (evenly into) the integer
+_b_.
+**/
+export function divides(a: number | bigint, b: number | bigint): boolean {
+    let an = BigInt(a)
+    if (an === 0n) return b >= 0 && b <= 0
+    if (an < 0n) an = -an
+    return modulo(b, a) === 0n
 }
 
 /** md

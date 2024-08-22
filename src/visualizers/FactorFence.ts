@@ -4,7 +4,7 @@ import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
 import {ParamType} from '../shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
-import {modulo} from '../shared/math'
+import {divides} from '../shared/math'
 
 /** md
 # Factor Fence Visualizer
@@ -122,6 +122,20 @@ const paramDesc = {
 interface Bar {
     prime: bigint
     log: number
+    highlighted?: boolean
+}
+
+// "sort" a list of Bars so that the divisors of a given number come first
+// also labels the divisors as highlighted
+function divisorsFirst(bars: Bar[], n: bigint) {
+    const divisors: Bar[] = []
+    const nondivisors: Bar[] = []
+    bars.forEach(bar => {
+        bar.highlighted = divides(bar.prime, n)
+        ;(bar.highlighted ? divisors : nondivisors).push(bar)
+    })
+    divisors.push(...nondivisors)
+    return divisors
 }
 
 // data on which bars on screen
@@ -135,6 +149,9 @@ interface BarsData {
 const recWidth = 12
 // Shift from one bar to the next:
 const recSpace = new p5.Vector(recWidth + 2, 0)
+
+// helper function
+const isTrivial = (term: bigint) => term > -2n && term < 2n
 
 class FactorFence extends P5Visualizer(paramDesc) {
     static category = 'FactorFence'
@@ -227,7 +244,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
             if (elt < 0n && this.signs) sig = -1n
             if (elt < 0n && !this.signs) elt = -1n * elt
             // in case elt = 0, store 1
-            if (elt == 0n) elt = 1n
+            if (elt === 0n) elt = 1n
 
             // store height of bar (log) but with sign info
             return BigLog(elt * sig) * Number(sig)
@@ -453,6 +470,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.lowestBar = 0
 
         this.mouseIndex = NaN
+        this.mousePrime = 1n
         // Determine what the mouse is over, if anything:
         const {mouseX, mouseY} = this.sketch
         if (
@@ -470,7 +488,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 ) {
                     this.mouseIndex = rawIndex
                     // draw that bar first to find the prime, if any:
-                    this.mousePrime = 1n
                     this.drawTerm(rawIndex, 'extract prime')
                 }
             }
@@ -504,10 +521,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // Input is index of the term
         const myTerm = this.seq.getElement(myIndex)
 
-        // set colours
-        let bottomColor = this.palette.gradientBar.bottom
-        let topColor = this.palette.gradientBar.top
-
         // get sign of term
         let mySign = 1
         if (myTerm < 0 && this.signs) mySign = -1
@@ -518,7 +531,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // determine where to put lower left corner of graph
         const barStart = this.graphCorner.copy()
         // for negative terms, bar should extend below "empty" axis
-        if (mySign < 0 || myTerm == 0n) barStart.add(new p5.Vector(0, 1))
+        if (mySign < 0 || myTerm === 0n) barStart.add(new p5.Vector(0, 1))
 
         // move over based on which term
         const moveOver = recSpace.copy()
@@ -527,8 +540,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // Now draw the bars:
         // special cases with no factors
-        if (factors.length == 0) {
-            if (this.isTrivial(myTerm)) {
+        if (factors.length === 0) {
+            if (isTrivial(myTerm)) {
                 // draw a one pixel high placeholder bar for 0/1/-1
                 this.grad_rect(
                     barStart.x,
@@ -536,8 +549,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     recWidth,
                     mySign,
                     this.palette.gradientBar.top,
-                    this.palette.gradientBar.bottom,
-                    false
+                    this.palette.gradientBar.bottom
                 )
                 // in case no bars on screen, lowestBar must be set somewhere
                 this.lowestBar = Math.max(this.lowestBar, barStart.y)
@@ -559,8 +571,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     recWidth,
                     recHeight,
                     emptyColor,
-                    emptyColor,
-                    false
+                    emptyColor
                 )
                 this.lowestBar = Math.max(
                     barStart.y,
@@ -572,75 +583,38 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
 
         // The "usual" case: draw a stack of bars
-
-        for (const primeIsHigh of [true, false]) {
-            // first we do this with primeIsHigh = true
-            // (that means a highlighted prime is at hand)
-            // then with primeIsHigh = false
-            // in this way the highlighted primes sit
-            // at the bottom of the stack
-
-            // But if we are not highlighting anything, don't bother checking
-            // all the primes.
-            if (primeIsHigh && this.highlight < 2n) continue
-
-            // loop through factor to draw for this term
-            // from smaller to larger
-            for (const factor of factors) {
-                // Select the primes based on primeIsHigh flag
-                // First time through the loop we only draw highlighted primes
-                // Second time we draw everything else
-                if (
-                    (primeIsHigh
-                        && Number(modulo(this.highlight, factor.prime)) === 0)
-                    || (!primeIsHigh
-                        && Number(modulo(this.highlight, factor.prime)) !== 0)
-                ) {
-                    // height of rectangle is log of factor
-                    // times scaling parameter
-                    const recHeight = mySign * factor.log * this.heightScale
-
-                    // check where mouse is
-                    if (extractPrime) {
-                        this.mousePrimeSet(
-                            recHeight,
-                            barStart,
-                            mySign,
-                            factor.prime
-                        )
-                    }
-
-                    // set colour gradient for rectangle
-                    let gradient = this.palette.gradientBar
-                    if (primeIsHigh) {
-                        gradient = this.palette.gradientHighlight
-                    }
-                    if (factor.prime == this.mousePrime) {
-                        gradient = this.palette.gradientMouse
-                    }
-                    bottomColor = gradient.bottom
-                    topColor = gradient.top
-
-                    // draw the rectangle
-                    this.grad_rect(
-                        barStart.x,
-                        barStart.y,
-                        recWidth,
-                        recHeight,
-                        topColor,
-                        bottomColor,
-                        false
-                    )
-                    this.lowestBar = Math.max(
-                        barStart.y,
-                        barStart.y - recHeight,
-                        this.lowestBar
-                    )
-
-                    // move up in preparation for next bar
-                    barStart.y -= recHeight
-                }
+        for (const factor of divisorsFirst(factors, this.highlight)) {
+            const recHeight = mySign * factor.log * this.heightScale
+            // check where mouse is
+            if (extractPrime) {
+                this.mousePrimeSet(recHeight, barStart, mySign, factor.prime)
             }
+
+            // set colour gradient for rectangle
+            let gradient = factor.highlighted
+                ? this.palette.gradientHighlight
+                : this.palette.gradientBar
+            if (factor.prime === this.mousePrime) {
+                gradient = this.palette.gradientMouse
+            }
+
+            // draw the rectangle
+            this.grad_rect(
+                barStart.x,
+                barStart.y,
+                recWidth,
+                recHeight,
+                gradient.top,
+                gradient.bottom
+            )
+            this.lowestBar = Math.max(
+                barStart.y,
+                barStart.y - recHeight,
+                this.lowestBar
+            )
+
+            // move up in preparation for next bar
+            barStart.y -= recHeight
         }
     }
 
@@ -693,18 +667,14 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.resetLoop()
     }
 
-    isTrivial(term: bigint) {
-        if (term == 0n || term == 1n || term == -1n) return true
-        return false
-    }
-
+    // Displays text at given position, returning number of pixels used
     textCareful(
         text: string,
         textLeft: number,
         textBottom: number,
-        showDigits: boolean
+        showDigits?: boolean
     ) {
-        if (textLeft * this.scaleFactor > this.sketch.width) return
+        if (textLeft * this.scaleFactor > this.sketch.width) return 0
         const overflow =
             this.sketch.textWidth(text) * this.scaleFactor
             - this.sketch.width
@@ -727,16 +697,18 @@ class FactorFence extends P5Visualizer(paramDesc) {
             if (showDigits)
                 newText += '[' + digitCount.toString() + ' digits]'
             this.sketch.text(newText, textLeft, textBottom)
-        } else {
-            this.sketch.text(text, textLeft, textBottom)
+            return this.sketch.textWidth(newText)
         }
+        this.sketch.text(text, textLeft, textBottom)
+        return this.sketch.textWidth(text)
     }
 
     bottomText() {
         // text size and position
         this.sketch.textSize(this.textSize / this.scaleFactor)
         this.sketch.strokeWeight(0) // no outline
-        let textLeft = this.textLeft / this.scaleFactor
+        const leftMargin = this.textLeft / this.scaleFactor
+        let textLeft = leftMargin
 
         // spacing between lines
         const lineHeight = this.textInterval / this.scaleFactor
@@ -787,9 +759,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
             },
             {
                 text:
-                    'Highlighting (and sinking to bottom of bars)'
-                    + ' all prime factors of '
-                    + this.highlight.toString(),
+                    `Highlighting factors of ${this.highlight} `
+                    + '(and displaying them first)',
                 color: infoColors[1],
                 linebreak: true,
             },
@@ -802,87 +773,66 @@ class FactorFence extends P5Visualizer(paramDesc) {
             textLeft += this.sketch.textWidth(item.text)
             if (item.linebreak) {
                 textBottom += lineHeight
-                textLeft = this.textLeft / this.scaleFactor
+                textLeft = leftMargin
             }
         }
 
         // factorization text shown upon mouseover of graph
         const mIndex = this.mouseIndex
-        if (!isNaN(mIndex)) {
-            const factorizationPrimesRaw = this.factorizations[mIndex].map(
-                factor => factor.prime
-            )
-            // move the highlighted primes first
-            const highlightedPrimes = factorizationPrimesRaw.filter(
-                prime => Number(modulo(this.highlight, prime)) === 0
-            )
-            const otherPrimes = factorizationPrimesRaw.filter(
-                prime => Number(modulo(this.highlight, prime)) !== 0
-            )
-            const factorizationPrimes = [...highlightedPrimes, ...otherPrimes]
+        if (isNaN(mIndex)) return
+        const reorderedFactors = divisorsFirst(
+            this.factorizations[mIndex],
+            this.highlight
+        )
+        // term and sign
+        const mTerm = this.seq.getElement(mIndex)
+        let mSign = 1n
+        if (mTerm < 0n) mSign = -1n
 
-            // term and sign
-            const mTerm = this.seq.getElement(mIndex)
-            let mSign = 1n
-            if (mTerm < 0n) mSign = -1n
+        // display mouseover info line
+        const infoLineFunction = `a(${mIndex})`
+        const infoLineStart = `${infoLineFunction} = `
+        this.sketch.fill(infoColors[0])
+        textLeft += this.textCareful(infoLineStart, textLeft, textBottom)
+        this.textCareful(mTerm.toString(), textLeft, textBottom, true)
+        textBottom += lineHeight
 
-            // display mouseover info line
-            const infoLineFunction = `a(${mIndex})`
-            const infoLineStart = `${infoLineFunction} = `
-            this.sketch.fill(infoColors[0])
-            this.textCareful(infoLineStart, textLeft, textBottom, false)
-            textLeft += this.sketch.textWidth(infoLineStart)
-            this.textCareful(mTerm.toString(), textLeft, textBottom, true)
-            textBottom += lineHeight
+        if (isTrivial(mTerm)) return
 
-            if (!this.isTrivial(mTerm)) {
-                const infoLineContinue = ' = '
-                textLeft = this.textLeft / this.scaleFactor
-                textLeft += this.sketch.textWidth(infoLineFunction)
-                this.sketch.text(infoLineContinue, textLeft, textBottom)
-                textLeft += this.sketch.textWidth(infoLineContinue) + 1
+        const infoLineContinue = ' = '
+        textLeft = leftMargin + this.sketch.textWidth(infoLineFunction)
+        textLeft += this.textCareful(infoLineContinue, textLeft, textBottom)
 
-                if (factorizationPrimes.length == 0 && mTerm * mSign < 2n) {
-                    const eltString = mTerm.toString() + ' '
-                    this.sketch.text(eltString, textLeft, textBottom)
-                    textLeft += this.sketch.textWidth(eltString) + 1
-                }
-                if (mSign < 0n && factorizationPrimes.length > 0) {
-                    this.sketch.text('-', textLeft, textBottom)
-                    textLeft += this.sketch.textWidth('-') + 1
-                }
-                let first = true
-                for (const prime of factorizationPrimes) {
-                    if (!first) {
-                        this.sketch.fill(infoColors[0])
-                        this.textCareful('×', textLeft, textBottom, false)
-                        textLeft += this.sketch.textWidth('×') + 1
-                    }
-
-                    this.sketch.fill(
-                        prime == this.mousePrime
-                            ? this.palette.gradientMouse.bottom
-                            : Number(modulo(this.highlight, prime)) === 0
-                              ? this.palette.gradientHighlight.bottom
-                              : this.palette.gradientBar.bottom
-                    )
-                    this.textCareful(
-                        prime.toString(),
-                        textLeft,
-                        textBottom,
-                        false
-                    )
-                    textLeft += this.sketch.textWidth(prime.toString()) + 1
-                    first = false
-                }
-                if (factorizationPrimes.length == 0 && mTerm * mSign >= 2n) {
-                    this.sketch.text(
-                        '(factorization unknown)',
-                        textLeft,
-                        textBottom
-                    )
-                }
+        if (reorderedFactors.length === 0) {
+            this.sketch.text('(factorization unknown)', textLeft, textBottom)
+            return
+        }
+        if (mSign < 0n) {
+            this.sketch.text('-', textLeft, textBottom)
+            textLeft += this.sketch.textWidth('-') + 1
+        }
+        let first = true
+        for (const bar of reorderedFactors) {
+            if (!first) {
+                this.sketch.fill(infoColors[0])
+                textLeft += this.textCareful('×', textLeft, textBottom)
+                textLeft += 1
             }
+
+            this.sketch.fill(
+                bar.prime === this.mousePrime
+                    ? this.palette.gradientMouse.bottom
+                    : bar.highlighted
+                      ? this.palette.gradientHighlight.bottom
+                      : this.palette.gradientBar.bottom
+            )
+            textLeft += this.textCareful(
+                bar.prime.toString(),
+                textLeft,
+                textBottom
+            )
+            textLeft += 1
+            first = false
         }
     }
 
@@ -893,8 +843,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         width: number,
         height: number,
         colorTop: p5.Color,
-        colorBottom: p5.Color,
-        edge: boolean
+        colorBottom: p5.Color
     ) {
         const barGradient = this.sketch.drawingContext.createLinearGradient(
             x,
@@ -906,12 +855,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         barGradient.addColorStop(1, colorBottom)
         const fillStyle = this.sketch.drawingContext.fillStyle
         this.sketch.drawingContext.fillStyle = barGradient
-        if (edge) {
-            this.sketch.strokeWeight(1)
-            this.sketch.stroke(this.palette.gradientBar.bottom)
-        } else {
-            this.sketch.strokeWeight(0)
-        }
+        this.sketch.strokeWeight(0)
         this.sketch.rect(x, y - height, width, height)
         this.sketch.drawingContext.fillStyle = fillStyle
     }
