@@ -416,16 +416,14 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
     }
 
-    mouseDrag() {
-        if (this.dragging) {
-            const mouse = new p5.Vector(
-                this.sketch.mouseX,
-                this.sketch.mouseY
-            )
-            const movement = mouse
-                .copy()
-                .sub(this.dragStart)
-                .mult(1 / this.scaleFactor)
+    mouseCheckDrag() {
+        const movement = new p5.Vector(this.sketch.mouseX, this.sketch.mouseY)
+        movement.sub(this.dragStart)
+        // The number below is an arbitrary cutoff so as not to detect
+        // "jitter" as a bona fide drag
+        if (movement.mag() > 4) {
+            this.dragging = true
+            movement.mult(1 / this.scaleFactor)
             this.graphCorner = this.graphCornerStart.copy().add(movement)
         }
     }
@@ -442,7 +440,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
             this.keyPresses()
         }
         if (this.sketch.mouseIsPressed) {
-            this.mouseDrag()
+            this.mouseCheckDrag()
         }
         if (!this.sketch.keyIsPressed && !this.sketch.mouseIsPressed) {
             ++this.frame
@@ -673,14 +671,19 @@ class FactorFence extends P5Visualizer(paramDesc) {
     }
 
     mousePressed() {
-        this.dragging = true
         this.dragStart = new p5.Vector(this.sketch.mouseX, this.sketch.mouseY)
         this.graphCornerStart = this.graphCorner.copy()
         this.resetLoop()
     }
 
     mouseReleased() {
-        this.dragging = false
+        if (this.dragging) {
+            this.dragging = false
+        } else {
+            // set highlight prime by click
+            this.highlight = this.mousePrime
+            this.refreshParams()
+        }
         this.resetLoop()
     }
 
@@ -706,13 +709,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
             .copy()
             .sub(cornerToMouse.mult(scaleFac))
             .mult(1 / this.scaleFactor)
-        this.resetLoop()
-    }
-
-    // set highlight prime by click
-    mouseClicked() {
-        this.highlight = this.mousePrime
-        this.refreshParams()
         this.resetLoop()
     }
 
