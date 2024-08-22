@@ -160,6 +160,9 @@ class FactorFence extends P5Visualizer(paramDesc) {
     // mouse control
     private mousePrime = 1n
     private mouseIndex = NaN // term mouse is hovering over
+    private dragging = false
+    private dragStart = new p5.Vector()
+    private graphCornerStart = new p5.Vector()
 
     // store factorizations
     private factorizations: Bar[][] = []
@@ -413,6 +416,20 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
     }
 
+    mouseDrag() {
+        if (this.dragging) {
+            const mouse = new p5.Vector(
+                this.sketch.mouseX,
+                this.sketch.mouseY
+            )
+            const movement = mouse
+                .copy()
+                .sub(this.dragStart)
+                .mult(1 / this.scaleFactor)
+            this.graphCorner = this.graphCornerStart.copy().add(movement)
+        }
+    }
+
     draw() {
         // countdown to timeout when no key pressed
         // if key is pressing, do what it directs
@@ -423,7 +440,11 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // e.g. if you tab away from the window
         if (this.sketch.keyIsPressed) {
             this.keyPresses()
-        } else {
+        }
+        if (this.sketch.mouseIsPressed) {
+            this.mouseDrag()
+        }
+        if (!this.sketch.keyIsPressed && !this.sketch.mouseIsPressed) {
             ++this.frame
         }
 
@@ -651,12 +672,40 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.resetLoop()
     }
 
+    mousePressed() {
+        this.dragging = true
+        this.dragStart = new p5.Vector(this.sketch.mouseX, this.sketch.mouseY)
+        this.graphCornerStart = this.graphCorner.copy()
+        this.resetLoop()
+    }
+
+    mouseReleased() {
+        this.dragging = false
+        this.resetLoop()
+    }
+
     mouseWheel(event: WheelEvent) {
+        // this adjusts scaling by adjusting
+        // this.scaleFactor and (mouse position - scaled graph corner)
+        // by the same factor
+
+        // current mouse - scaledcorner (vector corner -> mouse)
+        const mouse = new p5.Vector(this.sketch.mouseX, this.sketch.mouseY)
+        const cornerToMouse = mouse
+            .copy()
+            .sub(this.graphCorner.copy().mult(this.scaleFactor))
+
+        // change scale factor
         let scaleFac = 1
         if (event.deltaY > 0) scaleFac = 1.03
         else scaleFac = 0.97
         this.scaleFactor *= scaleFac
-        this.graphCorner.y = this.graphCorner.y / scaleFac
+
+        // new scaledcorner = mouse - (mouse - scaledcorner)*scaled
+        this.graphCorner = mouse
+            .copy()
+            .sub(cornerToMouse.mult(scaleFac))
+            .mult(1 / this.scaleFactor)
         this.resetLoop()
     }
 
