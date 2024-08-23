@@ -160,6 +160,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     // mouse control
     private mousePrime = 1n
     private mouseIndex = NaN // term mouse is hovering over
+    private mouseDown = false
     private dragging = false
     private dragStart = new p5.Vector()
     private graphCornerStart = new p5.Vector()
@@ -436,12 +437,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // released in another window, keyIsPressed stays
         // positive and the sketch keeps computing,
         // e.g. if you tab away from the window
-        if (this.sketch.keyIsPressed) {
-            this.keyPresses()
-        }
-        if (this.sketch.mouseIsPressed) {
-            this.mouseCheckDrag()
-        }
+        if (this.sketch.keyIsPressed) this.keyPresses()
+        if (this.mouseDown) this.mouseCheckDrag()
         if (!this.sketch.keyIsPressed && !this.sketch.mouseIsPressed) {
             ++this.frame
         }
@@ -491,14 +488,9 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.mouseIndex = NaN
         this.mousePrime = 1n
         // Determine what the mouse is over, if anything:
-        const {mouseX, mouseY} = this.sketch
-        if (
-            mouseX >= 0
-            && mouseX < this.sketch.width
-            && mouseY >= 0
-            && mouseY <= this.sketch.height
-        ) {
-            const horiz = mouseX / this.scaleFactor - this.graphCorner.x
+        if (this.mouseOnSketch()) {
+            const horiz =
+                this.sketch.mouseX / this.scaleFactor - this.graphCorner.x
             if (horiz % recSpace.x < recWidth) {
                 const rawIndex = Math.floor(horiz / recSpace.x) + this.first
                 if (
@@ -637,6 +629,16 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
     }
 
+    mouseOnSketch(): boolean {
+        const {mouseX, mouseY} = this.sketch
+        return (
+            mouseX >= 0
+            && mouseX < this.sketch.width
+            && mouseY >= 0
+            && mouseY <= this.sketch.height
+        )
+    }
+
     mousePrimeSet(
         barHeight: number,
         barStart: p5.Vector,
@@ -671,6 +673,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
     }
 
     mousePressed() {
+        if (!this.mouseOnSketch()) return
+        this.mouseDown = true
         this.dragStart = new p5.Vector(this.sketch.mouseX, this.sketch.mouseY)
         this.graphCornerStart = this.graphCorner.copy()
         this.resetLoop()
@@ -679,11 +683,12 @@ class FactorFence extends P5Visualizer(paramDesc) {
     mouseReleased() {
         if (this.dragging) {
             this.dragging = false
-        } else {
+        } else if (this.mouseDown) {
             // set highlight prime by click
             this.highlight = this.mousePrime
             this.refreshParams()
         }
+        this.mouseDown = false
         this.resetLoop()
     }
 
