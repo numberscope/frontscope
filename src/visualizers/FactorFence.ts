@@ -755,6 +755,7 @@ In addition, several keypress commands are recognized:
     }
 
     // Displays text at given position, returning number of pixels used
+    // Uses ... if it will run off screen
     textCareful(
         text: string,
         textLeft: number,
@@ -802,7 +803,7 @@ In addition, several keypress commands are recognized:
 
         let textBottom = Math.min(
             this.lowestBar + 2 * lineHeight,
-            this.sketch.height / this.scaleFactor - 4 * lineHeight
+            this.sketch.height / this.scaleFactor - 5.5 * lineHeight
         )
 
         // colours match graph colours
@@ -823,9 +824,18 @@ In addition, several keypress commands are recognized:
             },
             {text: '; '},
             {text: 'drag to move', color: infoColors[this.dragging ? 1 : 0]},
-            {text: '; scroll or '},
+            {text: '; '},
+            {text: 'scroll or '},
             {
-                text: '← → keys to zoom',
+                text: '← → keys ',
+                color:
+                    this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
+                    || this.sketch.keyIsDown(this.sketch.LEFT_ARROW)
+                        ? infoColors[1]
+                        : infoColors[0],
+            },
+            {
+                text: 'to zoom',
                 color:
                     this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
                     || this.sketch.keyIsDown(this.sketch.LEFT_ARROW)
@@ -845,9 +855,17 @@ In addition, several keypress commands are recognized:
             {
                 text:
                     this.highlight === 1n
-                        ? 'Not highlighting (favourite number is 1)'
-                        : `Highlighting factors of ${this.highlight} `
-                          + '(and displaying them first)',
+                        ? 'Not highlighting'
+                        : `Highlighting factors of ${this.highlight} `,
+                color: infoColors[1],
+                linebreak: false,
+            },
+
+            {
+                text:
+                    this.highlight === 1n
+                        ? '(favourite number is 1)'
+                        : '(and displaying them first)',
                 color: infoColors[1],
                 linebreak: true,
             },
@@ -855,9 +873,16 @@ In addition, several keypress commands are recognized:
 
         // display mouse invariant info
         for (const item of info) {
+            if (
+                this.sketch.textWidth(item.text) * this.scaleFactor
+                    > this.sketch.width - textLeft * this.scaleFactor
+                && item.text.substring(0, 3) !== 'Hig'
+            ) {
+                textBottom += lineHeight
+                textLeft = leftMargin
+            }
             this.sketch.fill(item.color || infoColors[0])
-            this.sketch.text(item.text, textLeft, textBottom)
-            textLeft += this.sketch.textWidth(item.text)
+            textLeft += this.textCareful(item.text, textLeft, textBottom)
             if (item.linebreak) {
                 textBottom += lineHeight
                 textLeft = leftMargin
