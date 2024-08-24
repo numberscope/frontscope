@@ -22,9 +22,9 @@ import {divides} from '../shared/math'
 />](../assets/img/FactorFence/ramanujan-tau.png)
 
 This visualizer shows the factorization of the terms of the sequence
-as a sort of coloured graph.  At position n horizontally, there is a bar,
-or fencepost, which is of height log(n) and broken into different pieces
-of height log(p) for each prime divisor p (with multiplicity).
+as a sort of coloured graph.  At position _n_ horizontally, there is a bar,
+or fencepost, which is of height log(_n_) and broken into different pieces
+of height log(_p_) for each prime divisor _p_ (with multiplicity).
 **/
 
 // colour palette class
@@ -73,10 +73,10 @@ class factorPalette {
 /** md
 ## Parameters
 **/
-
 const paramDesc = {
-    /**
-- highlight: the prime factor to highlight 
+    /** md
+- highlight: A natural number, the prime factors of which will be highlighted
+    in the display
      **/
     highlight: {
         default: 1,
@@ -93,8 +93,8 @@ const paramDesc = {
                 'Your favourite number must be positive.'
             ),
     },
-    /**
-- labels: show text info 
+    /** md
+- labels: Specifies whether the chart legend should be displayed
      **/
     labels: {
         default: true,
@@ -105,8 +105,9 @@ const paramDesc = {
         hideDescription: true,
     },
 
-    /**
-- signs: take into account signs 
+    /** md
+- signs: Specifies whether negative terms should display below the horizontal
+    axis of the chart
      **/
     signs: {
         default: true,
@@ -160,6 +161,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     // mouse control
     private mousePrime = 1n
     private mouseIndex = NaN // term mouse is hovering over
+    private mouseLast: MouseEvent | undefined = undefined // last mouse pos
     private mouseDown = false
     private dragging = false
     private dragStart = new p5.Vector()
@@ -377,46 +379,14 @@ class FactorFence extends P5Visualizer(paramDesc) {
         }
     }
 
-    keyPresses() {
-        // keyboard control for zoom, pan, stretch
-        if (
-            this.sketch.keyIsDown(this.sketch.UP_ARROW)
-            || this.sketch.keyIsDown(this.sketch.DOWN_ARROW)
-        ) {
-            // zoom in UP
-            // zoom out DOWN
-            const keyScale = this.sketch.keyIsDown(this.sketch.UP_ARROW)
-                ? 1.03
-                : 0.97
-            this.scaleFactor *= keyScale
-            this.graphCorner.y = this.graphCorner.y / keyScale
-        }
-        if (this.sketch.keyIsDown(this.sketch.LEFT_ARROW)) {
-            // pan left LEFT
-            this.graphCorner.x -= 10 / this.scaleFactor
-        }
-        if (this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)) {
-            // pan right RIGHT
-            this.graphCorner.x += 10 / this.scaleFactor
-        }
-        if (this.sketch.keyIsDown(73)) {
-            // pan up I
-            this.graphCorner.y -= 10 / this.scaleFactor
-        }
-        if (this.sketch.keyIsDown(75)) {
-            // pan down K
-            this.graphCorner.y += 10 / this.scaleFactor
-        }
-        if (this.sketch.keyIsDown(85)) {
-            // stretch up U
-            this.heightScale *= 1.03
-        }
-        if (this.sketch.keyIsDown(79)) {
-            // contract down O
-            this.heightScale *= 0.97
-        }
-    }
+    /** md
+## Controls
+Moving the mouse over the bar chart will highlight all occurrences of the
+prime that the mouse is currently over, and display information about the
+term that the mouse is above. Clicking a prime will set it as the persistent
+highlight value. You can drag the chart in any direction to pan the view.
 
+    **/
     mouseCheckDrag() {
         const movement = new p5.Vector(this.sketch.mouseX, this.sketch.mouseY)
         movement.sub(this.dragStart)
@@ -426,6 +396,59 @@ class FactorFence extends P5Visualizer(paramDesc) {
             this.dragging = true
             movement.mult(1 / this.scaleFactor)
             this.graphCorner = this.graphCornerStart.copy().add(movement)
+        }
+    }
+
+    /** md
+In addition, several keypress commands are recognized:
+
+    **/
+    keyPresses() {
+        // keyboard control for zoom, pan, stretch
+        /** md
+- right and left arrow: zoom in and out, respectively
+        **/
+        if (
+            this.sketch.keyIsDown(this.sketch.LEFT_ARROW)
+            || this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
+        ) {
+            // zoom in RIGHT
+            // zoom out LEFT
+            const keyScale = this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
+                ? 1.03
+                : 0.97
+            this.scaleFactor *= keyScale
+            this.graphCorner.y = this.graphCorner.y / keyScale
+        }
+        /** md
+- up and down arrow: stretch the bars vertically
+        **/
+        if (this.sketch.keyIsDown(this.sketch.UP_ARROW)) {
+            // stretch up UP
+            this.heightScale *= 1.03
+        }
+        if (this.sketch.keyIsDown(this.sketch.DOWN_ARROW)) {
+            // contract down DOWN
+            this.heightScale *= 0.97
+        }
+        /** md
+- U/I/K/O: pan the chart left/up/down/right
+        **/
+        if (this.sketch.keyIsDown(85)) {
+            // pan left U
+            this.graphCorner.x -= 10 / this.scaleFactor
+        }
+        if (this.sketch.keyIsDown(79)) {
+            // pan right O
+            this.graphCorner.x += 10 / this.scaleFactor
+        }
+        if (this.sketch.keyIsDown(73)) {
+            // pan up I
+            this.graphCorner.y -= 10 / this.scaleFactor
+        }
+        if (this.sketch.keyIsDown(75)) {
+            // pan down K
+            this.graphCorner.y += 10 / this.scaleFactor
         }
     }
 
@@ -631,12 +654,21 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
     mouseOnSketch(): boolean {
         const {mouseX, mouseY} = this.sketch
-        return (
-            mouseX >= 0
-            && mouseX < this.sketch.width
-            && mouseY >= 0
-            && mouseY <= this.sketch.height
+        if (
+            mouseX < 0
+            || mouseX > this.sketch.width
+            || mouseY < 0
+            || mouseY > this.sketch.height
+        ) {
+            return false
+        }
+        if (!this.mouseLast) return false
+        const where = document.elementFromPoint(
+            this.mouseLast.clientX,
+            this.mouseLast.clientY
         )
+        if (!where || !this.within) return false
+        return where === this.within || where.contains(this.within)
     }
 
     mousePrimeSet(
@@ -668,7 +700,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.resetLoop()
     }
 
-    mouseMoved() {
+    mouseMoved(event: MouseEvent) {
+        this.mouseLast = event
         this.resetLoop()
     }
 
@@ -692,6 +725,10 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.resetLoop()
     }
 
+    /** md
+
+    You can also zoom the view using the scroll wheel.
+    **/
     mouseWheel(event: WheelEvent) {
         // this adjusts scaling by adjusting
         // this.scaleFactor and (mouse position - scaled graph corner)
@@ -777,40 +814,40 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // always visible static text info, line by line
         // boolean represents whether to line break
         const info = [
-            {text: 'Click select; ', color: infoColors[0], linebreak: false},
             {
-                text: 'arrow keys to move',
+                text: 'Click selects',
                 color:
-                    this.sketch.keyIsDown(this.sketch.UP_ARROW)
-                    || this.sketch.keyIsDown(this.sketch.DOWN_ARROW)
-                    || this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
+                    this.mouseDown && !this.dragging
+                        ? infoColors[1]
+                        : infoColors[0],
+            },
+            {text: '; '},
+            {text: 'drag pans', color: infoColors[this.dragging ? 1 : 0]},
+            {text: '; scroll or '},
+            {
+                text: '← → keys zoom',
+                color:
+                    this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
                     || this.sketch.keyIsDown(this.sketch.LEFT_ARROW)
                         ? infoColors[1]
                         : infoColors[0],
-                linebreak: false,
             },
-            {text: '; ', color: infoColors[0], linebreak: false},
+            {text: '; '},
             {
-                text: 'U/O stretch',
+                text: '↑↓ stretch',
                 color:
-                    this.sketch.keyIsDown(85) || this.sketch.keyIsDown(79)
-                        ? infoColors[1]
-                        : infoColors[0],
-                linebreak: false,
-            },
-            {text: '; ', color: infoColors[0], linebreak: false},
-            {
-                text: 'I/K raise/lower',
-                color:
-                    this.sketch.keyIsDown(73) || this.sketch.keyIsDown(75)
+                    this.sketch.keyIsDown(this.sketch.UP_ARROW)
+                    || this.sketch.keyIsDown(this.sketch.DOWN_ARROW)
                         ? infoColors[1]
                         : infoColors[0],
                 linebreak: true,
             },
             {
                 text:
-                    `Highlighting factors of ${this.highlight} `
-                    + '(and displaying them first)',
+                    this.highlight === 1n
+                        ? 'Not highlighting (favourite number is 1)'
+                        : `Highlighting factors of ${this.highlight} `
+                          + '(and displaying them first)',
                 color: infoColors[1],
                 linebreak: true,
             },
@@ -818,7 +855,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // display mouse invariant info
         for (const item of info) {
-            this.sketch.fill(item.color)
+            this.sketch.fill(item.color || infoColors[0])
             this.sketch.text(item.text, textLeft, textBottom)
             textLeft += this.sketch.textWidth(item.text)
             if (item.linebreak) {

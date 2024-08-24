@@ -65,7 +65,7 @@ const featuredSIMs = [
         'Tau Many Primes',
         'FactorFence',
         'OEIS A000594',
-        'terms=1000&signs=false'
+        'signs=false'
     ),
 ]
 

@@ -19,7 +19,7 @@ class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
     keyTyped(_event: KeyboardEvent) {}
     mouseClicked(_event: MouseEvent) {}
     mouseDragged() {}
-    mouseMoved() {}
+    mouseMoved(_event: MouseEvent) {}
     mousePressed(_event: MouseEvent) {}
     mouseReleased() {}
     mouseWheel(_event: WheelEvent) {}
