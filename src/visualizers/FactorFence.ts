@@ -432,14 +432,14 @@ In addition, several keypress commands are recognized:
             this.heightScale *= 0.97
         }
         /** md
-- U/I/K/O: pan the chart left/up/down/right
+- J/I/K/L: pan the chart left/up/down/right
         **/
-        if (this.sketch.keyIsDown(85)) {
-            // pan left U
+        if (this.sketch.keyIsDown(74)) {
+            // pan left J
             this.graphCorner.x -= 10 / this.scaleFactor
         }
-        if (this.sketch.keyIsDown(79)) {
-            // pan right O
+        if (this.sketch.keyIsDown(76)) {
+            // pan right L
             this.graphCorner.x += 10 / this.scaleFactor
         }
         if (this.sketch.keyIsDown(73)) {
@@ -815,17 +815,17 @@ In addition, several keypress commands are recognized:
         // boolean represents whether to line break
         const info = [
             {
-                text: 'Click selects',
+                text: 'Click to select a prime',
                 color:
                     this.mouseDown && !this.dragging
                         ? infoColors[1]
                         : infoColors[0],
             },
             {text: '; '},
-            {text: 'drag pans', color: infoColors[this.dragging ? 1 : 0]},
+            {text: 'drag to move', color: infoColors[this.dragging ? 1 : 0]},
             {text: '; scroll or '},
             {
-                text: '← → keys zoom',
+                text: '← → keys to zoom',
                 color:
                     this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
                     || this.sketch.keyIsDown(this.sketch.LEFT_ARROW)
@@ -834,7 +834,7 @@ In addition, several keypress commands are recognized:
             },
             {text: '; '},
             {
-                text: '↑↓ stretch',
+                text: '↑↓ to stretch',
                 color:
                     this.sketch.keyIsDown(this.sketch.UP_ARROW)
                     || this.sketch.keyIsDown(this.sketch.DOWN_ARROW)
