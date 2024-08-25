@@ -626,14 +626,7 @@ In addition, several keypress commands are recognized:
                 this.mousePrimeSet(recHeight, barStart, mySign, factor.prime)
             }
 
-            // set colour gradient for rectangle
-            let gradient = factor.highlighted
-                ? this.palette.gradientHighlight
-                : this.palette.gradientBar
-            if (factor.prime === this.mousePrime) {
-                gradient = this.palette.gradientMouse
-            }
-
+            const gradient = this.chooseGradient(factor)
             // draw the rectangle
             this.grad_rect(
                 barStart.x,
@@ -652,6 +645,12 @@ In addition, several keypress commands are recognized:
             // move up in preparation for next bar
             barStart.y -= recHeight
         }
+    }
+
+    chooseGradient(b: Bar) {
+        if (b.prime === this.mousePrime) return this.palette.gradientMouse
+        if (b.highlighted) return this.palette.gradientHighlight
+        return this.palette.gradientBar
     }
 
     mouseOnSketch(): boolean {
@@ -918,6 +917,7 @@ In addition, several keypress commands are recognized:
             return
         }
         if (reorderedFactors.length === 1) {
+            this.sketch.fill(this.chooseGradient(reorderedFactors[0]).bottom)
             this.sketch.text('(prime)', textLeft, textBottom)
             return
         }
@@ -933,13 +933,7 @@ In addition, several keypress commands are recognized:
                 textLeft += 1
             }
 
-            this.sketch.fill(
-                bar.prime === this.mousePrime
-                    ? this.palette.gradientMouse.bottom
-                    : bar.highlighted
-                      ? this.palette.gradientHighlight.bottom
-                      : this.palette.gradientBar.bottom
-            )
+            this.sketch.fill(this.chooseGradient(bar).bottom)
             textLeft += this.textCareful(
                 bar.prime.toString(),
                 textLeft,
