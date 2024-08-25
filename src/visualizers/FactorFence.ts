@@ -491,9 +491,9 @@ In addition, several keypress commands are recognized:
             this.collectFailed = true // trigger recollect
         }
 
-        // this scales the whole sketch
-        // must compensate when using invariant sketch elements
-        // like text
+        this.sketch.push()
+        // The next call scales the whole sketch, which is why we
+        // encapsulate it in the above push()
         this.sketch.scale(this.scaleFactor)
 
         // try again if need more terms from cache
@@ -536,6 +536,8 @@ In addition, several keypress commands are recognized:
             this.drawTerm(myIndex)
         }
 
+        // return to ordinary scaling
+        this.sketch.pop()
         // text at base of sketch, if not small canvas
         if (this.sketch.height > 400 && this.labels) this.bottomText()
 
@@ -762,16 +764,12 @@ In addition, several keypress commands are recognized:
         textBottom: number,
         showDigits?: boolean
     ) {
-        if (textLeft * this.scaleFactor > this.sketch.width) return 0
+        if (textLeft > this.sketch.width) return 0
         const overflow =
-            this.sketch.textWidth(text) * this.scaleFactor
-            - this.sketch.width
-            + textLeft * this.scaleFactor
+            this.sketch.textWidth(text) - this.sketch.width + textLeft
         if (overflow > 0) {
             let surplusCharacters =
-                Math.ceil(
-                    overflow / this.scaleFactor / this.sketch.textWidth('1')
-                ) + 3
+                Math.ceil(overflow / this.sketch.textWidth('1')) + 3
             let digitCount = 0
             if (showDigits) {
                 const textNoSign = text
@@ -793,17 +791,15 @@ In addition, several keypress commands are recognized:
 
     bottomText() {
         // text size and position
-        this.sketch.textSize(this.textSize / this.scaleFactor)
+        this.sketch.textSize(this.textSize)
         this.sketch.strokeWeight(0) // no outline
-        const leftMargin = this.textLeft / this.scaleFactor
-        let textLeft = leftMargin
+        let textLeft = this.textLeft
 
         // spacing between lines
-        const lineHeight = this.textInterval / this.scaleFactor
-
+        const lineHeight = this.textInterval
         let textBottom = Math.min(
-            this.lowestBar + 2 * lineHeight,
-            this.sketch.height / this.scaleFactor - 5.5 * lineHeight
+            this.lowestBar * this.scaleFactor + 2 * lineHeight,
+            this.sketch.height - 5.5 * lineHeight
         )
 
         // colours match graph colours
@@ -873,18 +869,18 @@ In addition, several keypress commands are recognized:
         let continuingLine = false
         for (const item of info) {
             if (
-                this.sketch.textWidth(item.text) * this.scaleFactor
-                    > this.sketch.width - textLeft * this.scaleFactor
+                this.sketch.textWidth(item.text)
+                    > this.sketch.width - textLeft
                 && continuingLine
             ) {
                 textBottom += lineHeight
-                textLeft = leftMargin
+                textLeft = this.textLeft
             }
             this.sketch.fill(item.color || infoColors[0])
             textLeft += this.textCareful(item.text, textLeft, textBottom)
             if (item.linebreak) {
                 textBottom += lineHeight
-                textLeft = leftMargin
+                textLeft = this.textLeft
                 continuingLine = false
             } else {
                 continuingLine = true
@@ -914,7 +910,7 @@ In addition, several keypress commands are recognized:
         if (isTrivial(mTerm)) return
 
         const infoLineContinue = ' = '
-        textLeft = leftMargin + this.sketch.textWidth(infoLineFunction)
+        textLeft = this.textLeft + this.sketch.textWidth(infoLineFunction)
         textLeft += this.textCareful(infoLineContinue, textLeft, textBottom)
 
         if (reorderedFactors.length === 0) {
