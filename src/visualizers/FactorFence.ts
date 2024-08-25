@@ -851,7 +851,7 @@ In addition, several keypress commands are recognized:
             {
                 text:
                     this.highlight === 1n
-                        ? 'Not highlighting'
+                        ? 'Not highlighting '
                         : `Highlighting factors of ${this.highlight} `,
                 color: infoColors[1],
             },
