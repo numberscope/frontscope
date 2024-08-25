@@ -816,16 +816,17 @@ In addition, several keypress commands are recognized:
         // boolean represents whether to line break
         const info = [
             {
-                text: 'Click to select a prime',
+                text: 'Click to select a prime;',
                 color:
                     this.mouseDown && !this.dragging
                         ? infoColors[1]
                         : infoColors[0],
             },
-            {text: '; '},
-            {text: 'drag to move', color: infoColors[this.dragging ? 1 : 0]},
-            {text: '; '},
-            {text: 'scroll or '},
+            {
+                text: ' drag to move;',
+                color: infoColors[this.dragging ? 1 : 0],
+            },
+            {text: ' scroll or '},
             {
                 text: '← → keys ',
                 color:
@@ -835,16 +836,15 @@ In addition, several keypress commands are recognized:
                         : infoColors[0],
             },
             {
-                text: 'to zoom',
+                text: 'to zoom;',
                 color:
                     this.sketch.keyIsDown(this.sketch.RIGHT_ARROW)
                     || this.sketch.keyIsDown(this.sketch.LEFT_ARROW)
                         ? infoColors[1]
                         : infoColors[0],
             },
-            {text: '; '},
             {
-                text: '↑↓ to stretch',
+                text: ' ↑↓ to stretch',
                 color:
                     this.sketch.keyIsDown(this.sketch.UP_ARROW)
                     || this.sketch.keyIsDown(this.sketch.DOWN_ARROW)
@@ -858,9 +858,7 @@ In addition, several keypress commands are recognized:
                         ? 'Not highlighting'
                         : `Highlighting factors of ${this.highlight} `,
                 color: infoColors[1],
-                linebreak: false,
             },
-
             {
                 text:
                     this.highlight === 1n
@@ -872,11 +870,12 @@ In addition, several keypress commands are recognized:
         ]
 
         // display mouse invariant info
+        let continuingLine = false
         for (const item of info) {
             if (
                 this.sketch.textWidth(item.text) * this.scaleFactor
                     > this.sketch.width - textLeft * this.scaleFactor
-                && item.text.substring(0, 3) !== 'Hig'
+                && continuingLine
             ) {
                 textBottom += lineHeight
                 textLeft = leftMargin
@@ -886,6 +885,9 @@ In addition, several keypress commands are recognized:
             if (item.linebreak) {
                 textBottom += lineHeight
                 textLeft = leftMargin
+                continuingLine = false
+            } else {
+                continuingLine = true
             }
         }
 
