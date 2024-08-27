@@ -28,7 +28,7 @@ of height log(_p_) for each prime divisor _p_ (with multiplicity).
 **/
 
 // colour palette class
-class factorPalette {
+class FactorPalette {
     gradientBar: {[key: string]: p5.Color} = {}
     gradientHighlight: {[key: string]: p5.Color} = {}
     gradientMouse: {[key: string]: p5.Color} = {}
@@ -198,7 +198,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     private collectFailed = false
 
     // colour palette
-    private palette = new factorPalette()
+    private palette = new FactorPalette()
 
     // frame counter for timeout on loop()
     // first factorization failure
@@ -247,8 +247,10 @@ class FactorFence extends P5Visualizer(paramDesc) {
                 return 0
             }
             let sig = 1n // sign of element
-            if (elt < 0n && this.signs) sig = -1n
-            if (elt < 0n && !this.signs) elt = -1n * elt
+            if (elt < 0n) {
+                if (this.signs) sig = -1n
+                else elt = -elt
+            }
             // in case elt = 0, store 1
             if (elt === 0n) elt = 1n
 
@@ -362,7 +364,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     setup() {
         super.setup()
 
-        this.palette = new factorPalette(this.sketch)
+        this.palette = new FactorPalette(this.sketch)
         // text formatting
         this.sketch.textFont('Courier New')
         this.sketch.textStyle(this.sketch.NORMAL)
@@ -460,6 +462,9 @@ In addition, several keypress commands are recognized:
         // released in another window, keyIsPressed stays
         // positive and the sketch keeps computing,
         // e.g. if you tab away from the window
+        // [GTW 20240827: Unable to reproduce; if someone else can,
+        // please file an issue with specific instructions. Otherwise,
+        // this comment should be removed at the next maintenance.]
         if (this.sketch.keyIsPressed) this.keyPresses()
         if (this.mouseDown) this.mouseCheckDrag()
         if (!this.sketch.keyIsPressed && !this.sketch.mouseIsPressed) {
