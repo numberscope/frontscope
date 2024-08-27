@@ -204,10 +204,11 @@ export class Specimen {
         this.size = newSize
         // Reset the visualizer if the resized function isn't implemented
         // or returns false, meaning it didn't handle the redisplay
+        let handled = false
         if (this.visualizer.resized) {
-            const handled = await this.visualizer.resized(this.size)
-            if (!handled) this.reset()
+            handled = await this.visualizer.resized(this.size)
         }
+        if (!handled) this.reset()
     }
     /**
      * Generates a specimen from a URL query string (as produced by the
