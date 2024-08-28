@@ -53,7 +53,7 @@ test.describe('Scope', () => {
         ).toMatch('Specimen')
         await expect(
             await savedCard.locator('.card-text').innerText()
-        ).toMatch('Random Integers in Range')
+        ).toMatch('Random integers 0 to 9')
 
         await savedCard.locator('.delete-button').click()
         await expect(page.locator('#saved-specimens >> *')).toHaveCount(0)

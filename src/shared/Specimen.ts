@@ -61,6 +61,8 @@ export class Specimen {
     static makeSequence(key: string, query?: string) {
         const sequence = produceSequence(key)
         if (query) sequence.loadQuery(query)
+        sequence.validate()
+        sequence.initialize()
         return sequence
     }
     /**
