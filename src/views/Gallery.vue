@@ -17,6 +17,7 @@
         <div type="button" class="visualizer-bar">
             <h2>Featured Gallery</h2>
             <span
+                id="featured-arrow"
                 :class="['material-icons-sharp', featuredArrowClass]"
                 style="user-select: none"
                 @click="toggleFeatured">
@@ -24,6 +25,7 @@
             >
         </div>
         <SpecimensGallery
+            id="featured-gallery"
             v-if="showFeatured"
             :specimens="featured"
             :canDelete="false" />
@@ -37,7 +39,10 @@
                 keyboard_arrow_up
             </span>
         </div>
-        <SpecimensGallery v-if="showSaved" :specimens="saved" />
+        <SpecimensGallery
+            id="saved-gallery"
+            v-if="showSaved"
+            :specimens="saved" />
     </div>
 </template>
 

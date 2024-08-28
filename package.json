@@ -38,6 +38,10 @@
         "preview": "vite preview",
         "help:test:unit": "echo Runs unit tests.",
         "test:unit": "vitest run",
+        "help:test:e2e": "echo Runs end-to-end in-browser tests.",
+        "test:e2e": "playwright test",
+        "help:test:e2e:ui": "echo Runs interactive end-to-end tests.",
+        "test:e2e:ui": "playwright test --ui",
         "help:typecheck": "run-s -s help:typecheck:*",
         "help:typecheck:1": "echo Checks for TypeScript errors in both .vue",
         "help:typecheck:2": "echo and .ts files.",
@@ -93,6 +97,9 @@
         "vue-router": "^4.4.0"
     },
     "devDependencies": {
+        "@playwright/browser-chromium": "^1.46.1",
+        "@playwright/browser-firefox": "^1.46.1",
+        "@playwright/test": "^1.46.1",
         "@rushstack/eslint-patch": "^1.10.3",
         "@tsconfig/node20": "^20.1.4",
         "@types/jsdom": "^21.1.7",

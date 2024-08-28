@@ -19,7 +19,10 @@
             </div>
         </div>
         <div class="button-container">
-            <div class="button material-icons-sharp" @click="refresh">
+            <div
+                id="refresh-button"
+                class="button material-icons-sharp"
+                @click="refresh">
                 refresh
             </div>
             <div

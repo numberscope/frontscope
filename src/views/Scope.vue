@@ -591,6 +591,7 @@
             &.empty {
                 position: absolute;
                 pointer-events: none;
+                z-index: 1;
 
                 .dropzone-resize.material-icons-sharp {
                     display: none;

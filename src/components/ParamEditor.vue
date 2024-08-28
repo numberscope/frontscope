@@ -17,7 +17,7 @@
         <div
             class="title-and-button-bar button-container"
             @click="openSwitcher">
-            <div style="flex-grow: 1">
+            <div class="visualizer-info" style="flex-grow: 1">
                 <h1>Current {{ title }}</h1>
                 <div class="item-name">{{ paramable.name }}</div>
             </div>

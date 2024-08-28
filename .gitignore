@@ -15,3 +15,9 @@ site
 
 # Emacs backup files
 *~
+
+# End-to-end testing
+test-results
+playwright-report
+blob-report
+playwright/.cache

@@ -14,9 +14,7 @@
                 v-if="!permanent"
                 v-on:click.stop="deleteSpecimen"
                 style="padding-right: 15px">
-                <span
-                    class="material-icons-sharp"
-                    style="user-select: none; margin-top: 1ex">
+                <span class="delete-button material-icons-sharp">
                     delete
                 </span>
             </div>
@@ -104,5 +102,9 @@
         margin-right: 8px;
         margin-bottom: 8px;
         color: #6c757d;
+    }
+    .delete-button {
+        user-select: none;
+        margin-top: 1ex;
     }
 </style>
