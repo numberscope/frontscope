@@ -295,7 +295,7 @@
     const urlQuery = extractQueryFromPath(route.fullPath)
 
     const specimen = reactive(
-        Specimen.fromQuery(urlQuery ? urlQuery : getCurrent().query)
+        await Specimen.fromQuery(urlQuery ? urlQuery : getCurrent().query)
     )
     updateCurrent(specimen)
 
@@ -345,10 +345,10 @@
         specimen.setup(canvasContainer)
 
         resizePoll = setInterval(() => {
-            specimen.resized(
-                canvasContainer.clientWidth,
-                canvasContainer.clientHeight
-            )
+            specimen.resized({
+                width: canvasContainer.clientWidth,
+                height: canvasContainer.clientHeight,
+            })
         }, 500)
     })
 

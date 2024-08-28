@@ -33,6 +33,15 @@ export class VisualizerExportModule {
     }
 }
 
+export interface ViewSize {
+    width: number
+    height: number
+}
+export const nullSize = {width: 0, height: 0}
+export function sameSize(size1: ViewSize, size2: ViewSize) {
+    return size1.width === size2.width && size1.height === size2.height
+}
+
 export interface VisualizerInterface<PD extends GenericParamDescription>
     extends ParamableInterface<PD> {
     /**
@@ -44,19 +53,17 @@ export interface VisualizerInterface<PD extends GenericParamDescription>
      * The visualizer should remove itself from any other location it might
      * have been displaying, and prepare to draw within the provided element.
      * It is safe to call this with the same element in which the visualizer
-     * is already displaying.
+     * is already displaying (and the removal and preparation should still
+     * happen).
      * The size provided to the visualizer is the size the visualizer should
      * assume, respecting its aspect ratio preferences. If needed, the
      * visualizer can also query the size of the element for the full container
      * size.
-     * @param element HTMLElement The DOM node where the visualizer should
+     * @param {HTMLElement} element  The DOM node where the visualizer should
      *     insert itself.
-     * @param size The width and height the visualizer should occupy
+     * @param {ViewSize} size  The width and height the visualizer should occupy
      */
-    inhabit(
-        element: HTMLElement,
-        size: {width: number; height: number}
-    ): Promise<void>
+    inhabit(element: HTMLElement, size: ViewSize): Promise<void>
     /**
      * Show the sequence according to this visualizer, i.e. start drawing
      */
@@ -96,10 +103,10 @@ export interface VisualizerInterface<PD extends GenericParamDescription>
      * on resize. If it is implemented, returning true means the
      * visualizer will **not** be reset, and resolving to false means that
      * it will be reset.
-     * @param width The new width of the visualizer (in pixels)
-     * @param height The new height of the visualizer (in pixels)
+     * @param {ViewSize} size
+     *     The new width and height of the visualizer (in pixels)
      */
-    resized?(width: number, height: number): boolean
+    resized?(size: ViewSize): Promise<boolean>
     /**
      * Provides a way for visualizers to request a specific aspect ratio for
      * its canvas. This aspect ratio is specified as a positive n > 0 where

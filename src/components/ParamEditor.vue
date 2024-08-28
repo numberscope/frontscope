@@ -1,8 +1,17 @@
 <template>
     <div>
-        <div class="error-box" v-if="status.invalid()">
-            <p v-for="error in status.errors" v-bind:key="error">
+        <div class="error-box" v-if="status.defective()">
+            <p
+                v-for="error in status.errors"
+                class="error-message"
+                v-bind:key="error">
                 {{ error }}
+            </p>
+            <p
+                v-for="warning in status.warnings"
+                class="warning-message"
+                v-bind:key="warning">
+                {{ warning }}
             </p>
         </div>
         <div
@@ -207,6 +216,13 @@
     .error-box p {
         font-size: var(--ns-size-body);
         margin: 8px 0;
+    }
+
+    .error-message {
         color: red;
+    }
+
+    .warning-message {
+        color: orange;
     }
 </style>
