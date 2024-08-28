@@ -159,14 +159,24 @@ There are two places to do pre-computation before the sketch begins looping
 through frames of the drawing. The first is `presketch()`, which runs
 asynchronously, meaning that the browser will not be blocked while this
 function completes. This is not a part of p5.js, but a part of Numberscope.
+The `presketch()` function is called by the framework with one argument,
+representing the size of the canvas to be created as a ViewSize object with
+number fields `width` and `height`.
 
-If you implement `presketch()`, begin by calling `await super.presketch()`,
-which will initialize the sequence. After this call, you have access to the
-sequence, so you can do sequence-dependent validation and initialization here.
-You do have the opportunity to set up private state variables. For example,
-this is a good place to populate an array with time-consuming precomputed
-values you will use repeatedly during the sketch. However, you still have no
-access to the p5 canvas.
+If you implement `presketch()`, begin by calling
+`await super.presketch(size)`, which will initialize the sequence. After this
+call, you have access to the sequence, so you can do sequence-dependent
+validation and initialization here. You do have the opportunity to set up
+private state variables. For example, this is a good place to populate an
+array with time-consuming precomputed values you will use repeatedly during
+the sketch. However, you still have no access to the p5 canvas or the
+`this.sketch` object.
+
+Note also that `presketch()` is called when there is a new visualizer, when
+the sequence changes, when you visit a new Numberscope URL, but not when
+visualizer parameters change or the screen is resized. So if there is
+initialization you want to do only on these more signifcant changes but not on
+parameter changes or resizes, then `presketch()` is a good method.
 
 The next opportunity is when the p5 graphics context becomes available, which
 occurs after `presketch()` completes. At this time, `setup()` is called,
@@ -181,12 +191,17 @@ the [`createCanvas()`](https://p5js.org/reference/#/p5/createCanvas) call that
 must appear in every p5 setup function.
 
 When a visualizer is resized, or the restart button on Numberscope is pressed,
-the class function `reset()` is called. By default, this calls both
-`presketch()` and `setup()`, and a new canvas is created. However, the
-visualizer object constructor is not re-run and any data stored in variables
-in the visualizer object persists. That means that you have the option to
-forgo re-doing expensive pre-computations, by overriding `reset()` from the
-`P5Visualizer` base class.
+the class function `reset()` is called. By default, this calls `setup()` but
+not `presketch()`, and a new canvas is created. However, the visualizer object
+constructor is not re-run and any data stored in variables in the visualizer
+object persists. Those defaults mean that you have the option to forgo
+re-doing expensive pre-computations: if they don't need sketch access, you can
+put such calculations in `presketch()`. For even greater customization of what
+happens when, you can override/extend `reset()` from the `P5Visualizer` base
+class, or you can define a `resized()` method for behavior that only occurs
+when the canvas is resized. Note that in this latter case, if you do want
+`reset()` to occur on resize, you will need to call it yourself, as the
+presence of a `resized()` method replaces the default behavior.
 
 -   **p5 Template:** Go to the beginning of the sequence. Create palette
     colors. Set text alignment.

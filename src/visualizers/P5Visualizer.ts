@@ -1,4 +1,5 @@
-import type {VisualizerInterface} from './VisualizerInterface'
+import type {VisualizerInterface, ViewSize} from './VisualizerInterface'
+import {nullSize} from './VisualizerInterface'
 import {Paramable} from '../shared/Paramable'
 import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
 import type {SequenceInterface} from '../sequences/SequenceInterface'
@@ -13,21 +14,35 @@ class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
     deviceShaken() {}
     deviceTurned() {}
     doubleClicked() {}
-    keyPressed() {}
-    keyReleased() {}
-    keyTyped() {}
-    mouseClicked() {}
+    keyPressed(_event: KeyboardEvent) {}
+    keyReleased(_event: KeyboardEvent) {}
+    keyTyped(_event: KeyboardEvent) {}
+    mouseClicked(_event: MouseEvent) {}
     mouseDragged() {}
-    mouseMoved() {}
-    mousePressed() {}
+    mouseMoved(_event: MouseEvent) {}
+    mousePressed(_event: MouseEvent) {}
     mouseReleased() {}
-    mouseWheel() {}
+    mouseWheel(_event: WheelEvent) {}
     setup() {}
     touchEnded() {}
     touchMoved() {}
     touchStarted() {}
     windowResized() {}
 }
+
+// The following is used to check if a visualizer has defined
+// any of the above methods:
+const dummyP5 = new WithP5<GenericParamDescription>({})
+const ignoreOffCanvas = new Set([
+    'mousePressed',
+    'mouseClicked',
+    'mouseWheel',
+])
+const ignoreFocusedElsewhere = new Set([
+    'keyPressed',
+    'keyReleased',
+    'keyTyped',
+])
 
 type P5Methods<PD extends GenericParamDescription> = Exclude<
     keyof WithP5<PD>,
@@ -61,7 +76,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         name = 'uninitialized P5-based visualizer'
         _sketch?: p5
         _canvas?: p5.Renderer
-        _size: {width: number; height: number}
+        _size = nullSize
         isDrawing = false
 
         within?: HTMLElement
@@ -90,7 +105,6 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             super(desc)
             this.name = this.category // Not currently using per-instance names
             this.seq = seq
-            this._size = {width: 0, height: 0}
             Object.assign(this, defaultObject)
         }
 
@@ -102,24 +116,25 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * visualizer that needs to interact with the DOM or affect the
          * of the p5 object itself would need to implement an extended or
          * replaced inhabit() method.
-         * @param element HTMLElement  Where the visualizer should inject itself
-         * @param size The width and height the visualizer should occupy
+         * @param {HTMLElement} element
+         *     Where the visualizer should inject itself
+         * @param {ViewSize} size
+         *     The width and height the visualizer should occupy
          */
-        async inhabit(
-            element: HTMLElement,
-            size: {width: number; height: number}
-        ) {
-            if (this.within === element) return // already inhabiting there
+        async inhabit(element: HTMLElement, size: ViewSize) {
+            let needsPresketch = true
             if (this.within) {
                 // oops, already inhabiting somewhere else; depart there
                 this.depart(this.within)
+                // Only do the presketch initialization once, though:
+                needsPresketch = false
             }
             this._size = size
             this.within = element
             // Perform any necessary asynchronous preparation before
             // creating sketch. For example, some Visualizers need sequence
             // factorizations in setup().
-            await this.presketch()
+            if (needsPresketch) await this.presketch(size)
             // TODO: Can presketch() sometimes take so long that we should
             // show an hourglass icon in the meantime, or something like that?
 
@@ -141,9 +156,46 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 // `this[method]` is defined or undefined:
                 for (const method of p5methods) {
                     const definition = this[method]
-                    const dummyText = method + '(){}'
-                    const defText = definition.toString().replace(/\s/g, '')
-                    if (defText !== dummyText) {
+                    if (definition !== dummyP5[method]) {
+                        if (ignoreOffCanvas.has(method)) {
+                            sketch[method] = (event: MouseEvent) => {
+                                if (!this.within) return true
+                                // Check that the event position is in bounds
+                                const rect =
+                                    this.within.getBoundingClientRect()
+                                const x = event.clientX
+                                if (x < rect.left || x >= rect.right) {
+                                    return true
+                                }
+                                const y = event.clientY
+                                if (y < rect.top || y >= rect.bottom) {
+                                    return true
+                                }
+                                // Check also that the event element is OK
+                                const where = document.elementFromPoint(x, y)
+                                if (!where) return true
+                                if (
+                                    where !== this.within
+                                    && !where.contains(this.within)
+                                ) {
+                                    return true
+                                }
+                                return this[method](event as never)
+                                // Cast makes typescript happy :-/
+                            }
+                            continue
+                        }
+                        if (ignoreFocusedElsewhere.has(method)) {
+                            sketch[method] = (event: KeyboardEvent) => {
+                                const active = document.activeElement
+                                if (active && active.tagName === 'INPUT') {
+                                    return true
+                                }
+                                return this[method](event as never)
+                            }
+                            continue
+                        }
+                        // Otherwise no special condition, just forward event
                         sketch[method] = definition.bind(this)
                     }
                 }
@@ -171,7 +223,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * things that must happen asynchronously before a p5 visualizer
          * can create its sketch.
          */
-        async presketch() {
+        async presketch(_size: ViewSize) {
             await this.seq.fill()
         }
 
@@ -181,7 +233,13 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          */
         async view(seq: SequenceInterface<GenericParamDescription>) {
             this.seq = seq
-            await this.reset()
+            if (!this._sketch) return
+            const element = this.within!
+            this.stop()
+            this.depart(element) // ensures any sequence-dependent setup
+            // that the visualizer might do in presketch will be redone
+            await this.inhabit(element, this._size)
+            this.show()
         }
 
         /**
@@ -305,7 +363,6 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             if (!this._sketch) return
             const element = this.within!
             this.stop()
-            this.depart(element)
             await this.inhabit(element, this._size)
             this.show()
         }
