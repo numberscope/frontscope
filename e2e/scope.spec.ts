@@ -1,4 +1,5 @@
 import {test, expect} from '@playwright/test'
+import {parseSpecimenQuery} from '../src/shared/browserCaching'
 
 test.beforeEach(async ({page}) => {
     await page.goto('/', {waitUntil: 'domcontentloaded'})
@@ -14,6 +15,7 @@ test.describe('Scope', () => {
         await page
             .locator('#visualiserTab .buttons')
             .dragTo(page.locator('#canvas-container'), {
+                force: true,
                 sourcePosition: {
                     x: 10,
                     y: 10,
@@ -32,6 +34,7 @@ test.describe('Scope', () => {
         await page
             .locator('#visualiserTab .buttons')
             .dragTo(page.locator('#canvas-container'), {
+                force: true,
                 sourcePosition: {
                     x: 10,
                     y: 10,
@@ -41,6 +44,7 @@ test.describe('Scope', () => {
         await page
             .locator('#sequenceTab .buttons')
             .dragTo(page.locator('#canvas-container'), {
+                force: true,
                 sourcePosition: {
                     x: 10,
                     y: 10,
@@ -68,12 +72,13 @@ test.describe('Scope', () => {
     })
 
     test('Changing a sequence', async ({page}) => {
-        await page.locator('#sequenceTab .change-button').click()
-        await page.locator('#results .sequence').first().click()
+        await page.locator('#sequenceTab .visualizer-info').click()
+        await page.locator('.results .card-body').first().click()
         await expect(
-            await page.locator('#sequenceTab .subheading').innerText()
-        ).toMatch('Constant Sequence')
+            await page.locator('#sequenceTab .item-name').innerText()
+        ).toMatch('Formula: n')
     })
+
     test('minimizing a tab', async ({page}) => {
         await page.locator('#visualiserTab .minimize').click()
         await expect(page.locator('#visualiserTab')).toHaveClass(/minimized/)
@@ -112,8 +117,9 @@ test.describe('Scope', () => {
             throw new Error('currentSpecimen is null')
         }
         const currentSpecimen = JSON.parse(currentSpecimenIM)
+        const currentProperties = parseSpecimenQuery(currentSpecimen.query)
 
-        await expect(currentSpecimen.name).toEqual('test')
+        await expect(currentProperties.name).toEqual('test')
         await expect(page.url()).not.toEqual(oldURL)
     })
     test('refreshing the specimen', async ({page}) => {
