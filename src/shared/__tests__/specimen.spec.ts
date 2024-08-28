@@ -2,12 +2,12 @@ import {Specimen} from '../Specimen'
 import {describe, it, expect} from 'vitest'
 
 describe('url', () => {
-    it('remains the same when re-encoding', () => {
+    it('remains the same when re-encoding', async () => {
         const specimen1 = new Specimen('Hello', 'ModFill', 'Random')
         specimen1.visualizer.tentativeValues.modDimension = '50'
         const enc1 = specimen1.query
 
-        const specimen2 = Specimen.fromQuery(enc1)
+        const specimen2 = await Specimen.fromQuery(enc1)
         const enc2 = specimen2.query
 
         expect(specimen2.name).toBe('Hello')
