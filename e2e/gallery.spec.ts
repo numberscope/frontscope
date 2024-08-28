@@ -30,13 +30,13 @@ test.describe('Scope', () => {
         )
     })
     test('clicking on a featured item', async ({page}) => {
-        await page.locator('.card-body >> nth=1').click()
+        await page.locator('.card-body >> nth=2').click()
         await expect(page.url()).not.toContain('gallery')
         await expect(
-            await page.locator('#sequenceTab .subheading').innerText()
-        ).toMatch('Random integers 12 to 12')
+            await page.locator('#sequenceTab .item-name').innerText()
+        ).toMatch('Formula: 12')
         await expect(
-            await page.locator('#visualiserTab .subheading').innerText()
+            await page.locator('#visualiserTab .item-name').innerText()
         ).toMatch('Mod Fill')
     })
     test('saving a specimen and then deleting it', async ({page}) => {
