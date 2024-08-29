@@ -1,13 +1,14 @@
-import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
-import {P5Visualizer} from '../visualizers/P5Visualizer'
-import {bigabs, floorSqrt, modulo} from '../shared/math'
-import type {GenericParamDescription} from '../shared/Paramable'
+import {P5Visualizer} from '@/visualizers/P5Visualizer'
+import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+
 import type {
     SequenceInterface,
     Factorization,
-} from '../sequences/SequenceInterface'
-import simpleFactor from '../sequences/simpleFactor'
-import {ParamType} from '../shared/ParamType'
+} from '@/sequences/SequenceInterface'
+import simpleFactor from '@/sequences/simpleFactor'
+import {math} from '@/shared/math'
+import type {GenericParamDescription} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 
 // NOTE: Grid visualizer is not currently working due to the new Paramable
 // system, which is why it has been moved to `visualizers-workbench`
@@ -349,9 +350,9 @@ function isPolygonal(num: bigint, order = 3n): boolean {
     return M === num
 }
 
-const isAbundant = (n: bigint) => getSumOfProperDivisors(n) > bigabs(n)
+const isAbundant = (n: bigint) => getSumOfProperDivisors(n) > math.bigabs(n)
 const isPerfect = (n: bigint) => n > 1n && getSumOfProperDivisors(n) === n
-const isDeficient = (n: bigint) => getSumOfProperDivisors(n) < bigabs(n)
+const isDeficient = (n: bigint) => getSumOfProperDivisors(n) < math.bigabs(n)
 
 function isSemiPrime(factors: Factorization): boolean {
     if (factors === null) throw new Error('Internal error in Grid')
@@ -381,7 +382,7 @@ function divisibleBy(value: bigint, divisor = 3n) {
 }
 
 function congruenceIndicator(modulus: bigint, residue: bigint) {
-    return (value: bigint) => modulo(value, modulus) === residue
+    return (value: bigint) => math.divides(modulus, value - residue)
 }
 
 function lastDigitIs(value: bigint, digit = 0n) {
@@ -674,7 +675,7 @@ earlier ones that use the _same_ style.)
         )
 
         // Round down amount of numbers so that it is a square number.
-        this.sideOfGrid = Number(floorSqrt(this.amountOfNumbers))
+        this.sideOfGrid = Number(math.floorSqrt(this.amountOfNumbers))
         this.amountOfNumbers = this.sideOfGrid * this.sideOfGrid
 
         this.scalingFactor = this.sketch.width / this.sideOfGrid
@@ -706,7 +707,7 @@ earlier ones that use the _same_ style.)
             this.currentIndex++
             this.moveCoordinatesUsingPath(iteration)
         }
-        this.sketch.noLoop()
+        this.stop()
     }
 
     setPresets() {

@@ -42,6 +42,11 @@ export function sameSize(size1: ViewSize, size2: ViewSize) {
     return size1.width === size2.width && size1.height === size2.height
 }
 
+// A visualizer may be either unmounted, drawing, or stopped:
+export const DrawingUnmounted = 0
+export const Drawing = 1
+export const DrawingStopped = 2
+
 export interface VisualizerInterface<PD extends GenericParamDescription>
     extends ParamableInterface<PD> {
     /**
@@ -71,11 +76,15 @@ export interface VisualizerInterface<PD extends GenericParamDescription>
     /**
      * Is the visualizer currently drawing?
      */
-    isDrawing: boolean
+    drawingState: number
     /**
-     * Stop drawing the visualization
+     * Stop drawing the visualization after at most max more frames. If
+     * max <= 0 or not specified, stops immediately. If max = Infinity,
+     * this call has no effect. The only way to clear a previously
+     * set maximum is to call the `continue()` method.
+     * @param {number|undefined} max  Maximum number of frames to draw
      */
-    stop(): void
+    stop(max?: number): void
     /**
      * Continue drawing the visualization
      */

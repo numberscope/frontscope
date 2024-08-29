@@ -78,6 +78,13 @@ export function specimenQuery(
 export function parseSpecimenQuery(query: string) {
     const params = new URLSearchParams(query)
     const name = params.get('name') || 'Error: Unknown Name'
+    // We never insert a frame count in queries we generate, but
+    // we do parse it out in case it was specified, e.g. to make
+    // tests reproducible
+    const frames = parseFloat(params.get('frames') || 'Infinity')
+    // Similarly, we never insert a seed, but parse it in case it
+    // was specified
+    const seed = params.get('randomSeed') || null
     const visualizerKind =
         params.get(vizKey) || 'Error: No visualizer kind specified'
     const sequenceKind =
@@ -98,6 +105,8 @@ export function parseSpecimenQuery(query: string) {
     }
     return {
         name,
+        frames,
+        seed,
         visualizerKind,
         sequenceKind,
         visualizerQuery,

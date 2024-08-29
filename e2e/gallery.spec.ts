@@ -5,7 +5,7 @@ test.beforeEach(async ({page}) => {
     await page.evaluate(() => localStorage.clear())
 })
 
-test.describe('Scope', () => {
+test.describe('Gallery', () => {
     test('Has a title', async ({page}) => {
         await expect(page).toHaveTitle(/Numberscope/)
     })

@@ -1,10 +1,12 @@
-import {modulo} from '../shared/math'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
+import type p5 from 'p5'
+
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
-import type p5 from 'p5'
-import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
+
+import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import {math} from '@/shared/math'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 
 /** md
 # Mod Fill Visualizer
@@ -66,7 +68,8 @@ class ModFill extends P5Visualizer(paramDesc) {
             const s = seq.getElement(num)
             const x = Number(mod - 1n) * this.rectWidth
             const y =
-                sketch.height - Number(modulo(s, mod) + 1n) * this.rectHeight
+                sketch.height
+                - Number(math.modulo(s, mod) + 1n) * this.rectHeight
             sketch.rect(x, y, this.rectWidth, this.rectHeight)
         }
     }
@@ -86,7 +89,7 @@ class ModFill extends P5Visualizer(paramDesc) {
         this.drawNew(this.sketch, this.i, this.seq)
         this.i++
         if (this.i == 1000 || this.i > this.seq.last) {
-            this.sketch.noLoop()
+            this.stop()
         }
     }
 }

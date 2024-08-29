@@ -87,7 +87,7 @@ class ShowFactors extends P5Visualizer(paramDesc) {
                 }
             }
         }
-        sketch.noLoop()
+        this.stop()
     }
 }
 

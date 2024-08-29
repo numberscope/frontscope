@@ -29,6 +29,9 @@ implement these interfaces yourself. That means including all the required
 properties and methods, and making sure they behave in the way the engine
 expects.
 
+And just as a reminder, only generate random numbers (if needed) using mathjs;
+see the [math documentation](../src/shared/math.md).
+
 ## Visualizers
 
 Source: `VisualizerInterface.ts`.

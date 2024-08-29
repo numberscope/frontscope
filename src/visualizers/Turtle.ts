@@ -149,7 +149,7 @@ class Turtle extends P5Visualizer(paramDesc) {
         const angle = this.rotMap.get(currElement.toString())
 
         if (angle == undefined) {
-            this.sketch.noLoop()
+            this.stop()
             return
         }
 
@@ -161,7 +161,7 @@ class Turtle extends P5Visualizer(paramDesc) {
         this.Y += this.stepSize * Math.sin(this.orientation)
 
         this.sketch.line(oldX, oldY, this.X, this.Y)
-        if (++this.currentIndex > this.seq.last) this.sketch.noLoop()
+        if (++this.currentIndex > this.seq.last) this.stop()
     }
 }
 

@@ -1,11 +1,12 @@
-import {modulo} from '../shared/math'
-import {Cached} from './Cached'
-import {alertMessage} from '../shared/alertMessage'
-
 import axios from 'axios'
-import {ParamType} from '../shared/ParamType'
+
+import {Cached} from './Cached'
 import type {Factorization} from './SequenceInterface'
 import simpleFactor from './simpleFactor'
+
+import {alertMessage} from '@/shared/alertMessage'
+import {math} from '@/shared/math'
+import {ParamType} from '@/shared/ParamType'
 
 const paramDesc = {
     modulus: {
@@ -106,7 +107,7 @@ export class OEIS extends Cached(paramDesc) {
             this.last = data.last
             for (let index = data.first; index <= data.last; ++index) {
                 if (this.modulus)
-                    this.cache[index] = modulo(
+                    this.cache[index] = math.modulo(
                         data.values[index],
                         this.modulus
                     )

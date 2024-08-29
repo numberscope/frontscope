@@ -1,10 +1,12 @@
 import p5 from 'p5'
+
 import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
-import {ParamType} from '../shared/ParamType'
+
+import {math} from '@/shared/math'
+import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
-import {divides} from '../shared/math'
 
 /** md
 # Factor Fence Visualizer
@@ -132,7 +134,7 @@ function divisorsFirst(bars: Bar[], n: bigint) {
     const divisors: Bar[] = []
     const nondivisors: Bar[] = []
     bars.forEach(bar => {
-        bar.highlighted = divides(bar.prime, n)
+        bar.highlighted = math.divides(bar.prime, n)
         ;(bar.highlighted ? divisors : nondivisors).push(bar)
     })
     divisors.push(...nondivisors)
@@ -150,6 +152,8 @@ interface BarsData {
 const recWidth = 12
 // Shift from one bar to the next:
 const recSpace = new p5.Vector(recWidth + 2, 0)
+// How many frames to draw at a time
+const tryFrames = 3
 
 // helper function
 const isTrivial = (term: bigint) => term > -2n && term < 2n
@@ -200,9 +204,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     // colour palette
     private palette = new FactorPalette()
 
-    // frame counter for timeout on loop()
     // first factorization failure
-    private frame = 0
     private firstFailure = Number.POSITIVE_INFINITY
 
     barsShowing(size: ViewSize): BarsData {
@@ -255,7 +257,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
             if (elt === 0n) elt = 1n
 
             // store height of bar (log) but with sign info
-            return BigLog(elt * sig) * Number(sig)
+            return math.natlog(elt * sig) * Number(sig)
         })
         this.maxVal = Math.max(...seqVals)
         this.minVal = Math.min(...seqVals)
@@ -307,7 +309,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
             if (facsRaw) {
                 for (const [base, power] of facsRaw) {
                     if (base != -1n && base != 0n) {
-                        const thisBar = {prime: base, log: BigLog(base)}
+                        const thisBar = {prime: base, log: math.natlog(base)}
                         for (let i = 0; i < power; i++) {
                             factors.push(thisBar)
                         }
@@ -379,6 +381,8 @@ class FactorFence extends P5Visualizer(paramDesc) {
             const factors: Bar[] = []
             this.factorizations[myIndex] = factors
         }
+        // Only need a couple of frames to start with:
+        this.stop(tryFrames)
     }
 
     /** md
@@ -467,9 +471,6 @@ In addition, several keypress commands are recognized:
         // this comment should be removed at the next maintenance.]
         if (this.sketch.keyIsPressed) this.keyPresses()
         if (this.mouseDown) this.mouseCheckDrag()
-        if (!this.sketch.keyIsPressed && !this.sketch.mouseIsPressed) {
-            ++this.frame
-        }
 
         // clear the sketch
         this.sketch.clear(0, 0, 0, 0)
@@ -546,14 +547,9 @@ In addition, several keypress commands are recognized:
         // text at base of sketch, if not small canvas
         if (this.sketch.height > 400 && this.labels) this.bottomText()
 
-        // stop drawing if no input from user and not waiting on elements
-        // or factorizations
-        if (
-            this.frame > 3
-            && !this.collectFailed
-            && this.firstFailure >= barsInfo.maxBars
-        ) {
-            this.sketch.noLoop()
+        // If we are waiting on elements or factorizations, extend lifetime
+        if (this.collectFailed || this.firstFailure < barsInfo.maxBars) {
+            this.extendLoop()
         }
     }
 
@@ -601,7 +597,7 @@ In addition, several keypress commands are recognized:
                 // times scaling parameter
                 const recHeight =
                     mySign
-                    * (myTerm < 0 ? BigLog(-myTerm) : BigLog(myTerm))
+                    * math.natlog(math.bigabs(myTerm))
                     * this.heightScale
 
                 // draw the rectangle
@@ -692,9 +688,9 @@ In addition, several keypress commands are recognized:
         if (mouseV <= 0 && mouseV >= barLimit) this.mousePrime = prime
     }
 
-    resetLoop() {
-        this.frame = 0
-        this.sketch.loop()
+    extendLoop() {
+        this.continue() // clear the frames remaining
+        this.stop(tryFrames) // and reset it
     }
 
     async resized(toSize: ViewSize) {
@@ -703,12 +699,16 @@ In addition, several keypress commands are recognized:
     }
 
     keyPressed() {
-        this.resetLoop()
+        this.continue()
+    }
+
+    keyReleased() {
+        if (!this.sketch.keyIsPressed) this.stop()
     }
 
     mouseMoved(event: MouseEvent) {
         this.mouseLast = event
-        this.resetLoop()
+        this.extendLoop()
     }
 
     mousePressed() {
@@ -716,7 +716,7 @@ In addition, several keypress commands are recognized:
         this.mouseDown = true
         this.dragStart = new p5.Vector(this.sketch.mouseX, this.sketch.mouseY)
         this.graphCornerStart = this.graphCorner.copy()
-        this.resetLoop()
+        this.continue()
     }
 
     mouseReleased() {
@@ -728,7 +728,7 @@ In addition, several keypress commands are recognized:
             this.refreshParams()
         }
         this.mouseDown = false
-        this.resetLoop()
+        this.extendLoop()
     }
 
     /** md
@@ -757,7 +757,7 @@ In addition, several keypress commands are recognized:
             .copy()
             .sub(cornerToMouse.mult(scaleFac))
             .mult(1 / this.scaleFactor)
-        this.resetLoop()
+        this.extendLoop()
     }
 
     // Displays text at given position, returning number of pixels used
@@ -972,18 +972,6 @@ In addition, several keypress commands are recognized:
         this.sketch.rect(x, y - height, width, height)
         this.sketch.drawingContext.fillStyle = fillStyle
     }
-}
-
-// bigint logarithm base 10
-// would be good to put this in shared math later
-// from https://stackoverflow.com/questions/70382306/logarithm-of-a-bigint
-function BigLog10(n: bigint) {
-    if (n < 0) return NaN
-    const s = n.toString(10)
-    return s.length + Math.log10(Number('0.' + s.substring(0, 15)))
-}
-function BigLog(n: bigint) {
-    return BigLog10(n) / Math.log10(Math.E)
 }
 
 export const exportModule = new VisualizerExportModule(FactorFence)

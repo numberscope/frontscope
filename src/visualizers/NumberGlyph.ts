@@ -1,12 +1,13 @@
 import p5 from 'p5'
+
 import {P5Visualizer} from './P5Visualizer'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
-//import type {Factorization} from '../sequences/SequenceInterface'
 import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
-import * as math from 'mathjs'
-import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
+
+import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import {math} from '@/shared/math'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 
 /** md
 
@@ -278,7 +279,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     draw() {
         this.sketch.noStroke()
         if (this.currentIndex > this.last) {
-            this.sketch.noLoop()
+            this.stop()
             return
         }
         this.drawCircle(this.currentIndex)

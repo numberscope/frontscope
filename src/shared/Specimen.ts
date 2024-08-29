@@ -1,14 +1,14 @@
 import {specimenQuery, parseSpecimenQuery} from './browserCaching'
+import {math} from './math'
 import type {GenericParamDescription} from './Paramable'
 
-import {produceSequence} from '@/sequences/sequences'
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
-
+import {produceSequence} from '@/sequences/sequences'
+import {nullSize, sameSize} from '@/visualizers/VisualizerInterface'
 import type {
     VisualizerInterface,
     ViewSize,
 } from '@/visualizers/VisualizerInterface'
-import {nullSize, sameSize} from '@/visualizers/VisualizerInterface'
 import vizMODULES from '@/visualizers/visualizers'
 
 /**
@@ -220,6 +220,7 @@ export class Specimen {
      */
     static async fromQuery(query: string) {
         const specs = parseSpecimenQuery(query)
+        if (specs.seed) math.config({randomSeed: specs.seed})
         const specimen = new Specimen(
             specs.name,
             specs.visualizerKind,
@@ -230,6 +231,7 @@ export class Specimen {
         specimen.sequence.validate()
         await specimen.sequence.fill() // may determine sequence limits
         specimen.visualizer.validate()
+        specimen.visualizer.stop(specs.frames)
         return specimen
     }
     /**

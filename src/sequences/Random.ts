@@ -1,7 +1,9 @@
 import {SequenceExportModule} from './SequenceInterface'
 import {Cached} from './Cached'
 import simpleFactor from './simpleFactor'
-import {ParamType} from '../shared/ParamType'
+
+import {math} from '@/shared/math'
+import {ParamType} from '@/shared/ParamType'
 import type {ParamValues} from '@/shared/Paramable'
 
 const paramDesc = {
@@ -48,9 +50,7 @@ class Random extends Cached(paramDesc) {
 
     calculate(_n: number) {
         // create a random integer between min and max inclusive
-        return BigInt(
-            Math.floor(Math.random() * (this.max - this.min + 1) + this.min)
-        )
+        return BigInt(math.randomInt(this.min, this.max + 1))
     }
 
     factor(_n: number, v: bigint) {

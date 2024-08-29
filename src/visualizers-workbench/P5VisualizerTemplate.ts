@@ -215,7 +215,10 @@ class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
         // (i.e., you're not animating anything or drawing progressively),
         // prevent the browser from using excess processor effort by stopping
         // the drawing loop:
-        sketch.noLoop()
+        this.stop()
+        // Note you should not call the usual p5.js `noLoop()` or `loop()`
+        // methods on the sketch; use `this.stop()` and `this.continue()`
+        // instead.
     }
 
     // === Event handling ===
@@ -253,9 +256,9 @@ class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
         } else {
             // === Restarting the animation loop ===
             // If your visualizer finished drawing for a while and so
-            // called noLoop(), but an event changes what needs to be
-            // displayed, make sure to restart by calling loop().
-            sketch.loop()
+            // called stop(), but an event changes what needs to be
+            // displayed, make sure to restart by calling continue().
+            this.continue()
         }
     }
 

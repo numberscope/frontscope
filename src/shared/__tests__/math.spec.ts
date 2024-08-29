@@ -1,5 +1,6 @@
-import * as math from '../math'
 import {describe, it, expect} from 'vitest'
+
+import {math} from '../math'
 
 const large = 9007199254740993n
 

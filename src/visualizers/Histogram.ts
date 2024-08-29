@@ -380,13 +380,11 @@ class FactorHistogram extends P5Visualizer(paramDesc) {
         }
 
         // If mouse interaction, draw hover box
-        if (this.mouseOver === true && inBin === true) {
+        if (this.mouseOver && inBin) {
             this.drawHoverBox(binIndex, smallOffsetNumber)
         }
         // If no mouse interaction, don't loop
-        if (this.mouseOver === false) {
-            sketch.noLoop()
-        }
+        if (!this.mouseOver) this.stop()
     }
 
     async reset() {

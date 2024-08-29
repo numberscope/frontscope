@@ -1,9 +1,10 @@
-import {SequenceExportModule} from './SequenceInterface'
-import {ParamType} from '../shared/ParamType'
 import {Cached} from './Cached'
+import {SequenceExportModule} from './SequenceInterface'
 import simpleFactor from './simpleFactor'
-import * as math from 'mathjs'
+
+import {math} from '@/shared/math'
 import type {ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 
 const paramDesc = {
     formula: {

@@ -234,11 +234,20 @@ visualizer can't be loaded into Numberscope without it.
 
 #### 💡️ Stop and start animation _(often used)_
 
-If your visualization is a static picture, call the sketch's `noLoop()`
-function when you're done drawing. This stops the animation loop, so you don't
-waste time re-drawing the same picture dozens of times per second. If the
-visualization is only static temporarily, you can call `loop()` to re-start
-the animation loop whenever you need to.
+If your visualization is a static picture, call the visualizer `stop()` method
+when you're done drawing. This stops the p5 animation loop, so you don't waste
+time re-drawing the same picture dozens of times per second. If the
+visualization is only static temporarily, you can call `continue()` to
+re-start the animation loop whenever you need to.
+
+If you have previous experience with p5.js, you might be used to calling
+`noLoop()` and `loop()` to stop and start your sketch. In a visualizer,
+however, you need to use its `stop()` and `continue()` methods to ensure that
+all of Numberscope's controls remain properly updated.
+
+As an advanced option, `stop()` can also take a maximum number of additional
+frames to draw. So if you you only want your visualization to run for 100
+frames, you could just call `this.stop(100)` right in your `setup()` function.
 
 -   **p5 Template:** Stop the animation loop at the end of each frame. Only
     start it again when the user steps to a different sequence entry,
@@ -264,6 +273,29 @@ something unexpected has happened. The first is with the
 [alertMessage](../src/shared/alertMessage.md) utility. The second is to just
 throw an error. If it's not caught anywhere else, the visualizer framework
 will show it in an error dialog.
+
+#### 🔩️ Getting random numbers _(advanced)_
+
+Do not use the built-in `Math.random()` random number generator, because there
+is no practical mechanism for making its output reproducible for testing
+purposes. Instead, obtain random numbers using the provided `math` module,
+along the following lines:
+
+```
+import {math} from '@/shared/math'
+import {P5Visualizer} from '@/visualizers/P5Visualizer'
+
+class DiceVisualizer extends P5Visualizer({}) {
+    ...
+    draw() {
+        ...
+        // Roll a die (generate a number 1, 2, 3, 4, 5, or 6,
+        // all equally likely, at random):
+        const myRoll = math.randomInt(1, 7)  // upper limit is exclusive.
+        ...
+```
+
+For more details, see the [math documentation](../src/shared/math.md).
 
 ### How to document your visualizer
 

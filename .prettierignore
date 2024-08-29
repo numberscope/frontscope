@@ -19,6 +19,7 @@ dist
 index.html
 node_modules
 package-lock.json
+e2e/featured.spec.ts-snapshots
 playwright-report
 site
 test-results

@@ -131,7 +131,7 @@ class Differences extends P5Visualizer(paramDesc) {
             // Move the next row forward half an entry, for a pyramid shape.
             firstX = firstX + (1 / 2) * xDelta
         }
-        sketch.noLoop()
+        this.stop()
     }
 }
 

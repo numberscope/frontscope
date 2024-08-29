@@ -1,10 +1,17 @@
-import type {VisualizerInterface, ViewSize} from './VisualizerInterface'
-import {nullSize} from './VisualizerInterface'
-import {Paramable} from '../shared/Paramable'
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
-import {CachingError} from '../sequences/Cached'
 import p5 from 'p5'
+
+import {
+    DrawingUnmounted,
+    Drawing,
+    DrawingStopped,
+    nullSize,
+} from './VisualizerInterface'
+import type {VisualizerInterface, ViewSize} from './VisualizerInterface'
+
+import {CachingError} from '@/sequences/Cached'
+import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import {Paramable} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 
 // Ugh, the gyrations we go through to keep TypeScript happy
 // while only listing the p5 methods once:
@@ -77,7 +84,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         _sketch?: p5
         _canvas?: p5.Renderer
         _size = nullSize
-        isDrawing = false
+        _framesRemaining = Infinity
+        drawingState = DrawingUnmounted
 
         within?: HTMLElement
         get sketch(): p5 {
@@ -203,6 +211,9 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 sketch.draw = () => {
                     try {
                         this.draw()
+                        if (--this._framesRemaining <= 0) {
+                            this.stop(0)
+                        }
                     } catch (e) {
                         if (e instanceof CachingError) {
                             sketch.cursor('progress')
@@ -253,7 +264,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             const displayTimeout = 5
 
             if (this._canvas) {
-                this.isDrawing = true
+                this.drawingState = Drawing
                 this._sketch?.draw()
             } else {
                 // If the rendering context is not yet ready, start an interval
@@ -261,7 +272,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 const interval = setInterval(() => {
                     if (this._canvas) {
                         clearInterval(interval)
-                        this.isDrawing = true
+                        this.drawingState = Drawing
                         this._sketch?.draw()
                     }
                 }, displayTimeout)
@@ -271,16 +282,22 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         /**
          * Stop displaying the visualizer
          */
-        stop(): void {
-            this.isDrawing = false
-            this._sketch?.noLoop()
+        stop(max: number = 0): void {
+            if (max <= 0) {
+                // hard stop now
+                this.drawingState = DrawingStopped
+                this._sketch?.noLoop()
+            } else if (max < this._framesRemaining) {
+                this._framesRemaining = max
+            }
         }
 
         /**
          * Continue displaying the visualizer
          */
         continue(): void {
-            this.isDrawing = true
+            this.drawingState = Drawing
+            this._framesRemaining = Infinity
             this._sketch?.loop()
         }
 
@@ -314,7 +331,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 throw 'Attempt to dispose P5Visualizer that is not on view.'
             }
             if (this.within !== element) return // that view already departed
-            this.isDrawing = false
+            this.drawingState = DrawingUnmounted
             this._sketch.remove()
             this._sketch = undefined
             this._canvas = undefined

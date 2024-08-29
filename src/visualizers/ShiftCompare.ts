@@ -1,10 +1,11 @@
 import p5 from 'p5'
-import {modulo} from '../shared/math'
+
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
-import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
+
+import {math} from '@/shared/math'
+import type {ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 
 /** md
 # Shift Compare Visualizer
@@ -43,10 +44,6 @@ class ShiftCompare extends P5Visualizer(paramDesc) {
 
     private img: p5.Image = new p5.Image(1, 1) // just a dummy
     mod = 2n
-
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(seq)
-    }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
@@ -96,9 +93,9 @@ class ShiftCompare extends P5Visualizer(paramDesc) {
 
         // Write to image, then to screen for speed.
         for (let x = this.seq.first; x <= xLim; x++) {
-            const xResidue = modulo(this.seq.getElement(x), this.mod)
+            const xResidue = math.modulo(this.seq.getElement(x), this.mod)
             for (let y = this.seq.first; y <= yLim; y++) {
-                const yResidue = modulo(this.seq.getElement(y), this.mod)
+                const yResidue = math.modulo(this.seq.getElement(y), this.mod)
                 for (let i = 0; i < d; i++) {
                     for (let j = 0; j < d; j++) {
                         const index =

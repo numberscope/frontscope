@@ -1,9 +1,11 @@
 import p5 from 'p5'
-import {modulo} from '../shared/math'
+
 import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
-import {ParamType} from '../shared/ParamType'
-import type {ParamValues} from '../shared/Paramable'
+
+import {math} from '@/shared/math'
+import type {ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 
 /** md
 # Chaos Visualizer
@@ -282,7 +284,7 @@ class Chaos extends P5Visualizer(paramDesc) {
             for (let c = 0; c < paletteSize; c++) {
                 let hexString = ''
                 for (let h = 0; h < 6; h++) {
-                    hexString += Math.floor(Math.random() * 16).toString(16)
+                    hexString += math.randomInt(16).toString(16)
                 }
                 colorList.push('#' + hexString)
             }
@@ -382,12 +384,12 @@ class Chaos extends P5Visualizer(paramDesc) {
 
             // check its modulus to see which corner to walk toward
             // (Safe to convert to number since this.corners is "small")
-            const myCorner = Number(modulo(myTerm, this.corners))
+            const myCorner = Number(math.modulo(myTerm, this.corners))
             const myCornerPosition = this.cornersList[myCorner]
 
             // check the index modulus to see which walker is walking
             // (Ditto on safety.)
-            const myWalker = Number(modulo(this.myIndex, this.walkers))
+            const myWalker = Number(math.modulo(this.myIndex, this.walkers))
 
             // update the walker position
             this.walkerPositions[myWalker].lerp(myCornerPosition, this.frac)
@@ -414,7 +416,7 @@ class Chaos extends P5Visualizer(paramDesc) {
                             this.currentPalette.colorList[1],
                             Number(
                                 // Safe since gradientLength is "small"
-                                modulo(this.myIndex, this.gradientLength)
+                                math.modulo(this.myIndex, this.gradientLength)
                             ) / this.gradientLength
                         )
                     }
@@ -440,7 +442,7 @@ class Chaos extends P5Visualizer(paramDesc) {
             )
         }
         // stop drawing if we exceed decreed terms
-        if (this.myIndex > this.last) sketch.noLoop()
+        if (this.myIndex > this.last) this.stop()
     }
 }
 
