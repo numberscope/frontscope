@@ -123,9 +123,12 @@ top of the parameters panel, and may be less immediately visible to the user,
 for which reason these should be avoided if type-checking or the `validate`
 property will suffice.
 
-Your validation can't depend on the sequence. You can do sequence-dependent
-validation in [`setup()`](#set-up-the-visualizer-often-used), as described
-below, but you won't be able to prompt the user for corrections at that point.
+By the time checkParameters() is called, the visualizer's sequence should be
+sufficiently initialized that you can depend on its `first` and `last` (index)
+values, in case you need those for validation. On the other hand, the sketch
+will not necessarily yet be available. You can do sketch-dependent validation
+in [`setup()`](#set-up-the-visualizer-often-used), as described below, but you
+won't be able to prompt the user for corrections at that point.
 
 -   **p5 Template:** Make sure that the step size is positive.
 
