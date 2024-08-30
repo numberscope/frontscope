@@ -12,7 +12,7 @@ width="320" style="float: right; margin-left: 1em;" />](
 ../assets/img/FactorHistogram/ExampleImage.png)
 
 This visualizer counts the number of prime factors (with multiplicity)
-of each entry in the sequence and creates a histogram of the results. 
+of each entry in the sequence and creates a histogram of the results.
 
 The number of prime factors with multiplicity is a function commonly
 called

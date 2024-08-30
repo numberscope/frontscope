@@ -72,7 +72,7 @@
             class="specimen-bar"
             :specimen
             @updateSpecimenName="handleSpecimenUpdate" />
-        <!-- 
+        <!--
             The dropzone ids must remain like "[position]-dropzone"
             where [position] is the same as the dropzone attribute.
 

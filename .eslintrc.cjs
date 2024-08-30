@@ -20,6 +20,7 @@ module.exports = {
             {allow: ['methods']},
         ],
         'max-len': ['error', {code: 80, comments: 80}],
+        'no-trailing-spaces': 'error',
         'operator-linebreak': [
             'error',
             'before',

@@ -642,7 +642,7 @@ earlier ones that use the _same_ style.)
         // according to the parameter description
         /*
         for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
-            this.propertyObjects[i].property = 
+            this.propertyObjects[i].property =
                 this.tentativeValues[`property${i}`] as Property
             this.propertyObjects[i].visualization =
                 this.tentativeValues[`prop${i}Vis`] as PropertyVisualization

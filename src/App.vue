@@ -68,7 +68,7 @@
         --ns-desktop-tab-width: 300px;
         --ns-specimen-card-width: 216px;
 
-        /* Breakpoint widths 
+        /* Breakpoint widths
         Default styles should be for vertical mobile devices
         (devices narrower than --ns-breakpoint-mobile)
 
