@@ -23,11 +23,15 @@ const paramDesc = {
 
 /**
  *
- * @class SequenceClassRandom
+ * @class Random
  * Creates a sequence of random integers in a specified range.
  * Starts at index 0 and has no limit.
+ *
+ * Note that unlike most sequence classes, this one is also exported
+ * directly, not just through the exportModule. That is for purposes
+ * of testing the caching infrastructure, see ./__tests__/Cached.spec.ts.
  */
-class Random extends Cached(paramDesc) {
+export class Random extends Cached(paramDesc) {
     name = 'uninitialized random integers'
     static category = 'Random Integers'
     static description =

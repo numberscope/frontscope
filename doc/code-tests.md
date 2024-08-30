@@ -12,6 +12,10 @@ tests very convenient. To run all unit (vitest) tests, execute
 `npm run test:unit`. To run all end-to-end (Playwright) tests, use
 `npm run test:e2e`.
 
+Note that the end-to-end tests do result in accessing a considerable amount of
+(sequence) data over the internet. Therefore, if you run them when your
+internet connection is poor or inactive, some of the tests will fail.
+
 #### Customizing vitest runs
 
 If some situation in the code has led to one of the unit tests failing, you
