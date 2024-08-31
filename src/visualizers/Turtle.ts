@@ -145,11 +145,11 @@ this will default to the max number of terms available.
         default: 0,
         type: ParamType.INTEGER,
         displayName: 'Path length',
-        required: true,
+        required: false,
         description:
             'cannot exceed available number of terms from sequence;'
-            + ' entering 0 will indicate infinity',
-        hideDescription: true,
+            + ' entering 0 will indicate as many terms as possible',
+        hideDescription: false,
         validate: (n: number) =>
             ValidationStatus.errorIf(
                 n < 0,
@@ -361,6 +361,7 @@ class Turtle extends P5Visualizer(paramDesc) {
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
+<<<<<<< HEAD
         // first term handling
         const firstParams =
             paramDesc.firstTerm as ParamInterface<ParamType.INTEGER>
@@ -449,6 +450,53 @@ class Turtle extends P5Visualizer(paramDesc) {
                 rule.text
                 + ` (must match domain length, ${params.domain.length})`
         }
+
+=======
+        }
+
+        // growth handling
+        this.growthInitial = params.growth
+        this.pathLengthInternal = params.pathLength
+        // if path length is zero, force growth
+        if (params.pathLength == 0) {
+            this.pathLengthInternal = this.seq.last - this.seq.first
+            this.growthInitial = 1
+        }
+
+        // domain handling
+        // for each of the rule arrays, should match
+        // params.domain.length; otherwise special handling
+
+        // tell user the appriopriate rule lengths
+        //const paramDescs: ParamInterface<ParamType.INTEGER>[][] = [
+        const ruleParams = [
+            {
+                param: params.turns,
+                local: this.turnsInternal,
+                desc: paramDesc.turns,
+                text: 'Turn angles',
+            },
+            {
+                param: params.steps,
+                local: this.stepsInternal,
+                desc: paramDesc.steps,
+                text: 'Step sizes',
+            },
+            {
+                param: params.folding,
+                local: this.foldingInternal,
+                desc: paramDesc.folding,
+                text: 'Folding rates',
+            },
+        ]
+
+        // commenting out because of read-only for now
+        //        for (const rule of ruleParams) {
+        //           // how can I add a newline before parenthetical?
+        //          rule.desc.displayName =
+        //             rule.text
+        //            + ` (must match domain length, ${params.domain.length})`
+        //   }
 
         // ignore (remove) or add extra rules for excess/missing
         // terms compared to domain length
