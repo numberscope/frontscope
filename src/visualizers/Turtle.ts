@@ -146,15 +146,6 @@ this will default to the max number of terms available.
         type: ParamType.INTEGER,
         displayName: 'Path length',
         required: false,
-        description:
-            'cannot exceed available number of terms from sequence;'
-            + ' entering 0 will indicate as many terms as possible',
-        hideDescription: false,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(
-                n < 0,
-                'Path length must be non-negative'
-            ),
     },
     /**
 - growth: a number.  If zero, the full path is drawn all at once.  
@@ -454,13 +445,11 @@ class Turtle extends P5Visualizer(paramDesc) {
 =======
         }
 
-        // growth handling
+        // walkAnimation handling
         this.growthInitial = params.growth
-        this.pathLengthInternal = params.pathLength
-        // if path length is zero, force growth
+        // 0 means grow as long as possible
         if (params.pathLength == 0) {
             this.pathLengthInternal = this.seq.last - this.seq.first
-            this.growthInitial = 1
         }
 
         // domain handling
