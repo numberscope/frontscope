@@ -107,26 +107,13 @@ will be interpreted as the step length for the n-th domain element.
         hideDescription: false,
     },
     /**
-- pathLength: a number. Gives the number of sequence terms to use.  
-Entering a 0 means to use all available terms (possibly forever), and 
-will force the 'growth' animation to turn on.
-If the user enters a number exceeding the number of terms available, 
-this will default to the max number of terms available.
-     **/
-    pathLength: {
-        default: 0,
-        type: ParamType.INTEGER,
-        displayName: 'Path length',
+- walkAnimation: boolean. If true, show animation controls
+    **/
+    walkAnimation: {
+        default: false,
+        type: ParamType.BOOLEAN,
+        displayName: 'Turtle movement controls ↴',
         required: false,
-        description:
-            'cannot exceed available number of terms from sequence;'
-            + ' entering 0 will indicate as many terms as possible',
-        hideDescription: false,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(
-                n < 0,
-                'Path length must be non-negative'
-            ),
     },
     /**
 - growth: a number.  If zero, the full path is drawn all at once.  
@@ -135,18 +122,95 @@ to grow per frame, until the path reaches its maximum length (give by
 `pathLength` set above).
      **/
     growth: {
+        default: 1,
+        type: ParamType.INTEGER,
+        displayName: 'Turtle speed',
+        required: false,
+        description: 'how many more terms to show per frame',
+        hideDescription: false,
+        visibleDependency: 'walkAnimation',
+        visibleValue: true,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(n <= 0, 'Path growth must be positive'),
+    },
+    /**
+- startEndControl: boolean. If true, show animation controls
+    **/
+    startEndControl: {
+        default: false,
+        type: ParamType.BOOLEAN,
+        displayName: 'Custom start/end ↴',
+        required: false,
+    },
+    /**
+- startTerm: a number. Gives the first term to use.  
+Entering a 0 means to use all available terms (possibly forever), and 
+will force the 'growth' animation to turn on.
+If the user enters a number exceeding the number of terms available, 
+this will default to the max number of terms available.
+     **/
+    startTerm: {
         default: 0,
         type: ParamType.INTEGER,
-        displayName: 'Path growth',
+        displayName: 'First term',
         required: false,
-        description:
-            'turns on animation: how many more terms to show per frame',
+        description: 'index of first term to use',
         hideDescription: false,
+        visibleDependency: 'startEndControl',
+        visibleValue: true,
         validate: (n: number) =>
             ValidationStatus.errorIf(
                 n < 0,
-                'Path growth must be non-negative'
+                'Path length must be non-negative'
             ),
+    },
+    /**
+- pathLength: a number.  The number of terms to use.
+Entering a 0 means to use all available terms (possibly forever), and 
+will force the 'growth' animation to turn on.
+If the user enters a number exceeding the number of terms available, 
+this will default to the max number of terms available.
+     **/
+    pathLength: {
+        default: 0,
+        type: ParamType.INTEGER,
+        displayName: 'Turtle endpoint',
+        required: false,
+        description:
+            'cannot exceed available number of terms from sequence;'
+            + ' entering 0 will indicate as many terms as possible',
+        hideDescription: false,
+        visibleDependency: 'startEndControl',
+        visibleValue: true,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(
+                n < 0,
+                'Path length must be non-negative'
+            ),
+    },
+    /**
+- start: x,y coordinates of the point where drawing will start.  The default
+0,0 represents the center of the canvas, and positive values will move the
+to the right and down, respectively.
+     **/
+    start: {
+        default: new p5.Vector(),
+        type: ParamType.VECTOR,
+        displayName: 'Start position',
+        required: false,
+        description: 'coordinates of the point where drawing will start',
+        visibleDependency: 'startEndControl',
+        visibleValue: true,
+        hideDescription: true,
+    },
+    /**
+- foldAnimation: boolean. If true, show folding controls
+    **/
+    foldAnimation: {
+        default: true,
+        type: ParamType.BOOLEAN,
+        displayName: 'Protein folding animation ↴',
+        required: false,
     },
     /** md
 - folding: a list of numbers. When these are non-zero, the path will animate.  
@@ -170,8 +234,18 @@ looks a little like protein folding.
             + ' of 0.01 degree, in order corresponding'
             + ' to the sequence values listed in domain',
         hideDescription: false,
+        visibleDependency: 'foldAnimation',
+        visibleValue: true,
     },
-
+    /**
+- pathLook: boolean. If true, show path style controls
+    **/
+    pathLook: {
+        default: true,
+        type: ParamType.BOOLEAN,
+        displayName: 'Path styling ↴',
+        required: false,
+    },
     /**
 - strokeWeight: a number. Gives the width of the segment drawn for each entry,
 in pixels.
@@ -184,6 +258,8 @@ in pixels.
         validate: function (n: number, status: ValidationStatus) {
             if (n <= 0) status.addError('Stroke width must be positive')
         },
+        visibleDependency: 'pathLook',
+        visibleValue: true,
     },
     /**
 - bgColor: The background color of the visualizer canvas.
@@ -193,6 +269,8 @@ in pixels.
         type: ParamType.COLOR,
         displayName: 'Background Color',
         required: true,
+        visibleDependency: 'pathLook',
+        visibleValue: true,
     },
     /**
 - strokeColor: The color used for drawing the path.
@@ -202,19 +280,8 @@ in pixels.
         type: ParamType.COLOR,
         displayName: 'Stroke Color',
         required: true,
-    },
-    /**
-- start: x,y coordinates of the point where drawing will start.  The default
-0,0 represents the center of the canvas, and positive values will move the
-to the right and down, respectively.
-     **/
-    start: {
-        default: new p5.Vector(),
-        type: ParamType.VECTOR,
-        displayName: 'Start',
-        required: false,
-        description: 'coordinates of the point where drawing will start',
-        hideDescription: true,
+        visibleDependency: 'pathLook',
+        visibleValue: true,
     },
 } satisfies GenericParamDescription
 
@@ -276,13 +343,11 @@ class Turtle extends P5Visualizer(paramDesc) {
             )
         }
 
-        // growth handling
+        // walkAnimation handling
         this.growthInitial = params.growth
-        this.pathLengthInternal = params.pathLength
-        // if path length is zero, force growth
+        // 0 means grow as long as possible
         if (params.pathLength == 0) {
             this.pathLengthInternal = this.seq.last - this.seq.first
-            this.growthInitial = 1
         }
 
         // domain handling
@@ -338,6 +403,10 @@ class Turtle extends P5Visualizer(paramDesc) {
                 rule.local.pop()
             }
         })
+        // store internally
+        this.turnsInternal = ruleParams[0].local
+        this.stepsInternal = ruleParams[1].local
+        this.foldingInternal = ruleParams[2].local
 
         // add warnings explaining the behaviour
         ruleParams.forEach(rule => {
@@ -484,6 +553,7 @@ class Turtle extends P5Visualizer(paramDesc) {
         }
 
         // if we are still drawing, recreate path
+
         this.createpath(sketch.frameCount, this.currentLength)
     }
 

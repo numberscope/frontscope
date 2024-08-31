@@ -7,8 +7,9 @@ const featuredSIMs = [
         'Thue Trellis',
         'Turtle',
         'OEIS A010060',
-        'domain=0+1&range=15+180&stepSize=10&start=0+200'
-            + '&strokeWeight=1&bgColor=e0def7&strokeColor=5e8d85'
+        'modulus=2&domain=0+1&turns=15+-165&steps=2+3&growth=40'
+            + '&start=-450+300&foldAnimation=false&folding=0+0'
+            + '&bgColor=e0def7&strokeColor=5e8d85&seq=OEIS+A010060'
     ),
     specimenQuery(
         'Divisor Square',
