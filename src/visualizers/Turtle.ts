@@ -35,6 +35,25 @@ protein-folding effect.
 **/
 
 const paramDesc = {
+    /**
+- modulus: the modulus to apply to any incoming sequence.  This is the most
+common way
+to ensure the sequence values will lie in your domain.  A value of 0 means 
+that no modulus is applied.
+     **/
+    modulus: {
+        default: 5,
+        type: ParamType.INTEGER,
+        displayName: 'Sequence Modulus',
+        required: true,
+        description: 'consider sequence values modulo this; 0 means none',
+        hideDescription: false,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(
+                n < 0,
+                'Modulus should be non-negative; 0 means none.'
+            ),
+    },
     /** md
 - domain: A list of all of the values that may occur in the sequence.
 Values of the sequence not occurring in this list will be ignored.
@@ -51,29 +70,8 @@ have a small domain.)
         required: true,
         description:
             'values to interpret as rules; sequence values not '
-            + ' matching any term here are ignored; pro tip: if you enter a'
-            + ' single value it will autopopulate 0, 1, ..., n-1 and set'
-            + ' modulus value to n',
-        hideDescription: true,
-    },
-    /**
-- modulus: the modulus to apply to any incoming sequence.  This is the most
-common way
-to ensure the sequence values will lie in your domain.  A value of 0 means 
-that no modulus is applied.
-     **/
-    modulus: {
-        default: 5,
-        type: ParamType.INTEGER,
-        displayName: 'Sequence Modulus',
-        required: true,
-        description: 'consider sequence values modulo this; 0 means none',
-        hideDescription: true,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(
-                n < 0,
-                'Modulus should be non-negative; 0 means none.'
-            ),
+            + ' matching any term here are ignored',
+        hideDescription: false,
     },
     /** md
 - turns: a list of numbers. These are turning angles, in degrees, 
@@ -90,7 +88,7 @@ x degrees, where x is the first number in this field.
         description:
             'list of angles in degrees, in order corresponding'
             + ' to the sequence values listed in domain',
-        hideDescription: true,
+        hideDescription: false,
     },
     /** md
 - steps: a list of numbers. These are step lengths, corresponding
@@ -106,7 +104,7 @@ will be interpreted as the step length for the n-th domain element.
         description:
             'list of step lengths in pixels, in order corresponding'
             + ' to the sequence values listed in domain',
-        hideDescription: true,
+        hideDescription: false,
     },
     /**
 - pathLength: a number. Gives the number of sequence terms to use.  
@@ -119,11 +117,11 @@ this will default to the max number of terms available.
         default: 0,
         type: ParamType.INTEGER,
         displayName: 'Path length',
-        required: true,
+        required: false,
         description:
             'cannot exceed available number of terms from sequence;'
-            + ' entering 0 will indicate infinity',
-        hideDescription: true,
+            + ' entering 0 will indicate as many terms as possible',
+        hideDescription: false,
         validate: (n: number) =>
             ValidationStatus.errorIf(
                 n < 0,
@@ -143,7 +141,7 @@ to grow per frame, until the path reaches its maximum length (give by
         required: false,
         description:
             'turns on animation: how many more terms to show per frame',
-        hideDescription: true,
+        hideDescription: false,
         validate: (n: number) =>
             ValidationStatus.errorIf(
                 n < 0,
@@ -163,13 +161,15 @@ looks a little like protein folding.
     folding: {
         default: [0, 0, 0, 0, 0] as number[],
         type: ParamType.NUMBER_ARRAY,
+        // type NUMBER_ARRAY needs to let you type a space even under
+        // refreshParams()
         displayName: 'Folding rates',
         required: false,
         description:
             'turns on animation:  list of angle increments per frame in units'
             + ' of 0.01 degree, in order corresponding'
             + ' to the sequence values listed in domain',
-        hideDescription: true,
+        hideDescription: false,
     },
 
     /**
@@ -238,7 +238,8 @@ class Turtle extends P5Visualizer(paramDesc) {
     private currentLength = 1 // length of path
     private path: p5.Vector[] = [] // array of path info
     private pathIsStatic = true // whether there's any folding
-    private growthInternal = 0 // growth
+    private growthInitial = 0 // growth is turned on or off overall
+    private growthInternal = 0 // growth currently happening or not
     private pathLengthInternal = 1 // can be infinity
 
     // controlling the folding smoothness/speed/units
@@ -248,86 +249,160 @@ class Turtle extends P5Visualizer(paramDesc) {
     // handling slow caching
     private pathFailure = false
 
+    // private copies of rule arrays
+    private turnsInternal: number[] = []
+    private stepsInternal: number[] = []
+    private foldingInternal: number[] = []
+
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-        // If number is entered, immediately populate
-        if (params.domain.length === 1) {
-            if (params.domain[0] > 0 && params.domain[0] < 10) {
-                params.modulus = Number(params.domain[0])
-                params.domain = Array.from(
-                    {length: params.modulus},
-                    (_, index) => BigInt(index)
-                )
-            } else {
-                status.addError(
-                    'If you enter only one integer for'
-                        + ' domain, it is interpreted as a'
-                        + ' modulus and must lie between'
-                        + ' 1 and 9.'
-                )
-            }
+        // path length handling
+        const seqTerms = this.seq.last - this.seq.first + 1
+        if (isFinite(seqTerms)) {
+            const termsParams =
+                paramDesc.pathLength as ParamInterface<ParamType.INTEGER>
+            // this max only shows up after I try to interact with parameters
+            // but it should show up right away
+            // the following code doesn't work because it is read only
+            //termsParams.displayName = `Path length (max: ${seqTerms})`
+            console.log(termsParams)
         }
 
-        // for each of the rule arrays, adjust them to the length
-        // params.domain.length
-        const paramArrays: number[][] = [
-            params.turns,
-            params.steps,
-            params.folding,
-        ]
+        if (seqTerms < params.pathLength) {
+            // when implemented, have this appear next to parameter
+            // pathlength, and make `addWarning()` instead
+            status.addWarning(
+                'More terms requested for path length than available; using '
+                    + `all ${seqTerms}.`
+            )
+        }
 
-        paramArrays.forEach(subarray => {
-            while (subarray.length < params.domain.length) {
-                subarray.push(0)
-            }
-            while (subarray.length > params.domain.length) {
-                subarray.pop()
-            }
-        })
-
-        // cannot request a path longer than the sequence provides
-        params.pathLength = Math.min(
-            params.pathLength,
-            this.seq.last - this.seq.first
-        )
+        // growth handling
+        this.growthInitial = params.growth
         this.pathLengthInternal = params.pathLength
-
         // if path length is zero, force growth
         if (params.pathLength == 0) {
             this.pathLengthInternal = this.seq.last - this.seq.first
-            if (params.growth == 0) params.growth = 1
+            this.growthInitial = 1
         }
 
+        // domain handling
+        // for each of the rule arrays, should match
+        // params.domain.length; otherwise special handling
+
+        // tell user the appriopriate rule lengths
+        //const paramDescs: ParamInterface<ParamType.INTEGER>[][] = [
+        const ruleParams = [
+            {
+                param: params.turns,
+                local: this.turnsInternal,
+                desc: paramDesc.turns,
+                text: 'Turn angles',
+            },
+            {
+                param: params.steps,
+                local: this.stepsInternal,
+                desc: paramDesc.steps,
+                text: 'Step sizes',
+            },
+            {
+                param: params.folding,
+                local: this.foldingInternal,
+                desc: paramDesc.folding,
+                text: 'Folding rates',
+            },
+        ]
+
+        // commenting out because of read-only for now
+        //        for (const rule of ruleParams) {
+        //           // how can I add a newline before parenthetical?
+        //          rule.desc.displayName =
+        //             rule.text
+        //            + ` (must match domain length, ${params.domain.length})`
+        //   }
+
+        // ignore (remove) or add extra rules for excess/missing
+        // terms compared to domain length
+        // note: this changes the actual param values
+        // if refreshParams() were called this would be
+        // visible to the user
+        ruleParams.forEach(rule => {
+            rule.local = [...rule.param]
+        })
+
+        ruleParams.forEach(rule => {
+            while (rule.local.length < params.domain.length) {
+                rule.local.push(0)
+            }
+            while (rule.local.length > params.domain.length) {
+                rule.local.pop()
+            }
+        })
+
+        // add warnings explaining the behaviour
+        ruleParams.forEach(rule => {
+            if (rule.param.length > params.domain.length) {
+                // when implemented, have this appear next to parameter
+                // associated to array and make warning instead
+                status.addWarning(
+                    'More entries ('
+                        + rule.param.length
+                        + ') in '
+                        + rule.text
+                        + ' than in domain ('
+                        + params.domain.length
+                        + '); ignoring extras.'
+                )
+            }
+            if (rule.param.length < params.domain.length) {
+                // when implemented, have this appear next to parameter
+                // associated to array and make warning instead
+                // error is stopping refreshParams()
+                status.addWarning(
+                    'Fewer entries ('
+                        + rule.param.length
+                        + ') in '
+                        + rule.text
+                        + ' than in domain ('
+                        + params.domain.length
+                        + '); using trivial behaviour for missing terms.'
+                )
+            }
+        })
         return status
     }
 
     async presketch() {
         await super.presketch()
 
-        await this.refreshParams()
+        // if we add this in, then we can't type a 0 in a list param
+        // await this.refreshParams()
+        // if we leave it out, then we don't get the updating info
+        // on the list params, i.e.
+        // `must match domain length...' doesn't update
 
         // create a map from sequence values to rotations
         for (let i = 0; i < this.domain.length; i++) {
             this.rotMap.set(
                 this.domain[i].toString(),
-                (Math.PI / 180) * this.turns[i]
+                (Math.PI / 180) * this.turnsInternal[i]
             )
         }
 
         // create a map from sequence values to step lengths
         for (let i = 0; i < this.domain.length; i++) {
-            this.stepMap.set(this.domain[i].toString(), this.steps[i])
+            this.stepMap.set(this.domain[i].toString(), this.stepsInternal[i])
         }
 
         // create a map from sequence values to turn increments
         // notice if path is static or we are folding
         this.pathIsStatic = true
         for (let i = 0; i < this.domain.length; i++) {
-            if (this.folding[i] != 0) this.pathIsStatic = false
+            if (this.foldingInternal[i] != 0) this.pathIsStatic = false
             this.foldingMap.set(
                 this.domain[i].toString(),
-                this.folding[i] // in units of this.incrementFactor
+                this.foldingInternal[i] // in units of this.incrementFactor
             )
         }
     }
@@ -347,7 +422,7 @@ class Turtle extends P5Visualizer(paramDesc) {
         // reset variables
         this.begin = 0
         this.currentLength = 1
-        this.growthInternal = this.growth
+        this.growthInternal = this.growthInitial
 
         // if not growing, set to full length immediately
         // pathLength should always be finite if growth is zero
