@@ -265,8 +265,8 @@ class Turtle extends P5Visualizer(paramDesc) {
             // this max only shows up after I try to interact with parameters
             // but it should show up right away
             // the following code doesn't work because it is read only
-            //termsParams.displayName = `Path length (max: ${seqTerms})`
-            console.log(termsParams)
+            termsParams.displayName = `Path length (max: ${seqTerms})`
+            //console.log(termsParams)
         }
 
         if (seqTerms < params.pathLength) {
