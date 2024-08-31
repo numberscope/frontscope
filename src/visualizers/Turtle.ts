@@ -473,30 +473,31 @@ class Turtle extends P5Visualizer(paramDesc) {
             {
                 param: params.turns,
                 local: this.turnsInternal,
-                desc: paramDesc.turns,
+                desc: paramDesc.turns as ParamInterface<ParamType.NUMBER_ARRAY>,
                 text: 'Turn angles',
             },
             {
                 param: params.steps,
                 local: this.stepsInternal,
-                desc: paramDesc.steps,
+                desc: paramDesc.steps as ParamInterface<ParamType.NUMBER_ARRAY>,
                 text: 'Step sizes',
             },
             {
                 param: params.folding,
                 local: this.foldingInternal,
-                desc: paramDesc.folding,
+                // I don't know why lint can't figure this out
+                // eslint-disable-next-line max-len
+                desc: paramDesc.folding as ParamInterface<ParamType.NUMBER_ARRAY>,
                 text: 'Folding rates',
             },
         ]
 
-        // commenting out because of read-only for now
-        //        for (const rule of ruleParams) {
-        //           // how can I add a newline before parenthetical?
-        //          rule.desc.displayName =
-        //             rule.text
-        //            + ` (must match domain length, ${params.domain.length})`
-        //   }
+        for (const rule of ruleParams) {
+            // how can I add a newline before parenthetical?
+            rule.desc.displayName =
+                rule.text
+                + ` (must match domain length, ${params.domain.length})`
+        }
 
         // ignore (remove) or add extra rules for excess/missing
         // terms compared to domain length
