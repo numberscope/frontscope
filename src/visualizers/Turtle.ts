@@ -352,7 +352,6 @@ class Turtle extends P5Visualizer(paramDesc) {
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-<<<<<<< HEAD
         // first term handling
         const firstParams =
             paramDesc.firstTerm as ParamInterface<ParamType.INTEGER>
@@ -401,6 +400,7 @@ class Turtle extends P5Visualizer(paramDesc) {
                     + `all ${seqTerms}.`
             )
             this.pathLengthInternal = seqTerms
+<<<<<<< HEAD
         }
 
         // walkAnimation handling
@@ -442,15 +442,9 @@ class Turtle extends P5Visualizer(paramDesc) {
                 + ` (must match domain length, ${params.domain.length})`
         }
 
-=======
-        }
 
         // walkAnimation handling
         this.growthInitial = params.growth
-        // 0 means grow as long as possible
-        if (params.pathLength == 0) {
-            this.pathLengthInternal = this.seq.last - this.seq.first
-        }
 
         // domain handling
         // for each of the rule arrays, should match
