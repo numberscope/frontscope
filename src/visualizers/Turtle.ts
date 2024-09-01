@@ -400,7 +400,6 @@ class Turtle extends P5Visualizer(paramDesc) {
                     + `all ${seqTerms}.`
             )
             this.pathLengthInternal = seqTerms
-<<<<<<< HEAD
         }
 
         // walkAnimation handling
@@ -441,7 +440,6 @@ class Turtle extends P5Visualizer(paramDesc) {
                 rule.text
                 + ` (must match domain length, ${params.domain.length})`
         }
-
 
         // walkAnimation handling
         this.growthInitial = params.growth
