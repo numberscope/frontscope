@@ -143,13 +143,13 @@ to grow per frame, until the path reaches its maximum length (give by
         required: false,
     },
     /**
-- startTerm: a number. Gives the first term to use.  
+- firstTerm: a number. Gives the first term to use.  
 Entering a 0 means to use all available terms (possibly forever), and 
 will force the 'growth' animation to turn on.
 If the user enters a number exceeding the number of terms available, 
 this will default to the max number of terms available.
      **/
-    startTerm: {
+    firstTerm: {
         default: 0,
         type: ParamType.INTEGER,
         displayName: 'First term',
@@ -158,11 +158,6 @@ this will default to the max number of terms available.
         hideDescription: false,
         visibleDependency: 'startEndControl',
         visibleValue: true,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(
-                n < 0,
-                'Path length must be non-negative'
-            ),
     },
     /**
 - pathLength: a number.  The number of terms to use.
@@ -174,7 +169,7 @@ this will default to the max number of terms available.
     pathLength: {
         default: 0,
         type: ParamType.INTEGER,
-        displayName: 'Turtle endpoint',
+        displayName: 'Path length',
         required: false,
         description:
             'cannot exceed available number of terms from sequence;'
@@ -207,9 +202,9 @@ to the right and down, respectively.
 - foldAnimation: boolean. If true, show folding controls
     **/
     foldAnimation: {
-        default: true,
+        default: false,
         type: ParamType.BOOLEAN,
-        displayName: 'Protein folding animation ↴',
+        displayName: 'Turn on protein folding animation ↴',
         required: false,
     },
     /** md
@@ -308,6 +303,7 @@ class Turtle extends P5Visualizer(paramDesc) {
     private growthInitial = 0 // growth is turned on or off overall
     private growthInternal = 0 // growth currently happening or not
     private pathLengthInternal = 1 // can be infinity
+    private firstTermInternal = 0 // first term
 
     // controlling the folding smoothness/speed/units
     // the units of the folding entry field are 1/denom degrees
@@ -324,8 +320,30 @@ class Turtle extends P5Visualizer(paramDesc) {
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
+        // first term handling
+        const firstParams =
+            paramDesc.firstTerm as ParamInterface<ParamType.INTEGER>
+        // this max only shows up after I try to interact with parameters
+        // but it should show up right away
+        firstParams.displayName = `First term (${this.seq.first}'
+					       + 'to ${this.seq.last})`
+
+        this.firstTermInternal = params.firstTerm
+        if (this.firstTermInternal < this.seq.first) {
+            status.addWarning(
+                'First term is too small, using ' + `${this.seq.first}.`
+            )
+            this.firstTermInternal = this.seq.first
+        }
+        if (this.firstTermInternal > this.seq.last) {
+            status.addWarning(
+                'First term is too big, using ' + `${this.seq.last}.`
+            )
+            this.firstTermInternal = this.seq.last
+        }
+
         // path length handling
-        const seqTerms = this.seq.last - this.seq.first + 1
+        const seqTerms = this.seq.last - this.firstTermInternal + 1
         if (isFinite(seqTerms)) {
             const termsParams =
                 paramDesc.pathLength as ParamInterface<ParamType.INTEGER>
@@ -334,21 +352,23 @@ class Turtle extends P5Visualizer(paramDesc) {
             termsParams.displayName = `Path length (max: ${seqTerms})`
         }
 
+        this.pathLengthInternal = params.pathLength
+        // 0 means grow as long as possible
+        if (params.pathLength == 0) this.pathLengthInternal = seqTerms
+
+        // if requested too many
         if (seqTerms < params.pathLength) {
             // when implemented, have this appear next to parameter
-            // pathlength, and make `addWarning()` instead
+            console.log('warning')
             status.addWarning(
                 'More terms requested for path length than available; using '
                     + `all ${seqTerms}.`
             )
+            this.pathLengthInternal = seqTerms
         }
 
         // walkAnimation handling
         this.growthInitial = params.growth
-        // 0 means grow as long as possible
-        if (params.pathLength == 0) {
-            this.pathLengthInternal = this.seq.last - this.seq.first
-        }
 
         // domain handling
         // for each of the rule arrays, should match
@@ -473,6 +493,7 @@ class Turtle extends P5Visualizer(paramDesc) {
                 this.foldingInternal[i] // in units of this.incrementFactor
             )
         }
+        if (this.foldAnimation === false) this.pathIsStatic = true
     }
 
     setup() {
@@ -481,10 +502,10 @@ class Turtle extends P5Visualizer(paramDesc) {
         // this line should be removed once issue #403 is resolved
         // right now it avoids crashes caused by that issue
         // but ideally we should never be in a state where
-        // this.pathLength exceeds this.seq.last - this.seq.first
+        // this.pathLength exceeds this.seq.last - this.firstTermInternal
         this.pathLengthInternal = Math.min(
             this.pathLengthInternal,
-            this.seq.last - this.seq.first
+            this.seq.last - this.firstTermInternal
         )
 
         // reset variables
@@ -573,8 +594,10 @@ class Turtle extends P5Visualizer(paramDesc) {
 
         // read sequence to create path
         for (
-            let i = this.seq.first;
-            i < this.seq.first + Math.min(length, this.pathLengthInternal);
+            let i = this.firstTermInternal;
+            i
+            < this.firstTermInternal
+                + Math.min(length, this.pathLengthInternal);
             i++
         ) {
             // get the current sequence element and infer
