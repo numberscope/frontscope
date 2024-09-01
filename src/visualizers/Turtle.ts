@@ -428,6 +428,7 @@ class Turtle extends P5Visualizer(paramDesc) {
         })
         // store internally
         this.turnsInternal = ruleParams[0].local
+        console.log(this.turnsInternal)
         this.stepsInternal = ruleParams[1].local
         this.foldingInternal = ruleParams[2].local
 
@@ -467,7 +468,7 @@ class Turtle extends P5Visualizer(paramDesc) {
         await super.presketch(size)
 
         // if we add this in, then we can't type a 0 in a list param
-        // await this.refreshParams()
+        await this.refreshParams()
         // if we leave it out, then we don't get the updating info
         // on the list params, i.e.
         // `must match domain length...' doesn't update
