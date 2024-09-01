@@ -23,6 +23,13 @@ export class ValidationStatus {
         return !this.isValid()
     }
     /**
+     * True if there are any warnings
+     * @returns {boolean}
+     */
+    isWarned(): boolean {
+        return !!this.warnings.length
+    }
+    /**
      * True if there are any errors or warnings
      * @returns {boolean}
      */
