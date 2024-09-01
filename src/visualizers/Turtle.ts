@@ -363,7 +363,6 @@ class Turtle extends P5Visualizer(paramDesc) {
         // if requested too many
         if (seqTerms < params.pathLength) {
             // when implemented, have this appear next to parameter
-            console.log('warning')
             status.addWarning(
                 'More terms requested for path length than available; using '
                     + `all ${seqTerms}.`
@@ -428,7 +427,6 @@ class Turtle extends P5Visualizer(paramDesc) {
         })
         // store internally
         this.turnsInternal = ruleParams[0].local
-        console.log(this.turnsInternal)
         this.stepsInternal = ruleParams[1].local
         this.foldingInternal = ruleParams[2].local
 
@@ -467,11 +465,7 @@ class Turtle extends P5Visualizer(paramDesc) {
     async presketch(size: ViewSize) {
         await super.presketch(size)
 
-        // if we add this in, then we can't type a 0 in a list param
         await this.refreshParams()
-        // if we leave it out, then we don't get the updating info
-        // on the list params, i.e.
-        // `must match domain length...' doesn't update
 
         // create a map from sequence values to rotations
         for (let i = 0; i < this.domain.length; i++) {
@@ -493,7 +487,9 @@ class Turtle extends P5Visualizer(paramDesc) {
             if (this.foldingInternal[i] != 0) this.pathIsStatic = false
             this.foldingMap.set(
                 this.domain[i].toString(),
-                this.foldingInternal[i] // in units of this.incrementFactor
+                // in units of this.incrementFactor
+                // 0 map if folding is turned off
+                this.foldAnimation ? this.foldingInternal[i] : 0
             )
         }
         if (this.foldAnimation === false) this.pathIsStatic = true
