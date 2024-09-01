@@ -325,8 +325,11 @@ class Turtle extends P5Visualizer(paramDesc) {
             paramDesc.firstTerm as ParamInterface<ParamType.INTEGER>
         // this max only shows up after I try to interact with parameters
         // but it should show up right away
-        firstParams.displayName = `First term (${this.seq.first}'
-					       + 'to ${this.seq.last})`
+        firstParams.displayName =
+            `First term (`
+            + `${this.seq.first}`
+            + ' to '
+            + `${this.seq.last})`
 
         this.firstTermInternal = params.firstTerm
         if (this.firstTermInternal < this.seq.first) {
