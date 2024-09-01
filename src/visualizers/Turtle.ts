@@ -1,6 +1,7 @@
 import p5 from 'p5'
 
 import {P5Visualizer} from './P5Visualizer'
+import type {ViewSize} from './VisualizerInterface'
 import {VisualizerExportModule} from './VisualizerInterface'
 
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
@@ -73,25 +74,6 @@ have a small domain.)
             + ' matching any term here are ignored',
         hideDescription: false,
     },
-    /**
-- modulus: the modulus to apply to any incoming sequence.  This is the most
-common way
-to ensure the sequence values will lie in your domain.  A value of 0 means 
-that no modulus is applied.
-     **/
-    modulus: {
-        default: 5,
-        type: ParamType.INTEGER,
-        displayName: 'Sequence Modulus',
-        required: true,
-        description: 'consider sequence values modulo this; 0 means none',
-        hideDescription: true,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(
-                n < 0,
-                'Modulus should be non-negative; 0 means none.'
-            ),
-    },
     /** md
 - turns: a list of numbers. These are turning angles, in degrees, 
 corresponding positionally to the domain elements. Must contain 
@@ -132,19 +114,6 @@ will be interpreted as the step length for the n-th domain element.
         default: false,
         type: ParamType.BOOLEAN,
         displayName: 'Turtle movement controls ↴',
-        required: false,
-    },
-    /**
-	- pathLength: a number. Gives the number of sequence terms to use.  
-Entering a 0 means to use all available terms (possibly forever), and 
-will force the 'growth' animation to turn on.
-If the user enters a number exceeding the number of terms available, 
-this will default to the max number of terms available.
-     **/
-    pathLength: {
-        default: 0,
-        type: ParamType.INTEGER,
-        displayName: 'Path length',
         required: false,
     },
     /**
@@ -441,45 +410,6 @@ class Turtle extends P5Visualizer(paramDesc) {
                 + ` (must match domain length, ${params.domain.length})`
         }
 
-        // walkAnimation handling
-        this.growthInitial = params.growth
-
-        // domain handling
-        // for each of the rule arrays, should match
-        // params.domain.length; otherwise special handling
-
-        // tell user the appriopriate rule lengths
-        //const paramDescs: ParamInterface<ParamType.INTEGER>[][] = [
-        const ruleParams = [
-            {
-                param: params.turns,
-                local: this.turnsInternal,
-                desc: paramDesc.turns as ParamInterface<ParamType.NUMBER_ARRAY>,
-                text: 'Turn angles',
-            },
-            {
-                param: params.steps,
-                local: this.stepsInternal,
-                desc: paramDesc.steps as ParamInterface<ParamType.NUMBER_ARRAY>,
-                text: 'Step sizes',
-            },
-            {
-                param: params.folding,
-                local: this.foldingInternal,
-                // I don't know why lint can't figure this out
-                // eslint-disable-next-line max-len
-                desc: paramDesc.folding as ParamInterface<ParamType.NUMBER_ARRAY>,
-                text: 'Folding rates',
-            },
-        ]
-
-        for (const rule of ruleParams) {
-            // how can I add a newline before parenthetical?
-            rule.desc.displayName =
-                rule.text
-                + ` (must match domain length, ${params.domain.length})`
-        }
-
         // ignore (remove) or add extra rules for excess/missing
         // terms compared to domain length
         // note: this changes the actual param values
@@ -533,9 +463,8 @@ class Turtle extends P5Visualizer(paramDesc) {
         })
         return status
     }
-
-    async presketch() {
-        await super.presketch()
+    async presketch(size: ViewSize) {
+        await super.presketch(size)
 
         // if we add this in, then we can't type a 0 in a list param
         // await this.refreshParams()
