@@ -573,10 +573,11 @@ class Turtle extends P5Visualizer(paramDesc) {
         }
 
         // if we are still drawing, recreate path
-
         this.createpath(sketch.frameCount, this.currentLength)
     }
 
+    // this should be run each time the path needs to be extended
+    // or re-calculated
     createpath(frames: number, length: number) {
         this.pathFailure = false
 
