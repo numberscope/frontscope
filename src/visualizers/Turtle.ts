@@ -578,6 +578,7 @@ class Turtle extends P5Visualizer(paramDesc) {
 
     // this should be run each time the path needs to be extended
     // or re-calculated
+    // if folding, include current frames; otherwise `frames=0` testing git hooks this line is too long
     createpath(frames: number, length: number) {
         this.pathFailure = false
 
