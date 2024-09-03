@@ -281,6 +281,16 @@ in pixels.
     },
 } satisfies GenericParamDescription
 
+class turtleData {
+    position: p5.Vector
+    orientation: number // angle in degrees
+
+    constructor(position: p5.Vector, orientation: number) {
+        this.position = position
+        this.orientation = orientation
+    }
+}
+
 class Turtle extends P5Visualizer(paramDesc) {
     static category = 'Turtle'
     static description =
@@ -299,7 +309,8 @@ class Turtle extends P5Visualizer(paramDesc) {
     // variables controlling path to draw in a given frame
     private begin = 0 // path step at which drawing begins
     private currentLength = 1 // length of path
-    private path: p5.Vector[] = [] // array of path info
+    private turtleState = new turtleData(new p5.Vector(), 0) // current state
+    private path: turtleData[] = [] // array of path info
     private pathIsStatic = true // whether there's any folding
     private growthInitial = 0 // growth is turned on or off overall
     private growthInternal = 0 // growth currently happening or not
@@ -521,7 +532,7 @@ class Turtle extends P5Visualizer(paramDesc) {
         // must be in setup since uses p5.Vector
         // in case we are animating, we will recompute anyway,
         // so use current length only, for efficiency
-        this.createpath(0, this.currentLength)
+        this.createpath(0, 0, this.currentLength)
 
         // prepare sketch
         this.sketch
@@ -545,11 +556,17 @@ class Turtle extends P5Visualizer(paramDesc) {
         }
 
         // draw path from this.begin to this.currentLength
-        let startPt = this.path[this.begin]
-        for (let i = this.begin + 1; i < this.currentLength; i++) {
-            const endPt = this.path[i]
-            sketch.line(startPt.x, startPt.y, endPt.x, endPt.y)
-            startPt = endPt.copy()
+        let startState = this.path[0]
+        let endState = this.path[1]
+        for (let i = 1; i < this.currentLength - this.begin; i++) {
+            endState = this.path[i]
+            sketch.line(
+                startState.position.x,
+                startState.position.y,
+                endState.position.x,
+                endState.position.y
+            )
+            startState = endState
         }
         // advance this.begin
         if (!this.pathFailure) this.begin = this.currentLength - 1
@@ -572,30 +589,44 @@ class Turtle extends P5Visualizer(paramDesc) {
             this.growthInternal = 0
         }
 
-        // if we are still drawing, recreate path
-        this.createpath(sketch.frameCount, this.currentLength)
+        // create the path needed for next draw loop
+        this.turtleState = endState
+        this.createpath(
+            sketch.frameCount,
+            this.begin,
+            this.currentLength,
+            endState
+        )
     }
 
     // this should be run each time the path needs to be extended
     // or re-calculated
     // if folding, include current frames; otherwise `frames=0`
-    createpath(frames: number, length: number) {
+    createpath(
+        frames: number,
+        begin: number,
+        length: number,
+        turtleState?: turtleData
+    ) {
         this.pathFailure = false
 
         // initialize turtle position
-        let orientation = 0
-        const position = new p5.Vector(
-            this.sketch.width / 2,
-            this.sketch.height / 2
-        )
-        position.add(this.start)
+        if (!turtleState) {
+            const canvasCtr = new p5.Vector(
+                this.sketch.width / 2,
+                this.sketch.height / 2
+            )
+            turtleState = new turtleData(canvasCtr, 0)
+        }
+        let orientation = turtleState.orientation
+        const position = turtleState.position.copy()
 
         // clear path
-        this.path = []
+        this.path = [turtleState]
 
         // read sequence to create path
         for (
-            let i = this.firstTermInternal;
+            let i = this.firstTermInternal + this.begin;
             i
             < this.firstTermInternal
                 + Math.min(length, this.pathLengthInternal);
@@ -635,7 +666,8 @@ class Turtle extends P5Visualizer(paramDesc) {
             position.add(step)
 
             // add the new position to the path
-            this.path.push(position.copy())
+            turtleState = new turtleData(position.copy(), orientation)
+            this.path.push(turtleState)
         }
     }
 }
