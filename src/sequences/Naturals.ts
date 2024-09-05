@@ -1,6 +1,8 @@
 import {SequenceExportModule} from './SequenceInterface'
 import {Cached} from './Cached'
-import {ParamType} from '../shared/ParamType'
+
+import type {GenericParamDescription} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 
 const paramDesc = {
     includeZero: {
@@ -9,7 +11,7 @@ const paramDesc = {
         displayName: 'Include Zero',
         required: false,
     },
-} as const
+} satisfies GenericParamDescription
 
 /**
  *

@@ -4,7 +4,7 @@ import simpleFactor from './simpleFactor'
 
 import {math} from '@/shared/math'
 import {ParamType} from '@/shared/ParamType'
-import type {ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 
 const paramDesc = {
     min: {
@@ -19,7 +19,7 @@ const paramDesc = {
         displayName: 'Maximum value attainable',
         required: true,
     },
-} as const
+} satisfies GenericParamDescription
 
 /**
  *

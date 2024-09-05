@@ -2,6 +2,7 @@ import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
 import {math} from '@/shared/math'
+import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
 /** md
@@ -34,7 +35,7 @@ const paramDesc = {
         displayName: 'Last index to show',
         required: false,
     },
-} as const
+} satisfies GenericParamDescription
 
 class ShowFactors extends P5Visualizer(paramDesc) {
     static category = 'Show Factors'

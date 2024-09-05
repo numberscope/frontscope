@@ -1,7 +1,7 @@
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
-import type {ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
@@ -50,7 +50,7 @@ than 'Entries in top row.')_
         required: false,
         placeholder: '[length of top row]',
     },
-} as const
+} satisfies GenericParamDescription
 
 class Differences extends P5Visualizer(paramDesc) {
     static category = 'Differences'

@@ -126,7 +126,7 @@ type OneParamType<
  * types.
  */
 export type ParamValues<PD extends GenericParamDescription> = {
-    -readonly [K in keyof PD]: OneParamType<PD, K>
+    [K in keyof PD]: OneParamType<PD, K>
 }
 
 export interface ParamableInterface<PD extends GenericParamDescription> {

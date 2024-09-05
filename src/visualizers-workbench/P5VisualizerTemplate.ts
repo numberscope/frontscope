@@ -18,15 +18,17 @@
 // the visualizer.  See the referenced files for
 // further information on what these each do.
 //
-// Standard parameter functionality:
-import {ParamType} from '../shared/ParamType'
-// ValidationStatus allows for validation checking in parameters
-import {ValidationStatus} from '@/shared/ValidationStatus'
 // Standard visualizer class and export:
 // INVALID_COLOR allows for initializing p5 color variables
 import {P5Visualizer, INVALID_COLOR} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
 import type {ViewSize} from '../visualizers/VisualizerInterface'
+
+// Standard parameter functionality:
+import type {GenericParamDescription} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
+// ValidationStatus allows for validation checking in parameters
+import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
 # Entries (p5 Template)
@@ -73,7 +75,7 @@ integer.)_
         validate: (n: number) =>
             ValidationStatus.errorIf(n <= 0, 'Step size must be positive'),
     },
-} as const
+} satisfies GenericParamDescription
 
 class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
     // === Visualizer category (name of the class) and description ===

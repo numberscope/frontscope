@@ -3,7 +3,7 @@ import p5 from 'p5'
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
-import type {ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
@@ -100,7 +100,7 @@ positionally to the domain elements. Range and domain must be the same length.
         description: 'coordinates of the point where drawing will start',
         hideDescription: true,
     },
-} as const
+} satisfies GenericParamDescription
 
 class Turtle extends P5Visualizer(paramDesc) {
     static category = 'Turtle'

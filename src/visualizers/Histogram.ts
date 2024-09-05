@@ -5,7 +5,7 @@ import {P5GLVisualizer} from './P5GLVisualizer'
 
 import interFont from '@/assets/fonts/inter/Inter-VariableFont_slnt,wght.ttf'
 import {math} from '@/shared/math'
-import type {ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
 /** md
@@ -79,7 +79,7 @@ the bin label (i.e., which Omega values are included).
         displayName: 'Mouse Over',
         required: true,
     },
-} as const
+} satisfies GenericParamDescription
 
 class FactorHistogram extends P5GLVisualizer(paramDesc) {
     static category = 'Factor Histogram'

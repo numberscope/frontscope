@@ -131,7 +131,7 @@ The default value is 25.
         visibleValue: true,
         required: false,
     },
-} as const
+} satisfies GenericParamDescription
 
 class NumberGlyph extends P5Visualizer(paramDesc) {
     static category = 'Number Glyphs'

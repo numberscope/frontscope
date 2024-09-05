@@ -5,6 +5,7 @@ import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
 
 import {math} from '@/shared/math'
+import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
@@ -119,7 +120,7 @@ const paramDesc = {
         description: 'If true, negative terms display below axis',
         hideDescription: true,
     },
-} as const
+} satisfies GenericParamDescription
 
 // vertical bar representing factor
 interface Bar {

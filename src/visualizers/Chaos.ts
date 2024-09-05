@@ -4,7 +4,7 @@ import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
 import {math} from '@/shared/math'
-import type {ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
 /** md
@@ -166,7 +166,7 @@ const paramDesc = {
         required: false,
         description: 'If checked, uses light colors on a dark background',
     },
-} as const
+} satisfies GenericParamDescription
 
 // other ideas:  previous parts of the sequence fade over time,
 // or shrink over time;

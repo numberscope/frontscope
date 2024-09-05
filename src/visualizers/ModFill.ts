@@ -2,6 +2,7 @@ import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
 import {math} from '@/shared/math'
+import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
@@ -33,7 +34,7 @@ modulus to consider.
         validate: (n: number) =>
             ValidationStatus.errorIf(n <= 0, 'Must be positive.'),
     },
-} as const
+} satisfies GenericParamDescription
 
 class ModFill extends P5Visualizer(paramDesc) {
     static category = 'Mod Fill'

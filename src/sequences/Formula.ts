@@ -3,7 +3,7 @@ import {SequenceExportModule} from './SequenceInterface'
 import simpleFactor from './simpleFactor'
 
 import {math} from '@/shared/math'
-import type {ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
 const paramDesc = {
@@ -13,7 +13,7 @@ const paramDesc = {
         displayName: 'Formula',
         required: true,
     },
-} as const
+} satisfies GenericParamDescription
 
 /**
  *

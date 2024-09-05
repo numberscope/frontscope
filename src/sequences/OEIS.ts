@@ -6,6 +6,7 @@ import simpleFactor from './simpleFactor'
 
 import {alertMessage} from '@/shared/alertMessage'
 import {math} from '@/shared/math'
+import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
 const paramDesc = {
@@ -17,7 +18,7 @@ const paramDesc = {
         description:
             'If nonzero, take the residue of each element to this modulus.',
     },
-} as const
+} satisfies GenericParamDescription
 
 // Type of data we expect concerning an OEIS sequence
 type OEISdata = {

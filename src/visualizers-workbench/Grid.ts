@@ -1,5 +1,5 @@
-import {P5Visualizer} from '@/visualizers/P5Visualizer'
-import {VisualizerExportModule} from '@/visualizers/VisualizerInterface'
+import {P5Visualizer} from '../visualizers/P5Visualizer'
+import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
 
 import type {
     SequenceInterface,
@@ -537,7 +537,7 @@ checked.
         displayName: 'Background color',
         required: false,
     },
-} as const
+} satisfies GenericParamDescription
 
 class Grid extends P5Visualizer(paramDesc) {
     static category = 'Grid'

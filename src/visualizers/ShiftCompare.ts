@@ -4,7 +4,7 @@ import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
 import {math} from '@/shared/math'
-import type {ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
 /** md
@@ -32,7 +32,7 @@ const paramDesc = {
         required: true,
         description: 'Modulus used to compare sequence elements',
     },
-} as const
+} satisfies GenericParamDescription
 
 // CAUTION: This is unstable with some sequences
 // Using it may crash your browser
