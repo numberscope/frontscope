@@ -1,8 +1,8 @@
-import {VisualizerExportModule} from './VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
-import {ParamType} from '../shared/ParamType'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
-import type {GenericParamDescription} from '../shared/Paramable'
+import {VisualizerExportModule} from './VisualizerInterface'
+
+import {math} from '@/shared/math'
+import {ParamType} from '@/shared/ParamType'
 
 /** md
 # Show Factors Visualizer
@@ -20,31 +20,25 @@ const paramDesc = {
 - start: The index of the first entry to display
      **/
     start: {
-        default: 1,
+        default: -Infinity,
         type: ParamType.INTEGER,
         displayName: 'First index to show',
-        required: true,
+        required: false,
     },
     /** md
 - end: The index of the last entry to display
      **/
     end: {
-        default: 20,
+        default: Infinity,
         type: ParamType.INTEGER,
         displayName: 'Last index to show',
-        required: true,
+        required: false,
     },
 } as const
 
 class ShowFactors extends P5Visualizer(paramDesc) {
     static category = 'Show Factors'
     static description = 'Produces a table of factors of a sequence'
-
-    first = 0
-
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(seq)
-    }
 
     draw() {
         const sketch = this.sketch
@@ -59,17 +53,13 @@ class ShowFactors extends P5Visualizer(paramDesc) {
         const yDelta = 50
         const firstX = 30
         const firstY = 30
-        let myColor = sketch.color(100, 255, 150)
-        let hue
 
-        for (
-            let i = Math.max(this.start, this.seq.first);
-            i <= Math.min(this.end, this.seq.last);
-            i++
-        ) {
-            const xCoord = firstX + (i - this.start) * xDelta
-            hue = ((i * 255) / 6) % 255
-            myColor = sketch.color(hue, 150, 200)
+        const first = Math.max(this.start, this.seq.first)
+        const last = Math.min(this.end, this.seq.last, first + 100)
+        for (let i = first; i <= last; i++) {
+            const xCoord = firstX + (i - first) * xDelta
+            const hue = Number(math.modulo(Math.floor((i * 255) / 6), 255))
+            const myColor = sketch.color(hue, 150, 200)
             sketch
                 .fill(myColor)
                 .text(this.seq.getElement(i).toString(), xCoord, firstY)

@@ -2,7 +2,13 @@
     "extends": "./tsconfig.app.json",
     "exclude": [],
     "compilerOptions": {
+        "baseUrl": ".",
         "composite": true,
+        "lib": ["ES2023"],
+        "paths": {
+            "@/*": ["./src/*"]
+        },
+        "target": "ES2023",
         "types": ["node", "jsdom", "vite/client"]
     }
 }

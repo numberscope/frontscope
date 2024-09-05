@@ -7,13 +7,15 @@ test.describe('Featured gallery images', () => {
     for (const feature of featured) {
         const featProps = parseSpecimenQuery(feature.query)
         test(featProps.name, async ({page}) => {
-            const seed = featProps.name.replaceAll(' ', '')
-            const testURL = `/?frames=64&randomSeed=${seed}&${feature.query}`
+            const short = featProps.name.replaceAll(' ', '')
+            const testURL = `/?frames=64&randomSeed=${short}&${feature.query}`
             await page.goto(testURL)
             await expect(
                 page.locator('#specimen-bar-desktop').getByText('play_arrow')
             ).toHaveId('pause-button', {timeout: 15000})
-            await expect(page).toHaveScreenshot()
+            expect(
+                await page.locator('#canvas-container').screenshot()
+            ).toMatchSnapshot(`${short}.png`)
         })
     }
 })

@@ -3,11 +3,12 @@
     "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
     "exclude": ["src/**/__tests__/*"],
     "compilerOptions": {
-        "composite": true,
         "baseUrl": ".",
-        "lib": ["ES2022"],
+        "composite": true,
+        "lib": ["ES2023"],
         "paths": {
             "@/*": ["./src/*"]
-        }
+        },
+        "target": "ES2023"
     }
 }

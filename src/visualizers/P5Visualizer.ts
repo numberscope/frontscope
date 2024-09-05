@@ -1,4 +1,5 @@
 import p5 from 'p5'
+import {markRaw} from 'vue'
 
 import {
     DrawingUnmounted,
@@ -6,7 +7,11 @@ import {
     DrawingStopped,
     nullSize,
 } from './VisualizerInterface'
-import type {VisualizerInterface, ViewSize} from './VisualizerInterface'
+import type {
+    DrawingState,
+    ViewSize,
+    VisualizerInterface,
+} from './VisualizerInterface'
 
 import {CachingError} from '@/sequences/Cached'
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
@@ -40,16 +45,6 @@ class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
 // The following is used to check if a visualizer has defined
 // any of the above methods:
 const dummyP5 = new WithP5<GenericParamDescription>({})
-const ignoreOffCanvas = new Set([
-    'mousePressed',
-    'mouseClicked',
-    'mouseWheel',
-])
-const ignoreFocusedElsewhere = new Set([
-    'keyPressed',
-    'keyReleased',
-    'keyTyped',
-])
 
 type P5Methods<PD extends GenericParamDescription> = Exclude<
     keyof WithP5<PD>,
@@ -71,6 +66,22 @@ const p5methods: P5Methods<GenericParamDescription>[] =
 */
 export const INVALID_COLOR = {} as p5.Color
 
+export interface P5VizInterface<PD extends GenericParamDescription>
+    extends VisualizerInterface<PD>,
+        WithP5<PD> {
+    _sketch?: p5
+    _canvas?: p5.Renderer
+    _size: ViewSize
+    _framesRemaining: number
+    drawingState: DrawingState
+    readonly sketch: p5
+    readonly canvas: p5.Renderer
+    seq: SequenceInterface<GenericParamDescription>
+    _initializeSketch(): (sketch: p5) => void
+    presketch(_size: ViewSize): Promise<void>
+    reset(): Promise<void>
+}
+
 // Base class for implementing Visualizers that use p5.js
 export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
     const defaultObject = Object.fromEntries(
@@ -78,14 +89,14 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
     )
     const P5Visualizer = class
         extends WithP5<PD>
-        implements VisualizerInterface<PD>
+        implements P5VizInterface<PD>
     {
         name = 'uninitialized P5-based visualizer'
         _sketch?: p5
         _canvas?: p5.Renderer
         _size = nullSize
         _framesRemaining = Infinity
-        drawingState = DrawingUnmounted
+        drawingState: DrawingState = DrawingUnmounted
 
         within?: HTMLElement
         get sketch(): p5 {
@@ -114,6 +125,109 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             this.name = this.category // Not currently using per-instance names
             this.seq = seq
             Object.assign(this, defaultObject)
+        }
+
+        /***
+         * Supplies the argument to the p5 constructor that initializes a
+         * new sketch object, supplying its methods, etc. That is to say,
+         * the arrow function this method returns will simply be passed to
+         * `new p5(__, element)` when the visualizer `inhabit`s an element.
+         *
+         * @returns {(sketch: p5) => void}  The sketch initializer function
+         */
+        _initializeSketch(): (sketch: p5) => void {
+            return sketch => {
+                // The following assignment is necessary even though it
+                // may seem a bit redundant with the assignment in inhabit()
+                // below -- that's because this.sketch is often used in
+                // setup(). Also, the call to markRaw is needed so that Vue's
+                // reactivity API does not alter behavior inside of p5 (and
+                // I don't think we need Vue to re-render when a sketch
+                // changes anyway; the sketch does that itself).
+                this._sketch = markRaw(sketch)
+
+                // Now, a little bit of gymnastics to set all of the p5 methods
+                // in the sketch that exist on the Visualizer. Since TypeScript
+                // seems to require that they be methods in this base class,
+                // I couldn't find a way to arrange the code so that the below
+                // could be simplified to just check whether or not
+                // `this[method]` is defined or undefined:
+                for (const method of p5methods) {
+                    const definition = this[method]
+                    if (definition !== dummyP5[method]) {
+                        if (
+                            method === 'mousePressed'
+                            || method === 'mouseClicked'
+                            || method === 'mouseWheel'
+                        ) {
+                            sketch[method] = (event: MouseEvent) => {
+                                if (!this.within) return true
+                                // Check that the event position is in bounds
+                                const rect =
+                                    this.within.getBoundingClientRect()
+                                const x = event.clientX
+                                if (x < rect.left || x >= rect.right) {
+                                    return true
+                                }
+                                const y = event.clientY
+                                if (y < rect.top || y >= rect.bottom) {
+                                    return true
+                                }
+                                // Check also that the event element is OK
+                                const where = document.elementFromPoint(x, y)
+                                if (!where) return true
+                                if (
+                                    where !== this.within
+                                    && !where.contains(this.within)
+                                ) {
+                                    return true
+                                }
+                                return this[method](event as never)
+                                // Cast makes typescript happy :-/
+                            }
+                            continue
+                        }
+                        if (
+                            method === 'keyPressed'
+                            || method === 'keyReleased'
+                            || method === 'keyTyped'
+                        ) {
+                            sketch[method] = (event: KeyboardEvent) => {
+                                const active = document.activeElement
+                                if (active && active.tagName === 'INPUT') {
+                                    return true
+                                }
+                                return this[method](event)
+                            }
+                            continue
+                        }
+                        // Otherwise no special condition, just forward event
+                        sketch[method] = definition.bind(this) as () => void
+                    }
+                }
+
+                // And draw is special because of the error handling:
+                sketch.draw = () => {
+                    try {
+                        this.draw()
+                        if (--this._framesRemaining <= 0) {
+                            this.stop(0)
+                        }
+                    } catch (e) {
+                        if (e instanceof CachingError) {
+                            sketch.cursor('progress')
+                            return
+                        } else {
+                            throw e
+                        }
+                    }
+                    if (this.within) {
+                        sketch.cursor(
+                            getComputedStyle(this.within).cursor || 'default'
+                        )
+                    }
+                }
+            }
         }
 
         /***
@@ -147,86 +261,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             // show an hourglass icon in the meantime, or something like that?
 
             // Now we can create the sketch
-            this._sketch = new p5(sketch => {
-                this._sketch = sketch // must assign here,  as setup is
-                // called before the `new p5` returns; I think that makes
-                // the outer (re-) assigning of that result to this._sketch
-                // redundant, but I also think it makes this code a bit
-                // clearer than if inhabit() simply calls `new p5(...)` and
-                // discards the result, so I left that outer reassignment
-                // there as well.
-
-                // Now, a little bit of gymnastics to set all of the p5 methods
-                // in the sketch that exist on the Visualizer. Since TypeScript
-                // seems to require that they be methods in this base class,
-                // I couldn't find a way to arrange the code so that the below
-                // could be simplified to just check whether or not
-                // `this[method]` is defined or undefined:
-                for (const method of p5methods) {
-                    const definition = this[method]
-                    if (definition !== dummyP5[method]) {
-                        if (ignoreOffCanvas.has(method)) {
-                            sketch[method] = (event: MouseEvent) => {
-                                if (!this.within) return true
-                                // Check that the event position is in bounds
-                                const rect =
-                                    this.within.getBoundingClientRect()
-                                const x = event.clientX
-                                if (x < rect.left || x >= rect.right) {
-                                    return true
-                                }
-                                const y = event.clientY
-                                if (y < rect.top || y >= rect.bottom) {
-                                    return true
-                                }
-                                // Check also that the event element is OK
-                                const where = document.elementFromPoint(x, y)
-                                if (!where) return true
-                                if (
-                                    where !== this.within
-                                    && !where.contains(this.within)
-                                ) {
-                                    return true
-                                }
-                                return this[method](event as never)
-                                // Cast makes typescript happy :-/
-                            }
-                            continue
-                        }
-                        if (ignoreFocusedElsewhere.has(method)) {
-                            sketch[method] = (event: KeyboardEvent) => {
-                                const active = document.activeElement
-                                if (active && active.tagName === 'INPUT') {
-                                    return true
-                                }
-                                return this[method](event as never)
-                            }
-                            continue
-                        }
-                        // Otherwise no special condition, just forward event
-                        sketch[method] = definition.bind(this)
-                    }
-                }
-                // And draw is special because of the error handling:
-                sketch.draw = () => {
-                    try {
-                        this.draw()
-                        if (--this._framesRemaining <= 0) {
-                            this.stop(0)
-                        }
-                    } catch (e) {
-                        if (e instanceof CachingError) {
-                            sketch.cursor('progress')
-                            return
-                        } else {
-                            throw e
-                        }
-                    }
-                    sketch.cursor(
-                        getComputedStyle(element).cursor || 'default'
-                    )
-                }
-            }, element)
+            this._sketch = new p5(this._initializeSketch(), element)
         }
 
         /**
@@ -385,7 +420,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         }
     }
 
+    type P5VisInstance = InstanceType<typeof P5Visualizer>
     return P5Visualizer as unknown as new (
         seq: SequenceInterface<GenericParamDescription>
-    ) => InstanceType<typeof P5Visualizer> & ParamValues<PD>
+    ) => P5VisInstance & P5VizInterface<PD> & ParamValues<PD>
 }

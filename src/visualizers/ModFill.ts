@@ -1,5 +1,3 @@
-import type p5 from 'p5'
-
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
@@ -47,24 +45,24 @@ class ModFill extends P5Visualizer(paramDesc) {
     useMod = 0
     i = 0
 
-    drawNew(sketch: p5, num: number) {
-        sketch.fill(0)
+    drawNew(num: number) {
+        this.sketch.fill(0)
         for (let mod = 1; mod <= this.useMod; mod++) {
             const s = this.seq.getElement(num)
             const x = (mod - 1) * this.rectWidth
             const y =
-                sketch.height
+                this.sketch.height
                 - Number(math.modulo(s, mod) + 1n) * this.rectHeight
-            sketch.rect(x, y, this.rectWidth, this.rectHeight)
+            this.sketch.rect(x, y, this.rectWidth, this.rectHeight)
         }
     }
 
     setup() {
         super.setup()
         const minDimension = Math.min(this.sketch.width, this.sketch.height)
-        // 64 was chosen in the following expression by doubling the
+        // 16 was chosen in the following expression by doubling the
         // multiplier until the traces were almost too faint to see at all.
-        const maxMod = 64 * minDimension
+        const maxMod = 16 * minDimension
         if (this.modDimension > maxMod) {
             // TODO: Need to allow status updates after checkParameters!
             // status.addWarning(
@@ -80,7 +78,7 @@ class ModFill extends P5Visualizer(paramDesc) {
     }
 
     draw() {
-        this.drawNew(this.sketch, this.i)
+        this.drawNew(this.i)
         this.i++
         if (this.i == 1000 || this.i > this.seq.last) {
             this.stop()

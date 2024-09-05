@@ -1,8 +1,10 @@
 import p5 from 'p5'
+
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
-import {ParamType} from '../shared/ParamType'
-import type {ParamValues} from '../shared/Paramable'
+
+import type {ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md

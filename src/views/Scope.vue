@@ -79,7 +79,7 @@
             This is because the dropzones are looked up by id in the
             tab management code.
         -->
-        <div id="main">
+        <div id="main" @contextmenu.prevent>
             <div
                 id="left-dropzone-container"
                 class="dropzone-container empty">

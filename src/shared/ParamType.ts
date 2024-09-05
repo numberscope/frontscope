@@ -1,5 +1,7 @@
-import {ValidationStatus} from './ValidationStatus'
 import p5 from 'p5'
+
+import {ValidationStatus} from './ValidationStatus'
+
 /**
  * `ParamType` is the enum of all supported parameter types for visualizers
  * and sequences. These types are supported by the interface and internal
@@ -161,6 +163,7 @@ const typeFunctions: {
     },
     [ParamType.INTEGER]: {
         validate: (value, status) => {
+            if (value.trim().match(/^-?Infinity$/)) return
             if (value.trim().match(/^-?\d+$/) === null)
                 status.addError('Input must be an integer')
         },

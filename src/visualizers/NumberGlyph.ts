@@ -209,6 +209,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         // NumberGlyph needs access to its entire range of values
         // before the sketch setup is even called
         await this.seq.fill(this.last, 'factors')
+
         // Obtain all prime numbers that appear as factors in the sequence
         for (let i = this.seq.first; i < this.last; i++) {
             const checkCurrentFactors = this.seq.getFactors(i)

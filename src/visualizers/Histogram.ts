@@ -1,8 +1,12 @@
+import * as brush from 'p5.brush'
+
 import {VisualizerExportModule} from './VisualizerInterface'
-import {P5Visualizer} from './P5Visualizer'
-import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
+import {P5GLVisualizer} from './P5GLVisualizer'
+
+import interFont from '@/assets/fonts/inter/Inter-VariableFont_slnt,wght.ttf'
+import {math} from '@/shared/math'
+import type {ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 
 /** md
 # Factor Histogram
@@ -77,16 +81,15 @@ the bin label (i.e., which Omega values are included).
     },
 } as const
 
-class FactorHistogram extends P5Visualizer(paramDesc) {
+class FactorHistogram extends P5GLVisualizer(paramDesc) {
     static category = 'Factor Histogram'
     static description =
         'Displays a histogram of the number of prime factors of a sequence'
 
+    factoring = true
     binFactorArray: number[] = []
-
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(seq)
-    }
+    numUnknown = 0
+    fontsLoaded = false
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
@@ -119,55 +122,58 @@ class FactorHistogram extends P5Visualizer(paramDesc) {
         return Math.trunc(input / this.binSize)
     }
 
-    // Create an array with the number of factors of
-    // the element at the corresponding index of the array
-    factorArray(): number[] {
-        const factorArray = []
+    // Create an array with the value at n being the number of entries
+    // of the sequence having n factors. Entries with unknown factorization
+    // are put into -1
+    factorCounts(): number[] {
+        const factorCount = []
         for (let i = this.startIndex(); i < this.endIndex(); i++) {
             let counter = 0
             const factors = this.seq.getFactors(i)
             if (factors) {
                 for (const [base, power] of factors) {
-                    if (base > 0n) {
-                        counter += Number(power)
-                    } else if (base === 0n) {
+                    if (base === 0n) {
                         counter = 0
+                        break
                     }
+                    counter += math.safeNumber(power)
                 }
             }
-
-            factorArray[i] = counter
+            if (counter === 0 && math.bigabs(this.seq.getElement(i)) > 1) {
+                counter = -1
+            }
+            if (counter in factorCount) factorCount[counter]++
+            else factorCount[counter] = 1
         }
-        return factorArray
+        return factorCount
     }
 
     // Create an array with the frequency of each number
     // of factors in the corresponding bins
-    binFactorArraySetup() {
-        const factorArray = this.factorArray()
-        const largestValue = factorArray.reduce(
-            (a: number, b: number) => Math.max(a, b),
-            -Infinity
+    async binFactorArraySetup() {
+        await this.seq.fill(this.endIndex(), 'factors')
+        const factorCount = this.factorCounts()
+        let largestValue = factorCount.length - 1
+        if (largestValue < 0) largestValue = 0
+        this.binFactorArray = new Array(this.binOf(largestValue) + 1).fill(0)
+        factorCount.forEach(
+            (count, ix) => (this.binFactorArray[this.binOf(ix)] += count)
         )
-        for (let i = 0; i < this.binOf(largestValue) + 1; i++) {
-            this.binFactorArray.push(0)
-        }
-
-        for (let i = 0; i < factorArray.length; i++) {
-            this.binFactorArray[this.binOf(factorArray[i])]++
-        }
+        if ((-1) in factorCount) {
+            this.numUnknown = factorCount[-1]
+            this.binFactorArray[0] += this.numUnknown
+        } else this.numUnknown = 0
+        this.factoring = false
     }
 
     // Create a number that represents how
     // many pixels wide each bin should be
     binWidth(): number {
         const width = this.sketch.width
+        let nBars = this.binFactorArray.length
+        if (nBars > 30) nBars = 30
         // 0.95 Creates a small offset from the side of the screen
-        if (this.binFactorArray.length <= 30) {
-            return (0.95 * width) / this.binFactorArray.length - 1
-        } else {
-            return (0.95 * width) / 30 - 1
-        }
+        return (0.95 * width) / nBars - 1
     }
 
     // Create a number that represents how many pixels high
@@ -196,83 +202,124 @@ class FactorHistogram extends P5Visualizer(paramDesc) {
         ) // and above axis
     }
 
+    setup() {
+        super.setup()
+        this.fontsLoaded = false
+        this.sketch.loadFont(interFont, font => {
+            this.sketch.textFont(font)
+            this.fontsLoaded = true
+        })
+        this.factoring = true
+        this.binFactorArraySetup()
+        brush.add('line', {
+            type: 'standard',
+            weight: 1,
+            vibration: 0,
+            definition: 1,
+            quality: 255,
+            opacity: 255,
+            spacing: 1,
+            blend: false,
+            pressure: {type: 'standard', curve: [1, 1], min_max: [1, 1]},
+        })
+    }
+
+    barLabel(binIndex: number) {
+        if (this.binSize === 1) return binIndex.toString()
+        const binStart = this.binSize * binIndex
+        return `${binStart}-${binStart + this.binSize - 1}`
+    }
+
+    write(txt: string, x: number, y: number) {
+        if (this.fontsLoaded) this.sketch.text(txt, x, y)
+    }
+
     drawHoverBox(binIndex: number, offset: number) {
         const sketch = this.sketch
         const mouseX = sketch.mouseX
         const mouseY = sketch.mouseY
-        const boxWidth = sketch.width * 0.15
-        const textVerticalSpacing = sketch.textAscent()
-        const boxHeight = textVerticalSpacing * 2.3
+        const showUnknown = binIndex === 0 && this.numUnknown > 0
+        const textVerticalSpacing = sketch.textAscent() + 1
+        let boxHeight = textVerticalSpacing * 2.4
+        if (showUnknown) boxHeight += textVerticalSpacing
+        const margin = offset
+        const boxRadius = Math.floor(margin)
+
+        // Set up the texts to display:
+        const captions = ['Factors: ', 'Height: ']
+        const values = [
+            this.barLabel(binIndex),
+            this.binFactorArray[binIndex].toString(),
+        ]
+        if (showUnknown) {
+            captions.push('Unknown: ')
+            values.push(this.numUnknown.toString())
+        }
+        let captionWidth = 0
+        let totalWidth = 0
+        for (let i = 0; i < captions.length; ++i) {
+            let width = sketch.textWidth(captions[i])
+            if (width > captionWidth) captionWidth = width
+            width += sketch.textWidth(values[i])
+            if (width > totalWidth) totalWidth = width
+        }
+        totalWidth += 2 * margin
+
         // don't want box to wander past right edge of canvas
-        const boxX = Math.min(mouseX, sketch.width - boxWidth)
+        const boxX = Math.min(mouseX, sketch.width - totalWidth)
         const boxY = mouseY - boxHeight
-        const boxOffset = offset
-        const boxRadius = Math.floor(boxOffset)
 
         // create the box itself
-        sketch
-            .fill('white')
-            .rect(
-                boxX,
-                boxY,
-                boxWidth,
-                boxHeight,
-                boxRadius,
-                boxRadius,
-                boxRadius,
-                boxRadius
-            )
+        sketch.push()
+        sketch.translate(0, 0, 2)
+        sketch.fill('white')
+        sketch.rect(boxX, boxY, totalWidth, boxHeight, boxRadius)
 
         // Draws the text for the number of prime factors
         // that bin represents
-        sketch
-            .fill('black')
-            .text('Factors:', boxX + boxOffset, boxY + textVerticalSpacing)
-        let binText = ''
-        if (this.binSize != 1) {
-            binText = (
-                this.binSize * binIndex
-                + '-'
-                + (this.binSize * (binIndex + 1) - 1)
-            ).toString()
-        } else {
-            binText = binIndex.toString()
-        }
-        const binTextSize = sketch.textWidth(binText) + 3 * boxOffset
-        sketch.text(
-            binText,
-            boxX + boxWidth - binTextSize,
-            boxY + textVerticalSpacing
-        )
+        sketch.fill('black')
 
-        // Draws the text for the number of elements of the sequence
-        // in the bin
-        sketch.text(
-            'Height:',
-            boxX + boxOffset,
-            boxY + textVerticalSpacing * 2
-        )
-        const heightText = this.binFactorArray[binIndex].toString()
-        sketch.text(
-            heightText,
-            boxX + boxWidth - 3 * boxOffset - sketch.textWidth(heightText),
-            boxY + textVerticalSpacing * 2
-        )
+        for (let i = 0; i < captions.length; ++i) {
+            this.write(
+                captions[i] + values[i],
+                boxX + margin,
+                boxY + (i + 1) * textVerticalSpacing
+            )
+        }
+        // Perhaps there is some bug creating an interaction between
+        // p5.brush and sketch.text: Without this final text drawn at
+        // the origin, the hatching is drawn in a different position,
+        // determined exactly by the coordinates of the final call to
+        // sketch.text() in this function. I couldn't track the cause
+        // of this weird linkage, so just left this in as a workaround,
+        // unfortunately:
+        this.write(' ', 0, 0)
+
+        sketch.pop()
     }
 
     draw() {
         const sketch = this.sketch
-        if (this.binFactorArray.length == 0) {
-            this.binFactorArraySetup()
-        }
+        sketch.orbitControl()
         sketch.background(176, 227, 255) // light blue
-        sketch.textSize(0.02 * sketch.height)
-        const height = this.height()
-        const binWidth = this.binWidth()
+        // Convert back to the ordinary p5 coordinates as this was
+        // originally written with:
+        sketch.translate(-this._size.width / 2, -this._size.height / 2)
+        sketch.textSize(Math.max(0.02 * sketch.height, 10))
+        const height = this.height() // "unit" height
+        const textHeight = sketch.textAscent()
         const largeOffsetScalar = 0.945 // padding between axes and edge
         const smallOffsetScalar = 0.996
         const largeOffsetNumber = (1 - largeOffsetScalar) * sketch.width
         const smallOffsetNumber = (1 - smallOffsetScalar) * sketch.width
+
+        if (this.factoring) {
+            sketch.fill('red')
+            this.write('Factoring ...', largeOffsetNumber, textHeight * 2)
+            return
+        }
+
+        const binWidth = this.binWidth()
         const binIndex = Math.floor(
             (sketch.mouseX - largeOffsetNumber) / binWidth
         )
@@ -299,98 +346,125 @@ class FactorHistogram extends P5Visualizer(paramDesc) {
             }
             // Draw the rectangles for the Histogram
             sketch.rect(
-                largeOffsetNumber + binWidth * i + 1,
-                largeOffsetScalar * sketch.height
-                    - height * this.binFactorArray[i],
+                yAxisPosition + binWidth * i + 1,
+                xAxisHeight - height * this.binFactorArray[i],
                 binWidth - 2,
                 height * this.binFactorArray[i]
             )
-            if (this.binFactorArray.length > 30) {
-                sketch.text(
-                    'Too many unique factors.',
-                    sketch.width * 0.75,
-                    sketch.height * 0.03
-                )
-                sketch.text(
-                    'Displaying the first 30',
-                    sketch.width * 0.75,
-                    sketch.height * 0.05
-                )
-            }
-
             sketch.fill('black') // text must be filled
-            if (this.binSize != 1) {
-                // Draws text in the case the bin size is not 1
-                const binText = (
-                    this.binSize * i
-                    + ' - '
-                    + (this.binSize * (i + 1) - 1)
-                ).toString()
-                sketch.text(
-                    binText,
-                    1 - largeOffsetScalar + binWidth * (i + 1 / 2),
-                    smallOffsetScalar * sketch.width
-                )
-            } else {
-                // Draws text in the case the bin size is 1
-                const binText = i.toString()
-                sketch.text(
-                    binText,
-                    largeOffsetNumber + (binWidth * (i + 1) - binWidth / 2),
-                    smallOffsetScalar * sketch.width
-                )
-            }
+            const barLabel = this.barLabel(i)
+            const labelWidth = sketch.textWidth(barLabel)
+            this.write(
+                barLabel,
+                yAxisPosition + binWidth * (i + 0.5) - labelWidth / 2,
+                xAxisHeight + 1.3 * textHeight
+            )
         }
 
-        let tickHeight = Math.floor((0.95 * sketch.height) / (height * 5))
+        let nTicks = 5
+        let tickHeight = Math.floor(
+            (0.95 * sketch.height) / (height * nTicks)
+        )
 
         // Sets the tickHeight to 1 if the calculated value is less than 1
         if (tickHeight === 0) {
             tickHeight = 1
         }
-        // Draws the markings on the Y-axis
-        for (let i = 0; i < 9; i++) {
-            // Draws the tick marks
-            sketch.line(
-                (largeOffsetNumber * 3) / 4,
-                sketch.height
-                    - largeOffsetNumber
-                    - tickHeight * height * (i + 1),
-                (3 * largeOffsetNumber) / 2,
-                sketch.height
-                    - largeOffsetNumber
-                    - tickHeight * height * (i + 1)
-            )
-
-            // Places the numbers on the right side of the axis if
-            // they are 4 digits or more; left side otherwise
-            let tickNudge = 0
-            if (tickHeight > 999) {
-                tickNudge = (3 * largeOffsetNumber) / 2
+        // Make tickHeight a round number:
+        let roundHeight = 1
+        let bigCandidate = 1
+        const multipliers = [2, 2.5, 2]
+        while (bigCandidate < tickHeight) {
+            for (const mult of multipliers) {
+                bigCandidate *= mult
+                if (bigCandidate <= tickHeight) roundHeight = bigCandidate
+                else break
             }
+        }
+        tickHeight = roundHeight
+        nTicks = Math.floor(sketch.height / (height * tickHeight))
+        const bigTick = nTicks * tickHeight
+        const bigTickWidth = sketch.textWidth(bigTick.toString())
+        // Draws the markings on the Y-axis
+        const tickLeft = yAxisPosition - largeOffsetNumber / 5
+        const tickRight = yAxisPosition + largeOffsetNumber / 5
+        const rightJustify = bigTickWidth < tickLeft - 2 * smallOffsetNumber
+        for (let i = 1; i <= nTicks; i++) {
+            // Draws the tick marks
+            let tickY = xAxisHeight - tickHeight * height * i
+            sketch.line(tickLeft, tickY, tickRight, tickY)
+
+            const label = (tickHeight * i).toString()
+            let tickPos = tickRight + smallOffsetNumber
+            if (rightJustify) {
+                const labelWidth = sketch.textWidth(label)
+                tickPos = tickLeft - labelWidth - smallOffsetNumber
+            }
+
             // Avoid placing text that will get cut off
-            const tickYPosition =
-                sketch.height
-                - largeOffsetNumber
-                - tickHeight * height * (i + 1)
-                + (3 * smallOffsetNumber) / 2
-            if (tickYPosition > sketch.textAscent()) {
-                sketch.text(tickHeight * (i + 1), tickNudge, tickYPosition)
+            tickY += textHeight / 2.5
+            if (tickY > sketch.textAscent()) {
+                this.write(label, tickPos, tickY)
             }
         }
 
+        // Possible bug workaround (see drawHoverBox):
+        this.write(' ', 0, 0)
+
+        // hatch the unknown factors
+        if (this.numUnknown > 0) {
+            brush.seed('noshimmer') // Make hatching deterministic
+            brush.pick('line')
+            brush.stroke('black')
+            brush.hatch()
+            brush.rect(
+                largeOffsetNumber + 1,
+                largeOffsetScalar * sketch.height
+                    - height * this.binFactorArray[0],
+                binWidth - 2,
+                height * this.numUnknown
+            )
+        }
+        if (this.binFactorArray.length > 30) {
+            sketch.fill('chocolate')
+            this.write(
+                `Too many bins (${this.binFactorArray.length}).`,
+                sketch.width * 0.75,
+                sketch.height * 0.03
+            )
+            this.write(
+                'Displaying the first 30',
+                sketch.width * 0.75,
+                sketch.height * 0.06
+            )
+        }
         // If mouse interaction, draw hover box
         if (this.mouseOver && inBin) {
             this.drawHoverBox(binIndex, smallOffsetNumber)
         }
-        // If no mouse interaction, don't loop
-        if (!this.mouseOver) this.stop()
+        // Once everything is loaded, no need to redraw until mouse moves
+        if (!this.fontsLoaded || this.factoring || sketch.mouseIsPressed) {
+            this.continue()
+            this.stop(3)
+        }
     }
 
-    async reset() {
-        // Have to clear out the bin factors on a hard reset
-        this.binFactorArray = []
-        super.reset()
+    mouseMoved() {
+        if (this.mouseOver || this.sketch.mouseIsPressed) {
+            this.continue()
+            this.stop(3)
+        }
+    }
+
+    mousePressed() {
+        this.continue()
+        this.stop(3)
+    }
+
+    mouseWheel() {
+        this.continue()
+        this.stop(24) // there is a lot of "easing" on the mouse wheel zoom
+        // So it takes a lot of frames to stabilize
     }
 }
 

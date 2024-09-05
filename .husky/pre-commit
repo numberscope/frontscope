@@ -6,4 +6,5 @@ npm run lint:staged
 npm run lint:check
 npm run typecheck
 npm run test:unit
-npm run test:e2e -- --reporter dot
+node tools/maybE2E.mjs
+

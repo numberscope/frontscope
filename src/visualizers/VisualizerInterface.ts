@@ -46,6 +46,10 @@ export function sameSize(size1: ViewSize, size2: ViewSize) {
 export const DrawingUnmounted = 0
 export const Drawing = 1
 export const DrawingStopped = 2
+export type DrawingState =
+    | typeof DrawingUnmounted
+    | typeof Drawing
+    | typeof DrawingStopped
 
 export interface VisualizerInterface<PD extends GenericParamDescription>
     extends ParamableInterface<PD> {

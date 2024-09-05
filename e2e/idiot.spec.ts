@@ -1,5 +1,6 @@
 import {test, expect} from '@playwright/test'
-import {specimenQuery} from '@/shared/browserCaching'
+
+import {specimenQuery} from '../src/shared/browserCaching'
 
 // These are tests in the spirit of
 // https://github.com/numberscope/frontscope/issues/113, i.e.

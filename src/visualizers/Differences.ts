@@ -1,8 +1,8 @@
-import {VisualizerExportModule} from './VisualizerInterface'
 import {P5Visualizer} from './P5Visualizer'
-import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
-import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import {VisualizerExportModule} from './VisualizerInterface'
+
+import type {ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
 const min = Math.min
@@ -58,12 +58,6 @@ class Differences extends P5Visualizer(paramDesc) {
         'Produces a table of differences '
         + 'between consecutive entries, potentially iterated several times'
 
-    first = 0
-
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(seq)
-    }
-
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
@@ -103,7 +97,7 @@ class Differences extends P5Visualizer(paramDesc) {
 
         const workingSequence = []
         const end = min(sequence.first + this.n - 1, sequence.last)
-        const levels = min(tryLevels, end - this.first + 1)
+        const levels = min(tryLevels, end - sequence.first + 1)
 
         // workingSequence cannibalizes the first n elements
         for (let i = sequence.first; i <= end; i++) {

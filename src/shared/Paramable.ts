@@ -191,8 +191,11 @@ export interface ParamableInterface<PD extends GenericParamDescription> {
      * assignParameters(), because these have been vetted with a validate()
      * call. In contrast, values taken directly from the tentativeValues
      * are unvalidated, and they can change from valid to invalid at any time.
+     *
+     * It can optionally take a pre-realized parameter values object, to save
+     * the trouble of re-realizing the tentative values.
      */
-    assignParameters(): Promise<void>
+    assignParameters(realized?: ParamValues<PD>): Promise<void>
     /**
      * refreshParams() should copy the current working values of all of the
      * params back into the tentativeValues, in case they have changed.
@@ -207,9 +210,10 @@ export interface ParamableInterface<PD extends GenericParamDescription> {
     readonly query: string
     /**
      * loadQuery() should restore the state of the tentative parameters
-     * to those specified in the query
+     * to those specified in the query. Returns the paramable object itself
+     * for chaining purposes.
      */
-    loadQuery(query: string): void
+    loadQuery(query: string): Paramable<PD>
 }
 
 /* Helper functions to realize parameters given parameter description(s)

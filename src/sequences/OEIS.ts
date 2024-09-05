@@ -52,6 +52,7 @@ export class OEIS extends Cached(paramDesc) {
         // But initialize to an impossible state as a flag
         this.last = Infinity
         this.lastValueCached = -Infinity
+        this.lastFactorCached = -Infinity
     }
 
     get description() {
