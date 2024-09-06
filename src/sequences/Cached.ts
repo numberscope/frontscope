@@ -37,7 +37,7 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
     const defaultObject = Object.fromEntries(
         Object.keys(desc).map(param => [param, desc[param].default])
     )
-    const Cached = class extends SequenceDefault<PD> {
+    const Cached = class extends SequenceDefault {
         name = 'A generic uninitialized sequence with value caching'
         cache: bigint[] = []
         factorCache: Factorization[] = []

@@ -1,6 +1,5 @@
 import {specimenQuery, parseSpecimenQuery} from './browserCaching'
 import {math} from './math'
-import type {GenericParamDescription} from './Paramable'
 
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
 import {produceSequence} from '@/sequences/sequences'
@@ -21,8 +20,8 @@ export class Specimen {
     name: string
     private _visualizerKey: string
     private _sequenceKey: string
-    private _visualizer: VisualizerInterface<GenericParamDescription>
-    private _sequence: SequenceInterface<GenericParamDescription>
+    private _visualizer: VisualizerInterface
+    private _sequence: SequenceInterface
     private location?: HTMLElement
     private isSetup: boolean = false
     private size = nullSize
@@ -131,14 +130,14 @@ export class Specimen {
      * Returns the specimen's visualizer
      * @returns {VisualizerInterface} the visualizer displaying this specimen
      */
-    get visualizer(): VisualizerInterface<GenericParamDescription> {
+    get visualizer(): VisualizerInterface {
         return this._visualizer
     }
     /**
      * Returns the specimen's sequence
      * @returns {SequenceInterface} the sequence shown in this specimen
      */
-    get sequence(): SequenceInterface<GenericParamDescription> {
+    get sequence(): SequenceInterface {
         return this._sequence
     }
     /**

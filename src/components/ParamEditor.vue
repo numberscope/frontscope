@@ -58,7 +58,6 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import type {
-        GenericParamDescription,
         ParamInterface,
         ParamableInterface,
     } from '../shared/Paramable'
@@ -72,7 +71,7 @@
         children: {[key: string]: ParamInterface<ParamType>}
     }
 
-    type Paramable = () => ParamableInterface<GenericParamDescription>
+    type Paramable = () => ParamableInterface
 
     function resetStatuses(
         items: {[key: string]: unknown},

@@ -158,7 +158,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     private radii = 50 // increments of radius in a dot
     private initialRadius = 50 // size of dots
 
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
+    constructor(seq: SequenceInterface) {
         super(seq)
         // It is mandatory to initialize the `evaluator` property here,
         // so just use a simple dummy formula until the user provides one.

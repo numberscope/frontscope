@@ -571,7 +571,7 @@ class Grid extends P5Visualizer(paramDesc) {
     primaryProperties: number[] = []
     secondaryProperties: number[] = []
 
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
+    constructor(seq: SequenceInterface) {
         super(seq)
         /** md
 ### Property 1, 2, etc.:  Properties to display by coloring cells

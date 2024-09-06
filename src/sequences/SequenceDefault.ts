@@ -8,16 +8,13 @@ import {Paramable, type GenericParamDescription} from '../shared/Paramable'
  * Primarily intended to be used as a base class for your own sequences.
  *
  */
-export class SequenceDefault<PD extends GenericParamDescription>
-    extends Paramable<PD>
-    implements SequenceInterface<PD>
-{
+export class SequenceDefault extends Paramable implements SequenceInterface {
     name = 'An uninitialized generic sequence'
     first = 0
     last = 0
     ready: boolean
 
-    constructor(params: PD) {
+    constructor(params: GenericParamDescription) {
         super(params)
         this.ready = false
         this.isValid = false

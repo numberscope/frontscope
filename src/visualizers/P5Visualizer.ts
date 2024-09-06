@@ -21,7 +21,7 @@ import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 // Ugh, the gyrations we go through to keep TypeScript happy
 // while only listing the p5 methods once:
 
-class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
+class WithP5 extends Paramable {
     deviceMoved() {}
     deviceShaken() {}
     deviceTurned() {}
@@ -44,17 +44,11 @@ class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
 
 // The following is used to check if a visualizer has defined
 // any of the above methods:
-const dummyP5 = new WithP5<GenericParamDescription>({})
-
-type P5Methods<PD extends GenericParamDescription> = Exclude<
-    keyof WithP5<PD>,
-    keyof Paramable<PD>
->
-const dummyWithP5 = new WithP5<GenericParamDescription>({})
-const p5methods: P5Methods<GenericParamDescription>[] =
-    Object.getOwnPropertyNames(Object.getPrototypeOf(dummyWithP5)).filter(
-        name => name != 'constructor'
-    ) as P5Methods<GenericParamDescription>[]
+type P5Methods = Exclude<keyof WithP5, keyof Paramable>
+const dummyWithP5 = new WithP5({})
+const p5methods: P5Methods[] = Object.getOwnPropertyNames(
+    Object.getPrototypeOf(dummyWithP5)
+).filter(name => name != 'constructor') as P5Methods[]
 
 /* A convenience HACK so that visualizer writers can initialize
     p5 color properties without a sketch. Don't try to draw with this!
@@ -66,9 +60,7 @@ const p5methods: P5Methods<GenericParamDescription>[] =
 */
 export const INVALID_COLOR = {} as p5.Color
 
-export interface P5VizInterface<PD extends GenericParamDescription>
-    extends VisualizerInterface<PD>,
-        WithP5<PD> {
+export interface P5VizInterface extends VisualizerInterface, WithP5 {
     _sketch?: p5
     _canvas?: p5.Renderer
     _size: ViewSize
@@ -76,7 +68,7 @@ export interface P5VizInterface<PD extends GenericParamDescription>
     drawingState: DrawingState
     readonly sketch: p5
     readonly canvas: p5.Renderer
-    seq: SequenceInterface<GenericParamDescription>
+    seq: SequenceInterface
     _initializeSketch(): (sketch: p5) => void
     presketch(_size: ViewSize): Promise<void>
     reset(): Promise<void>
@@ -87,10 +79,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
     const defaultObject = Object.fromEntries(
         Object.keys(desc).map(param => [param, desc[param].default])
     )
-    const P5Visualizer = class
-        extends WithP5<PD>
-        implements P5VizInterface<PD>
-    {
+    const P5Visualizer = class extends WithP5 implements P5VizInterface {
         name = 'uninitialized P5-based visualizer'
         _sketch?: p5
         _canvas?: p5.Renderer
@@ -114,13 +103,13 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             }
             return this._canvas
         }
-        seq: SequenceInterface<GenericParamDescription>
+        seq: SequenceInterface
 
         /***
          * Create a P5-based visualizer
          * @param seq SequenceInterface  The initial sequence to draw
          */
-        constructor(seq: SequenceInterface<GenericParamDescription>) {
+        constructor(seq: SequenceInterface) {
             super(desc)
             this.name = this.category // Not currently using per-instance names
             this.seq = seq
@@ -154,7 +143,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 // `this[method]` is defined or undefined:
                 for (const method of p5methods) {
                     const definition = this[method]
-                    if (definition !== dummyP5[method]) {
+                    if (definition !== dummyWithP5[method]) {
                         if (
                             method === 'mousePressed'
                             || method === 'mouseClicked'
@@ -277,7 +266,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * Change the sequence being shown by the visualizer
          * @param seq SequenceInterface  The sequence to show
          */
-        async view(seq: SequenceInterface<GenericParamDescription>) {
+        async view(seq: SequenceInterface) {
             this.seq = seq
             if (!this._sketch) return
             const element = this.within!
@@ -422,6 +411,6 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
 
     type P5VisInstance = InstanceType<typeof P5Visualizer>
     return P5Visualizer as unknown as new (
-        seq: SequenceInterface<GenericParamDescription>
-    ) => P5VisInstance & P5VizInterface<PD> & ParamValues<PD>
+        seq: SequenceInterface
+    ) => P5VisInstance & P5VizInterface & ParamValues<PD>
 }

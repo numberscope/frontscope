@@ -1,17 +1,12 @@
 import type {SequenceInterface} from '../sequences/SequenceInterface'
-import type {
-    GenericParamDescription,
-    ParamableInterface,
-} from '../shared/Paramable'
+import type {ParamableInterface} from '../shared/Paramable'
 
 interface VisualizerConstructor {
     /**
      * Constructs a visualizer
      * @param seq SequenceInterface The initial sequence to visualize
      */
-    new (
-        seq: SequenceInterface<GenericParamDescription>
-    ): VisualizerInterface<GenericParamDescription>
+    new (seq: SequenceInterface): VisualizerInterface
     // Enforce that all visualizers have standard static properties
     category: string
     description: string
@@ -51,12 +46,11 @@ export type DrawingState =
     | typeof Drawing
     | typeof DrawingStopped
 
-export interface VisualizerInterface<PD extends GenericParamDescription>
-    extends ParamableInterface<PD> {
+export interface VisualizerInterface extends ParamableInterface {
     /**
      * Change the sequence the visualizer is showing.
      */
-    view(seq: SequenceInterface<GenericParamDescription>): Promise<void>
+    view(seq: SequenceInterface): Promise<void>
     /**
      * Cause the visualizer to realize itself within a DOM element.
      * The visualizer should remove itself from any other location it might

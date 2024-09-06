@@ -13,13 +13,13 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
     const P5GLVisualizer = class extends (P5Visualizer<PD>(
         desc
     ) as unknown as new (
-        seq: SequenceInterface<GenericParamDescription>
-    ) => ReturnType<typeof P5Visualizer<PD>> & P5VizInterface<PD>) {
+        seq: SequenceInterface
+    ) => ReturnType<typeof P5Visualizer<PD>> & P5VizInterface) {
         name = 'uninitialized P5-based WebGL visualizer'
 
         // Have to reassign name as category because of JavaScript default
         // initialization order rules
-        constructor(seq: SequenceInterface<GenericParamDescription>) {
+        constructor(seq: SequenceInterface) {
             super(seq)
             this.name = this.category
         }
@@ -51,6 +51,6 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
 
     type P5GLVisInstance = InstanceType<typeof P5GLVisualizer>
     return P5GLVisualizer as unknown as new (
-        seq: SequenceInterface<GenericParamDescription>
-    ) => P5GLVisInstance & P5VizInterface<PD> & ParamValues<PD>
+        seq: SequenceInterface
+    ) => P5GLVisInstance & P5VizInterface & ParamValues<PD>
 }

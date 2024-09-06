@@ -1,6 +1,6 @@
 import {seqKey} from './browserCaching'
 import {hasField, makeStringFields} from './fields'
-import type {StringFields} from './fields'
+import type {StringFields, GenericStringFields} from './fields'
 import typeFunctions, {ParamType} from './ParamType'
 import type {RealizedParamType} from './ParamType'
 import {ValidationStatus} from './ValidationStatus'
@@ -129,7 +129,86 @@ export type ParamValues<PD extends GenericParamDescription> = {
     [K in keyof PD]: OneParamType<PD, K>
 }
 
-export interface ParamableInterface<PD extends GenericParamDescription> {
+/********
+ Important nores on TypeScript and typing of the hierarchy of Paramable
+ classes (which include all sequences and visualizers):
+
+ TL;DR: Typings are loose and provide little safety in the higher levels
+ of the hierarchy and become specific (only) in the "leaf" classes that
+ are directly used at runtime. The mechanism for the narrowing consists
+ of several generic "class factory" functions that generate base classes
+ for the final layer of derivation of end-implemenations classes.
+
+ Full discussion:
+
+ All Paramable class instances have some collection of "parameters",
+ which are values that will be controllable from the frontscope UI (and which
+ will also display in the UI). Moreove, these values are reflected as top-level
+ properties of the class instance.
+
+ For a specific class, the list of these parameters and their types and
+ characteristics will be controlled by a ParamDescription, a structure as
+ defined above. We want TypeScript to select a narrow type for that
+ ParamDescription, and thereby typecheck the use of the described top-level
+ properties in the code for that class.
+
+ We at first attempted to track that narrow type of the ParamDescription
+ throughout the entire hierarchy, making everything generic on a type that
+ extended GenericParamDescription (the widest possible ParamDescription type,
+ that doesn't really constrain the top-level properties of the instanct at all).
+
+ However, we found two things: (A) in the code at the higher levels of the
+ hierarchy, "interior" to where a specific ParamDescription is actually being
+ specified, we were unable to get TypeScript to track types in the way we
+ had hoped and so we needed numerous typecasts to get the code to compile,
+ which were basically throwing away any type safety we might have hoped
+ to achieve in this internal code; and (B) in the code that was handling
+ sequences and visualizers in general, there was no way to instantiate the
+ generic interfaces with any narrow type (since the code would have to handle
+ all visualizers), and so we were always using GenericParamDescription anyway
+ rather than any specific ParamDescription type.
+
+ Hence, we concluded that within code where the ParamDescription was not yet
+ known, the TypeScript generic mechanisms were adding needless complexity
+ without any tangible benefit. Therefore, we have now left typings loose --
+ able to handle any ParamDescription with no information on the details
+ thereof -- at the top levels of the hierarchy. Then at the points where
+ we are getting to specific implementations and are ready to take a particular
+ ParamDescription, we create "factory functions" that do still have generic
+ parameters for narrow ParamDescription types. These factories then use the
+ TypeScript generic mechanisms to return concrete classes that have specific
+ constraints on the parameter values.
+
+ For this to work, every one of the "leaf" implementations of a class
+ ultimately derived from Paramable must come through one of these class
+ factories. Some judgement is needed as to where in the hierarchy to put
+ such factories. Essentially, they are at all the places that someone might
+ derive from to produce a concrete class that will be used at runtime.
+ So, for example, in the Sequence classes, we make the "Cached" base class,
+ that would never be used standalone but from which all operational sequences
+ like Formula derive directly, into a class factory that takes a parameter
+ description argument of a narrow type and returns a Cached-family class
+ with the specific properties determined by that parameter description. That
+ class returned from the factory is still itself not ready to be useful on
+ its own, but it is proper to derive from and will ensure that the
+ resulting derived class has all of the top-level properties with specific
+ types as listed in the parameter description (without having to reiterate them
+ all in the derived class definition).
+
+ The upshot is that in the end there doesn't seem to be a way (either with or
+ without TypeScript's generic mechanisms) to make the internal code of the
+ higher levels of the Paramable hierarchy as type-safe as one might like.
+ Hence, we must consider that internal code to be "expert code" that we
+ must check and test carefully. Fortunately, however, we still get all of
+ the desired type checking in all of the final Sequences and Visualizers. You
+ can demonstrate this by trying to assign a value of the wrong type to
+ one of the properties described by the ParamDescription of a particular
+ Visualizer, say -- it will generate the expected TypeScript error. Thus,
+ TypeScript should still be helpful to the more "casual code" potentially
+ submitted by a visualizer author.
+ ********/
+
+export interface ParamableInterface {
     // A per-instance identification of the paramable object. Note that
     // all derived classes of the "Paramable" implementation of this
     // interface will also have a _static_ `category` property identifying
@@ -147,14 +226,14 @@ export interface ParamableInterface<PD extends GenericParamDescription> {
      * paramable object, and the values should be objects implementing the
      * the ParamInterface as described above.
      */
-    params: PD
+    params: GenericParamDescription
     /**
      * A set of tentative (unrealized) values of the parameters. These values
      * are always strings, and reflect what the user has currently entered into
      * the input fields. `assignParameters()` will realize these values and copy
      * them into top-level properties.
      */
-    tentativeValues: StringFields<PD>
+    tentativeValues: GenericStringFields
     /**
      * A validation function for the `ParamableInterface`. This function
      * is expected to check that all tentative values of parameters are
@@ -195,7 +274,9 @@ export interface ParamableInterface<PD extends GenericParamDescription> {
      * It can optionally take a pre-realized parameter values object, to save
      * the trouble of re-realizing the tentative values.
      */
-    assignParameters(realized?: ParamValues<PD>): Promise<void>
+    assignParameters(
+        realized?: ParamValues<GenericParamDescription>
+    ): Promise<void>
     /**
      * refreshParams() should copy the current working values of all of the
      * params back into the tentativeValues, in case they have changed.
@@ -213,7 +294,7 @@ export interface ParamableInterface<PD extends GenericParamDescription> {
      * to those specified in the query. Returns the paramable object itself
      * for chaining purposes.
      */
-    loadQuery(query: string): Paramable<PD>
+    loadQuery(query: string): ParamableInterface
 }
 
 /* Helper functions to realize parameters given parameter description(s)
@@ -242,16 +323,14 @@ function realizeAll<PD extends GenericParamDescription>(
  * a generic implementation of a class with parameters to be exposed in the UI
  * Designed to be used as a common base class for such classes.
  */
-export class Paramable<PD extends GenericParamDescription>
-    implements ParamableInterface<PD>
-{
+export class Paramable implements ParamableInterface {
     name = 'A generic object with parameters'
     static description = 'An object with dynamically-specifiable parameters'
-    params: PD
-    tentativeValues: StringFields<PD>
+    params: GenericParamDescription
+    tentativeValues: GenericStringFields
     isValid = false
 
-    constructor(params: PD) {
+    constructor(params: GenericParamDescription) {
         // Hack: make sure Specimen URLs remain unambiguous
         if (seqKey in params)
             throw new Error(`Paramable objects may not use key '${seqKey}'`)
@@ -314,10 +393,10 @@ export class Paramable<PD extends GenericParamDescription>
             parmNames.map(p => [
                 p,
                 !param || p === param
-                    ? this.validateIndividual(p, status)
+                    ? (this.validateIndividual(p, status) ?? '')
                     : realizeOne(this.params[p], this.tentativeValues[p]),
             ])
-        ) as ParamValues<PD>
+        )
         if (status.invalid()) return status
         status = this.checkParameters(realized)
         if (status.invalid()) return status
@@ -342,7 +421,7 @@ export class Paramable<PD extends GenericParamDescription>
         const paramSpec = this.params[param]
         const tentative = this.tentativeValues[param]
         if (!paramSpec.required && tentative === '') {
-            return paramSpec.default as OneParamType<PD, P>
+            return paramSpec.default
         }
         typeFunctions[paramSpec.type].validate(tentative, status)
         if (status.invalid()) return undefined
@@ -350,7 +429,7 @@ export class Paramable<PD extends GenericParamDescription>
         if (paramSpec.validate)
             status.addError(...paramSpec.validate(realization).errors)
         if (status.invalid()) return undefined
-        return realization as OneParamType<PD, P>
+        return realization
     }
     /**
      * Performs the same purpose as `validate()`, but takes as a parameter
@@ -364,7 +443,9 @@ export class Paramable<PD extends GenericParamDescription>
      *     the collection of realized parameter values to be validated
      * @return {ValidationStatus} the result of the validation
      */
-    checkParameters(_params: ParamValues<PD>): ValidationStatus {
+    checkParameters(
+        _params: ParamValues<GenericParamDescription>
+    ): ValidationStatus {
         return ValidationStatus.ok()
     }
     /**
@@ -373,7 +454,7 @@ export class Paramable<PD extends GenericParamDescription>
      * only be called when isValid is true.
      * @param {ParamValues?} realized  Optionally supply pre-realized parameters
      */
-    async assignParameters(realized?: ParamValues<PD>) {
+    async assignParameters(realized?: ParamValues<GenericParamDescription>) {
         if (!realized)
             realized = realizeAll(this.params, this.tentativeValues)
 
@@ -401,7 +482,7 @@ export class Paramable<PD extends GenericParamDescription>
      * to keep the values reflected correctly in the UI.
      */
     refreshParams(): void {
-        const me = this as unknown as ParamValues<PD>
+        const me = this as unknown as ParamValues<GenericParamDescription>
         for (const prop in this.params) {
             if (!hasField(this, prop)) continue
             const param = this.params[prop]
@@ -469,18 +550,17 @@ export class Paramable<PD extends GenericParamDescription>
      * @param {string} query  the URL query string containing parameters
      * @return {ParamableInterface}  the updated paramable itself
      */
-    loadQuery(query: string): Paramable<PD> {
+    loadQuery(query: string): ParamableInterface {
         const params = new URLSearchParams(query)
         for (const [key, value] of params) {
             if (key in this.tentativeValues) {
                 const param = this.params[key]
-                const pdKey = key as keyof PD
                 if (
                     param.type === ParamType.COLOR
                     && value.match(/^[0-9a-fA-F]{6}$/)
                 )
-                    this.tentativeValues[pdKey] = '#' + value
-                else this.tentativeValues[pdKey] = value
+                    this.tentativeValues[key] = '#' + value
+                else this.tentativeValues[key] = value
             } else console.warn(`Invalid property ${key} for ${this.name}`)
         }
         return this

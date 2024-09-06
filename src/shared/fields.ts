@@ -6,6 +6,8 @@ export type StringFields<T extends {[key: string]: unknown}> = {
     [K in keyof T]: string
 }
 
+export type GenericStringFields = Record<string, string>
+
 export function makeStringFields<T extends {[key: string]: unknown}>(
     example: T
 ): StringFields<T> {

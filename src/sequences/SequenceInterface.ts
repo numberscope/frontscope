@@ -1,7 +1,4 @@
-import type {
-    GenericParamDescription,
-    ParamableInterface,
-} from '../shared/Paramable'
+import type {ParamableInterface} from '../shared/Paramable'
 /**
  * Interface for Sequence classes.
  * Every sequence class must implement these properties and functions
@@ -9,8 +6,7 @@ import type {
  */
 export type Factorization = [bigint, bigint][] | null
 
-export interface SequenceInterface<PD extends GenericParamDescription>
-    extends ParamableInterface<PD> {
+export interface SequenceInterface extends ParamableInterface {
     /**
      * first gives the lower limit for valid indices into the Sequence.
      * In other words, an integer number n is a valid index only if
@@ -73,12 +69,12 @@ export interface SequenceInterface<PD extends GenericParamDescription>
 }
 
 interface SequenceConstructor {
-    new (): SequenceInterface<GenericParamDescription>
+    new (): SequenceInterface
     category: string
     description: string
 }
 
-type SequenceFactory = () => SequenceInterface<GenericParamDescription>
+type SequenceFactory = () => SequenceInterface
 /**
  *
  * @class SequenceExportModule
@@ -128,9 +124,7 @@ export class SequenceExportModule {
      * @param sequence the live sequence
      * @return an appropriate sequence export module
      */
-    static instance(
-        sequence: SequenceInterface<GenericParamDescription>
-    ): SequenceExportModule {
+    static instance(sequence: SequenceInterface): SequenceExportModule {
         return new SequenceExportModule(
             () => sequence,
             sequence.name,
