@@ -34,6 +34,12 @@ export enum ParamType {
      */
     BIGINT,
     /**
+     * Either a bigint or the specific numbers -Infinity or Infinity, to
+     * "complete" the integers in both directions. Rendered as a standard
+     * input field in the parameter UI.
+     */
+    EXTENDED_BIGINT,
+    /**
      * An enum value, i.e. one of a list of options. Realized as a
      * number, and rendered as a drop down menu in the parameter UI.
      */
@@ -62,6 +68,21 @@ export enum ParamType {
      */
     VECTOR,
 }
+
+/**
+ * TypeScript type for EXTENDED_BIGINT.
+ */
+
+// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+export type TposInfinity = 1e999 // since that's above range for number,
+// it becomes the type for IEEE Infinity ("official" hack to make this type,
+// see https://github.com/microsoft/TypeScript/issues/31752)
+// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+export type TnegInfinity = -1e999 // similarly
+export type ExtendedBigint = bigint | TposInfinity | TnegInfinity
+const negInfinity = -Infinity as TnegInfinity
+const posInfinity = Infinity as TposInfinity
+
 /**
  * A mapping of the parameter types to their realized TypeScript types
  */
@@ -71,12 +92,14 @@ export type RealizedParamType = {
     [ParamType.NUMBER]: number
     [ParamType.INTEGER]: number
     [ParamType.BIGINT]: bigint
+    [ParamType.EXTENDED_BIGINT]: ExtendedBigint
     [ParamType.ENUM]: number
     [ParamType.STRING]: string
     [ParamType.NUMBER_ARRAY]: number[]
     [ParamType.BIGINT_ARRAY]: bigint[]
     [ParamType.VECTOR]: p5.Vector
 }
+
 /**
  * `ParamTypeFunctions` contains information about validation and to/from
  * string conversion for supported parameter types
@@ -127,6 +150,13 @@ const validateNumbers = (
         )
 }
 
+// Helper function for number types:
+const validateExtInt = (value: string, status: ValidationStatus) => {
+    if (value.trim().match(/^-?Infinity$/)) return
+    if (value.trim().match(/^-?\d+$/) === null)
+        status.addError('Input must be an integer or ±Infinity')
+}
+
 const typeFunctions: {
     [K in ParamType]: ParamTypeFunctions<RealizedParamType[K]>
 } = {
@@ -162,11 +192,7 @@ const typeFunctions: {
         derealize: value => (Number.isNaN(value) ? '' : `${value}`),
     },
     [ParamType.INTEGER]: {
-        validate: (value, status) => {
-            if (value.trim().match(/^-?Infinity$/)) return
-            if (value.trim().match(/^-?\d+$/) === null)
-                status.addError('Input must be an integer')
-        },
+        validate: validateExtInt,
         realize: value => parseInt(value),
         derealize: value => (Number.isNaN(value) ? '' : `${value}`),
     },
@@ -176,6 +202,18 @@ const typeFunctions: {
                 status.addError('Input must be an integer')
         },
         realize: value => BigInt(value),
+        derealize: value => `${value}`,
+    },
+    [ParamType.EXTENDED_BIGINT]: {
+        validate: validateExtInt,
+        realize: value => {
+            value = value.trim()
+            if (value.endsWith('Infinity')) {
+                if (value.startsWith('-')) return negInfinity
+                else return posInfinity
+            }
+            return BigInt(value)
+        },
         derealize: value => `${value}`,
     },
     [ParamType.ENUM]: {
