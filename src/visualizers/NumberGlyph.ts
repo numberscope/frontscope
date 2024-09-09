@@ -56,22 +56,6 @@ exceeds \( 2^{53}-1 \) to be 0.
 
 const paramDesc = {
     /** md
-##### Number of Terms
-
-The number of terms to display onscreen.  The sizes of the discs will
-be sized so that there are \(N^2\) disc positions, where \(N^2\) is the
-smallest square exceeding the number of terms (so that the terms mostly fill
-the screen).  Choose a perfect square number of terms to fill the square.
-If the sequence does not have that many terms, the visualizer will
-only attempt to show the available terms.
-**/
-    n: {
-        default: 64,
-        type: ParamType.INTEGER,
-        displayName: 'Number of Terms',
-        required: true,
-    },
-    /** md
 ##### Customize Glyphs
 
 This is a boolean which, if selected, will reveal further customization
@@ -133,6 +117,8 @@ The default value is 25.
     },
 } satisfies GenericParamDescription
 
+const minIncrement = 8 // smallest allowed spacing between glyphs
+
 class NumberGlyph extends P5Visualizer(paramDesc) {
     static category = 'Number Glyphs'
     static description =
@@ -142,8 +128,9 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     private evaluator: math.EvalFunction
 
     hueMap = new Map()
-    private last = 0
-    private currentIndex = 0
+    private n = 0n
+    private last = 0n
+    private currentIndex = 0n
     private position = new p5.Vector()
     private initialPosition = new p5.Vector()
     private positionIncrement = 100
@@ -200,12 +187,29 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         return this.evaluator.evaluate({n: n, x: x})
     }
 
+    adjustTermsAndColumns(size: ViewSize) {
+        // Calculate the number of terms we are actually going to show:
+        this.n = typeof this.seq.length === 'bigint' ? this.seq.length : 64n
+        this.columns = math.safeNumber(math.floorSqrt(this.n))
+        if (this.n > this.columns * this.columns) ++this.columns
+
+        // Adjust columns downwards so that the discs will not be
+        // too microscopic:
+        const fitTo = Math.min(size.width, size.height)
+        this.columns = Math.min(this.columns, Math.ceil(fitTo / minIncrement))
+        if (this.n > this.columns * this.columns) {
+            this.n = BigInt(this.columns * this.columns)
+        }
+        // TODO: if this.n is less than this.seq.length, we should post a
+        // warning; note that by construction, it can't be more.
+
+        this.positionIncrement = fitTo / this.columns
+        this.last = this.seq.first + this.n - 1n
+    }
+
     async presketch(size: ViewSize) {
         await super.presketch(size)
-        this.last = this.seq.first + this.n - 1 // adjust for offset
-        if (this.last > this.seq.last) {
-            this.last = this.seq.last
-        }
+        this.adjustTermsAndColumns(size)
         // NumberGlyph needs access to its entire range of values
         // before the sketch setup is even called
         await this.seq.fill(this.last, 'factors')
@@ -247,17 +251,9 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     setup() {
         super.setup()
 
+        this.adjustTermsAndColumns(this.size)
         this.currentIndex = this.seq.first
         this.position = this.sketch.createVector(0, 0)
-        const canvasSize = this.sketch.createVector(
-            this.sketch.width,
-            this.sketch.height
-        )
-        this.columns = Math.ceil(Math.sqrt(this.n))
-
-        this.positionIncrement = Math.floor(
-            Math.min(canvasSize.x, canvasSize.y) / this.columns
-        )
         this.initialRadius = Math.floor(this.positionIncrement / 2)
         this.radii = this.initialRadius
 
@@ -271,10 +267,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
             this.initialRadius,
             this.initialRadius
         )
-        this.position = this.sketch.createVector(
-            this.initialPosition.x,
-            this.initialPosition.y
-        )
+        this.position = this.initialPosition.copy()
     }
 
     draw() {
@@ -285,10 +278,10 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         }
         this.drawCircle(this.currentIndex)
         this.changePosition()
-        this.currentIndex += 1
+        ++this.currentIndex
     }
 
-    drawCircle(ind: number) {
+    drawCircle(ind: bigint) {
         let numberNowBigint = this.seq.getElement(ind)
         // temporary fix while math.js doesn't handle bigint
         if (
@@ -344,13 +337,18 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     changePosition() {
         this.position.add(this.positionIncrement, 0)
         // if we need to go to next line
-        if ((this.currentIndex - this.seq.first + 1) % this.columns == 0) {
+        if (
+            math.divides(
+                this.columns,
+                this.currentIndex - this.seq.first + 1n
+            )
+        ) {
             this.position.x = this.initialPosition.x
             this.position.add(0, this.positionIncrement)
         }
     }
 
-    isPrime(ind: number): boolean {
+    isPrime(ind: bigint): boolean {
         const factors = this.seq.getFactors(ind)
         if (
             factors === null // if we can't factor, it isn't prime
@@ -373,7 +371,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     }
 
     //return a number which represents the color
-    factorHue(ind: number) {
+    factorHue(ind: bigint) {
         const factors = this.seq.getFactors(ind)
         if (factors === null) {
             return -1

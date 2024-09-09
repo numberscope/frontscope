@@ -1,6 +1,5 @@
 import {SequenceExportModule} from './SequenceInterface'
 import {Cached} from './Cached'
-import simpleFactor from './simpleFactor'
 
 import {math} from '@/shared/math'
 import {ParamType} from '@/shared/ParamType'
@@ -52,13 +51,9 @@ export class Random extends Cached(paramDesc) {
         this.name = `Random integers ${this.min} to ${this.max}`
     }
 
-    calculate(_n: number) {
+    calculate(_n: bigint) {
         // create a random integer between min and max inclusive
         return BigInt(math.randomInt(this.min, this.max + 1))
-    }
-
-    factor(_n: number, v: bigint) {
-        return simpleFactor(v)
     }
 }
 

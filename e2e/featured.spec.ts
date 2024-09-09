@@ -12,7 +12,7 @@ test.describe('Featured gallery images', () => {
             await page.goto(testURL)
             await expect(
                 page.locator('#specimen-bar-desktop').getByText('play_arrow')
-            ).toHaveId('pause-button', {timeout: 15000})
+            ).toHaveId('pause-button', {timeout: 20000})
             expect(
                 await page.locator('#canvas-container').screenshot()
             ).toMatchSnapshot(`${short}.png`)

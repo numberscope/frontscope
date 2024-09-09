@@ -8,6 +8,10 @@
 
 <script setup lang="ts">
     import {RouterView} from 'vue-router'
+
+    import {reactivateOEIS} from '@/sequences/sequences'
+
+    reactivateOEIS()
 </script>
 
 <!-- Global styles. This style tag is explicitly unscoped. -->

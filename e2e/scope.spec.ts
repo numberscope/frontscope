@@ -125,7 +125,7 @@ test.describe('Scope', () => {
     test('refreshing the specimen', async ({page}) => {
         const oldCanvas = await page.locator('#canvas-container canvas')
 
-        oldCanvas.evaluate(canvas => {
+        await oldCanvas.evaluate(canvas => {
             canvas.classList.add('old-canvas')
         })
         await page.locator('#specimen-bar-desktop #refresh-button').click()

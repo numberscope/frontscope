@@ -20,7 +20,7 @@ for (const file in seqFiles) {
 async function patchOEISdescription(oeisKey: string) {
     const module = seqMODULES[oeisKey]
     const sequence = module.factory() as OEIS
-    await sequence.fillValueCache()
+    await sequence.cacheValues(0n)
     module.description = sequence.description
 }
 
@@ -63,4 +63,6 @@ export function disableOEIS(idOrKey: string) {
 }
 
 // Reactivate locally-stored OEIS sequences
-await Promise.allSettled(getIDs().map(id => enableOEIS(id)))
+export async function reactivateOEIS() {
+    getIDs().map(id => enableOEIS(id))
+}

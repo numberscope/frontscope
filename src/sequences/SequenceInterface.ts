@@ -1,4 +1,5 @@
-import type {ParamableInterface} from '../shared/Paramable'
+import type {ExtendedBigint} from '@/shared/math'
+import type {ParamableInterface} from '@/shared/Paramable'
 /**
  * Interface for Sequence classes.
  * Every sequence class must implement these properties and functions
@@ -9,20 +10,27 @@ export type Factorization = [bigint, bigint][] | null
 export interface SequenceInterface extends ParamableInterface {
     /**
      * first gives the lower limit for valid indices into the Sequence.
-     * In other words, an integer number n is a valid index only if
-     * first <= n. The typical value is 0, but any finite (positive or
-     * negative) integer value is allowed.
+     * In other words, bigint n is a valid index only if
+     * first <= n. The typical value is 0, but any positive or negative
+     * value is allowed as well.
      */
-    readonly first: number
+    readonly first: bigint
 
     /**
      * last is the counterpart to first, giving the upper limit for valid
-     * indices into the Sequence. An integer number n is a valid index
+     * indices into the Sequence. A bigint n is a valid index
      * if and only if first <= n <= last. Hence, if last is less than first,
      * the sequence is empty; if last is (the Javascript number) Infinity,
      * all indices not less than first are valid.
      */
-    readonly last: number
+    readonly last: ExtendedBigint
+
+    /**
+     * length is the number of terms in the sequence, or Infinity if the
+     * sequence is open-ended. This value can be computed from first and last,
+     * but it is needed so often that it is provided for convenience.
+     */
+    readonly length: ExtendedBigint
 
     /**
      * Initialize is called after validation. It allows us to wait
@@ -38,7 +46,7 @@ export interface SequenceInterface extends ParamableInterface {
      * it should ensure that future getElement and getFactors calls
      * return promptly.
      */
-    fill(n?: number, what?: string): Promise<void>
+    fill(n?: bigint, what?: string): Promise<void>
 
     /**
      * getElement is what clients of SequenceInterface call to get
@@ -49,7 +57,7 @@ export interface SequenceInterface extends ParamableInterface {
      * @returns a number
      * @memberof SequenceGenerator
      */
-    getElement(n: number): bigint
+    getElement(n: bigint): bigint
 
     /**
      * getFactors is what clients of SequenceInterface call to get the factors
@@ -65,7 +73,7 @@ export interface SequenceInterface extends ParamableInterface {
      * @param {number} n the index of the element in the sequence we want
      * @returns {Array<[bigint, bigint]>? factorization
      */
-    getFactors(n: number): Factorization
+    getFactors(n: bigint): Factorization
 }
 
 interface SequenceConstructor {

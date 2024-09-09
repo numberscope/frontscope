@@ -63,14 +63,14 @@ export const INVALID_COLOR = {} as p5.Color
 export interface P5VizInterface extends VisualizerInterface, WithP5 {
     _sketch?: p5
     _canvas?: p5.Renderer
-    _size: ViewSize
     _framesRemaining: number
+    size: ViewSize
     drawingState: DrawingState
     readonly sketch: p5
     readonly canvas: p5.Renderer
     seq: SequenceInterface
     _initializeSketch(): (sketch: p5) => void
-    presketch(_size: ViewSize): Promise<void>
+    presketch(size: ViewSize): Promise<void>
     reset(): Promise<void>
 }
 
@@ -83,8 +83,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         name = 'uninitialized P5-based visualizer'
         _sketch?: p5
         _canvas?: p5.Renderer
-        _size = nullSize
         _framesRemaining = Infinity
+        size = nullSize
         drawingState: DrawingState = DrawingUnmounted
 
         within?: HTMLElement
@@ -240,7 +240,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 // Only do the presketch initialization once, though:
                 needsPresketch = false
             }
-            this._size = size
+            this.size = size
             this.within = element
             // Perform any necessary asynchronous preparation before
             // creating sketch. For example, some Visualizers need sequence
@@ -273,7 +273,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             this.stop()
             this.depart(element) // ensures any sequence-dependent setup
             // that the visualizer might do in presketch will be redone
-            await this.inhabit(element, this._size)
+            await this.inhabit(element, this.size)
             this.show()
         }
 
@@ -289,6 +289,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
 
             if (this._canvas) {
                 this.drawingState = Drawing
+                this._sketch?.loop()
                 this._sketch?.draw()
             } else {
                 // If the rendering context is not yet ready, start an interval
@@ -332,7 +333,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         setup() {
             this._canvas = this.sketch
                 .background('white')
-                .createCanvas(this._size.width, this._size.height)
+                .createCanvas(this.size.width, this.size.height)
         }
 
         /**
@@ -404,7 +405,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             if (!this._sketch) return
             const element = this.within!
             this.stop()
-            await this.inhabit(element, this._size)
+            await this.inhabit(element, this.size)
             this.show()
         }
     }

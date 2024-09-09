@@ -58,8 +58,8 @@ const paramDesc = {
 integer.)_
      **/
     stepSize: {
-        default: 1, // Default value
-        type: ParamType.INTEGER, // Type validated by UI on user input
+        default: 1n, // Default value
+        type: ParamType.BIGINT, // Type validated by UI on user input
         displayName: 'Step size', // Title of the field
         description: 'The increment between subsequent values',
         hideDescription: true, // put the description in a tooltip
@@ -72,8 +72,9 @@ integer.)_
         // The type is validated automatically, but any further
         // restriction on the input should be validated with
         // a custom function here
-        validate: (n: number) =>
-            ValidationStatus.errorIf(n <= 0, 'Step size must be positive'),
+        validate: function (n: bigint, status: ValidationStatus) {
+            if (n <= 0) status.addError('Step size must be positive')
+        },
     },
 } satisfies GenericParamDescription
 
@@ -93,7 +94,7 @@ class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
     // to generate valid colors that p5 can draw with.
 
     // navigation state
-    index = 0
+    index = 0n
 
     // palette colors
     bgColor = INVALID_COLOR
@@ -189,7 +190,7 @@ class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
 
         // draw a progress bar; see documentation below
         const barScale = 7
-        const sqrtDist = Math.sqrt(this.index - this.seq.first)
+        const sqrtDist = Math.sqrt(Number(this.index - this.seq.first))
         const progress = 1 - barScale / (barScale + sqrtDist)
         const barLen = 0.6 * smallDim
         const barWidth = 0.02 * smallDim

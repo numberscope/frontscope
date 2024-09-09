@@ -457,32 +457,6 @@ indicated by smaller boxes
     },
 
     /** md
-### Grid cells: The number of cells to display in the grid
-
-This will be rounded down to the nearest square integer.
-This may get laggy when it is in the thousands or higher, depending on the
-property being tested.
-    **/
-    amountOfNumbers: {
-        default: 4096,
-        type: ParamType.NUMBER,
-        displayName: 'Grid cells',
-        required: false,
-        description: 'Warning: display lags over 10,000 cells',
-    },
-
-    /** md
-### Starting Index: The sequence index at which to begin
-    **/
-    startingIndex: {
-        default: 0,
-        type: ParamType.NUMBER,
-        displayName: 'Starting Index',
-        required: false,
-        description: '',
-    },
-
-    /** md
 ### Path in grid: The path to follow while filling numbers into the grid.
 
 - Spiral:  An Ulam-type square spiral starting at the center of grid.
@@ -545,10 +519,9 @@ class Grid extends P5Visualizer(paramDesc) {
         'Puts numbers in a grid, highlighting cells based on various properties'
 
     // Grid variables
-    amountOfNumbers = 4096
+    nEntries = 4096n
     sideOfGrid = 64
-    currentIndex = 0
-    startingIndex = 0
+    currentIndex = 0n
     currentNumber = 0n
     showNumbers = false
     preset = Preset.Custom
@@ -669,35 +642,28 @@ earlier ones that use the _same_ style.)
             PropertyVisualization.Box_In_Cell
         )
 
-        this.amountOfNumbers = Math.min(
-            this.amountOfNumbers,
-            this.seq.last - this.seq.first + 1
-        )
+        if (typeof this.seq.length === 'bigint') {
+            this.nEntries = this.seq.length
+        } // else TODO: Post warning about not using all terms
 
         // Round down amount of numbers so that it is a square number.
-        this.sideOfGrid = Number(math.floorSqrt(this.amountOfNumbers))
-        this.amountOfNumbers = this.sideOfGrid * this.sideOfGrid
+        const side = math.floorSqrt(this.nEntries)
+        this.sideOfGrid = Number(side)
+        this.nEntries = side * side
 
         this.scalingFactor = this.sketch.width / this.sideOfGrid
         this.setPathVariables(this.sideOfGrid)
     }
 
     draw(): void {
-        this.currentIndex = Math.max(this.startingIndex, this.seq.first)
+        this.currentIndex = this.seq.first
         let augmentForRowReset = 0n
 
-        for (
-            let iteration = 0;
-            iteration < this.amountOfNumbers;
-            iteration++
-        ) {
+        for (let iteration = 0; iteration < this.nEntries; iteration++) {
             // Reset current sequence for row reset and augment by one.
             if (this.currentDirection === Direction.StartNewRow) {
                 if (this.resetAndAugmentByOne) {
-                    this.currentIndex = Math.max(
-                        this.startingIndex,
-                        this.seq.first
-                    )
+                    this.currentIndex = this.seq.first
                     augmentForRowReset++
                 }
             }
@@ -730,12 +696,12 @@ earlier ones that use the _same_ style.)
             this.resetAndAugmentByOne = true
         }
 
-        if (this.showNumbers && this.amountOfNumbers > 400) {
-            this.amountOfNumbers = 400
+        if (this.showNumbers && this.nEntries > 400n) {
+            this.nEntries = 400n
         }
     }
 
-    setCurrentNumber(currentIndex: number, augmentForRow: bigint) {
+    setCurrentNumber(currentIndex: bigint, augmentForRow: bigint) {
         this.currentNumber = this.seq.getElement(currentIndex)
         this.currentNumber = this.currentNumber + augmentForRow
     }
@@ -815,7 +781,7 @@ earlier ones that use the _same_ style.)
         return retval
     }
 
-    hasProperty(ind: number, property: Property, aux?: bigint) {
+    hasProperty(ind: bigint, property: Property, aux?: bigint) {
         const propertyName = Property[property] as PropertyName
         if (propertyName in propertyOfFactorization) {
             let factors: Factorization = null
@@ -880,7 +846,7 @@ earlier ones that use the _same_ style.)
             // Go to new row when the row is complete
             if ((iteration + 1) % this.sideOfGrid === 0) {
                 this.currentDirection = Direction.StartNewRow
-            } else if (iteration === this.amountOfNumbers) {
+            } else if (BigInt(iteration) === this.nEntries) {
                 this.currentDirection = Direction.None
             } else {
                 this.currentDirection = Direction.Right

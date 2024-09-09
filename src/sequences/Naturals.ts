@@ -24,21 +24,21 @@ class Naturals extends Cached(paramDesc) {
     static category = 'Natural Numbers'
     static description = 'A sequence of the natural numbers'
 
-    private begin = 1
+    private begin = 1n
 
     initialize() {
         if (this.ready) return
         if (this.includeZero) {
             this.name = 'Nonnegative Integers'
-            this.begin = 0
+            this.begin = 0n
         } else {
             this.name = 'Positive Integers'
         }
         super.initialize()
     }
 
-    calculate(n: number) {
-        return BigInt(n + this.begin)
+    calculate(n: bigint) {
+        return n + this.begin
     }
 }
 

@@ -44,31 +44,6 @@ of the histogram.
         required: false,
     },
     /** md
-- First Index: The first index included in the statistics.
-    If the first index is before the first term
-    of the series then the first term of the series will be used.
-    **/
-    firstIndex: {
-        default: NaN,
-        type: ParamType.INTEGER,
-        displayName: 'First Index',
-        placeholder: '[start of sequence]',
-        required: false,
-    },
-
-    /** md
-- Number of Terms: The number of terms included in the statistics.
-        If this goes past the last term of the sequence it will
-        show all terms of the sequence after the first index.
-    **/
-    terms: {
-        default: 100,
-        type: ParamType.INTEGER,
-        displayName: 'Number of Terms',
-        required: true,
-    },
-
-    /** md
 - Mouse Over:   This turns on a mouse over feature that shows you the height
         of the bin that you are currently hovering over, as well as
 the bin label (i.e., which Omega values are included).
@@ -100,26 +75,17 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         return status
     }
 
-    // Obtain the true first index
-    startIndex(): number {
-        if (
-            Number.isNaN(this.firstIndex)
-            || this.firstIndex < this.seq.first
-        ) {
-            return this.seq.first
-        } else {
-            return this.firstIndex
-        }
-    }
-
-    // Obtain the true number of terms
-    endIndex(): number {
-        return Math.min(this.terms + this.startIndex(), this.seq.last)
-    }
-
     // Obtain the binned difference of an input
     binOf(input: number): number {
         return Math.trunc(input / this.binSize)
+    }
+
+    endIndex(): bigint {
+        // TODO: Should post warning about artificial limitation here
+        // (when it takes effect)
+        return typeof this.seq.last === 'bigint'
+            ? this.seq.last
+            : this.seq.first + 9999n
     }
 
     // Create an array with the value at n being the number of entries
@@ -127,7 +93,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     // are put into -1
     factorCounts(): number[] {
         const factorCount = []
-        for (let i = this.startIndex(); i < this.endIndex(); i++) {
+        for (let i = this.seq.first; i <= this.endIndex(); i++) {
             let counter = 0
             const factors = this.seq.getFactors(i)
             if (factors) {
@@ -304,7 +270,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         sketch.background(176, 227, 255) // light blue
         // Convert back to the ordinary p5 coordinates as this was
         // originally written with:
-        sketch.translate(-this._size.width / 2, -this._size.height / 2)
+        sketch.translate(-this.size.width / 2, -this.size.height / 2)
         sketch.textSize(Math.max(0.02 * sketch.height, 10))
         const height = this.height() // "unit" height
         const textHeight = sketch.textAscent()
@@ -316,7 +282,8 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         if (this.factoring) {
             sketch.fill('red')
             this.write('Factoring ...', largeOffsetNumber, textHeight * 2)
-            return
+            this.continue()
+            this.stop(3)
         }
 
         const binWidth = this.binWidth()

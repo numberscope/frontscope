@@ -1,11 +1,10 @@
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import {math} from '@/shared/math'
+import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
-
-const min = Math.min
 
 /** md
 # Difference Visualizer
@@ -25,30 +24,17 @@ difference of.
 
 const paramDesc = {
     /** md
-- **Entries in top row:** How many sequence entries to display in the top
-row. _(Positive integer or zero. Zero means all available entries.)_
-     **/
-    n: {
-        default: 20,
-        type: ParamType.INTEGER,
-        displayName: 'Entries in top row',
-        required: true,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(
-                n < 0,
-                "Number of entries in top row can't be negative"
-            ),
-    },
-    /** md
 - **Number of rows:** How many rows to produce. _(Positive integer, no larger
-than 'Entries in top row.')_
+than the number of elements in the sequence')_
      **/
     levels: {
-        default: 0,
-        type: ParamType.INTEGER,
+        default: 12n,
+        type: ParamType.BIGINT,
         displayName: 'Number of rows',
         required: false,
-        placeholder: '[length of top row]',
+        validate: function (l: bigint, stat: ValidationStatus) {
+            if (l < 1n) stat.addError('Need at least one row')
+        },
     },
 } satisfies GenericParamDescription
 
@@ -58,29 +44,24 @@ class Differences extends P5Visualizer(paramDesc) {
         'Produces a table of differences '
         + 'between consecutive entries, potentially iterated several times'
 
-    checkParameters(params: ParamValues<typeof paramDesc>) {
-        const status = super.checkParameters(params)
-
-        if (params.n < params.levels)
-            status.addError("Number of rows can't exceed length of first row")
-
-        return status
-    }
+    useTerms = 40n // Typically more than enough to fill screen
+    useLevels = 0n
 
     setup() {
         super.setup()
-        if (this.seq.last - this.seq.first + 1 < this.levels) {
-            throw Error(
-                `Sequence ${this.seq.name} has too few entries `
-                    + `for ${this.levels} levels.`
-            )
+        if (this.seq.last < this.seq.first + this.useTerms - 1n) {
+            this.useTerms = BigInt(this.seq.last) - this.seq.first + 1n
+        }
+        this.useLevels = this.levels
+        if (this.useLevels > this.useTerms) {
+            this.useLevels = this.useTerms
+            // TODO: Should really warn about this situation
         }
     }
 
     draw() {
         const sketch = this.sketch
         const sequence = this.seq
-        const tryLevels = this.levels > 0 ? this.levels : this.n
         const fontSize = 20
         const xDelta = 50
         const yDelta = 50
@@ -95,11 +76,13 @@ class Differences extends P5Visualizer(paramDesc) {
         let myColor = sketch.color(100, 255, 150)
         let hue = 0
 
-        const workingSequence = []
-        const end = min(sequence.first + this.n - 1, sequence.last)
-        const levels = min(tryLevels, end - sequence.first + 1)
+        const end = BigInt(
+            math.bigmin(sequence.first + this.useTerms - 1n, sequence.last)
+        )
+        const levels = math.bigmin(this.useLevels, end - sequence.first + 1n)
 
         // workingSequence cannibalizes the first n elements
+        const workingSequence = []
         for (let i = sequence.first; i <= end; i++) {
             workingSequence.push(sequence.getElement(i))
         }

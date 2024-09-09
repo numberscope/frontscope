@@ -43,6 +43,13 @@ try {
   console.log('This will never be logged and myNumber will be 9007')
 }
 
+// ExtendedBigint is the type of bigints completed with ±infinity
+const inf: ExtendedBigint = math.posInfinity
+const neginf: ExtendedBigint = math.negInfinity
+
+// Like Math.floor, but with BigInt result type:
+const negTwo: bigint = math.bigInt(-1.5)
+
 const five: bigint = math.floorSqrt(30n)
 const negativeTwo: bigint = math.floorSqrt(-2n)
 
@@ -59,6 +66,10 @@ const six: bigint = math.powmod(6, 2401n, 7n)
 const fortysixish: number = math.natlog(100000000000000000000n)
 
 const seven: bigint = math.bigabs(-7n)
+
+const twelve: ExtendedBigint = math.bigmax(5n, 12, -3)
+const negthree: ExtendedBigint = math.bigmin(5n, 12, -3)
+const anotherNegInf = math.bigmin(5n, math.negInfinity, -3)
 ```
 
 ### Detailed function reference
@@ -70,17 +81,34 @@ import {create, all} from 'mathjs'
 import type {MathJsInstance} from 'mathjs'
 
 type Integer = number | bigint
+
+// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+export type TposInfinity = 1e999 // since that's above range for number,
+// it becomes the type for IEEE Infinity ("official" hack to make this type,
+// see https://github.com/microsoft/TypeScript/issues/31752)
+// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+export type TnegInfinity = -1e999 // similarly
+export type ExtendedBigint = bigint | TposInfinity | TnegInfinity
+
 type ExtendedMathJs = MathJsInstance & {
+    negInfinity: TnegInfinity
+    posInfinity: TposInfinity
     safeNumber(n: Integer): number
     floorSqrt(n: Integer): bigint
     modulo(n: Integer, modulus: Integer): bigint
     divides(a: Integer, b: Integer): boolean
     powmod(n: Integer, exponent: Integer, modulus: Integer): bigint
     natlog(n: Integer): number
+    bigInt(a: Integer): bigint
     bigabs(a: Integer): bigint
+    bigmax(...args: Integer[]): ExtendedBigint
+    bigmin(...args: Integer[]): ExtendedBigint
 }
 
 export const math = create(all) as ExtendedMathJs
+
+math.negInfinity = -Infinity as TnegInfinity
+math.posInfinity = Infinity as TposInfinity
 
 const maxSafeNumber = BigInt(Number.MAX_SAFE_INTEGER)
 const minSafeNumber = BigInt(Number.MIN_SAFE_INTEGER)
@@ -179,12 +207,58 @@ math.natlog = (n: Integer): number => {
 }
 
 /** md
+#### bigInt(n: number | bigint): bigint
+
+Returns the floor of n as a bigint
+**/
+math.bigInt = (n: Integer): bigint => {
+    if (typeof n === 'bigint') return n
+    return BigInt(Math.floor(n))
+}
+
+/** md
 #### bigabs(n: number | bigint): bigint
 
-returns the absolute value of a bigint (or number)
+returns the absolute value of a bigint or an integer number
 **/
 math.bigabs = (a: Integer): bigint => {
     const n = BigInt(a)
     if (n < 0n) return -n
     return n
+}
+
+/** md
+#### bigmax(...args: number | bigint): ExtendedBigint
+
+returns the largest its arguments, which may be bigints and/or integer
+numbers. Note the result has to be an extended bigint because one of the
+numbers might be Infinity.
+**/
+math.bigmax = (...args: Integer[]): ExtendedBigint => {
+    let ret: ExtendedBigint = math.negInfinity
+    for (const a of args) {
+        if (a > ret) {
+            if (a === math.posInfinity) return math.posInfinity
+            if (typeof a === 'number') ret = BigInt(a)
+            else ret = a
+        }
+    }
+    return ret
+}
+
+/** md
+#### bigmin(...args: number | bigint): ExtendedBigint
+
+returns the smallest of its arguments, with the same conditions as bigmax.
+**/
+math.bigmin = (...args: Integer[]): ExtendedBigint => {
+    let ret: ExtendedBigint = math.posInfinity
+    for (const a of args) {
+        if (a < ret) {
+            if (a === math.negInfinity) return math.negInfinity
+            if (typeof a === 'number') ret = BigInt(a)
+            else ret = a
+        }
+    }
+    return ret
 }

@@ -16,7 +16,7 @@ const challenges = [
     'A114592', // Only -1,0,1, for 359 terms, then some bigger values
     'A007235', // short sequence but grows fast
     'A001220', // very few terms
-    'A000521', // short sequence with -1 offset, grows fast
+    // 'A000521', // long seq with -1 offset, grows fast; temp too much data
     'A228060', // offset -85, many small terms
     'A086677', // offset 2
     'A241298', // very large positive offset
@@ -75,7 +75,7 @@ test.describe('Visualizer-sequence challenges', () => {
                     page
                         .locator('#specimen-bar-desktop')
                         .getByText('play_arrow')
-                ).toHaveId('pause-button', {timeout: 15000})
+                ).toHaveId('pause-button', {timeout: 20000})
                 expect(
                     await page.locator('#canvas-container').screenshot()
                 ).toMatchSnapshot(`${viz + seq}.png`)

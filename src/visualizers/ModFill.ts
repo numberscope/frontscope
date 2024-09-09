@@ -31,8 +31,9 @@ modulus to consider.
         type: ParamType.BIGINT,
         displayName: 'Mod dimension',
         required: true,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(n <= 0, 'Must be positive.'),
+        validate: function (n: number, status: ValidationStatus) {
+            if (n <= 0) status.addError('Must be positive.')
+        },
     },
 } satisfies GenericParamDescription
 
@@ -44,9 +45,9 @@ class ModFill extends P5Visualizer(paramDesc) {
     rectWidth = 0
     rectHeight = 0
     useMod = 0
-    i = 0
+    i = 0n
 
-    drawNew(num: number) {
+    drawNew(num: bigint) {
         this.sketch.fill(0)
         for (let mod = 1; mod <= this.useMod; mod++) {
             const s = this.seq.getElement(num)
@@ -79,11 +80,11 @@ class ModFill extends P5Visualizer(paramDesc) {
     }
 
     draw() {
-        this.drawNew(this.i)
-        this.i++
-        if (this.i == 1000 || this.i > this.seq.last) {
+        if (this.i > this.seq.last) {
             this.stop()
+            return
         }
+        this.drawNew(this.i++)
     }
 }
 

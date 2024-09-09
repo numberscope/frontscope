@@ -41,8 +41,8 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
             this._canvas = this.sketch
                 .background('white')
                 .createCanvas(
-                    this._size.width,
-                    this._size.height,
+                    this.size.width,
+                    this.size.height,
                     this.sketch.WEBGL
                 )
             brush.load()

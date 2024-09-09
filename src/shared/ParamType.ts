@@ -1,5 +1,7 @@
 import p5 from 'p5'
 
+import {math} from './math'
+import type {ExtendedBigint} from './math'
 import {ValidationStatus} from './ValidationStatus'
 
 /**
@@ -72,16 +74,6 @@ export enum ParamType {
 /**
  * TypeScript type for EXTENDED_BIGINT.
  */
-
-// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
-export type TposInfinity = 1e999 // since that's above range for number,
-// it becomes the type for IEEE Infinity ("official" hack to make this type,
-// see https://github.com/microsoft/TypeScript/issues/31752)
-// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
-export type TnegInfinity = -1e999 // similarly
-export type ExtendedBigint = bigint | TposInfinity | TnegInfinity
-const negInfinity = -Infinity as TnegInfinity
-const posInfinity = Infinity as TposInfinity
 
 /**
  * A mapping of the parameter types to their realized TypeScript types
@@ -209,8 +201,8 @@ const typeFunctions: {
         realize: value => {
             value = value.trim()
             if (value.endsWith('Infinity')) {
-                if (value.startsWith('-')) return negInfinity
-                else return posInfinity
+                if (value.startsWith('-')) return math.negInfinity
+                else return math.posInfinity
             }
             return BigInt(value)
         },

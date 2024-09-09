@@ -2,8 +2,6 @@ import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
 import {math} from '@/shared/math'
-import type {GenericParamDescription} from '@/shared/Paramable'
-import {ParamType} from '@/shared/ParamType'
 
 /** md
 # Show Factors Visualizer
@@ -16,28 +14,7 @@ the sequence, and below each term, its prime factors.
 ## Parameters
 **/
 
-const paramDesc = {
-    /** md
-- start: The index of the first entry to display
-     **/
-    start: {
-        default: -Infinity,
-        type: ParamType.INTEGER,
-        displayName: 'First index to show',
-        required: false,
-    },
-    /** md
-- end: The index of the last entry to display
-     **/
-    end: {
-        default: Infinity,
-        type: ParamType.INTEGER,
-        displayName: 'Last index to show',
-        required: false,
-    },
-} satisfies GenericParamDescription
-
-class ShowFactors extends P5Visualizer(paramDesc) {
+class ShowFactors extends P5Visualizer({}) {
     static category = 'Show Factors'
     static description = 'Produces a table of factors of a sequence'
 
@@ -55,11 +32,13 @@ class ShowFactors extends P5Visualizer(paramDesc) {
         const firstX = 30
         const firstY = 30
 
-        const first = Math.max(this.start, this.seq.first)
-        const last = Math.min(this.end, this.seq.last, first + 100)
-        for (let i = first; i <= last; i++) {
-            const xCoord = firstX + (i - first) * xDelta
-            const hue = Number(math.modulo(Math.floor((i * 255) / 6), 255))
+        const last =
+            typeof this.seq.last === 'bigint'
+                ? this.seq.last
+                : this.seq.first + 100n
+        for (let i = this.seq.first; i <= last; i++) {
+            const xCoord = firstX + Number(i - this.seq.first) * xDelta
+            const hue = Number(math.modulo((i * 255n) / 6n, 255))
             const myColor = sketch.color(hue, 150, 200)
             sketch
                 .fill(myColor)

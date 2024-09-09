@@ -5,6 +5,7 @@ import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
 
 import {math} from '@/shared/math'
+import type {ExtendedBigint} from '@/shared/math'
 import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
@@ -90,11 +91,11 @@ const paramDesc = {
             'We highlight primes dividing this number.'
             + ' To highlight none, put 1.',
         hideDescription: true,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(
-                n <= 0,
-                'Your favourite number must be positive.'
-            ),
+        validate: function (n: number, status: ValidationStatus) {
+            if (n <= 0) {
+                status.addError('Your favourite number must be positive.')
+            }
+        },
     },
     /** md
 - labels: Specifies whether the chart legend should be displayed
@@ -144,9 +145,9 @@ function divisorsFirst(bars: Bar[], n: bigint) {
 
 // data on which bars on screen
 interface BarsData {
-    minBars: number
-    maxBars: number
-    numBars: number
+    minBars: bigint
+    maxBars: bigint
+    numBars: number // should be safe because not so many pixels on screen
 }
 
 // "Natural" width of the factor bars:
@@ -165,23 +166,19 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
     // mouse control
     private mousePrime = 1n
-    private mouseIndex = NaN // term mouse is hovering over
+    private mouseIndex: ExtendedBigint = math.negInfinity
     private mouseLast: MouseEvent | undefined = undefined // last mouse pos
     private mouseDown = false
     private dragging = false
     private dragStart = new p5.Vector()
     private graphCornerStart = new p5.Vector()
 
-    // store factorizations
-    private factorizations: Bar[][] = []
+    // store factorizations in FactorFence's internal format
+    private factorizations: Record<string, Bar[]> = {}
 
     // scaling control
     private scaleFactor = 1.0 // zooming
-    private initialLimitTerms = 10000 // initial max number of terms
-    private availableTerms = 0 // max number of terms available
-    private seqTerms = 0 // total number of terms we are using
-    private first = 0 // first term
-    private last = 0 // last term
+    private initialLimitTerms = 10000n // initial max number of terms
     private heightScale = 55 // stretching
 
     // for vertical scaling, store max/min sequence vals displayed
@@ -206,7 +203,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     private palette = new FactorPalette()
 
     // first factorization failure
-    private firstFailure = Number.POSITIVE_INFINITY
+    private firstFailure = -1024n // dummy, must be replaced
 
     barsShowing(size: ViewSize): BarsData {
         // determine which terms will be on the screen
@@ -215,26 +212,23 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // minimum bar to compute
         // no less than first term
-        const minBars = Math.max(
-            Math.floor(
-                this.first - Math.min(0, this.graphCorner.x / recSpace.x)
-            ) - 1,
-            this.first
-        )
+        let minBars = this.seq.first
+        const offset = -math.bigInt(this.graphCorner.x / recSpace.x) - 1n
+        if (offset > 0) minBars += offset
 
         // number of bars on screen
         // two extra to slightly bleed over edge
-        const numBars = Math.floor(
-            Math.min(
-                size.width / this.scaleFactor / recSpace.x + 2,
-                this.last - minBars + 1
-            )
+        let bigNumBars = math.bigInt(
+            size.width / this.scaleFactor / recSpace.x + 2
         )
+        let maxBars = minBars + bigNumBars - 1n
 
-        // maximum bar to compute
-        const maxBars = minBars + numBars - 1
+        if (this.seq.last < maxBars) {
+            maxBars = BigInt(this.seq.last)
+            bigNumBars = maxBars - minBars + 1n
+        }
 
-        return {minBars, maxBars, numBars}
+        return {minBars, maxBars, numBars: Number(bigNumBars)}
     }
 
     collectDataForScale(barsInfo: BarsData, size: ViewSize) {
@@ -244,7 +238,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
         const seqVals = Array.from(Array(barsInfo.numBars), (_, i) => {
             let elt = 1n
             try {
-                elt = this.seq.getElement(i + barsInfo.minBars)
+                elt = this.seq.getElement(BigInt(i) + barsInfo.minBars)
             } catch {
                 this.collectFailed = true
                 return 0
@@ -317,7 +311,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
                     }
                 }
             }
-            this.factorizations[myIndex] = factors
+            this.factorizations[myIndex.toString()] = factors
         }
         return firstFailure
     }
@@ -339,27 +333,17 @@ class FactorFence extends P5Visualizer(paramDesc) {
 
         // initial scaling
         const barsInfo = this.barsShowing(size)
+        this.firstFailure = barsInfo.minBars
+        await this.seq.fill(barsInfo.maxBars) // must await because used now
         this.collectDataForScale(barsInfo, size)
     }
 
     async presketch(size: ViewSize) {
         await super.presketch(size)
 
-        // begin by limiting to 10000 terms
-        this.availableTerms = this.seq.last - this.seq.first + 1
-        this.seqTerms = this.availableTerms
-        if (this.seqTerms > this.initialLimitTerms) {
-            this.seqTerms = this.initialLimitTerms
-        }
-
-        // set up terms first and last
-        this.first = this.seq.first
-        this.firstFailure = this.first // set factoring needed pointer
-        this.last = this.seq.first + this.seqTerms - 1
-
         // Warn the backend we plan to factor: (Note we don't await because
         // we don't actually use the factors until later.)
-        this.seq.fill(this.last)
+        this.seq.fill(this.seq.first + this.initialLimitTerms, 'factor')
 
         await this.standardizeView(size)
     }
@@ -376,12 +360,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.sketch.strokeWeight(0)
         this.sketch.frameRate(30)
 
-        // Extend factoring array as needed
-        for (let myIndex = this.first; myIndex < this.last; myIndex++) {
-            if (myIndex in this.factorizations) continue
-            const factors: Bar[] = []
-            this.factorizations[myIndex] = factors
-        }
         // Only need a couple of frames to start with:
         this.stop(tryFrames)
     }
@@ -484,20 +462,6 @@ In addition, several keypress commands are recognized:
             height: this.sketch.height,
         })
 
-        // If we are getting close to the hidden max terms, raise it
-        if (
-            3 * barsInfo.maxBars > this.seqTerms
-            && this.seqTerms < this.availableTerms
-        ) {
-            this.seqTerms = Math.min(
-                this.availableTerms,
-                3 * barsInfo.maxBars
-            )
-            this.last = this.seq.first + this.seqTerms - 1
-            this.seq.fill(this.last)
-            this.collectFailed = true // trigger recollect
-        }
-
         this.sketch.push()
         // The next call scales the whole sketch, which is why we
         // encapsulate it in the above push()
@@ -515,14 +479,15 @@ In addition, several keypress commands are recognized:
         this.firstFailure = this.storeFactors(barsInfo)
         this.lowestBar = 0
 
-        this.mouseIndex = NaN
+        this.mouseIndex = math.negInfinity
         this.mousePrime = 1n
         // Determine what the mouse is over, if anything:
         if (this.mouseOnSketch()) {
             const horiz =
                 this.sketch.mouseX / this.scaleFactor - this.graphCorner.x
             if (horiz % recSpace.x < recWidth) {
-                const rawIndex = Math.floor(horiz / recSpace.x) + this.first
+                const rawIndex =
+                    math.bigInt(horiz / recSpace.x) + this.seq.first
                 if (
                     rawIndex >= barsInfo.minBars
                     && rawIndex <= barsInfo.maxBars
@@ -554,7 +519,7 @@ In addition, several keypress commands are recognized:
         }
     }
 
-    drawTerm(myIndex: number, extractPrime?: string) {
+    drawTerm(myIndex: bigint, extractPrime?: string) {
         // This function draws the full stacked bars for a single term
         // Input is index of the term
         const myTerm = this.seq.getElement(myIndex)
@@ -564,7 +529,7 @@ In addition, several keypress commands are recognized:
         if (myTerm < 0 && this.signs) mySign = -1
 
         // get factors of term
-        const factors = this.factorizations[myIndex]
+        const factors = this.factorizations[myIndex.toString()]
 
         // determine where to put lower left corner of graph
         const barStart = this.graphCorner.copy()
@@ -573,7 +538,7 @@ In addition, several keypress commands are recognized:
 
         // move over based on which term
         const moveOver = recSpace.copy()
-        moveOver.mult(myIndex - this.first)
+        moveOver.mult(math.safeNumber(myIndex - this.seq.first))
         barStart.add(moveOver)
 
         // Now draw the bars:
@@ -894,9 +859,9 @@ In addition, several keypress commands are recognized:
 
         // factorization text shown upon mouseover of graph
         const mIndex = this.mouseIndex
-        if (isNaN(mIndex)) return
+        if (typeof mIndex !== 'bigint') return
         const reorderedFactors = divisorsFirst(
-            this.factorizations[mIndex],
+            this.factorizations[mIndex.toString()],
             this.highlight
         )
         // term and sign

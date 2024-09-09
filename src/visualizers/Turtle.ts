@@ -59,8 +59,9 @@ positionally to the domain elements. Range and domain must be the same length.
         type: ParamType.INTEGER,
         displayName: 'Stroke Width',
         required: false,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(n <= 0, 'Stroke width must be positive'),
+        validate: function (n: number, status: ValidationStatus) {
+            if (n <= 0) status.addError('Stroke width must be positive')
+        },
     },
     /**
 - bgColor: The background color of the visualizer canvas
@@ -109,7 +110,7 @@ class Turtle extends P5Visualizer(paramDesc) {
 
     private rotMap = new Map<string, number>()
 
-    private currentIndex = 0
+    private currentIndex = 0n
     private orientation = 0
     private X = 0
     private Y = 0

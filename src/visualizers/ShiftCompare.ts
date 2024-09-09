@@ -88,8 +88,8 @@ class ShiftCompare extends P5Visualizer(paramDesc) {
         }
         // since settings.mod can be any of string | number | bool,
         // assign it here explictly to a number, to avoid type errors
-        const xLim = Math.min(sketch.width - 1, this.seq.last)
-        const yLim = Math.min(sketch.height - 1, this.seq.last)
+        const xLim = math.bigmin(sketch.width - 1, this.seq.last)
+        const yLim = math.bigmin(sketch.height - 1, this.seq.last)
 
         // Write to image, then to screen for speed.
         for (let x = this.seq.first; x <= xLim; x++) {
@@ -99,7 +99,9 @@ class ShiftCompare extends P5Visualizer(paramDesc) {
                 for (let i = 0; i < d; i++) {
                     for (let j = 0; j < d; j++) {
                         const index =
-                            ((y * d + j) * sketch.width * d + (x * d + i)) * 4
+                            ((Number(y) * d + j) * sketch.width * d
+                                + (Number(x) * d + i))
+                            * 4
                         if (xResidue == yResidue) {
                             this.img.pixels[index] = 255
                             this.img.pixels[index + 1] = 255

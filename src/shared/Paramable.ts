@@ -95,11 +95,15 @@ export interface ParamInterface<T extends ParamType> {
      * the parameter, rather than above/below the entire list of parameters.
      * It is also more flexible than the aggregate validation function, working
      * even when the values of other parameters are currently invalid.
-     * It takes in a realized value of this parameter and returns a validation
-     * status. If this function is not implemented, it assumes that the
-     * parameter must always be valid.
+     * It takes in a realized value of this parameter and a status, and
+     * updates the status accordingly. If this function is not implemented,
+     * it is assumed that any typographically valid parameter is semantically
+     * valid as well. Note that generally these should be regular functions
+     * rather than arrow functions as they are called with the this-context
+     * set to the Paramable object on which the parameter resides, so that
+     * they may use other data of the object in the validity check.
      */
-    validate?(value: RealizedParamType[T]): ValidationStatus
+    validate?(value: RealizedParamType[T], status: ValidationStatus): void
 }
 
 export type ParamTypeChoices = {[key: string]: ParamType}
@@ -110,6 +114,13 @@ export type ParamDescription<TC extends ParamTypeChoices> = {
  * should contain such a parameter description.
  */
 export type GenericParamDescription = ParamDescription<ParamTypeChoices>
+
+/* Clone any ParamDescription: */
+export function paramClone<PD extends GenericParamDescription>(pd: PD) {
+    return Object.fromEntries(
+        Object.keys(pd).map(k => [k, Object.assign({}, pd[k])])
+    )
+}
 
 export type ExtractParamChoices<PD extends GenericParamDescription> = {
     [K in keyof PD]: PD[K]['type']
@@ -331,11 +342,12 @@ export class Paramable implements ParamableInterface {
     isValid = false
 
     constructor(params: GenericParamDescription) {
+        this.params = params
+
         // Hack: make sure Specimen URLs remain unambiguous
         if (seqKey in params)
             throw new Error(`Paramable objects may not use key '${seqKey}'`)
 
-        this.params = params
         // Start with empty string for every tentative value
         this.tentativeValues = makeStringFields(params)
         // Now fill in the string forms of all of the default values of
@@ -426,8 +438,9 @@ export class Paramable implements ParamableInterface {
         typeFunctions[paramSpec.type].validate(tentative, status)
         if (status.invalid()) return undefined
         const realization = typeFunctions[paramSpec.type].realize(tentative)
-        if (paramSpec.validate)
-            status.addError(...paramSpec.validate(realization).errors)
+        if (paramSpec.validate) {
+            paramSpec.validate.call(this, realization, status)
+        }
         if (status.invalid()) return undefined
         return realization
     }
@@ -470,9 +483,12 @@ export class Paramable implements ParamableInterface {
                 changed.push(prop)
             }
         }
-        if (changed.length < props.length)
+        // We could change the cutoff between individual calls to
+        // parameterChanged and a single call with `#multiple`, if we ever
+        // encounter any evidence that would be helpful.
+        if (changed.length < props.length - 1 || changed.length < 3)
             for (const prop of changed) await this.parameterChanged(prop)
-        else await this.parameterChanged('#all')
+        else await this.parameterChanged('#multiple')
     }
     /**
      * refreshParams() copies the current values of top-level properties into
@@ -497,9 +513,14 @@ export class Paramable implements ParamableInterface {
                 if (me[prop] === realizeOne(param, tentative)) continue
             }
 
-            // Circumventing typescript a bit as we do above
+            // Can remove any optional values that are the default
+            if (!param.required && me[prop] === param.default) {
+                this.tentativeValues[prop] = ''
+                continue
+            }
+
             this.tentativeValues[prop] = typeFunctions[param.type].derealize(
-                me[prop] as never
+                me[prop] as never // looks odd, TypeScript hack
             )
         }
     }
@@ -509,8 +530,8 @@ export class Paramable implements ParamableInterface {
      * is changed. By default, this does nothing, but may be overriden to
      * perform any kind of update action for that given parameter.
      *
-     * Note that if all parameters have changed at once, this function will only
-     * be called a single time with the name value '#all'
+     * Note that if almost all of the parameters have changed at once, this
+     * function will be called a single time with the name value '#multiple'.
      * @param {string} name  the name of the parameter which has been changed
      */
     async parameterChanged(_name: string) {
