@@ -63,9 +63,10 @@ export class OEIS extends Cached(paramDesc) {
         return this.oeisName
     }
 
-    /* Unlike the base Cached sequence class, we grab the entire sequence
-       at once. Not only that, but we maintain a global cache for all OEIS
-       sequences.
+    /* We maintain a global cache for all OEIS sequences. These are grabbed
+       in large pieces from the backend. We keep track of exactly what
+       we have obtained, and just point into the communal cache; the modulus,
+       if any, is applied on the fly with every element access.
     */
     static vCache: Record<string, OEISdata> = {}
     static inCaching: Record<string, Promise<void>> = {}
@@ -130,22 +131,20 @@ export class OEIS extends Cached(paramDesc) {
             const data = OEIS.vCache[this.oeisID]
             this.oeisName = data.name
             this.makeAvailable(data.first, data.last)
-            for (let index = data.first; index <= data.last; ++index) {
-                if (this.modulus)
-                    this.cache[index.toString()] = math.modulo(
-                        data.values[index.toString()],
-                        this.modulus
-                    )
-                else
-                    this.cache[index.toString()] =
-                        data.values[index.toString()]
-            }
+            this.cache = data.values
             this.firstValueCached = data.first
             this.lastValueCached = data.last
         }
     }
 
-    // We have global cache for factors as well
+    getElement(n: bigint): bigint {
+        const raw = super.getElement(n)
+        if (this.modulus) return math.modulo(raw, this.modulus)
+        return raw
+    }
+
+    // We have global cache for factors as well; we have not yet
+    // implemented random access for factors, so it's all-or-nothing.
     static fCache: Record<string, OEISfactors> = {}
     async fillFactorCache(_n: bigint): Promise<void> {
         // Short-circuit if sequence is empty
