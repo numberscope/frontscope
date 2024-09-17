@@ -30,8 +30,8 @@ The PR submitter should:
 -   Tests are appropriately modified for all new or changed features. If it is
     a bugfix PR there must be at least one new test. Most other PRs should
     have new or changed tests as well. So if you do not see any changed files
-    in the e2e directory or in any **tests** directory, that is at least an
-    "orange" flag.
+    in the `e2e/tests` directory or in any `__tests__` directory, that is at
+    least an "orange" flag.
 -   The PR is passing lint by running `npm run lint`. There should be no
     changed files and no warnings/errors.
 -   The PR passes all tests. Note the GitHub CI infrastructure will check this

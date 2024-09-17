@@ -370,19 +370,20 @@ export class Paramable implements ParamableInterface {
     */
     get description() {
         // Need to let Typescript know there is a static description property
-        // and then need to suppress eslint's dislike of Function
-        // eslint-disable-next-line @typescript-eslint/ban-types
-        return (this.constructor as Function & {description: string})
-            .description
+        return (
+            this.constructor as typeof this.constructor & {
+                description: string
+            }
+        ).description
     }
     /* All leaf derived classes of Paramable should have a static
        property called 'category' that gives the name of that particular
        class of Paramable object
     */
     get category() {
-        // See comments in description getter
-        // eslint-disable-next-line @typescript-eslint/ban-types
-        return (this.constructor as Function & {category: string}).category
+        return (
+            this.constructor as typeof this.constructor & {category: string}
+        ).category
     }
     /**
      * All implementations based on this default delegate the aggregate

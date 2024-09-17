@@ -10,56 +10,53 @@
                 {{ param.displayName }}
                 <input
                     v-if="param.type === ParamType.BOOLEAN"
+                    :id="paramName"
                     type="checkbox"
-                    v-bind:id="paramName"
-                    v-bind:checked="value === 'true'"
-                    v-on:input="updateBoolean($event)" />
+                    :checked="value === 'true'"
+                    @input="updateBoolean($event)">
                 <input
                     v-else-if="param.type === ParamType.COLOR"
+                    :id="paramName"
                     type="color"
-                    v-bind:id="paramName"
-                    v-bind:value="value"
-                    v-on:input="updateString($event)" />
+                    :value="value"
+                    @input="updateString($event)">
                 <select
                     v-else-if="param.type === ParamType.ENUM"
-                    v-bind:id="paramName"
-                    v-bind:value="value"
-                    v-on:input="updateString($event)">
+                    :id="paramName"
+                    :value="value"
+                    @input="updateString($event)">
                     <option
-                        v-for="(value, name) in getEnumeration(param.from)"
-                        v-bind:key="name"
-                        v-bind:value="value">
+                        v-for="(val, name) in getEnumeration(param.from)"
+                        :key="name"
+                        :value="val">
                         {{ name }}
                     </option>
                 </select>
                 <input
                     v-else
+                    :id="paramName"
                     type="text"
-                    v-bind:id="paramName"
-                    v-bind:class="!status.isValid() ? 'error-field' : ''"
-                    v-bind:value="value"
-                    v-bind:placeholder="placehold(param)"
+                    :class="!status.isValid() ? 'error-field' : ''"
+                    :value="value"
+                    :placeholder="placehold(param)"
                     @keyup.enter="blurField(paramName)"
-                    v-on:input="updateString($event)" />
+                    @input="updateString($event)">
             </label>
 
             <div
-                class="desc-tooltip"
-                v-if="param.hideDescription && param.description">
+                v-if="param.hideDescription && param.description"
+                class="desc-tooltip">
                 <span class="material-icons-sharp">help</span>
                 <div class="desc-tooltip-text">{{ param.description }}</div>
             </div>
         </div>
-        <p
-            class="error-message"
-            v-for="error in status.errors"
-            v-bind:key="error">
+        <p v-for="error in status.errors" :key="error" class="error-message">
             {{ error }}
         </p>
         <p
-            class="warning-message"
             v-for="warning in status.warnings"
-            v-bind:key="warning">
+            :key="warning"
+            class="warning-message">
             {{ warning }}
         </p>
     </div>
@@ -89,6 +86,9 @@
             },
         },
         emits: ['updateParam'],
+        data() {
+            return {ParamType}
+        },
         methods: {
             getEnumeration(
                 type: {[key: string]: number | string} | undefined
@@ -122,9 +122,6 @@
                     return par.placeholder
                 return typeFunctions[par.type].derealize(par.default as never)
             },
-        },
-        data() {
-            return {ParamType}
         },
     })
 </script>

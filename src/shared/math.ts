@@ -82,11 +82,11 @@ import type {MathJsInstance} from 'mathjs'
 
 type Integer = number | bigint
 
-// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+// eslint-disable-next-line no-loss-of-precision
 export type TposInfinity = 1e999 // since that's above range for number,
 // it becomes the type for IEEE Infinity ("official" hack to make this type,
 // see https://github.com/microsoft/TypeScript/issues/31752)
-// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+// eslint-disable-next-line no-loss-of-precision
 export type TnegInfinity = -1e999 // similarly
 export type ExtendedBigint = bigint | TposInfinity | TnegInfinity
 

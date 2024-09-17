@@ -4,11 +4,11 @@
             <label>
                 Specimen name
                 <input
-                    type="text"
                     id="spec-name"
+                    type="text"
                     :value="specimen.name"
                     @keyup.enter="blurName()"
-                    @input="updateName($event)" />
+                    @input="updateName($event)">
             </label>
 
             <div class="desc-tooltip tooltip-anchor">
@@ -25,11 +25,15 @@
                 @click="refresh">
                 refresh
             </div>
+            <!-- eslint-disable vue/no-v-html -->
+            <!-- Note: as playPause is either 'play' or 'pause', it is
+                 definitely safe. -->
             <div
                 id="pause-button"
                 class="button material-icons-sharp"
-                v-html="playPause"
-                @click="togglePause" />
+                @click="togglePause"
+                v-html="playPause" />
+            <!--eslint-enable-->
             <div
                 id="share-button"
                 class="button material-icons-sharp"

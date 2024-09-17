@@ -20,6 +20,8 @@ differences between entries, followed by a row of differences between
 differences, and so on, for as many rows as you like. The rows are shifted so
 that each difference appears between and below the two numbers it's the
 difference of.
+
+## Parameters
 **/
 
 const paramDesc = {

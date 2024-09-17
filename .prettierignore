@@ -20,6 +20,5 @@ index.html
 node_modules
 package-lock.json
 e2e/*-snapshots
-playwright-report
+e2e/results
 site
-test-results

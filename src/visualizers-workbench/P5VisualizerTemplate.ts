@@ -45,6 +45,8 @@ each entry as a written number.
 _This visualizer is meant to be used as a template for new visualizers based on
 the p5.js library. It includes explanatory comments and minimal examples of
 required and commonly used features._
+
+## Parameters
 **/
 
 // === User-modifiable parameters ===

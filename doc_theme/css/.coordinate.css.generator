@@ -1,6 +1,0 @@
-{! ../../src/views/minor/NavBar.vue extract: {start: 'style', stop: 'style'} !}
-{! ../../src/App.vue extract: [
-  {start: 'style', stop: 'main'},
-  {start: '(.*nav.*)', stop: style}
-]
-!}

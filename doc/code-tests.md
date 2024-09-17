@@ -12,9 +12,18 @@ tests very convenient. To run all unit (vitest) tests, execute
 `npm run test:unit`. To run all end-to-end (Playwright) tests, use
 `npm run test:e2e`.
 
-Note that the end-to-end tests do result in accessing a considerable amount of
-(sequence) data over the internet. Therefore, if you run them when your
-internet connection is poor or inactive, some of the tests will fail.
+A couple of additional points about the end-to-end tests:
+
+-   They result in accessing a considerable amount of (sequence) data over the
+    internet. Therefore, if you run them when your internet connection is poor
+    or inactive, some of the tests will fail.
+
+-   By default, they mostly run in a [Docker](https://www.docker.com/)
+    container, which we have found maximizes the reproducibility of the tests.
+    You can also run them directly in your ambient system with
+    `npm run e2e:test:local` or `npm run e2e:test:ui` for the graphical front
+    end, but note that some tests, especially image comparison tests, may fail
+    when in fact they would succeed when run in the standard way.
 
 #### Customizing vitest runs
 
@@ -113,7 +122,7 @@ Numberscope's navigation bar. As with vitest, there's a preamble importing the
 test framework:
 
 ```
-{! ../e2e/gallery.spec.ts extract: { stop: before } !}
+{! ../e2e/tests/gallery.spec.ts extract: { stop: before } !}
 ```
 
 but this time there's not necessarily a need to explicitly import any of the
@@ -126,7 +135,7 @@ Next, we see a new test framework feature: the ability to run code before
 every one of the tests in this file:
 
 ```
-{! ../e2e/gallery.spec.ts extract: { start: play, stop: describe} !}
+{! ../e2e/tests/gallery.spec.ts extract: { start: play, stop: describe} !}
 ```
 
 You'll notice that this code takes a `page` argument. That's common to all
@@ -141,9 +150,15 @@ to call a block of code before each test, if needed.
 Finally, let's look at the second test in this suite:
 
 ```
-{! ../e2e/gallery.spec.ts extract: { start: '(.*describe.*)', stop: title } !}
+{! ../e2e/tests/gallery.spec.ts extract:
+    start: '(.*describe.*)'
+    stop: title
+!}
 ...
-{! ../e2e/gallery.spec.ts extract: { start: '(.*minim.*)', stop: clicking } !}
+{! ../e2e/tests/gallery.spec.ts extract:
+  start: '(.*minim.*)'
+  stop: clicking
+!}
 ...
 ```
 

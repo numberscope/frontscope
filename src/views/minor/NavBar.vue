@@ -2,8 +2,8 @@
     <header>
         <nav>
             <div id="navbar-main">
-                <RouterLink id="logo" :to="toUrl()" v-on:click="goToScope">
-                    <img :src="LogoWithMicroscope" alt="A microscope icon." />
+                <RouterLink id="logo" :to="toUrl()" @click="goToScope">
+                    <img :src="LogoWithMicroscope" alt="A microscope icon.">
                 </RouterLink>
                 <button
                     id="navbar-toggler"
@@ -11,17 +11,17 @@
                     aria-controls="navbarSupportedContent"
                     :aria-expanded="menuOpen"
                     aria-label="Toggle navigation."
-                    v-on:click="toggleMenu">
+                    @click="toggleMenu">
                     <span class="material-icons-sharp">menu</span>
                 </button>
             </div>
-            <slot class="specimen-bar"></slot>
+            <slot class="specimen-bar" />
             <div class="burger-menu">
                 <div id="navbar-links" :class="{open: menuOpen}">
                     <RouterLink
                         class="nav-link"
                         to="/gallery"
-                        v-on:click="closeMenu">
+                        @click="closeMenu">
                         Gallery
                     </RouterLink>
 
@@ -48,6 +48,7 @@
 
     export default defineComponent({
         name: 'NavBar',
+        emits: ['goToScope'],
         data: function () {
             return {
                 menuOpen: false,

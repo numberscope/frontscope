@@ -1,11 +1,24 @@
 <template>
+    <!-- md
+### Choosing Sequences
+
+When you click on the name of the current sequence, a Sequence Switcher
+panel will pop up. There will be preview cards for a number of different
+sequences; click on a card to make that the active sequence. Often a
+sequence can be further customized once it has been activated. For example,
+you can define a sequence by nearly any algebraic Formula you can think
+of (for example, the nth term of the sequence might be given by
+`n^2 + round(100*sin(n))`). You can change that formula to whatever you
+like once the Formula sequence is chosen.
+
+     -->
     <div id="background" class="filler" @click.self="emit('close')">
         <div
-            ref="aligner"
             id="canvas-overlay"
+            ref="aligner"
             class="filler"
             @click.self="emit('close')">
-            <div ref="switcher" id="modal">
+            <div id="modal" ref="switcher">
                 <div id="bar">
                     <button
                         class="material-icons-sharp"
@@ -18,15 +31,28 @@
                 <div id="content">
                     <div class="switcher-title-bar">
                         <h1>Choose {{ category }}</h1>
+                        <!-- md
+#### Accessing sequences from the Online Encyclopedia (OEIS)
+
+You will also see at least a few OEIS Sequences that you can select. To choose
+one not on the list, use the search bar at the top right of the popup. You
+can enter any word or part of a word or OEIS ID, and a list of the
+most-frequently-mentioned sequences connected with that search term will
+appear. Click on any one of the results, and a new preview card for that
+sequence will be added to the switcher panel. Numberscope will also remember
+to include the sequence you just added when the switcher panel is reopened.
+If you're done looking at a sequence and want to remove it from the panel,
+click on the trash button on its preview card.
+                         -->
                         <OEISbar
                             v-if="category === 'sequence'"
-                            @addID="addModule" />
+                            @add-sequence="addModule" />
                     </div>
                     <div ref="galleryWrap" class="results">
                         <SpecimensGallery
                             class="results"
                             :specimens="cards"
-                            @removeSpecimen="deleteModule" />
+                            @remove-specimen="deleteModule" />
                     </div>
                 </div>
             </div>

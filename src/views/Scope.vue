@@ -1,32 +1,75 @@
 <template>
-    <NavBar class="navbar" @goToScope="resetSpecimen">
+    <!-- md
+## The main Numberscope interface
+
+The bulk of the page is devoted to the "canvas" where the current
+visualization is being drawn. There are parameter tabs that specify the
+sequence to be visualized and the method of drawing the image. These tabs
+start on the right-hand side, but you can drag them anywhere on the page
+below the title bar; they will automatically "dock" to the left or right when
+you release them near an edge.
+
+You can change sequence or visualizer by clicking on the name of the component
+in its tab. Each sequence or visualizer may have some parameters you can
+set to control its operation. Each parameter has a brief description, either
+displayed below it or as a tooltip.
+
+Above the canvas is the title bar, where you can set the name of your
+"specimen" (a combination of a sequence and a visualization method). You
+can also pause/restart the drawing of the specimen, save it to your
+browser-local storage, or download the current image.
+
+Finally, above the title bar is a menu bar, with links to
+
+  * a Gallery of interesting specimens consisting of the ones you've
+    saved plus some chosen by the Numberscope contributors
+  * a page about the Numberscope project and its contributors, and
+  * this documentation itself.
+
+{! ../components/SwitcherModal.vue extract: {
+    replace: ['HACK! the brackets in start/stop prevent a nested comment'],
+    start: '<![-]- md',
+    stop: '[-]->'
+} !}
+
+### Visualizers
+
+The current Visualizer component determines how the list of numbers generated
+by the Sequence is transformed into a picture. As with the Sequence tab, you
+can select a different Visualizer by clicking on the name of the visualizer,
+and then clicking on one of the preview cards in the resulting popup.
+
+The remaining pages of the User Guide provide information on each of the
+visualizers you can select.
+      -->
+    <NavBar class="navbar" @go-to-scope="resetSpecimen">
         <SpecimenBar
             id="specimen-bar-desktop"
             :specimen
-            @updateSpecimenName="handleSpecimenUpdate">
-        </SpecimenBar>
+            @update-specimen-name="handleSpecimenUpdate" />
     </NavBar>
     <div id="specimen-container">
         <SwitcherModal
-            category="sequence"
             v-if="changeSequenceOpen"
+            category="sequence"
+            :specimen="specimen"
             @close="
                 () => {
                     continueVisualizer()
                     changeSequenceOpen = false
                 }
-            "
-            :specimen="specimen" />
+            " />
+
         <SwitcherModal
-            category="visualizer"
             v-if="changeVisualizerOpen"
+            category="visualizer"
+            :specimen="specimen"
             @close="
                 () => {
                     continueVisualizer()
                     changeVisualizerOpen = false
                 }
-            "
-            :specimen="specimen" />
+            " />
         <tab
             id="sequenceTab"
             class="tab docked"
@@ -36,7 +79,7 @@
             <ParamEditor
                 title="sequence"
                 :paramable="specimen.sequence"
-                @openSwitcher="
+                @open-switcher="
                     () => {
                         pauseVisualizer()
                         changeSequenceOpen = true
@@ -59,7 +102,7 @@
             <ParamEditor
                 title="visualizer"
                 :paramable="specimen.visualizer"
-                @openSwitcher="
+                @open-switcher="
                     () => {
                         pauseVisualizer()
                         changeVisualizerOpen = true
@@ -71,7 +114,7 @@
             id="specimen-bar-phone"
             class="specimen-bar"
             :specimen
-            @updateSpecimenName="handleSpecimenUpdate" />
+            @update-specimen-name="handleSpecimenUpdate" />
         <!--
             The dropzone ids must remain like "[position]-dropzone"
             where [position] is the same as the dropzone attribute.
@@ -87,7 +130,7 @@
                     <div
                         id="top-left-dropzone"
                         class="dropzone empty"
-                        dropzone="top-left"></div>
+                        dropzone="top-left" />
                     <div class="dropzone-resize material-icons-sharp">
                         drag_handle
                     </div>
@@ -96,16 +139,16 @@
                     <div
                         id="bottom-left-dropzone"
                         class="dropzone empty"
-                        dropzone="bottom-left"></div>
+                        dropzone="bottom-left" />
                 </div>
             </div>
-            <div id="canvas-container"></div>
+            <div id="canvas-container" />
             <div id="right-dropzone-container" class="dropzone-container">
                 <div class="dropzone-size-wrapper">
                     <div
                         id="top-right-dropzone"
                         class="dropzone"
-                        dropzone="top-right"></div>
+                        dropzone="top-right" />
                     <div class="dropzone-resize material-icons-sharp">
                         drag_handle
                     </div>
@@ -115,7 +158,7 @@
                     <div
                         id="bottom-right-dropzone"
                         class="dropzone"
-                        dropzone="bottom-right"></div>
+                        dropzone="bottom-right" />
                 </div>
             </div>
         </div>
@@ -270,6 +313,7 @@
 
 <script setup lang="ts">
     import interact from 'interactjs'
+    import type {InteractEvent} from '@interactjs/types'
     import {onMounted, onUnmounted, reactive, ref} from 'vue'
     import {useRoute, useRouter} from 'vue-router'
 
@@ -363,12 +407,12 @@
         // amount of required overlap for drop
         overlap: 0.5,
         // activates when a tab is dragged over a dropzone
-        ondragenter: function (event: Interact.InteractEvent) {
+        ondragenter: function (event: InteractEvent) {
             event.target.classList.add('drop-hover')
         },
 
         // activates when a tab is dragged out of a dropzone
-        ondragleave: function (event: Interact.InteractEvent) {
+        ondragleave: function (event: InteractEvent) {
             event.target.classList.remove('drop-hover')
 
             const dropzone = event.target
@@ -439,7 +483,7 @@
                 document.body.style.userSelect = 'auto'
             },
 
-            move(event: Interact.InteractEvent) {
+            move(event: InteractEvent) {
                 const dropzoneWrapper = event.target
                 const dropzoneCont =
                     dropzoneWrapper.parentElement?.parentElement
