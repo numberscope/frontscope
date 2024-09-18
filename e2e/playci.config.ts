@@ -6,7 +6,7 @@ const dockerConfig = {
     ...baseConfiguration,
     grepInvert: /@webGL/,
     timeout: 30000,
-    reporter: ['list'],
+    reporter: [['list', {printSteps: true}]],
 }
 
 export default defineConfig(dockerConfig)
