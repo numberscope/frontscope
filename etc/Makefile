@@ -61,10 +61,20 @@ $(docked): $(manifest) $(e2e_docker_config)
 |   touch $@
 
 last_cl_args != touch -a e2e/.last_cl_args && cat e2e/.last_cl_args
+
+# If no arguments are given to playreport, assume just want the last
+# playwright test that has been run
+ifeq ($(MAKECMDGOALS),playreport)
+ifeq ($(cl_args),)
+override cl_args := $(last_cl_args)
+endif
+endif
 cl_arg_dep =
 ifeq ($(last_cl_args),$(cl_args))
 else
 e2e/.last_cl_args: FORCE
+|   @echo Detected new testing command-line arguments:
+|   @echo "    '"$(cl_args)\' vs \'$(last_cl_args)\'
 |   echo $(cl_args) > $@
 
 cl_arg_dep = e2e/.last_cl_args
@@ -86,11 +96,15 @@ e2e/results/combined/playwright-report: e2e/results/docker e2e/results/local  e2
 |   touch $@
 
 # Here we run webgl tests in firefox on the local machine
+# Since there are not many of them, we could easily miss all of them
+# with a command-line argument, so pass even if we don't find any
+# matching tests.
 e2e/results/local: dist $(e2e_local_config) $(tests) $(cl_arg_dep)
-|   PLAYWRIGHT_BLOB_OUTPUT_FILE=$@/report.zip npm run test:e2e:cmd -- --grep @webGL --project firefox --output $@/output --reporter blob $(cl_args) || echo [Firefox webGL tests failed]
+|   PLAYWRIGHT_BLOB_OUTPUT_FILE=$@/report.zip npm run test:e2e:cmd -- --grep @webGL --project firefox --pass-with-no-tests --output $@/output --reporter blob $(cl_args) || echo [Firefox webGL tests failed]
 |   touch $@
 
 # And here we run all the other tests under Docker
+# Here it is likely an error if there are no tests
 e2e/results/docker: $(docked) dist $(e2e_docker_config) $(tests) $(sources) $(cl_arg_dep)
 # Start the container with a dummy command to keep it alive
 |   docker run --name $(E2E_CONTAINER) --rm -d -i -t $(E2E_IMAGE) /bin/sh

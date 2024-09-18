@@ -87,6 +87,6 @@ export default tslint.config(
         rules: {'no-undef': 'off'},
     },
     {
-        ignores: ['.venv/*', 'dist/*'],
+        ignores: ['.venv/*', 'dist/*', 'e2e/results/*'],
     }
 )
