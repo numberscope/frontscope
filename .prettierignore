@@ -10,6 +10,7 @@
 *~
 .env
 .env.*
+.github/workflows
 .gitignore
 .husky
 .prettierignore

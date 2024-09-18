@@ -45,9 +45,9 @@ jobs:
             - name: Install Playwright browsers
               run: npx playwright install --with-deps
             - name: End-to-end test
-              run: npx playwright test -c e2e/playci.config.ts
+              run: npx playwright test -c e2e/playci.config.ts --update-snapshots
             - name: Extract snapshots
               uses: actions/upload-artifact@v4
               with:
-                  name: actual_snapshots
-                  path: e2e/results/manual/output/**/*-actual.png
+                  name: updated_snapshots
+                  path: e2e/tests/ci_snaps
