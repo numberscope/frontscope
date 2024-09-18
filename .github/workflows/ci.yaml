@@ -46,3 +46,8 @@ jobs:
               run: npx playwright install --with-deps
             - name: End-to-end test
               run: npx playwright test -c e2e/playci.config.ts
+            - name: Extract snapshots
+              uses: actions/upload-artifact@v4
+              with:
+                  name: actual_snapshots
+                  path: e2e/results/manual/output/**/*-actual.png
