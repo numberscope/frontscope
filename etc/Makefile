@@ -118,6 +118,7 @@ e2e/results/docker: $(docked) dist $(e2e_docker_config) $(tests) $(sources) $(cl
 # Recreate the results directory
 |   rm -rf $@
 # Extract the results from the container
+|   mkdir -p e2e/results
 |   docker cp $(E2E_CONTAINER):/test/$@ $@
 ifeq (,$(findstring --update-snapshots,$(cl_args)))
 else
