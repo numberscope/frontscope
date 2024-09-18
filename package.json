@@ -49,7 +49,7 @@
         "help:test:e2e:cmd-3": "echo before it runs, and some tests are not",
         "help:test:e2e:cmd-4": "echo reproducible outside of Docker, so be",
         "help:test:e2e:cmd-5": "echo careful -- this script exists mostly for",
-        "help:test:e2e:cmd-6": "echo use by other scripts.",
+        "help:test:e2e:cmd-6": "echo use by other scripts and in CI.",
         "test:e2e:cmd": "playwright test -c e2e/playwright.config.ts",
         "help:test:e2e:report": "echo Runs e2e and opens report in browser",
         "test:e2e:report": "sh -c 'make -f etc/Makefile playreport \"cl_args=$@\"' phony",
