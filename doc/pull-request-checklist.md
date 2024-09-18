@@ -34,8 +34,12 @@ The PR submitter should:
     least an "orange" flag.
 -   The PR is passing lint by running `npm run lint`. There should be no
     changed files and no warnings/errors.
--   The PR passes all tests. Note the GitHub CI infrastructure will check this
-    for you.
+-   The PR passes all tests. Note that you must run the end-to-end tests
+    yourself with `npm run test:e2e`. You can't rely solely on the GitHub CI
+    test results; for example, as of this writing, they are unable to run any
+    WebGL tests. In other words, consider passing the GitHub CI tests as a
+    necessary but not sufficient condition for considering a PR to be "passing
+    all tests".
 -   The PR builds by running `npm run build`. (This also checks type
     correctness.) There should be no errors, and for now the only allowed
     warning is the one about some assets being too big.
