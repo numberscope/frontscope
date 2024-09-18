@@ -45,4 +45,4 @@ jobs:
             - name: Install Playwright browsers
               run: npx playwright install --with-deps
             - name: End-to-end test
-              run: npm run test:e2e:cmd
+              run: npx playwright test -c e2e/playci.config.ts
