@@ -1,6 +1,8 @@
 .RECIPEPREFIX = |
 .PHONY: FORCE playreport phony typecheck vueserve docserve preview prettiest
 
+SHELL = /bin/bash
+
 sources != shopt -s globstar && echo src/** index.html
 docs != shopt -s globstar &&\
         echo doc/** etc/doc_theme/** README.md CONTRIBUTING.md etc/mkdocs.yml

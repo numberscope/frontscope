@@ -21,9 +21,10 @@ A couple of additional points about the end-to-end tests:
 -   By default, they mostly run in a [Docker](https://www.docker.com/)
     container, which we have found maximizes the reproducibility of the tests.
     You can also run them directly in your ambient system with
-    `npm run e2e:test:local` or `npm run e2e:test:ui` for the graphical front
-    end, but note that some tests, especially image comparison tests, may fail
-    when in fact they would succeed when run in the standard way.
+    `npm run build && npm run test:e2e:cmd` or just `npm run e2e:test:ui` for
+    the graphical front end to Playwright, but note that some tests,
+    especially image comparison tests, may fail when in fact they would
+    succeed when run in the standard way.
 
 #### Customizing vitest runs
 
