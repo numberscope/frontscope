@@ -20,8 +20,12 @@ A couple of additional points about the end-to-end tests:
 
 -   By default, they mostly run in a [Docker](https://www.docker.com/)
     container, which we have found maximizes the reproducibility of the tests.
+    So as explained in some more detail in the [onboarding](./onboarding.md)
+    page, you will need to install Docker on your system and make sure the
+    Docker daemon is running in order to run the tests.
+
     You can also run them directly in your ambient system with
-    `npm run build && npm run test:e2e:cmd` or just `npm run e2e:test:ui` for
+    `npm run build && npm run test:e2e:cmd` or just `npm run test:e2e:ui` for
     the graphical front end to Playwright, but note that some tests,
     especially image comparison tests, may fail when in fact they would
     succeed when run in the standard way.
