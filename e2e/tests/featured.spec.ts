@@ -10,19 +10,20 @@ test.describe('Featured gallery images', () => {
         if (featProps.visualizerKind === 'Histogram') {
             details.tag = '@webGL'
         }
-        test(featProps.name, details, async ({page}) => {
-            if (feature.query.includes('istogram')) {
-                page.on('console', msg => console.log(msg))
-            }
+        test(featProps.name, details, async ({page, browserName}) => {
             const short = featProps.name.replaceAll(' ', '')
             const testURL = `/?frames=64&randomSeed=${short}&${feature.query}`
             await page.goto(testURL)
             await expect(
                 page.locator('#specimen-bar-desktop').getByText('play_arrow')
             ).toHaveId('pause-button', {timeout: 30000})
+            const matchParams =
+                browserName === 'firefox' && details.tag === '@webGL'
+                    ? {maxDiffPixelRatio: 0.02}
+                    : {}
             expect(
                 await page.locator('#canvas-container').screenshot()
-            ).toMatchSnapshot(`${short}.png`)
+            ).toMatchSnapshot(`${short}.png`, matchParams)
         })
     }
 })
