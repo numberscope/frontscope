@@ -129,6 +129,9 @@ else
 endif
 # Clean up
 |   docker stop $(E2E_CONTAINER)
+# Check if we passed and backdate results if not
+|   @grep 'status.*passed' e2e/results/docker/output/.last-run.json || touch -d 20010101 $@
+# Whereas if we did pass, make sure results are up to date.
 |   touch $@
 
 # finally, report on the full combined tests:
