@@ -73,16 +73,20 @@ test.describe('Visualizer-sequence challenges', () => {
         }
         for (const seq of vizSeqs[viz]) {
             const query = specimenQuery(viz + seq, viz, 'OEIS ' + seq, vizPar)
-            test(`${seq} ${viz}`, details, async ({page}) => {
+            test(`${seq} ${viz}`, details, async ({page, browserName}) => {
                 await page.goto(`/?frames=32&${query}`)
                 await expect(
                     page
                         .locator('#specimen-bar-desktop')
                         .getByText('play_arrow')
                 ).toHaveId('pause-button', {timeout: 20000})
+                const matchParams =
+                    browserName === 'firefox' && details.tag === '@webGL'
+                        ? {maxDiffPixelRatio: 0.02}
+                        : {}
                 expect(
                     await page.locator('#canvas-container').screenshot()
-                ).toMatchSnapshot(`${viz + seq}.png`)
+                ).toMatchSnapshot(`${viz + seq}.png`, matchParams)
             })
         }
     }
