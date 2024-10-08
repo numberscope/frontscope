@@ -12,7 +12,7 @@ tests very convenient. To run all unit (vitest) tests, execute
 `npm run test:unit`. To run all end-to-end (Playwright) tests, use
 `npm run test:e2e`.
 
-A couple of additional points about the end-to-end tests:
+Here is some more detailed information about running the end-to-end tests:
 
 -   They result in accessing a considerable amount of (sequence) data over the
     internet. Therefore, if you run them when your internet connection is poor
@@ -24,11 +24,22 @@ A couple of additional points about the end-to-end tests:
     immediately re-execute `npm run test:e2e`, it will simply tell you that
     the tests are "up to date."
 
--   By default, they mostly run in a [Docker](https://www.docker.com/)
-    container, which we have found maximizes the reproducibility of the tests.
-    So as explained in some more detail in the [onboarding](./onboarding.md)
-    page, you will need to install Docker on your system and make sure the
-    Docker daemon is running in order to run the tests.
+-   When all of the end-to-end tests have passed, the last three lines of the
+    output should typically look as follows: (There are two copies of the
+    "status": "passed" line because there are two batches of tests.)
+
+```
+  "status": "passed",
+  "status": "passed",
+echo 'All tests passed' > e2e/certificate
+```
+
+-   By default, the end-to-end tests mostly run in a
+    [Docker](https://www.docker.com/) container, which we have found maximizes
+    the reproducibility of the tests. So as explained in some more detail in
+    the [onboarding](./onboarding.md) page, you will need to install Docker on
+    your system and make sure the Docker daemon is running in order to run the
+    tests.
 
     You can also run them directly in your ambient system with
     `npm run build && npm run test:e2e:cmd` or just `npm run test:e2e:ui` for
