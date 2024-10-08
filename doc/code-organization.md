@@ -20,11 +20,11 @@ need to create a file here.
     their configuration files into etc/, as they were accumulating in the top
     level. You should be able to find almost all configuration information
     here, and any new tool that needs to be introduced should be invoked so as
-    to find its configuration file in the etc directory. As one example, the
-    Vite and Vitest configuration files are located here. An exception is the
-    several tsconfig files for the TypeScript compiler -- we have not been
-    able to find a way to get these to work except in the top-level directory
-    of the project
+    to find its configuration file in the etc/ directory. As one example, the
+    Vite and Vitest configuration files are located here. As an exception, the
+    several tsconfig files for the TypeScript compiler are located in the
+    top-level directory itself -- we have not been able to get them to work in
+    any other location.
 
 -   ### src/ -- Source code
 
@@ -65,8 +65,8 @@ need to create a file here.
 
     This directory contains the bulk of the content for the integrated
     documentation site. Some content is also extracted from the source code
-    and incorporated when the doc site is built. The styling information for
-    the site is in etc/doc_theme.
+    and incorporated when the documentation site is built. The styling
+    information for the site is in etc/doc_theme/.
 
 -   ### e2e/ -- End-to-end in-browser testing
 

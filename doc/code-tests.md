@@ -3,7 +3,7 @@
 For its front end, Numberscope uses [`vitest`](https://vitest.dev/) for unit
 tests and low-level integration tests that run without a browser, and
 [`Playwright`](https://playwright.dev/) for higher-level integration and
-end-to-end integration tests that run in a browser
+end-to-end integration tests that run in a browser.
 
 ### Running tests
 
@@ -17,6 +17,12 @@ A couple of additional points about the end-to-end tests:
 -   They result in accessing a considerable amount of (sequence) data over the
     internet. Therefore, if you run them when your internet connection is poor
     or inactive, some of the tests will fail.
+
+-   Because they are rather expensive (in terms of computation time), the
+    end-to-end tests are designed to run only when something has changed since
+    they last passed. So if you run the tests, and they all pass, and you
+    immediately re-execute `npm run test:e2e`, it will simply tell you that
+    the tests are "up to date."
 
 -   By default, they mostly run in a [Docker](https://www.docker.com/)
     container, which we have found maximizes the reproducibility of the tests.
@@ -65,9 +71,9 @@ are somewhat different processes for adding each of the two kinds of tests.
 ### Adding a unit test
 
 As mentioned above, these tests are organized per source directory, in
-subdirectories named `__tests__`. More than likely such a directory will
+subdirectories named `__tests__/`. More than likely such a directory will
 already exist alongside the source file you want to test, but if not, simply
-create one -- vitest will find it automatically. Within the **tests**
+create one -- vitest will find it automatically. Within the `__tests__/`
 directory, the tests are organized by source file, and named accordingly, with
 file extension `.spec.ts`. Again, if you are adding tests related to a file
 that already has associated tests, you can just insert new tests in an
