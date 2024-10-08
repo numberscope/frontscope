@@ -72,10 +72,6 @@ export enum ParamType {
 }
 
 /**
- * TypeScript type for EXTENDED_BIGINT.
- */
-
-/**
  * A mapping of the parameter types to their realized TypeScript types
  */
 export type RealizedParamType = {
