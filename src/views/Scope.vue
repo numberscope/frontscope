@@ -88,6 +88,7 @@ visualizers you can select.
                 @changed="
                     async () => {
                         await specimen.updateSequence()
+                        continueVisualizer()
                         updateURL()
                     }
                 " />
@@ -108,7 +109,12 @@ visualizers you can select.
                         changeVisualizerOpen = true
                     }
                 "
-                @changed="() => updateURL()" />
+                @changed="
+                    () => {
+                        continueVisualizer()
+                        updateURL()
+                    }
+                " />
         </tab>
         <SpecimenBar
             id="specimen-bar-phone"

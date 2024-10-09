@@ -135,7 +135,6 @@
                 // individual validation because we just checked them
                 this.status = await this.paramable.validate('.')
             }
-            this.$emit('changed')
         },
         methods: {
             async updateParam(paramName: string, value: string) {
