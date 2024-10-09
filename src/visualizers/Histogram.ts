@@ -266,7 +266,6 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
     draw() {
         const sketch = this.sketch
-        sketch.orbitControl()
         sketch.background(176, 227, 255) // light blue
         // Convert back to the ordinary p5 coordinates as this was
         // originally written with:
@@ -426,12 +425,6 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     mousePressed() {
         this.continue()
         this.stop(3)
-    }
-
-    mouseWheel() {
-        this.continue()
-        this.stop(24) // there is a lot of "easing" on the mouse wheel zoom
-        // So it takes a lot of frames to stabilize
     }
 }
 
