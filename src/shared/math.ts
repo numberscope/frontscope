@@ -1,53 +1,75 @@
 /** md
 ## Math utilities for numberscope
 
-The primary resource for doing math inside the frontscope code is the
-[mathjs](http://mathjs.org) package, which this repository depends on.
-The `shared/math` module of Numberscope provides some additional utilities
-aimed at making common mathematical operations more convenient, especially
-when working with bigints.
+Generally speaking, you should obtain all of your functions for doing
+math in frontscope code from this incorporated `shared/math` module. It is
+based primarily on the [mathjs](http://mathjs.org) package.
 
-Note that currently every one of these functions accepts either
-`number` or `bigint` inputs for all arguments and simply converts them
-to bigints.
+Note in particular that you should only use the random number generators from
+mathjs supplied by this module, namely
+[`math.random()`](https://mathjs.org/docs/reference/functions/random.html),
+[`math.randomInt()`](
+https://mathjs.org/docs/reference/functions/randomInt.html),
+and/or
+[`math.pickRandom()`](https://mathjs.org/docs/reference/functions/random.html).
+The testing framework used for frontscope will fail if the built-in JavaScript
+`Math.random()` is used.
+
+Other than that, only the Numberscope extensions to mathjs are documented
+below; refer to the [mathjs documentation](http://mathjs.org/docs) to see all
+of the other facilities available.
+
+Note that currently every one of the extension functions described
+below accepts either `number` or `bigint` inputs for all arguments and
+simply converts them to bigints as needed.
 
 ### Example usage
 ```ts
-import {
-    safeNumber,
-    floorSqrt,
-    modulo,
-    divides,
-    powmod,
-    natlog
-} from '../shared/math'
+import {math} from '@/shared/math'
+
+// Example of a standard mathjs function: random integer
+// from 1, 2, 3, 4, 5, 6 (note right endpoint is exclusive).
+const myDie: number = math.randomInt(1, 7)
+
+// Remaining examples are Numberscope extensions
 try {
-  const myNumber = safeNumber(9007199254740992n)
+  const myNumber = math.safeNumber(9007199254740992n)
 } catch (err: unknown) {
   console.log('This will always be logged')
 }
 try {
-  const myNumber = safeNumber(9007n)
+  const myNumber = math.safeNumber(9007n)
 } catch (err: unknown) {
   console.log('This will never be logged and myNumber will be 9007')
 }
 
-const five: bigint = floorSqrt(30n)
-const negativeTwo: bigint = floorSqrt(-2n)
+// ExtendedBigint is the type of bigints completed with ±infinity
+const inf: ExtendedBigint = math.posInfinity
+const neginf: ExtendedBigint = math.negInfinity
 
-const three: bigint = modulo(-7n, 5)
-const two: bigint = modulo(7, 5n)
+// Like Math.floor, but with BigInt result type:
+const negTwo: bigint = math.bigInt(-1.5)
 
-const isFactor: boolean = divides(6, 24n) // true
-const isntFactor: boolean = divides(7n, 12) // false
+const five: bigint = math.floorSqrt(30n)
+const negativeTwo: bigint = math.floorSqrt(-2n)
 
-const six: bigint = powmod(6, 2401n, 7n)
+const three: bigint = math.modulo(-7n, 5)
+const two: bigint = math.modulo(7, 5n)
+
+const isFactor: boolean = math.divides(6, 24n) // true
+const isntFactor: boolean = math.divides(7n, 12) // false
+
+const six: bigint = math.powmod(6, 2401n, 7n)
 // n to the p is congruent to n mod a prime p,
 // so a to any power of p is as well.
 
-const fortysixish: number = natlog(100000000000000000000n)
+const fortysixish: number = math.natlog(100000000000000000000n)
 
-const seven: bigint = bigabs(-7n)
+const seven: bigint = math.bigabs(-7n)
+
+const twelve: ExtendedBigint = math.bigmax(5n, 12, -3)
+const negthree: ExtendedBigint = math.bigmin(5n, 12, -3)
+const anotherNegInf = math.bigmin(5n, math.negInfinity, -3)
 ```
 
 ### Detailed function reference
@@ -55,6 +77,38 @@ const seven: bigint = bigabs(-7n)
 
 import isqrt from 'bigint-isqrt'
 import {modPow} from 'bigint-mod-arith'
+import {create, all} from 'mathjs'
+import type {MathJsInstance} from 'mathjs'
+
+type Integer = number | bigint
+
+// eslint-disable-next-line no-loss-of-precision
+export type TposInfinity = 1e999 // since that's above range for number,
+// it becomes the type for IEEE Infinity ("official" hack to make this type,
+// see https://github.com/microsoft/TypeScript/issues/31752)
+// eslint-disable-next-line no-loss-of-precision
+export type TnegInfinity = -1e999 // similarly
+export type ExtendedBigint = bigint | TposInfinity | TnegInfinity
+
+type ExtendedMathJs = MathJsInstance & {
+    negInfinity: TnegInfinity
+    posInfinity: TposInfinity
+    safeNumber(n: Integer): number
+    floorSqrt(n: Integer): bigint
+    modulo(n: Integer, modulus: Integer): bigint
+    divides(a: Integer, b: Integer): boolean
+    powmod(n: Integer, exponent: Integer, modulus: Integer): bigint
+    natlog(n: Integer): number
+    bigInt(a: Integer): bigint
+    bigabs(a: Integer): bigint
+    bigmax(...args: Integer[]): ExtendedBigint
+    bigmin(...args: Integer[]): ExtendedBigint
+}
+
+export const math = create(all) as ExtendedMathJs
+
+math.negInfinity = -Infinity as TnegInfinity
+math.posInfinity = Infinity as TposInfinity
 
 const maxSafeNumber = BigInt(Number.MAX_SAFE_INTEGER)
 const minSafeNumber = BigInt(Number.MIN_SAFE_INTEGER)
@@ -65,7 +119,7 @@ const minSafeNumber = BigInt(Number.MIN_SAFE_INTEGER)
 Returns the `number` mathematically equal to _n_ if there is one, or
 throws an error otherwise.
 **/
-export function safeNumber(n: number | bigint): number {
+math.safeNumber = (n: Integer): number => {
     const bn = BigInt(n)
     if (bn < minSafeNumber || bn > maxSafeNumber) {
         throw new RangeError(`Attempt to use ${bn} as a number`)
@@ -80,10 +134,11 @@ Returns the largest bigint _r_ such that the square of _r_ is less than or
 equal to _n_, if there is one; otherwise returns the bigint mathematically
 equal to _n_. (Thus, it leaves negative bigints unchanged.)
 **/
-export function floorSqrt(n: number | bigint): bigint {
+export function floorSqrt(n: Integer): bigint {
     const bn = BigInt(n)
     return isqrt(bn)
 }
+math.floorSqrt = (n: Integer): bigint => isqrt(BigInt(n))
 
 /** md
 #### modulo(n: number | bigint, modulus: number | bigint): bigint
@@ -95,7 +150,7 @@ value, unlike the built-in JavaScript `%` operator.
 
 Throws a RangeError if _modulus_ is nonpositive.
 **/
-export function modulo(n: number | bigint, modulus: number | bigint): bigint {
+math.modulo = (n: Integer, modulus: Integer): bigint => {
     const bn = BigInt(n)
     const bmodulus = BigInt(modulus)
     if (bmodulus <= 0n) {
@@ -111,11 +166,11 @@ export function modulo(n: number | bigint, modulus: number | bigint): bigint {
 Returns true if and only if the integer _a_ divides (evenly into) the integer
 _b_.
 **/
-export function divides(a: number | bigint, b: number | bigint): boolean {
+math.divides = (a: Integer, b: Integer): boolean => {
     let an = BigInt(a)
     if (an === 0n) return b >= 0 && b <= 0
     if (an < 0n) an = -an
-    return modulo(b, a) === 0n
+    return math.modulo(b, a) === 0n
 }
 
 /** md
@@ -132,7 +187,7 @@ If _exponent_ is negative, first computes `i = powmod(n, -exponent, modulus)`.
 If _i_ has a multiplicative inverse modulo _modulus_, returns that inverse,
 otherwise throws a RangeError.
 **/
-export const powmod = modPow // just need to fix the name
+math.powmod = modPow
 
 const nlg16 = Math.log(16)
 
@@ -141,7 +196,7 @@ const nlg16 = Math.log(16)
 
 Returns the natural log of the input.
 **/
-export function natlog(n: number | bigint): number {
+math.natlog = (n: Integer): number => {
     if (typeof n === 'number') return Math.log(n)
     if (n < 0) return NaN
 
@@ -152,11 +207,58 @@ export function natlog(n: number | bigint): number {
 }
 
 /** md
-#### bigabs(n: bigint): bigint
+#### bigInt(n: number | bigint): bigint
 
-returns the absolute value of a bigint
+Returns the floor of n as a bigint
 **/
-export function bigabs(n: bigint): bigint {
+math.bigInt = (n: Integer): bigint => {
+    if (typeof n === 'bigint') return n
+    return BigInt(Math.floor(n))
+}
+
+/** md
+#### bigabs(n: number | bigint): bigint
+
+returns the absolute value of a bigint or an integer number
+**/
+math.bigabs = (a: Integer): bigint => {
+    const n = BigInt(a)
     if (n < 0n) return -n
     return n
+}
+
+/** md
+#### bigmax(...args: number | bigint): ExtendedBigint
+
+returns the largest its arguments, which may be bigints and/or integer
+numbers. Note the result has to be an extended bigint because one of the
+numbers might be Infinity.
+**/
+math.bigmax = (...args: Integer[]): ExtendedBigint => {
+    let ret: ExtendedBigint = math.negInfinity
+    for (const a of args) {
+        if (a > ret) {
+            if (a === math.posInfinity) return math.posInfinity
+            if (typeof a === 'number') ret = BigInt(a)
+            else ret = a
+        }
+    }
+    return ret
+}
+
+/** md
+#### bigmin(...args: number | bigint): ExtendedBigint
+
+returns the smallest of its arguments, with the same conditions as bigmax.
+**/
+math.bigmin = (...args: Integer[]): ExtendedBigint => {
+    let ret: ExtendedBigint = math.posInfinity
+    for (const a of args) {
+        if (a < ret) {
+            if (a === math.negInfinity) return math.negInfinity
+            if (typeof a === 'number') ret = BigInt(a)
+            else ret = a
+        }
+    }
+    return ret
 }

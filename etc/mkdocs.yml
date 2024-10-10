@@ -1,0 +1,78 @@
+site_name: Numberscope
+site_url: 'https://numberscope.colorado.edu/doc'
+nav:
+    - Overview: README.md
+    - User Guide:
+          - Introduction: doc/user_guide.md
+          - ... | src/visualizers-workbench/*
+          - ... | flat | src/visualizers/*
+    - Extending:
+          - doc/extending.md
+          - doc/running-from-source.md
+          - doc/making-a-visualizer.md
+    - Contributing:
+          - CONTRIBUTING.md
+          - doc/onboarding.md
+          - doc/working-with-pm.md
+          - doc/working-with-git-and-github.md
+          - doc/gitting-it-right.md
+          - doc/code-principles.md
+          - doc/code-organization.md
+          - doc/code-tests.md
+          - doc/pull-request-checklist.md
+          - doc/visual-studio-code-setup.md
+    - Internal code and APIs:
+          - doc/behind-the-scenes.md
+          - doc/working-with-bigints.md
+          - ... | flat | src/shared/*
+    - Other Information:
+          - ... | flat | doc/*.md
+docs_dir: ../doc
+site_dir: ../dist/doc
+validation:
+    nav:
+        omitted_files: info
+        not_found: info
+        absolute_links: relative_to_docs
+    links:
+        not_found: warn
+        anchors: warn
+        absolute_links: relative_to_docs
+        unrecognized_links: warn
+theme:
+    name: readthedocs
+    custom_dir: doc_theme/
+    prev_next_buttons_location: both
+    sticky_navigation: false
+extra_css: [css/coordinate.css, css/override.css]
+extra_javascript:
+    - js/scroll_navigation.js
+    - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.min.js
+plugins:
+    awesome-pages:
+        collapse_single_pages: true
+        filename: mkdocs-index.yml
+    search: {}
+    semiliterate:
+        exclude:
+            - '.jpg'
+            - '.ttf'
+            - '.ico'
+            - '.spec.ts'
+            - 'LICENSE.md'
+        ignore: [node_modules, dist, coverage, '.venv', '.git', tests]
+        include: ['.png', 'math.ts', '.yml']
+        extract_on_copy: true
+        extract_standard_markdown:
+            terminate: '<!-- CUT HERE -->'
+        merge_docs_dir: false
+        semiliterate:
+            - pattern: '\.ts' # Standard in-code markup
+              extract:
+                  start: '^\s*/\*\*+\W?md\b' # Opening like /** md
+                  stop: '^\s*\*\*/\s*$' # closing **/ by itself on a line
+            - pattern: '[.](.*).generator$'
+              destination: '\1'
+markdown_extensions:
+    - pymdownx.superfences
+    - mdx_math

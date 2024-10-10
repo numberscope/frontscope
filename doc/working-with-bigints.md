@@ -17,15 +17,15 @@ code:
     `BigInt(v)`.
 -   Literal values of type `bigint` consist digits followed by a lower-case n,
     like 73n for the bigint with value 73, or 0n or -10n, etc.
--   Right now unfortunately mathjs does not work on bigints but we are working
-    on that.
+-   Right now unfortunately mathjs does not work on bigints but soon we will
+    update to a version that does.
 -   In the meantime to compensate for the lack of bigints in mathjs, we have a
-    module (`src/shared/math`) in numberscope to supply some math utilities.
-    You should familiarize yourself with the
-    [functions it offers](../src/shared/math.md).
+    module (`@/shared/math`) in numberscope that adds some utilities to the
+    `math` module for working with bigints. You should familiarize yourself
+    with the [functions it offers](../src/shared/math.md).
 -   In particular, if you are forced to convert a bigint to the JavaScript
-    number type, you should do it with the `safeNumber` function provided by
-    the math utility module, unless for some structural reason you are
+    number type, you should do it with the `math.safeNumber` function provided
+    by the math utility module, unless for some structural reason you are
     **certain** the bigint won't overflow the number. That will provide
     overflow checking and throw an error if accuracy would be lost. Note that
     any value you get from the OEIS may be too large to fit in the JavaScript

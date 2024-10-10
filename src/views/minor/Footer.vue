@@ -1,19 +1,19 @@
 <template>
     <footer class="text-center">
-        <img src="../../assets/img/logo_no_microscope.svg" />
+        <img src="../../assets/img/logo_no_microscope.svg">
         <span>
             Thank you very much to
             <a href="/doc/doc/acknowledgments/index.html" class="footer-link">
-                those who made Numberscope possible</a
-            >
+                those who made Numberscope possible
+            </a>
             over the years!
         </span>
         <div>
             <a class="footer-link" href="https://github.com/numberscope">
-                <img src="../../assets/img/icons/github-mark-white.svg" />
+                <img src="../../assets/img/icons/github-mark-white.svg">
             </a>
             <a class="footer-link" href="https://twitter.com/numberscoper">
-                <img src="../../assets/img/icons/x_logo.svg" />
+                <img src="../../assets/img/icons/x_logo.svg">
             </a>
         </div>
     </footer>

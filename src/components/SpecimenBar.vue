@@ -4,11 +4,11 @@
             <label>
                 Specimen name
                 <input
-                    type="text"
                     id="spec-name"
+                    type="text"
                     :value="specimen.name"
                     @keyup.enter="blurName()"
-                    @input="updateName($event)" />
+                    @input="updateName($event)">
             </label>
 
             <div class="desc-tooltip tooltip-anchor">
@@ -19,16 +19,21 @@
             </div>
         </div>
         <div class="button-container">
-            <div class="button material-icons-sharp" @click="refresh">
+            <div
+                id="refresh-button"
+                class="button material-icons-sharp"
+                @click="refresh">
                 refresh
             </div>
+            <!-- eslint-disable vue/no-v-html -->
+            <!-- Note: as playPause is either 'play' or 'pause', it is
+                 definitely safe. -->
             <div
                 id="pause-button"
                 class="button material-icons-sharp"
-                v-html="
-                    specimen.visualizer.isDrawing ? 'pause' : 'play_arrow'
-                "
-                @click="togglePause" />
+                @click="togglePause"
+                v-html="playPause" />
+            <!--eslint-enable-->
             <div
                 id="share-button"
                 class="button material-icons-sharp"
@@ -75,120 +80,136 @@
     </div>
 </template>
 
-<script lang="ts">
-    import {defineComponent} from 'vue'
+<script setup lang="ts">
+    import {onMounted, ref} from 'vue'
     import type {PropType, UnwrapNestedRefs} from 'vue'
-    import {saveSpecimen, getSIMByName} from '../shared/browserCaching'
-    import {Specimen} from '../shared/Specimen'
-    export default defineComponent({
-        props: {
-            specimen: {
-                type: Object as PropType<UnwrapNestedRefs<Specimen>>,
-                required: true,
-            },
-        },
-        methods: {
-            updateName(event: Event) {
-                if (event && event.target) {
-                    const inputBox = event.target as HTMLInputElement
-                    this.$emit('updateSpecimenName', inputBox.value)
-                }
-            },
-            blurName() {
-                window.document.getElementById('spec-name')?.blur()
-            },
-            refresh() {
-                this.specimen.updateSequence()
-            },
-            // toggles the pause state
-            togglePause() {
-                if (this.specimen.visualizer.isDrawing) {
-                    this.specimen.visualizer.stop()
-                } else this.specimen.visualizer.continue()
-            },
-            shareUrl() {
-                //get url
-                const url = window.location.href
-                //copy to clipboard
 
-                const clipboard = navigator.clipboard
-                clipboard.writeText(url)
+    import {saveSpecimen, getSIMByName} from '@/shared/browserCaching'
+    import type {Specimen} from '@/shared/Specimen'
+    import {DrawingStopped} from '@/visualizers/VisualizerInterface'
 
-                const notification = document.getElementById('share-popup')
-                if (!(notification instanceof HTMLElement)) return
-
-                //show notification for 2 seconds
-                notification.style.visibility = 'visible'
-                notification.style.opacity = '1'
-                setTimeout(() => {
-                    notification.style.visibility = 'hidden'
-                    notification.style.opacity = '0'
-                }, 2000)
-            },
-            checkSave() {
-                // get specimen name
-                const name = document.querySelector('input[type="text"]')
-                if (!(name instanceof HTMLInputElement)) return
-                const specimenName = name.value
-
-                const existingSpecimen = getSIMByName(specimenName)
-                if (existingSpecimen) {
-                    const overwrite =
-                        document.getElementById('overwrite-popup')
-                    if (!(overwrite instanceof HTMLElement)) return
-                    overwrite.style.visibility = 'visible'
-                    overwrite.style.opacity = '1'
-                } else {
-                    // not in database, so we can save it without repercussions
-                    this.saveCurrent()
-                }
-            },
-            saveCurrent() {
-                this.removeOverwritePopup()
-                saveSpecimen(this.specimen.query)
-
-                const notification = document.getElementById('save-popup')
-                if (!(notification instanceof HTMLElement)) return
-
-                //show notification for 2 seconds
-                notification.style.visibility = 'visible'
-                notification.style.opacity = '1'
-                setTimeout(() => {
-                    notification.style.visibility = 'hidden'
-                    notification.style.opacity = '0'
-                }, 2000)
-            },
-            removeOverwritePopup() {
-                const overwrite = document.getElementById('overwrite-popup')
-                if (!(overwrite instanceof HTMLElement)) return
-                setTimeout(() => {
-                    overwrite.style.visibility = 'hidden'
-                    overwrite.style.opacity = '0'
-                }, 10)
-            },
-            downloadSpecimen() {
-                // get specimen input box and the canvas
-                const name = document.querySelector('input[type="text"]')
-                const canvas = document.querySelector(
-                    '#canvas-container canvas'
-                )
-
-                if (!(name instanceof HTMLInputElement)) return
-                if (!(canvas instanceof HTMLCanvasElement)) return
-
-                // get specimen name
-                const specimenName = name.value
-                //create a link from the canvas
-                const canvasURL = canvas.toDataURL()
-
-                // create a link element and download the canvas
-                const link = document.createElement('a')
-                link.href = canvasURL
-                link.download = `${specimenName}.png`
-                link.click()
-            },
+    const props = defineProps({
+        specimen: {
+            type: Object as PropType<UnwrapNestedRefs<Specimen>>,
+            required: true,
         },
     })
+
+    const playPause = ref<string>('pause')
+    const updatePP = () => {
+        playPause.value =
+            props.specimen.visualizer.drawingState === DrawingStopped
+                ? 'play_arrow'
+                : 'pause'
+    }
+
+    // TODO: Find a solution for updating the play/pause indicator that does
+    // not involve polling. I tried making playPause a computed value based
+    // on props.specimen.visualizer.drawingState, and that usually worked,
+    // but for a few complicated visualizers like the Chaos Game in the
+    // Featured Gallery, it would "miss" the change to the stopped state,
+    // defeating the testing.
+    onMounted(() => setInterval(updatePP, 500))
+
+    const emit = defineEmits(['updateSpecimenName'])
+
+    function updateName(event: Event) {
+        if (event && event.target) {
+            const inputBox = event.target as HTMLInputElement
+            emit('updateSpecimenName', inputBox.value)
+        }
+    }
+
+    function blurName() {
+        window.document.getElementById('spec-name')?.blur()
+    }
+
+    function refresh() {
+        props.specimen.updateSequence()
+    }
+
+    function togglePause() {
+        if (props.specimen.visualizer.drawingState === DrawingStopped) {
+            props.specimen.visualizer.continue()
+        } else props.specimen.visualizer.stop()
+        updatePP()
+    }
+
+    function shareUrl() {
+        const url = window.location.href
+        navigator.clipboard.writeText(url)
+
+        const notification = document.getElementById('share-popup')
+        if (!(notification instanceof HTMLElement)) return
+
+        //show notification for 2 seconds
+        notification.style.visibility = 'visible'
+        notification.style.opacity = '1'
+        setTimeout(() => {
+            notification.style.visibility = 'hidden'
+            notification.style.opacity = '0'
+        }, 2000)
+    }
+
+    function checkSave() {
+        // get specimen name
+        const name = document.querySelector('input[type="text"]')
+        if (!(name instanceof HTMLInputElement)) return
+        const specimenName = name.value
+
+        const existingSpecimen = getSIMByName(specimenName)
+        if (existingSpecimen) {
+            const overwrite = document.getElementById('overwrite-popup')
+            if (!(overwrite instanceof HTMLElement)) return
+            overwrite.style.visibility = 'visible'
+            overwrite.style.opacity = '1'
+        } else saveCurrent() // not in database, so safe to save
+    }
+
+    function saveCurrent() {
+        removeOverwritePopup()
+        saveSpecimen(props.specimen.query)
+
+        const notification = document.getElementById('save-popup')
+        if (!(notification instanceof HTMLElement)) return
+
+        //show notification for 2 seconds
+        notification.style.visibility = 'visible'
+        notification.style.opacity = '1'
+        setTimeout(() => {
+            notification.style.visibility = 'hidden'
+            notification.style.opacity = '0'
+        }, 2000)
+    }
+
+    function removeOverwritePopup() {
+        const overwrite = document.getElementById('overwrite-popup')
+        if (!(overwrite instanceof HTMLElement)) return
+        setTimeout(() => {
+            overwrite.style.visibility = 'hidden'
+            overwrite.style.opacity = '0'
+        }, 10)
+    }
+
+    function downloadSpecimen() {
+        // get specimen input box and the canvas
+        const name = document.querySelector('input[type="text"]')
+        const canvas = document.querySelector('#canvas-container canvas')
+
+        if (!(name instanceof HTMLInputElement)) return
+        if (!(canvas instanceof HTMLCanvasElement)) return
+
+        // get specimen name
+        const specimenName = name.value
+        //create a link from the canvas
+        const canvasURL = canvas.toDataURL()
+
+        // create a link element and download the canvas
+        const link = document.createElement('a')
+        link.href = canvasURL
+        link.download = `${specimenName}.png`
+        link.click()
+    }
 </script>
 
 <style>

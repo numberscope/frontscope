@@ -6,7 +6,7 @@
                 <h2>Specimen gallery</h2>
                 <h3>Featured Gallery</h3>
             </div>
-            <div type="button" id="change-button">
+            <div id="change-button" type="button">
                 <span class="material-icons-sharp">swap_horiz</span>
                 <p id="change-text">Select Visualizer</p>
             </div>
@@ -17,16 +17,18 @@
         <div type="button" class="visualizer-bar">
             <h2>Featured Gallery</h2>
             <span
+                id="featured-arrow"
                 :class="['material-icons-sharp', featuredArrowClass]"
                 style="user-select: none"
                 @click="toggleFeatured">
-                keyboard_arrow_up</span
-            >
+                keyboard_arrow_up
+            </span>
         </div>
         <SpecimensGallery
             v-if="showFeatured"
+            id="featured-gallery"
             :specimens="featured"
-            :canDelete="false" />
+            :can-delete="false" />
 
         <div type="button" class="visualizer-bar">
             <h2>Saved Specimens</h2>
@@ -37,7 +39,10 @@
                 keyboard_arrow_up
             </span>
         </div>
-        <SpecimensGallery v-if="showSaved" :specimens="saved" />
+        <SpecimensGallery
+            v-if="showSaved"
+            id="saved-gallery"
+            :specimens="saved" />
     </div>
 </template>
 

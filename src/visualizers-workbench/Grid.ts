@@ -1,13 +1,14 @@
-import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
 import {P5Visualizer} from '../visualizers/P5Visualizer'
-import {bigabs, floorSqrt, modulo} from '../shared/math'
-import type {GenericParamDescription} from '../shared/Paramable'
+import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
+
 import type {
     SequenceInterface,
     Factorization,
-} from '../sequences/SequenceInterface'
-import simpleFactor from '../sequences/simpleFactor'
-import {ParamType} from '../shared/ParamType'
+} from '@/sequences/SequenceInterface'
+import simpleFactor from '@/sequences/simpleFactor'
+import {math} from '@/shared/math'
+import type {GenericParamDescription} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 
 // NOTE: Grid visualizer is not currently working due to the new Paramable
 // system, which is why it has been moved to `visualizers-workbench`
@@ -349,9 +350,9 @@ function isPolygonal(num: bigint, order = 3n): boolean {
     return M === num
 }
 
-const isAbundant = (n: bigint) => getSumOfProperDivisors(n) > bigabs(n)
+const isAbundant = (n: bigint) => getSumOfProperDivisors(n) > math.bigabs(n)
 const isPerfect = (n: bigint) => n > 1n && getSumOfProperDivisors(n) === n
-const isDeficient = (n: bigint) => getSumOfProperDivisors(n) < bigabs(n)
+const isDeficient = (n: bigint) => getSumOfProperDivisors(n) < math.bigabs(n)
 
 function isSemiPrime(factors: Factorization): boolean {
     if (factors === null) throw new Error('Internal error in Grid')
@@ -381,7 +382,7 @@ function divisibleBy(value: bigint, divisor = 3n) {
 }
 
 function congruenceIndicator(modulus: bigint, residue: bigint) {
-    return (value: bigint) => modulo(value, modulus) === residue
+    return (value: bigint) => math.divides(modulus, value - residue)
 }
 
 function lastDigitIs(value: bigint, digit = 0n) {
@@ -456,32 +457,6 @@ indicated by smaller boxes
     },
 
     /** md
-### Grid cells: The number of cells to display in the grid
-
-This will be rounded down to the nearest square integer.
-This may get laggy when it is in the thousands or higher, depending on the
-property being tested.
-    **/
-    amountOfNumbers: {
-        default: 4096,
-        type: ParamType.NUMBER,
-        displayName: 'Grid cells',
-        required: false,
-        description: 'Warning: display lags over 10,000 cells',
-    },
-
-    /** md
-### Starting Index: The sequence index at which to begin
-    **/
-    startingIndex: {
-        default: 0,
-        type: ParamType.NUMBER,
-        displayName: 'Starting Index',
-        required: false,
-        description: '',
-    },
-
-    /** md
 ### Path in grid: The path to follow while filling numbers into the grid.
 
 - Spiral:  An Ulam-type square spiral starting at the center of grid.
@@ -536,7 +511,7 @@ checked.
         displayName: 'Background color',
         required: false,
     },
-} as const
+} satisfies GenericParamDescription
 
 class Grid extends P5Visualizer(paramDesc) {
     static category = 'Grid'
@@ -544,10 +519,9 @@ class Grid extends P5Visualizer(paramDesc) {
         'Puts numbers in a grid, highlighting cells based on various properties'
 
     // Grid variables
-    amountOfNumbers = 4096
+    nEntries = 4096n
     sideOfGrid = 64
-    currentIndex = 0
-    startingIndex = 0
+    currentIndex = 0n
     currentNumber = 0n
     showNumbers = false
     preset = Preset.Custom
@@ -570,7 +544,7 @@ class Grid extends P5Visualizer(paramDesc) {
     primaryProperties: number[] = []
     secondaryProperties: number[] = []
 
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
+    constructor(seq: SequenceInterface) {
         super(seq)
         /** md
 ### Property 1, 2, etc.:  Properties to display by coloring cells
@@ -641,7 +615,7 @@ earlier ones that use the _same_ style.)
         // according to the parameter description
         /*
         for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
-            this.propertyObjects[i].property = 
+            this.propertyObjects[i].property =
                 this.tentativeValues[`property${i}`] as Property
             this.propertyObjects[i].visualization =
                 this.tentativeValues[`prop${i}Vis`] as PropertyVisualization
@@ -668,35 +642,28 @@ earlier ones that use the _same_ style.)
             PropertyVisualization.Box_In_Cell
         )
 
-        this.amountOfNumbers = Math.min(
-            this.amountOfNumbers,
-            this.seq.last - this.seq.first + 1
-        )
+        if (typeof this.seq.length === 'bigint') {
+            this.nEntries = this.seq.length
+        } // else TODO: Post warning about not using all terms
 
         // Round down amount of numbers so that it is a square number.
-        this.sideOfGrid = Number(floorSqrt(this.amountOfNumbers))
-        this.amountOfNumbers = this.sideOfGrid * this.sideOfGrid
+        const side = math.floorSqrt(this.nEntries)
+        this.sideOfGrid = Number(side)
+        this.nEntries = side * side
 
         this.scalingFactor = this.sketch.width / this.sideOfGrid
         this.setPathVariables(this.sideOfGrid)
     }
 
     draw(): void {
-        this.currentIndex = Math.max(this.startingIndex, this.seq.first)
+        this.currentIndex = this.seq.first
         let augmentForRowReset = 0n
 
-        for (
-            let iteration = 0;
-            iteration < this.amountOfNumbers;
-            iteration++
-        ) {
+        for (let iteration = 0; iteration < this.nEntries; iteration++) {
             // Reset current sequence for row reset and augment by one.
             if (this.currentDirection === Direction.StartNewRow) {
                 if (this.resetAndAugmentByOne) {
-                    this.currentIndex = Math.max(
-                        this.startingIndex,
-                        this.seq.first
-                    )
+                    this.currentIndex = this.seq.first
                     augmentForRowReset++
                 }
             }
@@ -706,7 +673,7 @@ earlier ones that use the _same_ style.)
             this.currentIndex++
             this.moveCoordinatesUsingPath(iteration)
         }
-        this.sketch.noLoop()
+        this.stop()
     }
 
     setPresets() {
@@ -729,12 +696,12 @@ earlier ones that use the _same_ style.)
             this.resetAndAugmentByOne = true
         }
 
-        if (this.showNumbers && this.amountOfNumbers > 400) {
-            this.amountOfNumbers = 400
+        if (this.showNumbers && this.nEntries > 400n) {
+            this.nEntries = 400n
         }
     }
 
-    setCurrentNumber(currentIndex: number, augmentForRow: bigint) {
+    setCurrentNumber(currentIndex: bigint, augmentForRow: bigint) {
         this.currentNumber = this.seq.getElement(currentIndex)
         this.currentNumber = this.currentNumber + augmentForRow
     }
@@ -814,7 +781,7 @@ earlier ones that use the _same_ style.)
         return retval
     }
 
-    hasProperty(ind: number, property: Property, aux?: bigint) {
+    hasProperty(ind: bigint, property: Property, aux?: bigint) {
         const propertyName = Property[property] as PropertyName
         if (propertyName in propertyOfFactorization) {
             let factors: Factorization = null
@@ -879,7 +846,7 @@ earlier ones that use the _same_ style.)
             // Go to new row when the row is complete
             if ((iteration + 1) % this.sideOfGrid === 0) {
                 this.currentDirection = Direction.StartNewRow
-            } else if (iteration === this.amountOfNumbers) {
+            } else if (BigInt(iteration) === this.nEntries) {
                 this.currentDirection = Direction.None
             } else {
                 this.currentDirection = Direction.Right

@@ -28,3 +28,20 @@ Practically speaking this means:
     comments that merely repeat what the code already says
 -   only have code that actually does something -- don't include any commented
     out code or code that can't be reached or run
+-   minimize the number of return statements in a function
+    -   if there are conditions under which you can bail out easily, it's OK
+        to check for them near the top of the function and return from there
+    -   otherwise, strive to have all returns at or near the end of the
+        function
+
+## Code style/formatting
+
+We rely on automated tools (ESLint and Prettier as of this writing) to keep
+the layout/style of our code uniform for readability. Any new code will be
+required to conform in the commit/PR process. In fact, often the tools will be
+able to adjust the layout of the code for you: if a commit is rejected because
+of formatting non-compliance, try `npm run lint` -- just be aware that it will
+modify your source files. If you just want to see the issues without touching
+any of your files, use `npm run lint:check`. See
+[working with the package manager](working-with-pm.md) for details on these
+and other scripts you can run.

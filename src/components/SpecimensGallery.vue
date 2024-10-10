@@ -5,9 +5,9 @@
             :key="specimen.subtitle + specimen.query"
             :query="specimen.query"
             :subtitle="specimen.subtitle"
-            :lastEdited="specimen.lastEdited"
-            @specimenDeleted="removeSpecimen"
-            :permanent="'canDelete' in specimen && !specimen.canDelete" />
+            :last-edited="specimen.lastEdited"
+            :permanent="'canDelete' in specimen && !specimen.canDelete"
+            @specimen-deleted="removeSpecimen" />
     </div>
 </template>
 

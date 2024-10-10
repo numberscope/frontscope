@@ -3,9 +3,11 @@
         "@tsconfig/node20/tsconfig.json",
         "@vue/tsconfig/tsconfig.json"
     ],
-    "include": ["vite.config.*"],
+    "include": ["etc/vite.config.*"],
     "compilerOptions": {
         "composite": true,
+        "lib": ["ES2023"],
+        "target": "ES2023",
         "types": ["node", "vitest"]
     }
 }
