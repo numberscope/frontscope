@@ -156,15 +156,15 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
     // check if mouse is in the given bin
     mouseOverInBin(xAxisHeight: number, binIndex: number): boolean {
-        const y = this.sketch.mouseY
+        const {pY} = this.mouseToPlot()
         // hard to mouseover tiny bars; min height to catch mouse
         return (
-            y
+            pY
                 > Math.min(
                     xAxisHeight
                         - this.height() * this.binFactorArray[binIndex],
                     xAxisHeight - 10
-                ) && y < xAxisHeight
+                ) && pY < xAxisHeight
         ) // and above axis
     }
 
@@ -202,10 +202,12 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
     drawHoverBox(binIndex: number, offset: number) {
         const sketch = this.sketch
-        const mouseX = sketch.mouseX
-        const mouseY = sketch.mouseY
+        const {pX, pY, scale} = this.mouseToPlot()
         const showUnknown = binIndex === 0 && this.numUnknown > 0
-        const textVerticalSpacing = sketch.textAscent() + 1
+        let textVerticalSpacing = sketch.textAscent() + 1
+        // Literally no idea why we only have to scale when scale > 1 :-/
+        // but there's no arguing with it looking right
+        if (scale > 1) textVerticalSpacing *= scale
         let boxHeight = textVerticalSpacing * 2.4
         if (showUnknown) boxHeight += textVerticalSpacing
         const margin = offset
@@ -232,8 +234,8 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         totalWidth += 2 * margin
 
         // don't want box to wander past right edge of canvas
-        const boxX = Math.min(mouseX, sketch.width - totalWidth)
-        const boxY = mouseY - boxHeight
+        const boxX = Math.min(pX, sketch.width - totalWidth)
+        const boxY = pY - boxHeight
 
         // create the box itself
         sketch.push()
@@ -270,9 +272,10 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         // Convert back to the ordinary p5 coordinates as this was
         // originally written with:
         sketch.translate(-this.size.width / 2, -this.size.height / 2)
-        sketch.textSize(Math.max(0.02 * sketch.height, 10))
+        const {pX, scale} = this.mouseToPlot()
+        sketch.textSize(Math.max(0.02 * sketch.height * scale, 10))
         const height = this.height() // "unit" height
-        const textHeight = sketch.textAscent()
+        const textHeight = sketch.textAscent() * scale
         const largeOffsetScalar = 0.945 // padding between axes and edge
         const smallOffsetScalar = 0.996
         const largeOffsetNumber = (1 - largeOffsetScalar) * sketch.width
@@ -286,9 +289,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         }
 
         const binWidth = this.binWidth()
-        const binIndex = Math.floor(
-            (sketch.mouseX - largeOffsetNumber) / binWidth
-        )
+        const binIndex = Math.floor((pX - largeOffsetNumber) / binWidth)
         const xAxisHeight = largeOffsetScalar * sketch.height
 
         // Checks to see whether the mouse is in the bin drawn on the screen

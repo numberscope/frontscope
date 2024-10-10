@@ -17,6 +17,7 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
     ) => ReturnType<typeof P5Visualizer<PD>> & P5VizInterface) {
         name = 'uninitialized P5-based WebGL visualizer'
         camera: p5.Camera | undefined = undefined
+        initialCameraZ = 800
 
         // Have to reassign name as category because of JavaScript default
         // initialization order rules
@@ -48,14 +49,37 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
                     this.sketch.WEBGL
                 )
             this.camera = this.sketch.createCamera()
+            this.initialCameraZ = this.camera.eyeZ
             brush.load()
+        }
+
+        // returns the coordinates ansd scaling of the mouse position
+        // in the plot-plane coordinates, as a
+        // {pX: number, pY: number, scale: number} object:
+        mouseToPlot() {
+            const cameraXoff = this.camera?.eyeX ?? 0
+            const cameraYoff = this.camera?.eyeY ?? 0
+            const cameraZ = this.camera?.eyeZ ?? this.initialCameraZ
+            const scale = cameraZ / this.initialCameraZ
+            const cX = this.sketch.width / 2 + cameraXoff
+            const cY = this.sketch.height / 2 + cameraYoff
+            let pX = this.sketch.mouseX + cameraXoff
+            let pY = this.sketch.mouseY + cameraYoff
+            pX = (pX - cX) * scale + cX
+            pY = (pY - cY) * scale + cY
+            return {pX, pY, scale}
         }
 
         // Provide default camera controls: left drag pans, mouse wheel zooms
         mouseDragged() {
             const sketch = this.sketch
             if (this.camera && sketch.mouseButton === 'left') {
-                this.camera.move(-sketch.movedX, -sketch.movedY, 0)
+                const {scale} = this.mouseToPlot()
+                this.camera.move(
+                    -sketch.movedX * scale,
+                    -sketch.movedY * scale,
+                    0
+                )
                 this.continue()
             }
         }
