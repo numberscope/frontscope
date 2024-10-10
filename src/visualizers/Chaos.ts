@@ -1,9 +1,11 @@
 import p5 from 'p5'
-import {modulo} from '../shared/math'
+
 import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
-import {ParamType} from '../shared/ParamType'
-import type {ParamValues} from '../shared/Paramable'
+
+import {math} from '@/shared/math'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 
 /** md
 # Chaos Visualizer
@@ -102,22 +104,6 @@ const paramDesc = {
         visibleDependency: 'colorStyle',
         visibleValue: ColorStyle.Highlighting_one_walker,
     },
-    first: {
-        default: NaN,
-        type: ParamType.INTEGER,
-        displayName: 'Starting index',
-        required: false,
-        description:
-            'Index of the first entry to use. (Clearing this field will '
-            + 'reset it to the first valid index.)',
-    },
-    last: {
-        default: Infinity,
-        type: ParamType.INTEGER,
-        displayName: 'Ending index',
-        required: false,
-        placeholder: '[unlimited]',
-    },
     dummyDotControl: {
         default: false,
         type: ParamType.BOOLEAN,
@@ -143,8 +129,8 @@ const paramDesc = {
         visibleValue: true,
     },
     pixelsPerFrame: {
-        default: 400,
-        type: ParamType.INTEGER,
+        default: 400n,
+        type: ParamType.BIGINT,
         displayName: 'Dots to draw per frame',
         required: false,
         description: '(more = faster).',
@@ -164,7 +150,7 @@ const paramDesc = {
         required: false,
         description: 'If checked, uses light colors on a dark background',
     },
-} as const
+} satisfies GenericParamDescription
 
 // other ideas:  previous parts of the sequence fade over time,
 // or shrink over time;
@@ -175,8 +161,7 @@ class Chaos extends P5Visualizer(paramDesc) {
     static description = 'Chaos game played using a sequence to select moves'
 
     // current state variables (used in setup and draw)
-    private seqLength = 0
-    private myIndex = 0
+    private myIndex = 0n
     private cornersList: p5.Vector[] = []
     private walkerPositions: p5.Vector[] = []
 
@@ -282,7 +267,7 @@ class Chaos extends P5Visualizer(paramDesc) {
             for (let c = 0; c < paletteSize; c++) {
                 let hexString = ''
                 for (let h = 0; h < 6; h++) {
-                    hexString += Math.floor(Math.random() * 16).toString(16)
+                    hexString += math.randomInt(16).toString(16)
                 }
                 colorList.push('#' + hexString)
             }
@@ -309,19 +294,7 @@ class Chaos extends P5Visualizer(paramDesc) {
         // No stroke right now, but could be added
         const textStroke = this.sketch.width * 0
 
-        // Adjust the starting and ending points if need be
-        let adjusted = false
-        if (Number.isNaN(this.first) || this.first < this.seq.first) {
-            this.first = this.seq.first
-            adjusted = true
-        }
-        if (Number.isNaN(this.last) || this.last > this.seq.last) {
-            this.last = this.seq.last
-            adjusted = true
-        }
-        if (adjusted) this.refreshParams()
-        this.seqLength = this.last - this.first
-        this.myIndex = this.first
+        this.myIndex = this.seq.first
 
         // set up arrays of walkers
         this.walkerPositions = Array.from({length: this.walkers}, () =>
@@ -373,21 +346,23 @@ class Chaos extends P5Visualizer(paramDesc) {
         // in the next frame, likely the caching is done (or at least has moved
         // to significantly higher indices), and drawing just picks up where
         // it left off.
-        const pixelsLimit =
-            this.myIndex
-            + Math.min(this.last - this.myIndex + 1, this.pixelsPerFrame)
+        let pixelsLimit = this.myIndex + this.pixelsPerFrame
+        if (pixelsLimit > this.seq.last) {
+            pixelsLimit = BigInt(this.seq.last) + 1n
+            // have to add one to make sure we eventually stop
+        }
         for (; this.myIndex < pixelsLimit; this.myIndex++) {
             // get the term
             const myTerm = this.seq.getElement(this.myIndex)
 
             // check its modulus to see which corner to walk toward
             // (Safe to convert to number since this.corners is "small")
-            const myCorner = Number(modulo(myTerm, this.corners))
+            const myCorner = Number(math.modulo(myTerm, this.corners))
             const myCornerPosition = this.cornersList[myCorner]
 
             // check the index modulus to see which walker is walking
             // (Ditto on safety.)
-            const myWalker = Number(modulo(this.myIndex, this.walkers))
+            const myWalker = Number(math.modulo(this.myIndex, this.walkers))
 
             // update the walker position
             this.walkerPositions[myWalker].lerp(myCornerPosition, this.frac)
@@ -402,11 +377,14 @@ class Chaos extends P5Visualizer(paramDesc) {
                     myColor = this.currentPalette.colorList[myCorner]
                     break
                 case ColorStyle.Index:
-                    if (this.seqLength < +Infinity) {
+                    if (typeof this.seq.length === 'bigint') {
                         myColor = sketch.lerpColor(
                             this.currentPalette.colorList[0],
                             this.currentPalette.colorList[1],
-                            this.myIndex / this.seqLength
+                            Number(
+                                (this.myIndex - this.seq.first)
+                                    / this.seq.length
+                            )
                         )
                     } else {
                         myColor = sketch.lerpColor(
@@ -414,7 +392,7 @@ class Chaos extends P5Visualizer(paramDesc) {
                             this.currentPalette.colorList[1],
                             Number(
                                 // Safe since gradientLength is "small"
-                                modulo(this.myIndex, this.gradientLength)
+                                math.modulo(this.myIndex, this.gradientLength)
                             ) / this.gradientLength
                         )
                     }
@@ -439,8 +417,8 @@ class Chaos extends P5Visualizer(paramDesc) {
                 this.circSize
             )
         }
-        // stop drawing if we exceed decreed terms
-        if (this.myIndex > this.last) sketch.noLoop()
+        // stop drawing if we exceed available terms
+        if (this.myIndex > this.seq.last) this.stop()
     }
 }
 

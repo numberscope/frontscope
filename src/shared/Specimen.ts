@@ -1,14 +1,13 @@
 import {specimenQuery, parseSpecimenQuery} from './browserCaching'
-import type {GenericParamDescription} from './Paramable'
+import {math} from './math'
 
-import {produceSequence} from '@/sequences/sequences'
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
-
+import {produceSequence} from '@/sequences/sequences'
+import {nullSize, sameSize} from '@/visualizers/VisualizerInterface'
 import type {
     VisualizerInterface,
     ViewSize,
 } from '@/visualizers/VisualizerInterface'
-import {nullSize, sameSize} from '@/visualizers/VisualizerInterface'
 import vizMODULES from '@/visualizers/visualizers'
 
 /**
@@ -21,8 +20,8 @@ export class Specimen {
     name: string
     private _visualizerKey: string
     private _sequenceKey: string
-    private _visualizer: VisualizerInterface<GenericParamDescription>
-    private _sequence: SequenceInterface<GenericParamDescription>
+    private _visualizer: VisualizerInterface
+    private _sequence: SequenceInterface
     private location?: HTMLElement
     private isSetup: boolean = false
     private size = nullSize
@@ -61,6 +60,8 @@ export class Specimen {
     static makeSequence(key: string, query?: string) {
         const sequence = produceSequence(key)
         if (query) sequence.loadQuery(query)
+        sequence.validate()
+        sequence.initialize()
         return sequence
     }
     /**
@@ -129,14 +130,14 @@ export class Specimen {
      * Returns the specimen's visualizer
      * @returns {VisualizerInterface} the visualizer displaying this specimen
      */
-    get visualizer(): VisualizerInterface<GenericParamDescription> {
+    get visualizer(): VisualizerInterface {
         return this._visualizer
     }
     /**
      * Returns the specimen's sequence
      * @returns {SequenceInterface} the sequence shown in this specimen
      */
-    get sequence(): SequenceInterface<GenericParamDescription> {
+    get sequence(): SequenceInterface {
         return this._sequence
     }
     /**
@@ -218,6 +219,7 @@ export class Specimen {
      */
     static async fromQuery(query: string) {
         const specs = parseSpecimenQuery(query)
+        if (specs.seed) math.config({randomSeed: specs.seed})
         const specimen = new Specimen(
             specs.name,
             specs.visualizerKind,
@@ -228,6 +230,7 @@ export class Specimen {
         specimen.sequence.validate()
         await specimen.sequence.fill() // may determine sequence limits
         specimen.visualizer.validate()
+        specimen.visualizer.stop(specs.frames)
         return specimen
     }
     /**

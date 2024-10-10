@@ -1,23 +1,23 @@
 <template>
     <div>
-        <div class="error-box" v-if="status.defective()">
+        <div v-if="status.defective()" class="error-box">
             <p
                 v-for="error in status.errors"
-                class="error-message"
-                v-bind:key="error">
+                :key="error"
+                class="error-message">
                 {{ error }}
             </p>
             <p
                 v-for="warning in status.warnings"
-                class="warning-message"
-                v-bind:key="warning">
+                :key="warning"
+                class="warning-message">
                 {{ warning }}
             </p>
         </div>
         <div
             class="title-and-button-bar button-container"
             @click="openSwitcher">
-            <div style="flex-grow: 1">
+            <div class="visualizer-info" style="flex-grow: 1">
                 <h1>Current {{ title }}</h1>
                 <div class="item-name">{{ paramable.name }}</div>
             </div>
@@ -29,24 +29,24 @@
             </div>
         </div>
         <p class="description">{{ paramable.description }}</p>
-        <div v-for="(hierarchy, name) in sortedParams" v-bind:key="name">
+        <div v-for="(hierarchy, name) in sortedParams" :key="name">
             <ParamField
-                v-bind:param="hierarchy.param"
-                v-bind:value="paramable.tentativeValues[name]"
-                v-bind:paramName="name as string"
-                v-bind:status="paramStatuses[name]"
-                @updateParam="updateParam(name as string, $event)" />
+                :param="hierarchy.param"
+                :value="paramable.tentativeValues[name]"
+                :param-name="name as string"
+                :status="paramStatuses[name]"
+                @update-param="updateParam(name as string, $event)" />
             <div class="sub-param-box">
                 <div
                     v-for="(subParam, subName) in hierarchy.children"
-                    v-bind:key="subName">
+                    :key="subName">
                     <ParamField
                         v-if="checkDependency(subParam)"
-                        v-bind:param="subParam"
-                        v-bind:value="paramable.tentativeValues[subName]"
-                        v-bind:paramName="subName as string"
-                        v-bind:status="paramStatuses[subName]"
-                        @updateParam="
+                        :param="subParam"
+                        :value="paramable.tentativeValues[subName]"
+                        :param-name="subName as string"
+                        :status="paramStatuses[subName]"
+                        @update-param="
                             updateParam(subName as string, $event)
                         " />
                 </div>
@@ -58,7 +58,6 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import type {
-        GenericParamDescription,
         ParamInterface,
         ParamableInterface,
     } from '../shared/Paramable'
@@ -72,7 +71,7 @@
         children: {[key: string]: ParamInterface<ParamType>}
     }
 
-    type Paramable = () => ParamableInterface<GenericParamDescription>
+    type Paramable = () => ParamableInterface
 
     function resetStatuses(
         items: {[key: string]: unknown},
@@ -83,6 +82,10 @@
 
     export default defineComponent({
         name: 'ParamEditor',
+        components: {
+            MageExchangeA,
+            ParamField,
+        },
         props: {
             title: {type: String, required: true},
             paramable: {
@@ -91,9 +94,11 @@
             },
         },
         emits: ['changed', 'openSwitcher'],
-        components: {
-            MageExchangeA,
-            ParamField,
+        data() {
+            const status = ValidationStatus.ok()
+            const paramStatuses: {[key: string]: ValidationStatus} = {}
+            resetStatuses(this.paramable.params, paramStatuses)
+            return {paramStatuses, status}
         },
         computed: {
             sortedParams() {
@@ -112,11 +117,10 @@
                 return sortedParams
             },
         },
-        data() {
-            const status = ValidationStatus.ok()
-            const paramStatuses: {[key: string]: ValidationStatus} = {}
-            resetStatuses(this.paramable.params, paramStatuses)
-            return {paramStatuses, status}
+        watch: {
+            paramable() {
+                resetStatuses(this.paramable.params, this.paramStatuses)
+            },
         },
         async created() {
             const pstatus = this.paramStatuses
@@ -131,7 +135,6 @@
                 // individual validation because we just checked them
                 this.status = await this.paramable.validate('.')
             }
-            this.$emit('changed')
         },
         methods: {
             async updateParam(paramName: string, value: string) {
@@ -157,11 +160,6 @@
             },
             openSwitcher() {
                 this.$emit('openSwitcher')
-            },
-        },
-        watch: {
-            paramable() {
-                resetStatuses(this.paramable.params, this.paramStatuses)
             },
         },
     })

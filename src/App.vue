@@ -8,6 +8,10 @@
 
 <script setup lang="ts">
     import {RouterView} from 'vue-router'
+
+    import {reactivateOEIS} from '@/sequences/sequences'
+
+    reactivateOEIS()
 </script>
 
 <!-- Global styles. This style tag is explicitly unscoped. -->
@@ -68,7 +72,7 @@
         --ns-desktop-tab-width: 300px;
         --ns-specimen-card-width: 216px;
 
-        /* Breakpoint widths 
+        /* Breakpoint widths
         Default styles should be for vertical mobile devices
         (devices narrower than --ns-breakpoint-mobile)
 
@@ -94,12 +98,13 @@
     /* Display font */
     @font-face {
         font-family: 'Infinity';
-        src: url('/src/assets/fonts/infinity/Infinity.ttf');
+        src: url('@/assets/fonts/infinity/Infinity.ttf');
     }
 
     /* Body font */
     @font-face {
         font-family: 'Inter';
-        src: url('/src/assets/fonts/inter/Inter-VariableFont_slnt\,wght.ttf');
+        src: url('@/assets/fonts/inter/Inter-VariableFont_slnt,wght.ttf')
+            format('truetype');
     }
 </style>

@@ -8,8 +8,8 @@ an alternate package manager.
 
 <!-- prettier-ignore -->
 {! ../package.json extract: {start: 'scripts', stop: '},', replace: [
-    ['help:(\D*)".*".*echo (.*)"', '### npm run \1\n\2'], # one-liner like test
-    '"help:\D*:\d*".*echo (.*)"', # a numbered continuation line of help
-    ['"help:(\D*)":.*"', '### npm run \1\n'], # header of a block of help lines
+    ['help:(.*\D)".*".*echo (.*)"', '### npm run \1\n\2'], # 1-liner help
+    '"help:.*[-:]\d*".*echo \\?"?(.*?)\\?"?"', # a continuation line of help
+    ['"help:(.*\D)":.*"', '### npm run \1\n'], # header of block of help lines
     '.' # ignore the actual scripts that don't start with help
 ]} !}

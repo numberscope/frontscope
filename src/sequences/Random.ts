@@ -1,8 +1,9 @@
 import {SequenceExportModule} from './SequenceInterface'
 import {Cached} from './Cached'
-import simpleFactor from './simpleFactor'
-import {ParamType} from '../shared/ParamType'
-import type {ParamValues} from '@/shared/Paramable'
+
+import {math} from '@/shared/math'
+import {ParamType} from '@/shared/ParamType'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 
 const paramDesc = {
     min: {
@@ -17,15 +18,19 @@ const paramDesc = {
         displayName: 'Maximum value attainable',
         required: true,
     },
-} as const
+} satisfies GenericParamDescription
 
 /**
  *
- * @class SequenceClassRandom
+ * @class Random
  * Creates a sequence of random integers in a specified range.
  * Starts at index 0 and has no limit.
+ *
+ * Note that unlike most sequence classes, this one is also exported
+ * directly, not just through the exportModule. That is for purposes
+ * of testing the caching infrastructure, see ./__tests__/Cached.spec.ts.
  */
-class Random extends Cached(paramDesc) {
+export class Random extends Cached(paramDesc) {
     name = 'uninitialized random integers'
     static category = 'Random Integers'
     static description =
@@ -46,15 +51,9 @@ class Random extends Cached(paramDesc) {
         this.name = `Random integers ${this.min} to ${this.max}`
     }
 
-    calculate(_n: number) {
+    calculate(_n: bigint) {
         // create a random integer between min and max inclusive
-        return BigInt(
-            Math.floor(Math.random() * (this.max - this.min + 1) + this.min)
-        )
-    }
-
-    factor(_n: number, v: bigint) {
-        return simpleFactor(v)
+        return BigInt(math.randomInt(this.min, this.max + 1))
     }
 }
 

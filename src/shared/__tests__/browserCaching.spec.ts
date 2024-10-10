@@ -26,6 +26,7 @@ const localStorageMock = (() => {
     }
 })()
 
+// eslint-disable-next-line no-undef
 Object.defineProperty(global, 'localStorage', {
     value: localStorageMock,
 })

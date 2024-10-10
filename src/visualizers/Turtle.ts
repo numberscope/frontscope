@@ -1,8 +1,10 @@
 import p5 from 'p5'
+
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
-import {ParamType} from '../shared/ParamType'
-import type {ParamValues} from '../shared/Paramable'
+
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
@@ -57,8 +59,9 @@ positionally to the domain elements. Range and domain must be the same length.
         type: ParamType.INTEGER,
         displayName: 'Stroke Width',
         required: false,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(n <= 0, 'Stroke width must be positive'),
+        validate: function (n: number, status: ValidationStatus) {
+            if (n <= 0) status.addError('Stroke width must be positive')
+        },
     },
     /**
 - bgColor: The background color of the visualizer canvas
@@ -98,7 +101,7 @@ positionally to the domain elements. Range and domain must be the same length.
         description: 'coordinates of the point where drawing will start',
         hideDescription: true,
     },
-} as const
+} satisfies GenericParamDescription
 
 class Turtle extends P5Visualizer(paramDesc) {
     static category = 'Turtle'
@@ -107,7 +110,7 @@ class Turtle extends P5Visualizer(paramDesc) {
 
     private rotMap = new Map<string, number>()
 
-    private currentIndex = 0
+    private currentIndex = 0n
     private orientation = 0
     private X = 0
     private Y = 0
@@ -149,7 +152,7 @@ class Turtle extends P5Visualizer(paramDesc) {
         const angle = this.rotMap.get(currElement.toString())
 
         if (angle == undefined) {
-            this.sketch.noLoop()
+            this.stop()
             return
         }
 
@@ -161,7 +164,7 @@ class Turtle extends P5Visualizer(paramDesc) {
         this.Y += this.stepSize * Math.sin(this.orientation)
 
         this.sketch.line(oldX, oldY, this.X, this.Y)
-        if (++this.currentIndex > this.seq.last) this.sketch.noLoop()
+        if (++this.currentIndex > this.seq.last) this.stop()
     }
 }
 

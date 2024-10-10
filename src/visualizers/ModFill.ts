@@ -1,10 +1,10 @@
-import {modulo} from '../shared/math'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
-import type p5 from 'p5'
-import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
+
+import {math} from '@/shared/math'
+import type {GenericParamDescription} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
+import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
 # Mod Fill Visualizer
@@ -31,8 +31,11 @@ modulus to consider.
         type: ParamType.BIGINT,
         displayName: 'Mod dimension',
         required: true,
+        validate: function (n: number, status: ValidationStatus) {
+            if (n <= 0) status.addError('Must be positive.')
+        },
     },
-} as const
+} satisfies GenericParamDescription
 
 class ModFill extends P5Visualizer(paramDesc) {
     static category = 'Mod Fill'
@@ -41,53 +44,47 @@ class ModFill extends P5Visualizer(paramDesc) {
 
     rectWidth = 0
     rectHeight = 0
-    i = 0
+    useMod = 0
+    i = 0n
 
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(seq)
-    }
-
-    checkParameters(params: ParamValues<typeof paramDesc>) {
-        const status = super.checkParameters(params)
-
-        if (params.modDimension <= 0n)
-            status.errors.push('Mod dimension must be positive')
-
-        return status
-    }
-
-    drawNew(
-        sketch: p5,
-        num: number,
-        seq: SequenceInterface<GenericParamDescription>
-    ) {
-        sketch.fill(0)
-        for (let mod = 1n; mod <= this.modDimension; mod++) {
-            const s = seq.getElement(num)
-            const x = Number(mod - 1n) * this.rectWidth
+    drawNew(num: bigint) {
+        this.sketch.fill(0)
+        for (let mod = 1; mod <= this.useMod; mod++) {
+            const s = this.seq.getElement(num)
+            const x = (mod - 1) * this.rectWidth
             const y =
-                sketch.height - Number(modulo(s, mod) + 1n) * this.rectHeight
-            sketch.rect(x, y, this.rectWidth, this.rectHeight)
+                this.sketch.height
+                - Number(math.modulo(s, mod) + 1n) * this.rectHeight
+            this.sketch.rect(x, y, this.rectWidth, this.rectHeight)
         }
     }
 
     setup() {
         super.setup()
-        if (!this.sketch) {
-            throw 'Attempt to show ModFill before injecting into element'
-        }
-        this.rectWidth = this.sketch.width / Number(this.modDimension)
-        this.rectHeight = this.sketch.height / Number(this.modDimension)
+        const minDimension = Math.min(this.sketch.width, this.sketch.height)
+        // 16 was chosen in the following expression by doubling the
+        // multiplier until the traces were almost too faint to see at all.
+        const maxMod = 16 * minDimension
+        if (this.modDimension > maxMod) {
+            // TODO: Need to allow status updates after checkParameters!
+            // status.addWarning(
+            //    `Running with maximum modulus ${this.maxMod}; `
+            //        + `${params.modDimension} will not fit on screen.`
+            // )
+            this.useMod = maxMod
+        } else this.useMod = Number(this.modDimension)
+        this.rectWidth = this.sketch.width / this.useMod
+        this.rectHeight = this.sketch.height / this.useMod
         this.sketch.noStroke()
         this.i = this.seq.first
     }
 
     draw() {
-        this.drawNew(this.sketch, this.i, this.seq)
-        this.i++
-        if (this.i == 1000 || this.i > this.seq.last) {
-            this.sketch.noLoop()
+        if (this.i > this.seq.last) {
+            this.stop()
+            return
         }
+        this.drawNew(this.i++)
     }
 }
 

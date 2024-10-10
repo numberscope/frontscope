@@ -15,14 +15,15 @@
             </div>
         </div>
         <div class="content">
-            <slot></slot>
+            <slot />
         </div>
-        <div class="resize"></div>
+        <div class="resize" />
     </div>
 </template>
 
 <script setup lang="ts">
     import interact from 'interactjs'
+    import type {InteractEvent} from '@interactjs/types'
     import {
         positionAndSizeTab,
         positionAndSizeAllTabs,
@@ -101,7 +102,7 @@
             // This function is called when a user stops dragging a tab
             // It checks whether the tab is docked, and if it is, returns
             // it to its place.
-            end: (event: Interact.InteractEvent) => {
+            end: (event: InteractEvent) => {
                 document.body.style.userSelect = 'auto'
 
                 const tab = event.target.parentElement
@@ -120,7 +121,7 @@
         },
     })
 
-    function dragMoveListener(event: Interact.InteractEvent) {
+    function dragMoveListener(event: InteractEvent) {
         const target = event.target.parentElement
         const container = document.querySelector('#specimen-container')
         if (
