@@ -394,16 +394,16 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         }
         if (this.binFactorArray.length > 30) {
             sketch.fill('chocolate')
-            this.write(
-                `Too many bins (${this.binFactorArray.length}).`,
-                sketch.width * 0.75,
-                sketch.height * 0.03
+            const {pX, pY} = this.canvasToPlot(
+                0.75 * sketch.width,
+                0.1 * sketch.height
             )
             this.write(
-                'Displaying the first 30',
-                sketch.width * 0.75,
-                sketch.height * 0.06
+                `Too many bins (${this.binFactorArray.length}),`,
+                pX,
+                pY - textHeight * 3
             )
+            this.write('Displaying the first 30.', pX, pY - textHeight * 1.3)
         }
         // If mouse interaction, draw hover box
         if (this.mouseOver && inBin) {

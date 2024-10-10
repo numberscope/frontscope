@@ -85,7 +85,7 @@ endif
 # OK, to certify that all end-to-end tests are in good shape, we have
 # to run the non-WebGL non-firefox tests in docker, the firefox WebGL tests
 # locally, merge the two reports, and then check if everything passed (whew!)
-e2e/certificate: e2e/results/combined/playwright-report
+e2e/certificate: e2e/results/combined/playwright-report e2e/results/docker e2e/results/local
 |   @grep 'status.*passed' e2e/results/docker/output/.last-run.json
 |   @grep 'status.*passed' e2e/results/local/output/.last-run.json
 |   echo 'All tests passed' > $@
@@ -129,8 +129,8 @@ else
 endif
 # Clean up
 |   docker stop $(E2E_CONTAINER)
-# Check if we passed and backdate results if not
-|   @grep 'status.*passed' e2e/results/docker/output/.last-run.json || touch -d 20010101 $@
+# Backdate results if we didn't pass
+|   @grep 'status.*passed' e2e/results/docker/output/.last-run.json || (touch -d 20010101 $@ && exit 1)
 # Whereas if we did pass, make sure results are up to date.
 |   touch $@
 

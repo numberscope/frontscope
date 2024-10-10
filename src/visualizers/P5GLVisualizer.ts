@@ -53,21 +53,30 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
             brush.load()
         }
 
-        // returns the coordinates ansd scaling of the mouse position
-        // in the plot-plane coordinates, as a
+        // returns the coordinates and scaling of an absolute viewport position
+        // vX, vY transformed into the plot-plane coordinates, as a
         // {pX: number, pY: number, scale: number} object:
-        mouseToPlot() {
+        canvasToPlot(vX: number, vY: number) {
             const cameraXoff = this.camera?.eyeX ?? 0
             const cameraYoff = this.camera?.eyeY ?? 0
             const cameraZ = this.camera?.eyeZ ?? this.initialCameraZ
             const scale = cameraZ / this.initialCameraZ
+            // Center of the field of view:
             const cX = this.sketch.width / 2 + cameraXoff
             const cY = this.sketch.height / 2 + cameraYoff
-            let pX = this.sketch.mouseX + cameraXoff
-            let pY = this.sketch.mouseY + cameraYoff
+            // Translate of the viewport position:
+            let pX = vX + cameraXoff
+            let pY = vY + cameraYoff
+            // Dilate from center:
             pX = (pX - cX) * scale + cX
             pY = (pY - cY) * scale + cY
             return {pX, pY, scale}
+        }
+
+        // returns the current mouse position in plot-plane coordinates, as a
+        // {pX: number, pY: number, scale: number} object:
+        mouseToPlot() {
+            return this.canvasToPlot(this.sketch.mouseX, this.sketch.mouseY)
         }
 
         // Provide default camera controls: left drag pans, mouse wheel zooms
