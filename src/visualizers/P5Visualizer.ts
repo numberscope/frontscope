@@ -1,15 +1,27 @@
-import type {VisualizerInterface, ViewSize} from './VisualizerInterface'
-import {nullSize} from './VisualizerInterface'
-import {Paramable} from '../shared/Paramable'
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
-import {CachingError} from '../sequences/Cached'
 import p5 from 'p5'
+import {markRaw} from 'vue'
+
+import {
+    DrawingUnmounted,
+    Drawing,
+    DrawingStopped,
+    nullSize,
+} from './VisualizerInterface'
+import type {
+    DrawingState,
+    ViewSize,
+    VisualizerInterface,
+} from './VisualizerInterface'
+
+import {CachingError} from '@/sequences/Cached'
+import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import {Paramable} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 
 // Ugh, the gyrations we go through to keep TypeScript happy
 // while only listing the p5 methods once:
 
-class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
+class WithP5 extends Paramable {
     deviceMoved() {}
     deviceShaken() {}
     deviceTurned() {}
@@ -32,27 +44,11 @@ class WithP5<PD extends GenericParamDescription> extends Paramable<PD> {
 
 // The following is used to check if a visualizer has defined
 // any of the above methods:
-const dummyP5 = new WithP5<GenericParamDescription>({})
-const ignoreOffCanvas = new Set([
-    'mousePressed',
-    'mouseClicked',
-    'mouseWheel',
-])
-const ignoreFocusedElsewhere = new Set([
-    'keyPressed',
-    'keyReleased',
-    'keyTyped',
-])
-
-type P5Methods<PD extends GenericParamDescription> = Exclude<
-    keyof WithP5<PD>,
-    keyof Paramable<PD>
->
-const dummyWithP5 = new WithP5<GenericParamDescription>({})
-const p5methods: P5Methods<GenericParamDescription>[] =
-    Object.getOwnPropertyNames(Object.getPrototypeOf(dummyWithP5)).filter(
-        name => name != 'constructor'
-    ) as P5Methods<GenericParamDescription>[]
+type P5Methods = Exclude<keyof WithP5, keyof Paramable>
+const dummyWithP5 = new WithP5({})
+const p5methods: P5Methods[] = Object.getOwnPropertyNames(
+    Object.getPrototypeOf(dummyWithP5)
+).filter(name => name != 'constructor') as P5Methods[]
 
 /* A convenience HACK so that visualizer writers can initialize
     p5 color properties without a sketch. Don't try to draw with this!
@@ -64,20 +60,32 @@ const p5methods: P5Methods<GenericParamDescription>[] =
 */
 export const INVALID_COLOR = {} as p5.Color
 
+export interface P5VizInterface extends VisualizerInterface, WithP5 {
+    _sketch?: p5
+    _canvas?: p5.Renderer
+    _framesRemaining: number
+    size: ViewSize
+    drawingState: DrawingState
+    readonly sketch: p5
+    readonly canvas: p5.Renderer
+    seq: SequenceInterface
+    _initializeSketch(): (sketch: p5) => void
+    presketch(size: ViewSize): Promise<void>
+    reset(): Promise<void>
+}
+
 // Base class for implementing Visualizers that use p5.js
 export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
     const defaultObject = Object.fromEntries(
         Object.keys(desc).map(param => [param, desc[param].default])
     )
-    const P5Visualizer = class
-        extends WithP5<PD>
-        implements VisualizerInterface<PD>
-    {
+    const P5Visualizer = class extends WithP5 implements P5VizInterface {
         name = 'uninitialized P5-based visualizer'
         _sketch?: p5
         _canvas?: p5.Renderer
-        _size = nullSize
-        isDrawing = false
+        _framesRemaining = Infinity
+        size = nullSize
+        drawingState: DrawingState = DrawingUnmounted
 
         within?: HTMLElement
         get sketch(): p5 {
@@ -95,13 +103,13 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             }
             return this._canvas
         }
-        seq: SequenceInterface<GenericParamDescription>
+        seq: SequenceInterface
 
         /***
          * Create a P5-based visualizer
          * @param seq SequenceInterface  The initial sequence to draw
          */
-        constructor(seq: SequenceInterface<GenericParamDescription>) {
+        constructor(seq: SequenceInterface) {
             super(desc)
             this.name = this.category // Not currently using per-instance names
             this.seq = seq
@@ -109,44 +117,23 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         }
 
         /***
-         * Places the sketch into the given HTML element, and prepares to draw.
-         * This has to create the sketch and generate the methods it needs. In
-         * p5-based visualizers, we presume that initialization will generally
-         * take place in the standard p5 setup() method, so only the rare
-         * visualizer that needs to interact with the DOM or affect the
-         * of the p5 object itself would need to implement an extended or
-         * replaced inhabit() method.
-         * @param {HTMLElement} element
-         *     Where the visualizer should inject itself
-         * @param {ViewSize} size
-         *     The width and height the visualizer should occupy
+         * Supplies the argument to the p5 constructor that initializes a
+         * new sketch object, supplying its methods, etc. That is to say,
+         * the arrow function this method returns will simply be passed to
+         * `new p5(__, element)` when the visualizer `inhabit`s an element.
+         *
+         * @returns {(sketch: p5) => void}  The sketch initializer function
          */
-        async inhabit(element: HTMLElement, size: ViewSize) {
-            let needsPresketch = true
-            if (this.within) {
-                // oops, already inhabiting somewhere else; depart there
-                this.depart(this.within)
-                // Only do the presketch initialization once, though:
-                needsPresketch = false
-            }
-            this._size = size
-            this.within = element
-            // Perform any necessary asynchronous preparation before
-            // creating sketch. For example, some Visualizers need sequence
-            // factorizations in setup().
-            if (needsPresketch) await this.presketch(size)
-            // TODO: Can presketch() sometimes take so long that we should
-            // show an hourglass icon in the meantime, or something like that?
-
-            // Now we can create the sketch
-            this._sketch = new p5(sketch => {
-                this._sketch = sketch // must assign here,  as setup is
-                // called before the `new p5` returns; I think that makes
-                // the outer (re-) assigning of that result to this._sketch
-                // redundant, but I also think it makes this code a bit
-                // clearer than if inhabit() simply calls `new p5(...)` and
-                // discards the result, so I left that outer reassignment
-                // there as well.
+        _initializeSketch(): (sketch: p5) => void {
+            return sketch => {
+                // The following assignment is necessary even though it
+                // may seem a bit redundant with the assignment in inhabit()
+                // below -- that's because this.sketch is often used in
+                // setup(). Also, the call to markRaw is needed so that Vue's
+                // reactivity API does not alter behavior inside of p5 (and
+                // I don't think we need Vue to re-render when a sketch
+                // changes anyway; the sketch does that itself).
+                this._sketch = markRaw(sketch)
 
                 // Now, a little bit of gymnastics to set all of the p5 methods
                 // in the sketch that exist on the Visualizer. Since TypeScript
@@ -156,8 +143,12 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 // `this[method]` is defined or undefined:
                 for (const method of p5methods) {
                     const definition = this[method]
-                    if (definition !== dummyP5[method]) {
-                        if (ignoreOffCanvas.has(method)) {
+                    if (definition !== dummyWithP5[method]) {
+                        if (
+                            method === 'mousePressed'
+                            || method === 'mouseClicked'
+                            || method === 'mouseWheel'
+                        ) {
                             sketch[method] = (event: MouseEvent) => {
                                 if (!this.within) return true
                                 // Check that the event position is in bounds
@@ -185,24 +176,32 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                             }
                             continue
                         }
-                        if (ignoreFocusedElsewhere.has(method)) {
+                        if (
+                            method === 'keyPressed'
+                            || method === 'keyReleased'
+                            || method === 'keyTyped'
+                        ) {
                             sketch[method] = (event: KeyboardEvent) => {
                                 const active = document.activeElement
                                 if (active && active.tagName === 'INPUT') {
                                     return true
                                 }
-                                return this[method](event as never)
+                                return this[method](event)
                             }
                             continue
                         }
                         // Otherwise no special condition, just forward event
-                        sketch[method] = definition.bind(this)
+                        sketch[method] = definition.bind(this) as () => void
                     }
                 }
+
                 // And draw is special because of the error handling:
                 sketch.draw = () => {
                     try {
                         this.draw()
+                        if (--this._framesRemaining <= 0) {
+                            this.stop(0)
+                        }
                     } catch (e) {
                         if (e instanceof CachingError) {
                             sketch.cursor('progress')
@@ -211,11 +210,47 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                             throw e
                         }
                     }
-                    sketch.cursor(
-                        getComputedStyle(element).cursor || 'default'
-                    )
+                    if (this.within) {
+                        sketch.cursor(
+                            getComputedStyle(this.within).cursor || 'default'
+                        )
+                    }
                 }
-            }, element)
+            }
+        }
+
+        /***
+         * Places the sketch into the given HTML element, and prepares to draw.
+         * This has to create the sketch and generate the methods it needs. In
+         * p5-based visualizers, we presume that initialization will generally
+         * take place in the standard p5 setup() method, so only the rare
+         * visualizer that needs to interact with the DOM or affect the
+         * of the p5 object itself would need to implement an extended or
+         * replaced inhabit() method.
+         * @param {HTMLElement} element
+         *     Where the visualizer should inject itself
+         * @param {ViewSize} size
+         *     The width and height the visualizer should occupy
+         */
+        async inhabit(element: HTMLElement, size: ViewSize) {
+            let needsPresketch = true
+            if (this.within) {
+                // oops, already inhabiting somewhere else; depart there
+                this.depart(this.within)
+                // Only do the presketch initialization once, though:
+                needsPresketch = false
+            }
+            this.size = size
+            this.within = element
+            // Perform any necessary asynchronous preparation before
+            // creating sketch. For example, some Visualizers need sequence
+            // factorizations in setup().
+            if (needsPresketch) await this.presketch(size)
+            // TODO: Can presketch() sometimes take so long that we should
+            // show an hourglass icon in the meantime, or something like that?
+
+            // Now we can create the sketch
+            this._sketch = new p5(this._initializeSketch(), element)
         }
 
         /**
@@ -231,14 +266,14 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * Change the sequence being shown by the visualizer
          * @param seq SequenceInterface  The sequence to show
          */
-        async view(seq: SequenceInterface<GenericParamDescription>) {
+        async view(seq: SequenceInterface) {
             this.seq = seq
             if (!this._sketch) return
             const element = this.within!
             this.stop()
             this.depart(element) // ensures any sequence-dependent setup
             // that the visualizer might do in presketch will be redone
-            await this.inhabit(element, this._size)
+            await this.inhabit(element, this.size)
             this.show()
         }
 
@@ -253,7 +288,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             const displayTimeout = 5
 
             if (this._canvas) {
-                this.isDrawing = true
+                this.drawingState = Drawing
+                this._sketch?.loop()
                 this._sketch?.draw()
             } else {
                 // If the rendering context is not yet ready, start an interval
@@ -261,7 +297,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 const interval = setInterval(() => {
                     if (this._canvas) {
                         clearInterval(interval)
-                        this.isDrawing = true
+                        this.drawingState = Drawing
                         this._sketch?.draw()
                     }
                 }, displayTimeout)
@@ -271,16 +307,22 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         /**
          * Stop displaying the visualizer
          */
-        stop(): void {
-            this.isDrawing = false
-            this._sketch?.noLoop()
+        stop(max: number = 0): void {
+            if (max <= 0) {
+                // hard stop now
+                this.drawingState = DrawingStopped
+                this._sketch?.noLoop()
+            } else if (max < this._framesRemaining) {
+                this._framesRemaining = max
+            }
         }
 
         /**
          * Continue displaying the visualizer
          */
         continue(): void {
-            this.isDrawing = true
+            this.drawingState = Drawing
+            this._framesRemaining = Infinity
             this._sketch?.loop()
         }
 
@@ -291,7 +333,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         setup() {
             this._canvas = this.sketch
                 .background('white')
-                .createCanvas(this._size.width, this._size.height)
+                .createCanvas(this.size.width, this.size.height)
         }
 
         /**
@@ -314,7 +356,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 throw 'Attempt to dispose P5Visualizer that is not on view.'
             }
             if (this.within !== element) return // that view already departed
-            this.isDrawing = false
+            this.drawingState = DrawingUnmounted
             this._sketch.remove()
             this._sketch = undefined
             this._canvas = undefined
@@ -322,18 +364,18 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         }
         /* Further remarks on realizing visualizers in the DOM with inhabit()
             and depart():
-    
+
             If an HTML element (usually a div) gets removed from the DOM while
             a visualizer is still inhabiting it, the visualizer becomes a
             troublesome "ghost": the user can't see or interact with it, but
             it's still listening for events and consuming system resources.
             There are two ways to prevent this:
-    
+
             1. Immediately tell the visualizer to depart the div you're removing
-    
+
             2. Immediately tell the visualizer to inhabit a div that is still in
                 the DOM.
-    
+
             It's safe for these calls to happen redundantly. If you tell a
             visualizer to depart a div that it's not inhabiting, or to inhabit
             a div that it's already inhabiting, nothing will happen.
@@ -363,12 +405,13 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             if (!this._sketch) return
             const element = this.within!
             this.stop()
-            await this.inhabit(element, this._size)
+            await this.inhabit(element, this.size)
             this.show()
         }
     }
 
+    type P5VisInstance = InstanceType<typeof P5Visualizer>
     return P5Visualizer as unknown as new (
-        seq: SequenceInterface<GenericParamDescription>
-    ) => InstanceType<typeof P5Visualizer> & ParamValues<PD>
+        seq: SequenceInterface
+    ) => P5VisInstance & P5VizInterface & ParamValues<PD>
 }

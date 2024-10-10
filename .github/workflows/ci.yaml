@@ -1,5 +1,10 @@
 name: 'CI'
-on: pull_request
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+
 jobs:
     lint:
         runs-on: ubuntu-22.04
@@ -12,13 +17,15 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v3
               with:
-                  node-version: '18.x'
+                  node-version: '20.x'
             - name: Install dependencies
               run: npm install
             - name: Lint
               run: npm run lint:check
+            - name: Type check
+              run: npm run typecheck
     test:
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
             - name: Set up Python
@@ -28,8 +35,20 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v3
               with:
-                  node-version: '18.x'
+                  node-version: '20.x'
             - name: Install dependencies
               run: npm install
-            - name: Test
+            - name: Unit test
               run: npm run test:unit
+            - name: Build production site
+              run: npm run build
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps
+            - name: End-to-end test
+              run: npx playwright test -c e2e/playci.config.ts
+### Uncomment when you need to re-extract snapshots
+#            - name: Extract snapshots
+#              uses: actions/upload-artifact@v4
+#              with:
+#                  name: updated_snapshots
+#                  path: e2e/tests/ci_snaps

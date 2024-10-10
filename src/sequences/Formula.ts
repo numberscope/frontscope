@@ -1,9 +1,9 @@
-import {SequenceExportModule} from './SequenceInterface'
-import {ParamType} from '../shared/ParamType'
 import {Cached} from './Cached'
-import simpleFactor from './simpleFactor'
-import * as math from 'mathjs'
-import type {ParamValues} from '@/shared/Paramable'
+import {SequenceExportModule} from './SequenceInterface'
+
+import {math} from '@/shared/math'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 
 const paramDesc = {
     formula: {
@@ -12,7 +12,7 @@ const paramDesc = {
         displayName: 'Formula',
         required: true,
     },
-} as const
+} satisfies GenericParamDescription
 
 /**
  *
@@ -74,16 +74,12 @@ class Formula extends Cached(paramDesc) {
         this.name = 'Formula: ' + this.formula
     }
 
-    calculate(n: number) {
-        const result = this.evaluator.evaluate({n: n})
+    calculate(n: bigint) {
+        const result = this.evaluator.evaluate({n: Number(n)})
         if (result === Infinity) return BigInt(Number.MAX_SAFE_INTEGER)
         else if (result === -Infinity) return BigInt(Number.MIN_SAFE_INTEGER)
         else if (Number.isNaN(result)) return BigInt(0)
         return BigInt(Math.floor(result))
-    }
-
-    factor(_n: number, v: bigint) {
-        return simpleFactor(v)
     }
 }
 

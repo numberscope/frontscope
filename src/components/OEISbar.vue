@@ -6,13 +6,13 @@
                     <b>Search the encyclopedia</b>
                     (<a href="https://oeis.org" target="_blank">OEIS.org</a>):
                 </label>
-                <br />
+                <br>
                 <input
-                    type="text"
                     id="oeis"
                     v-model="term"
-                    v-on:input="doSearch($event)"
-                    placeholder="id, keyword, etc..." />
+                    type="text"
+                    placeholder="id, keyword, etc..."
+                    @input="doSearch($event)">
             </div>
             <button class="tooltip-anchor">
                 <MageSearchSquare />
@@ -36,14 +36,14 @@
                     v-if="item[0].startsWith('A')"
                     :href="`https://oeis.org/${item[0]}`"
                     class="mono"
-                    @click.stop
-                    target="_blank">
+                    target="_blank"
+                    @click.stop>
                     {{ item[0] }}&nbsp;
                     <div class="info material-icons-sharp external">
                         launch
                     </div>
                 </a>
-                <span class="mono" v-if="!item[0].startsWith('A')">
+                <span v-if="!item[0].startsWith('A')" class="mono">
                     {{ item[0] }}
                 </span>
                 <span class="result-desc">{{ item[1] }}</span>
@@ -60,7 +60,7 @@
     import type {AxiosResponse} from 'axios'
     import {ref} from 'vue'
 
-    const emit = defineEmits(['addID'])
+    const emit = defineEmits(['addSequence'])
 
     const term = ref('')
     const resultList: [string, string][] = []
@@ -111,7 +111,7 @@
     }
 
     function select(id: string) {
-        if (id.startsWith('A')) emit('addID', id)
+        if (id.startsWith('A')) emit('addSequence', id)
         results.value = []
     }
 </script>

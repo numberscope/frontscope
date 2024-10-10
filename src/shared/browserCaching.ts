@@ -38,10 +38,20 @@ function getCurrentDate(): string {
 // QUERY ENCODING OF SPECIMENS
 const vizKey = 'viz'
 export const seqKey = 'seq'
+type QuerySpec = {
+    name: string
+    visualizerKind: string
+    sequenceKind: string
+    visualizerQuery: string
+    sequenceQuery: string
+}
 /**
  * Generates a URL query string from the information specifying a specimen.
  *
- * @param {string} name  The name of the specimen
+ * @param {string | QuerySpec} nameOrSpec
+ *     The name of the specimen, or an object with key `name` and all of
+ *     the other argument names as keys, in which case the other arguments
+ *     are taken from this object instead
  * @param {string} visualizerKind  The kind of Visualizer
  * @param {string} sequenceKind  The kind of Sequence
  * @param {string?} visualizerQuery  Optional visualizer query parameter string
@@ -49,12 +59,25 @@ export const seqKey = 'seq'
  * @return {string} the URL query string encoding of the parameter
  */
 export function specimenQuery(
-    name: string,
-    visualizerKind: string,
-    sequenceKind: string,
+    nameOrSpec: string | QuerySpec,
+    visualizerKind?: string,
+    sequenceKind?: string,
     visualizerQuery?: string,
     sequenceQuery?: string
 ): string {
+    let name = ''
+    if (!visualizerKind) {
+        // Only one arg, must be query
+        const spec = nameOrSpec as QuerySpec
+        name = spec.name
+        visualizerKind = spec.visualizerKind
+        sequenceKind = spec.sequenceKind
+        visualizerQuery = spec.visualizerQuery
+        sequenceQuery = spec.sequenceQuery
+    } else {
+        name = nameOrSpec as string
+    }
+    if (!sequenceKind) return ''
     const leadQuery = new URLSearchParams({
         name,
         [vizKey]: visualizerKind,
@@ -78,6 +101,13 @@ export function specimenQuery(
 export function parseSpecimenQuery(query: string) {
     const params = new URLSearchParams(query)
     const name = params.get('name') || 'Error: Unknown Name'
+    // We never insert a frame count in queries we generate, but
+    // we do parse it out in case it was specified, e.g. to make
+    // tests reproducible
+    const frames = parseFloat(params.get('frames') || 'Infinity')
+    // Similarly, we never insert a seed, but parse it in case it
+    // was specified
+    const seed = params.get('randomSeed') || null
     const visualizerKind =
         params.get(vizKey) || 'Error: No visualizer kind specified'
     const sequenceKind =
@@ -98,6 +128,8 @@ export function parseSpecimenQuery(query: string) {
     }
     return {
         name,
+        frames,
+        seed,
         visualizerKind,
         sequenceKind,
         visualizerQuery,

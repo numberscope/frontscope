@@ -1,5 +1,5 @@
 <template>
-    <div class="card-body" v-on:click="openSpecimen">
+    <div class="card-body" @click="openSpecimen">
         <Thumbnail :query />
         <div class="card-title-box">
             <div>
@@ -12,11 +12,9 @@
             </div>
             <div
                 v-if="!permanent"
-                v-on:click.stop="deleteSpecimen"
-                style="padding-right: 15px">
-                <span
-                    class="material-icons-sharp"
-                    style="user-select: none; margin-top: 1ex">
+                style="padding-right: 15px"
+                @click.stop="deleteSpecimen">
+                <span class="delete-button material-icons-sharp">
                     delete
                 </span>
             </div>
@@ -34,10 +32,13 @@
 
     export default defineComponent({
         name: 'SpecimenCard',
+        components: {
+            Thumbnail,
+        },
         props: {
             query: {type: String, required: true},
-            lastEdited: {type: String},
-            subtitle: {type: String},
+            lastEdited: {type: String, default: ''},
+            subtitle: {type: String, default: ''},
             permanent: {type: Boolean},
             cid: {
                 type: String,
@@ -46,8 +47,14 @@
                 },
             },
         },
+        emits: ['specimenDeleted'],
         data() {
             return {specimenName: '', useSub: ''}
+        },
+        mounted() {
+            this.specimenName = nameOfQuery(this.query)
+            if (this.subtitle) this.useSub = this.subtitle
+            else this.useSub = Specimen.getSequenceNameFromQuery(this.query)
         },
         methods: {
             openSpecimen() {
@@ -59,14 +66,6 @@
                 deleteSpecimen(this.specimenName)
                 this.$emit('specimenDeleted', this.specimenName)
             },
-        },
-        mounted() {
-            this.specimenName = nameOfQuery(this.query)
-            if (this.subtitle) this.useSub = this.subtitle
-            else this.useSub = Specimen.getSequenceNameFromQuery(this.query)
-        },
-        components: {
-            Thumbnail,
         },
     })
 </script>
@@ -104,5 +103,9 @@
         margin-right: 8px;
         margin-bottom: 8px;
         color: #6c757d;
+    }
+    .delete-button {
+        user-select: none;
+        margin-top: 1ex;
     }
 </style>

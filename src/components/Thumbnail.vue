@@ -1,5 +1,5 @@
 <template>
-    <div class="canvas-container" ref="canvasContainer"></div>
+    <div ref="canvasContainer" class="canvas-container" />
 </template>
 
 <script setup lang="ts">
@@ -8,7 +8,7 @@
 
     const canvasContainer = ref<HTMLDivElement | null>(null)
     let specimen: Specimen | undefined = undefined
-    const props = defineProps(['query'])
+    const props = defineProps<{query: string}>()
 
     onMounted(async () => {
         specimen = await Specimen.fromQuery(props.query)

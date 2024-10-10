@@ -1,17 +1,12 @@
 import type {SequenceInterface} from '../sequences/SequenceInterface'
-import type {
-    GenericParamDescription,
-    ParamableInterface,
-} from '../shared/Paramable'
+import type {ParamableInterface} from '../shared/Paramable'
 
 interface VisualizerConstructor {
     /**
      * Constructs a visualizer
      * @param seq SequenceInterface The initial sequence to visualize
      */
-    new (
-        seq: SequenceInterface<GenericParamDescription>
-    ): VisualizerInterface<GenericParamDescription>
+    new (seq: SequenceInterface): VisualizerInterface
     // Enforce that all visualizers have standard static properties
     category: string
     description: string
@@ -42,12 +37,20 @@ export function sameSize(size1: ViewSize, size2: ViewSize) {
     return size1.width === size2.width && size1.height === size2.height
 }
 
-export interface VisualizerInterface<PD extends GenericParamDescription>
-    extends ParamableInterface<PD> {
+// A visualizer may be either unmounted, drawing, or stopped:
+export const DrawingUnmounted = 0
+export const Drawing = 1
+export const DrawingStopped = 2
+export type DrawingState =
+    | typeof DrawingUnmounted
+    | typeof Drawing
+    | typeof DrawingStopped
+
+export interface VisualizerInterface extends ParamableInterface {
     /**
      * Change the sequence the visualizer is showing.
      */
-    view(seq: SequenceInterface<GenericParamDescription>): Promise<void>
+    view(seq: SequenceInterface): Promise<void>
     /**
      * Cause the visualizer to realize itself within a DOM element.
      * The visualizer should remove itself from any other location it might
@@ -71,11 +74,15 @@ export interface VisualizerInterface<PD extends GenericParamDescription>
     /**
      * Is the visualizer currently drawing?
      */
-    isDrawing: boolean
+    drawingState: number
     /**
-     * Stop drawing the visualization
+     * Stop drawing the visualization after at most max more frames. If
+     * max <= 0 or not specified, stops immediately. If max = Infinity,
+     * this call has no effect. The only way to clear a previously
+     * set maximum is to call the `continue()` method.
+     * @param {number|undefined} max  Maximum number of frames to draw
      */
-    stop(): void
+    stop(max?: number): void
     /**
      * Continue drawing the visualization
      */

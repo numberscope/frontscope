@@ -1,8 +1,10 @@
 # Setting up to run from source
 
 1.  Prerequisites: To install and run properly, `frontscope` needs
-    [Git](https://git-scm.com/), [Node.js](https://nodejs.org/en/), and
-    [Python](https://www.python.org/) (version 3.5 or later) with a working
+    [Git](https://git-scm.com/),
+    [make](https://linuxhandbook.com/using-make/),
+    [Node.js](https://nodejs.org/en/), and [Python](https://www.python.org/)
+    (version 3.5 or later) with a working
     "[venv](https://docs.python.org/3/library/venv.html)" module. If any of
     these are not present on your system, install them. It's very likely you
     already have Python, but on Debian/Ubuntu systems, you may well have to

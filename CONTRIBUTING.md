@@ -24,12 +24,13 @@ applies to other repos as well.)
    [read about basic Git operations](./doc/working-with-git-and-github.md#basic-operations).
 5. [Push your branch to GitHub](./doc/working-with-git-and-github.md#push-a-branch).
 6. [Read Numberscope's coding principles guide](./doc/code-principles.md).
-7. [Read Numberscope's style guide](./doc/code-style.md). You should also
-   familiarize yourself with frontscope's internal code structure and APIs.
-   Documentation on these topics is generally incorporated into the relevant
-   source files (see [this example](src/shared/math.ts)). However, it is all
-   gathered in the "Internal code and APIs" section of the navigation bar in
-   the [online docs](https://numberscope.colorado.edu/doc).
+7. Familiarize yourself with frontscope's
+   [code organization](./doc/code-organization.md) and internal APIs. Some
+   information on the latter topic may only be found in comments in the
+   relevant sources files, as the documentation project is ongoing. However,
+   all such formal documentation currently being generated is gathered in the
+   "Internal code and APIs" section of the navigation bar in the
+   [online docs](https://numberscope.colorado.edu/doc).
 8. If you are working on a visualizer, read
    [the doc on making a visualizer](./doc/making-a-visualizer.md).
 9. [Work through Numberscope's pull request checklist](./doc/pull-request-checklist.md).
@@ -64,9 +65,9 @@ their factorizations, see `backscope`
 applies to other repos as well.)
 
 If you've read the
-[Numberscope code principles guide](./doc/code-principles.md) and the
-[Numberscope code style guide](./doc/code-style.md), and you think your code
-is ready to be reviewed by someone at Numberscope, follow these steps:
+[Numberscope code principles guide](./doc/code-principles.md) and have adhered
+to the [code organization](./doc/code-organization.md), and you think your
+code is ready to be reviewed by someone at Numberscope, follow these steps:
 
 1. Work through
    [Numberscope's pull request checklist](./doc/pull-request-checklist.md).

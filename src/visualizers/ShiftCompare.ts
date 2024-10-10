@@ -1,10 +1,11 @@
 import p5 from 'p5'
-import {modulo} from '../shared/math'
+
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
-import {ParamType} from '../shared/ParamType'
-import type {GenericParamDescription, ParamValues} from '../shared/Paramable'
-import type {SequenceInterface} from '../sequences/SequenceInterface'
+
+import {math} from '@/shared/math'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
 
 /** md
 # Shift Compare Visualizer
@@ -31,7 +32,7 @@ const paramDesc = {
         required: true,
         description: 'Modulus used to compare sequence elements',
     },
-} as const
+} satisfies GenericParamDescription
 
 // CAUTION: This is unstable with some sequences
 // Using it may crash your browser
@@ -43,10 +44,6 @@ class ShiftCompare extends P5Visualizer(paramDesc) {
 
     private img: p5.Image = new p5.Image(1, 1) // just a dummy
     mod = 2n
-
-    constructor(seq: SequenceInterface<GenericParamDescription>) {
-        super(seq)
-    }
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
@@ -91,18 +88,20 @@ class ShiftCompare extends P5Visualizer(paramDesc) {
         }
         // since settings.mod can be any of string | number | bool,
         // assign it here explictly to a number, to avoid type errors
-        const xLim = Math.min(sketch.width - 1, this.seq.last)
-        const yLim = Math.min(sketch.height - 1, this.seq.last)
+        const xLim = math.bigmin(sketch.width - 1, this.seq.last)
+        const yLim = math.bigmin(sketch.height - 1, this.seq.last)
 
         // Write to image, then to screen for speed.
         for (let x = this.seq.first; x <= xLim; x++) {
-            const xResidue = modulo(this.seq.getElement(x), this.mod)
+            const xResidue = math.modulo(this.seq.getElement(x), this.mod)
             for (let y = this.seq.first; y <= yLim; y++) {
-                const yResidue = modulo(this.seq.getElement(y), this.mod)
+                const yResidue = math.modulo(this.seq.getElement(y), this.mod)
                 for (let i = 0; i < d; i++) {
                     for (let j = 0; j < d; j++) {
                         const index =
-                            ((y * d + j) * sketch.width * d + (x * d + i)) * 4
+                            ((Number(y) * d + j) * sketch.width * d
+                                + (Number(x) * d + i))
+                            * 4
                         if (xResidue == yResidue) {
                             this.img.pixels[index] = 255
                             this.img.pixels[index + 1] = 255
