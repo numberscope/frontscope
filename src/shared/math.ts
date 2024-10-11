@@ -94,8 +94,12 @@ type ExtendedMathJs = MathJsInstance & {
     negInfinity: TnegInfinity
     posInfinity: TposInfinity
     safeNumber(n: Integer): number
+    bigadd(a: Integer, b: Integer): ExtendedBigint
+    bigsub(a: Integer, b: Integer): ExtendedBigint
+    bigmul(a: Integer, b: Integer): ExtendedBigint
     floorSqrt(n: Integer): bigint
     modulo(n: Integer, modulus: Integer): bigint
+    bigIsFinite(n: Integer): boolean
     divides(a: Integer, b: Integer): boolean
     powmod(n: Integer, exponent: Integer, modulus: Integer): bigint
     natlog(n: Integer): number
@@ -125,6 +129,56 @@ math.safeNumber = (n: Integer): number => {
         throw new RangeError(`Attempt to use ${bn} as a number`)
     }
     return Number(bn)
+}
+
+/** md
+#### bigadd(a: number | bigint, b: number | bigint): number
+
+Returns the `number` mathematically equal to the sum of _a_ and _b_.
+**/
+
+// Extend the math module to add arithmetic operations for ExtendedBigint
+math.bigadd = (a: ExtendedBigint, b: ExtendedBigint): ExtendedBigint => {
+    if (a === math.posInfinity || b === math.posInfinity)
+        return math.posInfinity
+    if (a === math.negInfinity || b === math.negInfinity)
+        return math.negInfinity
+    return BigInt(a) + BigInt(b)
+}
+
+/** md
+#### bigsub(a: number | bigint, b: number | bigint): number
+
+Returns the `number` mathematically equal to the difference of _a_ and _b_.
+**/
+math.bigsub = (a: ExtendedBigint, b: ExtendedBigint): ExtendedBigint => {
+    if (a === math.posInfinity || b === math.negInfinity)
+        return math.posInfinity
+    if (a === math.negInfinity || b === math.posInfinity)
+        return math.negInfinity
+    return BigInt(a) - BigInt(b)
+}
+
+/** md
+#### bigmul(a: number | bigint, b: number | bigint): number
+
+Returns the `number` mathematically equal to the product of _a_ and _b_.
+**/
+math.bigmul = (a: ExtendedBigint, b: ExtendedBigint): ExtendedBigint => {
+    if (a === 0n || b === 0n) return 0n
+    if (a === math.posInfinity || b === math.posInfinity)
+        return a === math.posInfinity && b === math.posInfinity
+            ? math.posInfinity
+            : BigInt(a) < 0n || BigInt(b) < 0n
+              ? math.negInfinity
+              : math.posInfinity
+    if (a === math.negInfinity || b === math.negInfinity)
+        return a === math.negInfinity && b === math.negInfinity
+            ? math.posInfinity
+            : BigInt(a) < 0n || BigInt(b) < 0n
+              ? math.posInfinity
+              : math.negInfinity
+    return BigInt(a) * BigInt(b)
 }
 
 /** md
@@ -158,6 +212,16 @@ math.modulo = (n: Integer, modulus: Integer): bigint => {
     }
     const result = bn % bmodulus
     return result < 0n ? result + bmodulus : result
+}
+
+/** md
+#### isFinite(n: number| bigint): boolean
+
+Returns true if and only if the input is a finite number
+**/
+math.bigIsFinite = (n: Integer): boolean => {
+    if (n === Infinity || n === -Infinity) return false
+    return true
 }
 
 /** md
