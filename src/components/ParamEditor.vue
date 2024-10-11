@@ -1,15 +1,14 @@
 <template>
     <div>
         <div v-if="status.defective()" class="error-box">
-        <div class="error-box" v-if="status.defective()">
-            <p class="error-message" v-if="status.invalid()">Errors:</p>
+            <p v-if="status.invalid()" class="error-message">Errors:</p>
             <p
                 v-for="error in status.errors"
                 :key="error"
                 class="error-message">
                 {{ error }}
             </p>
-            <p class="warning-message" v-if="status.isWarned()">Warnings:</p>
+            <p v-if="status.isWarned()" class="warning-message">Warnings:</p>
             <p
                 v-for="warning in status.warnings"
                 :key="warning"
