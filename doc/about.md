@@ -18,25 +18,18 @@ You can find [Numberscope on GitHub](https://github.com/numberscope) or
 
 ## Contributors
 
--   Abdullatif Khalid Abduljaleel
--   Tobias Aldape
--   Khaled Allen
--   Isabel Anaya
--   Sebastian Bozlee
--   James Brobin
--   Devlin Costello
--   Delft CSE2000 Spring '24 Team: Matej Bavec, Ziggy Beijer, Kaldis Bērziņš,
-    Max Derbenwick, and Gido Vitner
--   Aaron Fenyes
--   Brendan Heaney
--   Steven Hristopoulos
--   Clyde Kertzer
--   Jennifer Leong
--   Ang Li
--   Theodore Lincke
--   Josiah Martinez
--   Willem Mirkovich
--   Liam Mulhall
--   Daniel H. Taylor
+|                                                                                                                              |                       |
+| ---------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| • Abdullatif Khalid Abduljaleel                                                                                              | • Steven Hristopoulos |
+| • Tobias Aldape                                                                                                              | • Clyde Kertzer       |
+| • Khaled Allen                                                                                                               | • Jennifer Leong      |
+| • Isabel Anaya                                                                                                               | • Ang Li              |
+| • Sebastian Bozlee                                                                                                           | • Theodore Lincke     |
+| • James Brobin                                                                                                               | • Josiah Martinez     |
+| • Devlin Costello                                                                                                            | • Willem Mirkovich    |
+| • Delft CSE2000 Spring '24 Team: Matej Bavec, Ziggy Beijer,<br/>&nbsp;&nbsp; Kaldis Bērziņš, Max Derbenwick, and Gido Vitner | • Liam Mulhall        |
+| • Aaron Fenyes                                                                                                               | • Daniel H. Taylor    |
+| • Brendan Heaney                                                                                                             |                       |
+|                                                                                                                              |                       |
 
 [Acknowledgments](acknowledgments.md)
