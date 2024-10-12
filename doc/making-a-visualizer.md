@@ -12,8 +12,7 @@ class, which automatically sets up a graphics framework for you to use. Right
 now, there's only one base class available:
 
 -   [`P5Visualizer`](#making-a-p5-visualizer-in-detail) uses the
-    [**p5.js**](https://p5js.org/learn/) library for graphics and user
-    interaction.
+    [**p5.js**](https://p5js.org) library for graphics and user interaction.
 
 For a quick start, copy and modify the template file for your chosen
 framework, which you can find in `src/visualizers-workbench`.

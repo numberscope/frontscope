@@ -21,6 +21,10 @@ The PR submitter should:
     unmodified behaviors and newly implemented ones. In particular, run it via
     'npm run dev' and with the browser console open and make sure there are no
     log messages from Numberscope code, warnings, or errors.
+-   Make sure that the branch in the PR is based on the latest commit in the
+    `main` branch in the
+    [official frontscope repository](https://github.com/numberscope/frontscope).
+    If not, [rebase it](./working-with-git-and-github.md#rebase-your-branch).
 -   Read over the reviewer checklist and try to make sure in advance that your
     code is going to proceed as smoothly through the review as possible.
 
