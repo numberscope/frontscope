@@ -8,8 +8,8 @@
     "[venv](https://docs.python.org/3/library/venv.html)" module. If any of
     these are not present on your system, install them. It's very likely you
     already have Python, but on Debian/Ubuntu systems, you may well have to
-    install the venv module with a command like `apt install python3.8-venv`
-    (you may have to replace the "3.8" with the version that is currently
+    install the venv module with a command like `apt install python3.11-venv`
+    (you may have to replace the "3.11" with the version that is currently
     running in your installation).
 2.  Clone frontscope to an appropriate location on your computer, and switch
     into the new repository's top-level directory:
@@ -45,10 +45,10 @@
 
 ## Adding to and modifying code
 
-To add to the code, you need to use what's called an "editor" or an
-"integrated development environment" (IDE) to help you enter the commands,
+To add to the code, you will need to use either what's called an "editor" or
+an "integrated development environment" (IDE) to help you enter the commands,
 find any problems, and get your idea working. There are many possibilities for
-these tools, but if you're just starting out, Numberscope recommends an IDE
-called "VSCode" with some additional features added by plugins (Volar and a
-TypeScript Vue module for it). The details for this part of the setup are in
-the [Contributing](visual-studio-code-setup.md) section.
+these tools. One option is an IDE called "VSCode" with some additional
+features added by plugins (Volar and a TypeScript Vue module for it). The
+details for this part of the setup are in
+[a separate page](visual-studio-code-setup.md).

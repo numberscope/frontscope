@@ -1,40 +1,34 @@
 # Contributing to Numberscope
 
-## If you are new to software development and like written guides...
+## If you are new to software development...
 
 Read our [onboarding doc](./doc/onboarding.md).
-
-## If you are new to software development and like videos...
-
-Watch the video series on contributing to Numberscope
-[here](https://www.youtube.com/playlist?list=PLA4KIQBQQRb5ccOdr9v0iLw_fKHup1PkU).
-This video series will introduce you to Numberscope, GitHub, the software we
-use in the Numberscope project, and the workflow for contributing to
-Numberscope.
 
 ## If you are experienced, follow these steps...
 
 (This assumes you're working on the numberscope/frontscope repository, but it
-applies to other repos as well.)
+applies to other repos as well. If you are unfamiliear with basic git
+operations or would like a refresher, we
+[have a guide](./doc/working-with-git-and-github.md#basic-operations).)
 
-1. [Create a fork of the numberscope/frontscope repo](./doc/working-with-git-and-github.md#create-a-fork).
-2. [Clone your fork of numberscope/frontscope](./doc/working-with-git-and-github.md#clone-a-repo).
-3. [Create a branch for your contribution](./doc/working-with-git-and-github.md#create-a-branch).
-4. If you are unfamiliar with them or would like a refresher,
-   [read about basic Git operations](./doc/working-with-git-and-github.md#basic-operations).
-5. [Push your branch to GitHub](./doc/working-with-git-and-github.md#push-a-branch).
-6. [Read Numberscope's coding principles guide](./doc/code-principles.md).
-7. Familiarize yourself with frontscope's
+1. [Clone the numberscope/frontscope repository](./doc/working-with-git-and-github.md#clone-a-repo).
+2. [Create a branch for your contribution](./doc/working-with-git-and-github.md#create-a-branch).
+3. [Read Numberscope's coding principles guide](./doc/code-principles.md).
+4. Familiarize yourself with frontscope's
    [code organization](./doc/code-organization.md) and internal APIs. Some
    information on the latter topic may only be found in comments in the
    relevant sources files, as the documentation project is ongoing. However,
    all such formal documentation currently being generated is gathered in the
    "Internal code and APIs" section of the navigation bar in the
    [online docs](https://numberscope.colorado.edu/doc).
-8. If you are working on a visualizer, read
+5. If you are working on a visualizer, read
    [the doc on making a visualizer](./doc/making-a-visualizer.md).
-9. [Work through Numberscope's pull request checklist](./doc/pull-request-checklist.md).
-10. [Submit a pull request](./doc/working-with-git-and-github.md#submit-a-pull-request).
+6. Implement your changes.
+7. [Create a fork of the numberscope/frontscope repo](./doc/working-with-git-and-github.md#create-a-fork).
+8. [Add your fork as a remote](./doc/working-with-git-and-github.md#add-a-remote).
+9. [Push your branch to GitHub](./doc/working-with-git-and-github.md#push-a-branch).
+10. [Work through Numberscope's pull request checklist](./doc/pull-request-checklist.md).
+11. [Submit a pull request](./doc/working-with-git-and-github.md#submit-a-pull-request).
 
 ## If you need help with Git and contributing...
 
@@ -71,18 +65,19 @@ code is ready to be reviewed by someone at Numberscope, follow these steps:
 
 1. Work through
    [Numberscope's pull request checklist](./doc/pull-request-checklist.md).
-2. Sync your fork with the main numberscope/frontscope repository. The easiest
-   way to do this is to navigate to the page of your fork of
-   numberscope/frontscope and click "Sync fork" (see the picture below).
-   ![A screenshot of the Sync fork option](./doc/img/sync-fork.png) Another
-   way to do this is to
-   [add numberscope/frontscope as a remote](./doc/working-with-git-and-github.md#add-a-remote)
-   and
-   [sync your fork with the remote original](./doc/working-with-git-and-github.md#sync-local-fork-with-remote-original).
+2. Make sure your branch is based on the latest version of the `main` branch
+   from the official repository. The simplest way to do this is to
+   [sync your local clone](./doc/working-with-git-and-github.md#sync-a-local-clone)
+   and if your copy of `main` pulled additional new commits in that process
+   (as opposed to being reported as "already up to date"), then go ahead and
+   [rebase your branch](./doc/working-with-git-and-github.md#rebase-your-branch).
 3. Navigate to the numberscope/frontscope repository. If your fork is synced
    up with the main numberscope/frontscope repository correctly, you should
    see a button (see the image below) that says "Compare & pull request".
    ![A screenshot of the Compare & pull request
 button](./doc/img/compare-and-pull-request.png)
    Click that button, write up some notes for your pull request, and click the
-   "Create pull request button".
+   "Create pull request button". Our
+   [Working with Git guide](./doc/working-with-git-and-github.md) has more
+   details about
+   [submitting a pull request](./doc/working-with-git-and-github.md#submit-a-pull-request).
