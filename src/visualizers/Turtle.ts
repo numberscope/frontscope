@@ -1,10 +1,14 @@
 import p5 from 'p5'
 
-import {P5Visualizer} from './P5Visualizer'
 import type {ViewSize} from './VisualizerInterface'
 import {VisualizerExportModule} from './VisualizerInterface'
+import {P5GLVisualizer} from './P5GLVisualizer'
 
-import type {GenericParamDescription, ParamValues, ParamInterface} from '@/shared/Paramable'
+import type {
+    GenericParamDescription,
+    ParamValues,
+    ParamInterface,
+} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 import type {ExtendedBigint} from '@/shared/math'
@@ -37,31 +41,11 @@ protein-folding effect.
 **/
 
 const paramDesc = {
-    /**
-- modulus: the modulus to apply to any incoming sequence.  This is the most
-common way
-to ensure the sequence values will lie in your domain.  A value of 0 means 
-that no modulus is applied.
-     **/
-    modulus: {
-        default: 5,
-        type: ParamType.INTEGER,
-        displayName: 'Sequence Modulus',
-        required: true,
-        description: 'consider sequence values modulo this; 0 means none',
-        hideDescription: false,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(
-                n < 0,
-                'Modulus should be non-negative; 0 means none.'
-            ),
-    },
     /** md
 - domain: A list of all of the values that may occur in the sequence.
 Values of the sequence not occurring in this list will be ignored.
 (One way to ensure a small number of possible values is to use a
-sequence that has been reduced with respect to some small modulus (see
-`modulus' below). But
+sequence that has been reduced with respect to some small modulus.) But
 some sequences, like A014577 "The regular paper-folding sequence", naturally
 have a small domain.)
      **/
@@ -76,8 +60,8 @@ have a small domain.)
         hideDescription: false,
     },
     /** md
-- turns: a list of numbers. These are turning angles, in degrees, 
-corresponding positionally to the domain elements. Must contain 
+- turns: a list of numbers. These are turning angles, in degrees,
+corresponding positionally to the domain elements. Must contain
 the same number of elements as the domain.  In other words, the first
 element of the domain will be interpreted as an instruction to turn
 x degrees, where x is the first number in this field.
@@ -94,7 +78,7 @@ x degrees, where x is the first number in this field.
     },
     /** md
 - steps: a list of numbers. These are step lengths, corresponding
-positionally to the domain elements.  Must contain the same number of 
+positionally to the domain elements.  Must contain the same number of
 elements as the domain.  As with turn angles, the n-th step length
 will be interpreted as the step length for the n-th domain element.
      **/
@@ -109,104 +93,27 @@ will be interpreted as the step length for the n-th domain element.
         hideDescription: false,
     },
     /**
-- walkAnimation: boolean. If true, show animation controls
+- foldControls: boolean. If true, show folding controls, and turn on folding
     **/
-    walkAnimation: {
-        default: false,
-        type: ParamType.BOOLEAN,
-        displayName: 'Turtle movement controls ↴',
-        required: false,
-    },
-    /**
-- growth: a number.  If zero, the full path is drawn all at once.  
-Otherwise, the visualizer will animate: this is the number of steps of the path
-to grow per frame, until the path reaches its maximum length (give by 
-`pathLength` set above).
-     **/
-    growth: {
-        default: 1,
-        type: ParamType.INTEGER,
-        displayName: 'Turtle speed',
-        required: false,
-        description: 'how many more terms to show per frame',
-        hideDescription: false,
-        visibleDependency: 'walkAnimation',
-        visibleValue: true,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(n <= 0, 'Path growth must be positive'),
-    },
-    /**
-- startEndControl: boolean. If true, show animation controls
-    **/
-    startEndControl: {
-        default: false,
-        type: ParamType.BOOLEAN,
-        displayName: 'Custom start/end ↴',
-        required: false,
-    },
-    /**
-- pathLength: a number.  The number of terms to use.
-Entering a 0 means to use all available terms (possibly forever), and 
-will force the 'growth' animation to turn on.
-If the user enters a number exceeding the number of terms available, 
-this will default to the max number of terms available.
-     **/
-    pathLength: {
-        default: 0,
-        type: ParamType.INTEGER,
-        displayName: 'Path length',
-        required: false,
-        description:
-            'cannot exceed available number of terms from sequence;'
-            + ' entering 0 will indicate as many terms as possible',
-        hideDescription: false,
-        visibleDependency: 'startEndControl',
-        visibleValue: true,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(
-                n < 0,
-                'Path length must be non-negative'
-            ),
-    },
-    /**
-- start: x,y coordinates of the point where drawing will start.  The default
-0,0 represents the center of the canvas, and positive values will move the
-to the right and down, respectively.
-     **/
-    start: {
-        default: new p5.Vector(),
-        type: ParamType.VECTOR,
-        displayName: 'Start position',
-        required: false,
-        description: 'coordinates of the point where drawing will start',
-        visibleDependency: 'startEndControl',
-        visibleValue: true,
-        hideDescription: true,
-    },
-    /**
-- foldAnimation: boolean. If true, show folding controls
-    **/
-    foldAnimation: {
+    foldControls: {
         default: false,
         type: ParamType.BOOLEAN,
         displayName: 'Turn on protein folding animation ↴',
         required: false,
     },
     /** md
-- folding: a list of numbers. When these are non-zero, the path will animate.  
-These are angle increments added to the turning 
+- folding: a list of numbers. When these are non-zero, the path will animate.
+These are angle increments added to the turning
 angles each frame.  They correspond
-positionally to the domain elements.  Must contain the same number of elements 
+positionally to the domain elements.  Must contain the same number of elements
 as domain.  The units is 1/10^5th of a degree.  For example, if the first
-entry here is a `2`, then in each frame of the animation, the turn angle for 
+entry here is a `2`, then in each frame of the animation, the turn angle for
 the first domain element will increase by 2/10^5-th of a degree.  The result
 looks a little like protein folding.
      **/
-    folding: {
+    folds: {
         default: [0, 0, 0, 0, 0] as number[],
         type: ParamType.NUMBER_ARRAY,
-        // type NUMBER_ARRAY needs to let you type a space even under
-        // refreshParams()
         displayName: 'Folding rates',
         required: false,
         description:
@@ -214,7 +121,7 @@ looks a little like protein folding.
             + ' of 0.01 degree, in order corresponding'
             + ' to the sequence values listed in domain',
         hideDescription: false,
-        visibleDependency: 'foldAnimation',
+        visibleDependency: 'foldControls',
         visibleValue: true,
     },
     /**
@@ -223,8 +130,29 @@ looks a little like protein folding.
     pathLook: {
         default: true,
         type: ParamType.BOOLEAN,
-        displayName: 'Path styling ↴',
+        displayName: 'Path speed/styling ↴',
         required: false,
+    },
+    /**
+- speed: a number.  If zero, the full path is drawn all at once.
+Otherwise, the visualizer will animate: this is the number of steps of the path
+to grow per frame, until the path reaches its maximum length (give by sequence
+ last parameter).
+     **/
+    speed: {
+        default: 1,
+        type: ParamType.INTEGER,
+        displayName: 'Turtle speed',
+        required: false,
+        description: 'how many more terms to show per frame',
+        hideDescription: false,
+        visibleDependency: 'pathLook',
+        visibleValue: true,
+        validate: (n: number) =>
+            ValidationStatus.errorIf(
+                n <= 0,
+                'Path speed must be non-negative'
+            ),
     },
     /**
 - strokeWeight: a number. Gives the width of the segment drawn for each entry,
@@ -275,7 +203,7 @@ class turtleData {
     }
 }
 
-class Turtle extends P5Visualizer(paramDesc) {
+class Turtle extends P5GLVisualizer(paramDesc) {
     static category = 'Turtle'
     static description =
         'Use a sequence to steer a virtual turtle that leaves a visible trail'
@@ -283,75 +211,63 @@ class Turtle extends P5Visualizer(paramDesc) {
     // maps from domain to rotations and steps
     private rotMap = new Map<string, number>()
     private stepMap = new Map<string, number>()
-    private foldingMap = new Map<string, number>()
+    private foldMap = new Map<string, number>()
+    // private copies of rule arrays
+    private turnsInternal: number[] = []
+    private stepsInternal: number[] = []
+    private foldsInternal: number[] = []
 
-    private currentIndex: ExtendedBigint = 0n
-    private orientation = 0
-    private X = 0
-    private Y = 0
-    
     // variables controlling path to draw in a given frame
-    private begin: ExtendedBigint = 0n // path step at which drawing begins
+    private beginStep: ExtendedBigint = 0n // path step at which drawing begins
     private currentLength: ExtendedBigint = 1n // length of path
     private turtleState = new turtleData(new p5.Vector(), 0) // current state
     private path: turtleData[] = [] // array of path info
-    private pathIsStatic = true // whether there's any folding
+
+    // variables holding the parameter values
+    // these won't change
+    private firstTerm: ExtendedBigint = 0n // first term
+    private folding = false // whether there's any folding
     private growthInitial = 0 // growth is turned on or off overall
-    private growthInternal = 0 // growth currently happening or not
-    private pathLengthInternal: ExtendedBigint = 1n // can be infinity
-    private firstTermInternal: ExtendedBigint = 0n // first term
+    private growth = 0 // growth currently happening or not
+    private pathLength: ExtendedBigint = 1n // can be infinity
 
     // controlling the folding smoothness/speed/units
     // the units of the folding entry field are 1/denom degrees
     private denom = 100000 // larger = more precision/slower
 
-    // handling slow caching
+    // handling slow caching & mouse
     private pathFailure = false
-
-    // private copies of rule arrays
-    private turnsInternal: number[] = []
-    private stepsInternal: number[] = []
-    private foldingInternal: number[] = []
+    private mouseCount = 0
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
         // first term handling
-        this.firstTermInternal = this.seq.first
+        this.firstTerm = this.seq.first
 
         // path length handling
-        const seqTerms = math.bigadd(math.bigsub(this.seq.last, this.firstTermInternal), 1n)
-        if (math.bigIsFinite(seqTerms)) {
-            const termsParams =
-                paramDesc.pathLength as ParamInterface<ParamType.INTEGER>
-            // this max only shows up after I try to interact with parameters
-            // but it should show up right away
-            termsParams.displayName = `Path length (max: ${seqTerms})`
-        }
-
-        this.pathLengthInternal = BigInt(params.pathLength)
-        // 0 means grow as long as possible
-        if (params.pathLength == 0) this.pathLengthInternal = seqTerms
-
-        // if requested too many
-        if (seqTerms < params.pathLength) {
-            // when implemented, have this appear next to parameter
-            status.addWarning(
-                'More terms requested for path length than available; using '
-                    + `all ${seqTerms}.`
-            )
-            this.pathLengthInternal = seqTerms
-        }
+        this.pathLength = this.seq.length
 
         // walkAnimation handling
-        this.growthInitial = params.growth
+        this.growthInitial = params.speed
+        this.growth = params.speed
+        if (this.pathLength === Infinity && this.growth === 0) {
+            // we cannot allow the visualizer to attempt
+            // to draw infinitely many terms in
+            // one frame
+            status.addWarning(
+                'To draw without growth, must limit '
+                    + 'sequence to finitely many terms.  '
+                    + 'Showing only 10000 terms.'
+            )
+            this.pathLength = 10000n
+        }
 
         // domain handling
         // for each of the rule arrays, should match
         // params.domain.length; otherwise special handling
 
-        // tell user the appriopriate rule lengths
-        //const paramDescs: ParamInterface<ParamType.INTEGER>[][] = [
+        // tell user the appropriate rule lengths
         const ruleParams = [
             {
                 param: params.turns,
@@ -366,11 +282,9 @@ class Turtle extends P5Visualizer(paramDesc) {
                 text: 'Step sizes',
             },
             {
-                param: params.folding,
-                local: this.foldingInternal,
-                // I don't know why lint can't figure this out
-                // eslint-disable-next-line max-len
-                desc: paramDesc.folding as ParamInterface<ParamType.NUMBER_ARRAY>,
+                param: params.folds,
+                local: this.foldsInternal,
+                desc: paramDesc.folds as ParamInterface<ParamType.NUMBER_ARRAY>,
                 text: 'Folding rates',
             },
         ]
@@ -401,7 +315,7 @@ class Turtle extends P5Visualizer(paramDesc) {
         // store internally
         this.turnsInternal = ruleParams[0].local
         this.stepsInternal = ruleParams[1].local
-        this.foldingInternal = ruleParams[2].local
+        this.foldsInternal = ruleParams[2].local
 
         // add warnings explaining the behaviour
         ruleParams.forEach(rule => {
@@ -439,6 +353,10 @@ class Turtle extends P5Visualizer(paramDesc) {
         await super.presketch(size)
 
         await this.refreshParams()
+    }
+
+    setup() {
+        super.setup()
 
         // create a map from sequence values to rotations
         for (let i = 0; i < this.domain.length; i++) {
@@ -455,43 +373,28 @@ class Turtle extends P5Visualizer(paramDesc) {
 
         // create a map from sequence values to turn increments
         // notice if path is static or we are folding
-        this.pathIsStatic = true
+        this.folding = false
         for (let i = 0; i < this.domain.length; i++) {
-            if (this.foldingInternal[i] != 0) this.pathIsStatic = false
-            this.foldingMap.set(
+            if (this.foldsInternal[i] != 0) this.folding = true
+            this.foldMap.set(
                 this.domain[i].toString(),
+                this.foldsInternal[i]
                 // in units of this.incrementFactor
-                // 0 map if folding is turned off
-                this.foldAnimation ? this.foldingInternal[i] : 0
             )
         }
-        if (this.foldAnimation === false) this.pathIsStatic = true
-    }
-
-    setup() {
-        super.setup()
-
-        // this line should be removed once issue #403 is resolved
-        // right now it avoids crashes caused by that issue
-        // but ideally we should never be in a state where
-        // this.pathLength exceeds this.seq.last - this.firstTermInternal
-        this.pathLengthInternal = math.bigmin(
-            this.pathLengthInternal,
-            math.bigsub(this.seq.last,this.firstTermInternal)
-        )
 
         // reset variables
-        this.begin = 0n
+        this.beginStep = 0n
         this.currentLength = 1n
-        this.growthInternal = this.growthInitial
+        this.growth = this.growthInitial
 
         // if not growing, set to full length immediately
-        // pathLength should always be finite if growth is zero
-        if (this.growthInternal == 0)
-            this.currentLength = this.pathLengthInternal
+        // pathLength is finite if growth is zero (from
+        // parameter verification)
+        if (this.growth == 0) this.currentLength = this.pathLength
 
         // create initial path
-        // must be in setup since uses p5.Vector
+        // must be in setup not presketch since uses p5.Vector
         // in case we are animating, we will recompute anyway,
         // so use current length only, for efficiency
         this.createpath(0, 0n, this.currentLength)
@@ -508,16 +411,24 @@ class Turtle extends P5Visualizer(paramDesc) {
     draw() {
         const sketch = this.sketch
 
-        // if folding, clear and reset draw to beginning of path
-        if (!this.pathIsStatic) {
-            sketch.clear().background(this.bgColor)
-            this.begin = 0n
+        // if folding or moving, clear and reset draw to beginning of path
+        if (this.sketch.mouseIsPressed) {
+            this.mouseCount = sketch.frameCount
+        }
+        if (this.folding || this.mouseCount > sketch.frameCount - 10) {
+            this.sketch.clear().background(this.bgColor)
+            this.beginStep = 0n
+            this.createpath(sketch.frameCount, 0n, this.currentLength)
         }
 
-        // draw path from this.begin to this.currentLength
+        // draw path from this.beginStep to this.currentLength
         let startState = this.path[0]
         let endState = this.path[1]
-        for (let i = 1; i < math.bigsub(this.currentLength,this.begin); i++) {
+        for (
+            let i = 1;
+            i < math.bigsub(this.currentLength, this.beginStep);
+            i++
+        ) {
             endState = this.path[i]
             sketch.line(
                 startState.position.x,
@@ -527,31 +438,31 @@ class Turtle extends P5Visualizer(paramDesc) {
             )
             startState = endState
         }
-        // advance this.begin
-        if (!this.pathFailure) this.begin = math.bigsub(this.currentLength,1n)
+        // advance this.beginStep
+        if (!this.pathFailure)
+            this.beginStep = math.bigsub(this.currentLength, 1n)
 
         // stop drawing if no animation
-        if (this.pathIsStatic && !this.growthInternal && !this.pathFailure) {
-            sketch.noLoop()
+        if (!this.folding && this.growth === 0 && !this.pathFailure) {
+            console.log('stopping')
+            this.stop()
         }
-
-        if (++this.currentIndex > this.seq.last) this.stop()
 
         // if path is growing, lengthen path
         if (!this.pathFailure) {
-            this.currentLength = math.bigadd(this.currentLength,this.growthInternal)
+            this.currentLength = math.bigadd(this.currentLength, this.growth)
         }
         // if reached full length, stop growing
-        if (this.currentLength > this.pathLengthInternal) {
-            this.currentLength = this.pathLengthInternal
-            this.growthInternal = 0
+        if (this.currentLength > this.pathLength) {
+            this.currentLength = this.pathLength
+            this.growth = 0
         }
 
         // create the path needed for next draw loop
         this.turtleState = endState
         this.createpath(
             sketch.frameCount,
-            this.begin,
+            this.beginStep,
             this.currentLength,
             endState
         )
@@ -562,7 +473,7 @@ class Turtle extends P5Visualizer(paramDesc) {
     // if folding, include current frames; otherwise `frames=0`
     createpath(
         currentFrames: number,
-        begin: ExtendedBigint,
+        beginStep: ExtendedBigint,
         currentLength: ExtendedBigint,
         turtleState?: turtleData
     ) {
@@ -570,10 +481,7 @@ class Turtle extends P5Visualizer(paramDesc) {
 
         // initialize turtle position
         if (!turtleState) {
-            const canvasCtr = new p5.Vector(
-                this.sketch.width / 2,
-                this.sketch.height / 2
-            )
+            const canvasCtr = new p5.Vector(0, 0)
             turtleState = new turtleData(canvasCtr, 0)
         }
         let orientation = turtleState.orientation
@@ -583,29 +491,28 @@ class Turtle extends P5Visualizer(paramDesc) {
         this.path = [turtleState]
 
         // read sequence to create path
+        // start at beginStep past firstTerm
+        // go until currentLength allows
+        const startStep = math.bigadd(this.firstTerm, this.beginStep)
         for (
-            let i = math.bigadd(this.firstTermInternal,this.begin);
-            i
-            < math.bigadd(this.firstTermInternal,
-                math.bigmin(currentLength, this.pathLengthInternal));
+            let i = startStep;
+            i < math.bigadd(startStep, currentLength);
             i++
         ) {
             // get the current sequence element and infer
             // the rotation/step/increment
             let step = new p5.Vector(0, 0)
             try {
-		    // this casting to bigint is it dangerous?
-                let currElement: ExtendedBigint = this.seq.getElement(BigInt(i))
-                currElement = this.modulus
-                    ? math.modulo(currElement, this.modulus)
-                    : currElement
+                const currElement: ExtendedBigint = this.seq.getElement(
+                    BigInt(i)
+                )
                 const currElementString = currElement.toString()
                 const turnAngle = this.rotMap.get(currElementString)
                 const stepLength = this.stepMap.get(currElementString)
-                const turnIncrement = this.foldingMap.get(currElementString)
+                const turnIncrement = this.foldMap.get(currElementString)
 
-                // turn
-                const thisIncrement = currentFrames * (turnIncrement ?? 0) // raw inc
+                // turn (thisIncrement is raw increment)
+                const thisIncrement = currentFrames * (turnIncrement ?? 0)
                 orientation
                     += (turnAngle ?? 0)
                     + (Number(math.modulo(thisIncrement, 360 * this.denom))
@@ -618,6 +525,9 @@ class Turtle extends P5Visualizer(paramDesc) {
                     Math.sin(orientation)
                 )
                 step.mult(stepLength ?? 0)
+                // are we not serving caching errors anymore? lint
+                // objects to this
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (CachingError) {
                 this.pathFailure = true
             }
@@ -628,6 +538,17 @@ class Turtle extends P5Visualizer(paramDesc) {
             turtleState = new turtleData(position.copy(), orientation)
             this.path.push(turtleState)
         }
+    }
+
+    mouseReaction() {
+        this.mouseCount = this.sketch.frameCount
+        this.continue()
+    }
+    // why doesn't super work on mouseWheel? where do I get a mouseEvent?
+    // mouseWheel(){ super.mouseWheel(); this.mouseReaction() }
+    mouseDragged() {
+        super.mouseDragged()
+        this.mouseReaction()
     }
 }
 

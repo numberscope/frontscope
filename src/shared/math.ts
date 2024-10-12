@@ -132,9 +132,9 @@ math.safeNumber = (n: Integer): number => {
 }
 
 /** md
-#### bigadd(a: number | bigint, b: number | bigint): number
+#### bigadd(a: number | bigint, b: number | bigint): ExtendedBigint
 
-Returns the `number` mathematically equal to the sum of _a_ and _b_.
+Returns the ExtendedBigint mathematically equal to the sum of _a_ and _b_.
 **/
 
 // Extend the math module to add arithmetic operations for ExtendedBigint
@@ -147,9 +147,10 @@ math.bigadd = (a: ExtendedBigint, b: ExtendedBigint): ExtendedBigint => {
 }
 
 /** md
-#### bigsub(a: number | bigint, b: number | bigint): number
+#### bigsub(a: number | bigint, b: number | bigint): ExtendedBigint
 
-Returns the `number` mathematically equal to the difference of _a_ and _b_.
+Returns the ExtendedBigint mathematically equal to the difference
+of _a_ and _b_.
 **/
 math.bigsub = (a: ExtendedBigint, b: ExtendedBigint): ExtendedBigint => {
     if (a === math.posInfinity || b === math.negInfinity)
@@ -160,24 +161,25 @@ math.bigsub = (a: ExtendedBigint, b: ExtendedBigint): ExtendedBigint => {
 }
 
 /** md
-#### bigmul(a: number | bigint, b: number | bigint): number
+#### bigmul(a: number | bigint, b: number | bigint): ExtendedBigint
 
-Returns the `number` mathematically equal to the product of _a_ and _b_.
+Returns the ExtendedBigint mathematically equal to the product of _a_ and _b_.
+
+Note:  0 times positive or negative Infinity is undefined
 **/
 math.bigmul = (a: ExtendedBigint, b: ExtendedBigint): ExtendedBigint => {
-    if (a === 0n || b === 0n) return 0n
+    if (a === 0n || b === 0n)
+        return !math.bigIsFinite(a) || !math.bigIsFinite(b)
+            ? math.posInfinity
+            : 0n
     if (a === math.posInfinity || b === math.posInfinity)
-        return a === math.posInfinity && b === math.posInfinity
-            ? math.posInfinity
-            : BigInt(a) < 0n || BigInt(b) < 0n
-              ? math.negInfinity
-              : math.posInfinity
+        return BigInt(a) < 0n || BigInt(b) < 0n
+            ? math.negInfinity
+            : math.posInfinity
     if (a === math.negInfinity || b === math.negInfinity)
-        return a === math.negInfinity && b === math.negInfinity
-            ? math.posInfinity
-            : BigInt(a) < 0n || BigInt(b) < 0n
-              ? math.posInfinity
-              : math.negInfinity
+        return BigInt(a) > 0n || BigInt(b) > 0n
+            ? math.negInfinity
+            : math.posInfinity
     return BigInt(a) * BigInt(b)
 }
 
