@@ -5,7 +5,7 @@ to develop code contributions to Numberscope.
 
 ## VS Code
 
-The recommended IDE consists of [VSCode](https://code.visualstudio.com/) +
+One potential IDE consists of [VSCode](https://code.visualstudio.com/) +
 [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)
 (and disable Vetur) +
 [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin).
@@ -54,5 +54,6 @@ There are of course many other possible editors and IDEs. For example, one can
 use the venerable Emacs editor, which has many packages for highlighting code
 and autoformatting it. Support for the latter that respects Numberscope's
 particular setup is provided by `tools/editor/autoformat.el` in this
-repository. That Emacs package runs source files through the `prettier-eslint`
-formatter (see the following page) every time they are saved in Emacs.
+repository. That Emacs package runs source files through combined `prettier`
+and `eslist` formatting (see the following page) every time they are saved in
+Emacs.
