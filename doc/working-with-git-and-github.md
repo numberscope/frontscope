@@ -154,9 +154,9 @@ branch.
 To create a branch and switch to it in one command, first make sure (for
 example, using `git status`) that you are "on" the branch that you want your
 new branch based on. That's sort of the "parent" of the new branch -- in other
-words, the baseline that your branch will represent changes to. Typically for
-working on Numberscope, that will be the `main` branch, so make sure that's
-checked out. Then issue the following command:
+words, the baseline that your branch will record a series of changes to.
+Typically for working on Numberscope, that base will be the `main` branch, so
+make sure that's checked out. Then issue the following command:
 
 ```sh
 git checkout -b [your_new_branch_name]
@@ -228,7 +228,14 @@ Note that if you are working on frontscope and you have installed the standard
 pre-commit actions (as will happen automatically if you execute the usual
 `npm install` when you start working with your clone), then before the commit
 actually occurs, git will run several
-[code integrity checks](./husky-pre-commit.md).
+[code integrity checks](./husky-pre-commit.md). If any of the checks fail,
+creating the commit will be blocked until you have further modified the code
+so that they pass. Making these fixes may be very simple: for example, there
+is a code formatting check, and executing `npm run lint` to run Numberscope's
+standard "prettyprinting" utility may well resolve any problems it is
+reporting. Or the issue may be more involved: one of the unit tests or
+end-to-end tests may have uncovered a bug you've inadvertently introduced. See
+the page on [code tests](./code-tests.md) for more information.
 
 ### Create a fork
 
@@ -336,7 +343,12 @@ commit). Ideally, your branch is not behind main at all; otherwise, maybe some
 of those commits in main might affect the changes you were working on. So if
 you see any commits behind main, you might want to go back to your working
 copy and [sync your clone with the original](#sync-a-local-clone) and then
-rebase your branch on the current version of main.
+rebase your branch on the current version of main. If you submit a PR that is
+not based on the current version of the main branch, you run the risk that it
+may have "merge conflicts" in which both you and a newer version of main have
+modified the same or nearby sections of code. Such merge conflicts will
+prevent your PR from being accepted until the are resolved by rebasing on the
+latest version of main.
 
 In any case, when you are satisfied your branch is ready to submit as a PR,
 you will notice that report of the number of commits ahead or behind main is
@@ -495,10 +507,13 @@ And if you previously stashed any changes, you may want to
 
 A branch works from a specific commit in its parent branch (usually `main`) --
 its like a logbook of all of the changes you've made from that particular
-snapshot of all of the code. Many times for a PR to succeed, the branch must
-be based on the latest commit in `main`. So here's what you do if that
-happens, but your branch is based on an earlier commit in `main` (likely the
-one that was current when you started your work).
+snapshot of all of the code. Often, for a PR to succeed, the branch must be
+based on the latest commit in `main`. So here's what you do if your branch is
+based on an earlier commit in `main` (likely the one that was current when you
+started your work), causing a problem with your PR. You may also want to
+update your branch in this way to make sure it will work with new features
+that have been introduced in main, or just to minimize the obstacles that a PR
+based on it will encounter in the review process.
 
 First, make sure you have synced your clone, as outlined in the previous
 section. Then switch to your branch (with `git checkout [branch_name]`) if
