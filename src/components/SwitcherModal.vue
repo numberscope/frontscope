@@ -61,17 +61,19 @@ click on the trash button on its preview card.
 </template>
 
 <script setup lang="ts">
+    import {ref, onMounted} from 'vue'
+    import type {PropType, UnwrapNestedRefs} from 'vue'
+
     import SpecimensGallery from './SpecimensGallery.vue'
     import OEISbar from './OEISbar.vue'
     import type {CardSpecimen} from './SpecimensGallery.vue'
-    import {seqMODULES, enableOEIS, disableOEIS} from '../sequences/sequences'
-    import vizMODULES from '../visualizers/visualizers'
-    import {specimenQuery, getIDs} from '../shared/browserCaching'
-    import {isMobile} from '../shared/layoutUtilities'
-    import {Specimen} from '../shared/Specimen'
 
-    import {ref, onMounted} from 'vue'
-    import type {PropType, UnwrapNestedRefs} from 'vue'
+    import {seqMODULES, enableOEIS, disableOEIS} from '@/sequences/sequences'
+    import {getIDs} from '@/shared/browserCaching'
+    import {isMobile} from '@/shared/layoutUtilities'
+    import {Specimen} from '@/shared/Specimen'
+    import {specimenQuery} from '@/shared/specimenEncoding'
+    import vizMODULES from '@/visualizers/visualizers'
 
     function descriptions(
         mods: {[key: string]: {description: string}},

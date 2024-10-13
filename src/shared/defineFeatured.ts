@@ -1,4 +1,4 @@
-import {specimenQuery} from './browserCaching'
+import {specimenQuery} from './specimenEncoding'
 
 // Encodings of the featured specimens
 

@@ -1,8 +1,8 @@
-import {seqKey} from './browserCaching'
 import {hasField, makeStringFields} from './fields'
 import type {StringFields, GenericStringFields} from './fields'
 import typeFunctions, {ParamType} from './ParamType'
 import type {RealizedParamType} from './ParamType'
+import {seqKey} from './specimenEncoding'
 import {ValidationStatus} from './ValidationStatus'
 
 /**

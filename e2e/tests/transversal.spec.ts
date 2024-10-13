@@ -1,7 +1,8 @@
-import {test, expect} from '@playwright/test'
-import {specimenQuery} from '../../src/shared/browserCaching'
-import {math} from '../../src/shared/math'
 import fs from 'fs'
+import {test, expect} from '@playwright/test'
+
+import {math} from '../../src/shared/math'
+import {specimenQuery} from '../../src/shared/specimenEncoding'
 
 // The idea here is to take a collection of challenging sequences, and
 // make sure that we try each sequence with at least two visualizers, and

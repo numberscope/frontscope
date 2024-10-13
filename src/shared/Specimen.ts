@@ -1,5 +1,5 @@
-import {specimenQuery, parseSpecimenQuery} from './browserCaching'
 import {math} from './math'
+import {specimenQuery, parseSpecimenQuery} from './specimenEncoding'
 
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
 import {produceSequence} from '@/sequences/sequences'

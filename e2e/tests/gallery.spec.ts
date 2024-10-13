@@ -40,7 +40,10 @@ test.describe('Gallery', () => {
         ).toMatch('Mod Fill')
     })
     test('saving a specimen and then deleting it', async ({page}) => {
-        await page.goto('/', {waitUntil: 'domcontentloaded'})
+        // test originally written when the following was the default:
+        await page.goto('/?name=Specimen&viz=ModFill&seq=Random', {
+            waitUntil: 'domcontentloaded',
+        })
         await page.locator('#specimen-bar-desktop #save-button').click()
         await page.goto('/gallery', {waitUntil: 'domcontentloaded'})
 

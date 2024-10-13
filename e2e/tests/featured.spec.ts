@@ -1,6 +1,7 @@
 import {test, expect} from '@playwright/test'
-import {parseSpecimenQuery} from '../../src/shared/browserCaching'
+
 import {getFeatured} from '../../src/shared/defineFeatured'
+import {parseSpecimenQuery} from '../../src/shared/specimenEncoding'
 
 const featured = getFeatured()
 test.describe('Featured gallery images', () => {
