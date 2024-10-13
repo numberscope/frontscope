@@ -1,5 +1,6 @@
 import {test, expect} from '@playwright/test'
-import {parseSpecimenQuery} from '../../src/shared/browserCaching'
+
+import {parseSpecimenQuery} from '../../src/shared/specimenEncoding'
 
 test.beforeEach(async ({page}) => {
     await page.goto('/', {waitUntil: 'domcontentloaded'})
@@ -99,6 +100,10 @@ test.describe('Scope', () => {
         ).toBeGreaterThan(375)
     })
     test('Changing a parameter', async ({page}) => {
+        // test originally written when the following was the default:
+        await page.goto('/?name=Specimen&viz=ModFill&seq=Random', {
+            waitUntil: 'domcontentloaded',
+        })
         const oldURL = page.url()
 
         await page.locator('#modDimension').fill('100')
