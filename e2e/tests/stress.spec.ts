@@ -1,6 +1,6 @@
 import {test, expect} from '@playwright/test'
 
-import {specimenQuery} from '../../src/shared/browserCaching'
+import {specimenQuery} from '../../src/shared/specimenEncoding'
 
 // These are non-snapshot tests that we know to be somewhat or very
 // challenging to Numberscope. Once sequences that are here pass, they
