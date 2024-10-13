@@ -1,4 +1,5 @@
 import p5 from 'p5'
+import {markRaw} from 'vue'
 
 import type {ViewSize} from './VisualizerInterface'
 import {VisualizerExportModule} from './VisualizerInterface'
@@ -194,13 +195,14 @@ in pixels.
     },
 } satisfies GenericParamDescription
 
-class turtleData {
+class TurtleData {
     position: p5.Vector
     orientation: number // angle in degrees
 
     constructor(position: p5.Vector, orientation: number) {
         this.position = position
         this.orientation = orientation
+        markRaw(this)
     }
 }
 
@@ -221,12 +223,12 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     // variables controlling path to draw in a given frame
     private beginStep: ExtendedBigint = 0n // path step at which drawing begins
     private currentLength: ExtendedBigint = 1n // length of path
-    private turtleState = new turtleData(new p5.Vector(), 0) // current state
-    private path: turtleData[] = [] // array of path info
+    private turtleState = new TurtleData(new p5.Vector(), 0) // current state
+    private path: TurtleData[] = markRaw([]) // array of path info
 
     // variables holding the parameter values
     // these won't change
-    private firstIndex: ExtendedBigint = 0n // first term
+    private firstIndex = 0n // first term
     private folding = false // whether there's any folding
     private growthInitial = 0 // growth is turned on or off overall
     private growth = 0 // growth currently happening or not
@@ -243,25 +245,15 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-        // first term handling
-        this.firstIndex = this.seq.first
-
-        // path length handling
-        this.pathLength = this.seq.length
-
         // walkAnimation handling
-        this.growthInitial = params.speed
-        this.growth = params.speed
-        if (this.pathLength === Infinity && this.growth === 0) {
+        if (this.seq.length === Infinity && params.speed === 0) {
             // we cannot allow the visualizer to attempt
             // to draw infinitely many terms in
             // one frame
-            status.addWarning(
-                'To draw without growth, must limit '
-                    + 'sequence to finitely many terms.  '
-                    + 'Showing only 10000 terms.'
+            status.addError(
+                'Cannot draw entire path of an infinite sequence.\n'
+                    + 'Please set speed or sequence length to be finite.'
             )
-            this.pathLength = 10000n
         }
 
         // domain handling
@@ -350,14 +342,12 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         })
         return status
     }
-    async presketch(size: ViewSize) {
-        await super.presketch(size)
-
-        await this.refreshParams()
-    }
 
     setup() {
         super.setup()
+
+        this.firstIndex = this.seq.first
+        this.pathLength = this.seq.length
 
         // create a map from sequence values to rotations
         for (let i = 0; i < this.domain.length; i++) {
@@ -387,6 +377,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         // reset variables
         this.beginStep = 0n
         this.currentLength = 1n
+        this.growthInitial = this.speed
         this.growth = this.growthInitial
 
         // if not growing, set to full length immediately
@@ -485,20 +476,20 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         currentFrames: number,
         beginStep: ExtendedBigint,
         currentLength: ExtendedBigint,
-        turtleState?: turtleData
+        turtleState?: TurtleData
     ) {
         this.pathFailure = false
 
         // initialize turtle position
         if (!turtleState) {
             const canvasCtr = new p5.Vector(0, 0)
-            turtleState = new turtleData(canvasCtr, 0)
+            turtleState = new TurtleData(canvasCtr, 0)
         }
         let orientation = turtleState.orientation
         const position = turtleState.position.copy()
 
         // clear path
-        this.path = [turtleState]
+        this.path = markRaw([turtleState])
 
         // read sequence to create path
         // start at beginStep past firstIndex
@@ -544,7 +535,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             position.add(step)
 
             // add the new position to the path
-            turtleState = new turtleData(position.copy(), orientation)
+            turtleState = new TurtleData(position.copy(), orientation)
             this.path.push(turtleState)
         }
     }
