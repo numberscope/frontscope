@@ -226,7 +226,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
     // variables holding the parameter values
     // these won't change
-    private firstTerm: ExtendedBigint = 0n // first term
+    private firstIndex: ExtendedBigint = 0n // first term
     private folding = false // whether there's any folding
     private growthInitial = 0 // growth is turned on or off overall
     private growth = 0 // growth currently happening or not
@@ -244,7 +244,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         const status = super.checkParameters(params)
 
         // first term handling
-        this.firstTerm = this.seq.first
+        this.firstIndex = this.seq.first
 
         // path length handling
         this.pathLength = this.seq.length
@@ -422,26 +422,33 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             this.createpath(sketch.frameCount, 0n, this.currentLength)
         }
 
-        // draw path from this.beginStep to this.currentLength
-        let startState = this.path[0]
-        let endState = this.path[1]
-        for (
-            let i = 1;
-            i < math.bigsub(this.currentLength, this.beginStep);
-            i++
-        ) {
-            endState = this.path[i]
-            sketch.line(
-                startState.position.x,
-                startState.position.y,
-                endState.position.x,
-                endState.position.y
-            )
-            startState = endState
+        // draw path
+        // but only if there's more path to draw
+        if (this.path.length > 1) {
+            let startState = this.path[0]
+            let endState = this.path[1]
+            console.log(this.path)
+            for (let i = 1; i < this.path.length; i++) {
+                endState = this.path[i]
+                sketch.line(
+                    startState.position.x,
+                    startState.position.y,
+                    endState.position.x,
+                    endState.position.y
+                )
+                startState = endState
+            }
+            // since we did some steps, must
+            // advance this.beginStep and this.turtleState
+            // unless the path failed somehow
+            if (!this.pathFailure) {
+                this.beginStep = math.bigadd(
+                    this.beginStep,
+                    BigInt(this.path.length - 1)
+                )
+                this.turtleState = endState
+            }
         }
-        // advance this.beginStep
-        if (!this.pathFailure)
-            this.beginStep = math.bigsub(this.currentLength, 1n)
 
         // stop drawing if no animation
         if (!this.folding && this.growth === 0 && !this.pathFailure) {
@@ -460,18 +467,20 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         }
 
         // create the path needed for next draw loop
-        this.turtleState = endState
+        console.log('next path', this.beginStep, this.currentLength)
         this.createpath(
             sketch.frameCount,
             this.beginStep,
             this.currentLength,
-            endState
+            this.turtleState
         )
     }
 
     // this should be run each time the path needs to be extended
     // or re-calculated
     // if folding, include current frames; otherwise `frames=0`
+    // resulting path should be currentLength - beginStep steps
+    // meaning that path.length = that + 1
     createpath(
         currentFrames: number,
         beginStep: ExtendedBigint,
@@ -492,14 +501,11 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         this.path = [turtleState]
 
         // read sequence to create path
-        // start at beginStep past firstTerm
+        // start at beginStep past firstIndex
         // go until currentLength allows
-        const startStep = math.bigadd(this.firstTerm, this.beginStep)
-        for (
-            let i = startStep;
-            i < math.bigadd(startStep, currentLength);
-            i++
-        ) {
+        const startIndex = math.bigadd(this.firstIndex, this.beginStep)
+        const numSteps = math.bigsub(this.currentLength, this.beginStep)
+        for (let i = startIndex; i < math.bigadd(numSteps, startIndex); i++) {
             // get the current sequence element and infer
             // the rotation/step/increment
             let step = new p5.Vector(0, 0)
@@ -531,6 +537,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                     this.pathFailure = true
                 } else {
                     console.log('mystery error:', e)
+                    this.pathFailure = true
                 }
             }
             // happens whether step has info or not
@@ -546,7 +553,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         this.mouseCount = this.sketch.frameCount
         this.continue()
     }
-    // why doesn't super work on mouseWheel? where do I get a mouseEvent?
     mouseWheel(event: WheelEvent) {
         super.mouseWheel(event)
         this.mouseReaction()
