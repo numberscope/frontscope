@@ -94,12 +94,12 @@ will be interpreted as the step length for the n-th domain element.
         hideDescription: false,
     },
     /**
-- foldControls: boolean. If true, show folding controls, and turn on folding
+- foldControls: boolean. If true, show folding controls
     **/
     foldControls: {
         default: false,
         type: ParamType.BOOLEAN,
-        displayName: 'Turn on protein folding animation ↴',
+        displayName: 'Protein folding animation ↴',
         required: false,
     },
     /** md
@@ -107,9 +107,9 @@ will be interpreted as the step length for the n-th domain element.
 These are angle increments added to the turning
 angles each frame.  They correspond
 positionally to the domain elements.  Must contain the same number of elements
-as domain.  The units is 1/10^5th of a degree.  For example, if the first
+as domain.  The units is (1/10^5)-th of a degree.  For example, if the first
 entry here is a `2`, then in each frame of the animation, the turn angle for
-the first domain element will increase by 2/10^5-th of a degree.  The result
+the first domain element will increase by (2/10^5)-th of a degree.  The result
 looks a little like protein folding.
      **/
     folds: {
@@ -138,22 +138,22 @@ looks a little like protein folding.
 - speed: a number.  If zero, the full path is drawn all at once.
 Otherwise, the visualizer will animate: this is the number of steps of the path
 to grow per frame, until the path reaches its maximum length (give by sequence
- last parameter).
+ last parameter).  The visualizer has a brake on it to prevent hangs: the speed
+ cannot exceed 100 steps per frame.
      **/
     speed: {
         default: 1,
         type: ParamType.INTEGER,
         displayName: 'Turtle speed',
         required: false,
-        description: 'how many more terms to show per frame',
+        description: 'steps added per frame',
         hideDescription: false,
         visibleDependency: 'pathLook',
         visibleValue: true,
-        validate: (n: number) =>
-            ValidationStatus.errorIf(
-                n <= 0,
-                'Path speed must be non-negative'
-            ),
+        validate: function (n: number, status: ValidationStatus) {
+            if (n <= 0 || n > 100)
+                status.addError('speed must be between 1 and 100')
+        },
     },
     /**
 - strokeWeight: a number. Gives the width of the segment drawn for each entry,
@@ -229,7 +229,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     // these won't change
     private firstIndex = 0n // first term
     private folding = false // whether there's any folding
-    private growthInitial = 0n // growth is turned on or off overall
     private growth = 0n // growth currently happening or not
     private pathLength: ExtendedBigint = 1n // can be infinity
 
@@ -244,90 +243,30 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-        // walkAnimation handling
-        if (this.seq.length === Infinity && params.speed === 0) {
-            // we cannot allow the visualizer to attempt
-            // to draw infinitely many terms in
-            // one frame
-            status.addError(
-                'Cannot draw entire path of an infinite sequence.\n'
-                    + 'Please set speed or sequence length to be finite.'
-            )
-        }
-
-        // domain handling
-        // for each of the rule arrays, should match
-        // params.domain.length; otherwise special handling
-
-        // tell user the appropriate rule lengths
+        // lengths of rulesets should match length of domain
         const ruleParams = [
             {
-                param: params.turns,
-                local: this.turnsInternal,
+                param: this.turns,
                 desc: paramDesc.turns as ParamInterface<ParamType.NUMBER_ARRAY>,
-                text: 'Turn angles',
+                text: 'turns',
             },
             {
-                param: params.steps,
-                local: this.stepsInternal,
+                param: this.steps,
                 desc: paramDesc.steps as ParamInterface<ParamType.NUMBER_ARRAY>,
-                text: 'Step sizes',
+                text: 'steps',
             },
             {
-                param: params.folds,
-                local: this.foldsInternal,
+                param: this.folds,
                 desc: paramDesc.folds as ParamInterface<ParamType.NUMBER_ARRAY>,
-                text: 'Folding rates',
+                text: 'folds',
             },
         ]
-
         for (const rule of ruleParams) {
             // how can I add a newline before parenthetical?
             rule.desc.displayName =
-                rule.text
+                rule.desc.displayName
                 + ` (must match domain length, ${params.domain.length})`
-        }
-
-        // ignore (remove) or add extra rules for excess/missing
-        // terms compared to domain length
-        // note: this changes the actual param values
-        // if refreshParams() were called this would be
-        // visible to the user
-        ruleParams.forEach(rule => {
-            rule.local = [...rule.param]
-        })
-        ruleParams.forEach(rule => {
-            while (rule.local.length < params.domain.length) {
-                rule.local.push(0)
-            }
-            while (rule.local.length > params.domain.length) {
-                rule.local.pop()
-            }
-        })
-        // store internally
-        this.turnsInternal = ruleParams[0].local
-        this.stepsInternal = ruleParams[1].local
-        this.foldsInternal = ruleParams[2].local
-
-        // add warnings explaining the behaviour
-        ruleParams.forEach(rule => {
-            if (rule.param.length > params.domain.length) {
-                // when implemented, have this appear next to parameter
-                // associated to array and make warning instead
-                status.addWarning(
-                    'More entries ('
-                        + rule.param.length
-                        + ') in '
-                        + rule.text
-                        + ' than in domain ('
-                        + params.domain.length
-                        + '); ignoring extras.'
-                )
-            }
             if (rule.param.length < params.domain.length) {
-                // when implemented, have this appear next to parameter
-                // associated to array and make warning instead
-                // error is stopping refreshParams()
                 status.addWarning(
                     'Fewer entries ('
                         + rule.param.length
@@ -338,15 +277,55 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                         + '); using trivial behaviour for missing terms.'
                 )
             }
-        })
+            if (rule.param.length > params.domain.length) {
+                status.addWarning(
+                    'More entries ('
+                        + rule.param.length
+                        + ') in '
+                        + rule.text
+                        + ' than in domain ('
+                        + params.domain.length
+                        + '); ignoring extras.'
+                )
+            }
+        }
         return status
     }
 
-    setup() {
-        super.setup()
+    storeRules() {
+        // this function creates the internal rule maps from user input
 
-        this.firstIndex = this.seq.first
-        this.pathLength = this.seq.length
+        // create an adjusted internal copy of the rules
+        const ruleParams = [
+            {
+                param: this.turns,
+                local: [0],
+            },
+            {
+                param: this.steps,
+                local: [0],
+            },
+            {
+                param: this.folds,
+                local: [0],
+            },
+        ]
+        ruleParams.forEach(rule => {
+            rule.local = [...rule.param]
+        })
+        // ignore (remove) or add extra rules for excess/missing
+        // terms compared to domain length
+        ruleParams.forEach(rule => {
+            while (rule.local.length < this.domain.length) {
+                rule.local.push(0)
+            }
+            while (rule.local.length > this.domain.length) {
+                rule.local.pop()
+            }
+        })
+        this.turnsInternal = ruleParams[0].local
+        this.stepsInternal = ruleParams[1].local
+        this.foldsInternal = ruleParams[2].local
 
         // create a map from sequence values to rotations
         for (let i = 0; i < this.domain.length; i++) {
@@ -372,17 +351,23 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 // in units of this.incrementFactor
             )
         }
+    }
+
+    setup() {
+        super.setup()
+
+        // create internal rule maps
+        this.storeRules()
 
         // reset variables
+        // "step" represents steps of turtle
+        // "index" represents sequence index
+        // (the two are not always the same)
+        this.firstIndex = this.seq.first
+        this.pathLength = this.seq.length
         this.beginStep = 0n
         this.currentLength = 1n
-        this.growthInitial = BigInt(this.speed)
-        this.growth = this.growthInitial
-
-        // if not growing, set to full length immediately
-        // pathLength is finite if growth is zero (from
-        // parameter verification)
-        if (this.growth === 0n) this.currentLength = BigInt(this.pathLength)
+        this.growth = BigInt(math.bigmin(100n, BigInt(this.speed)))
 
         // create initial path
         // must be in setup not presketch since uses p5.Vector
@@ -402,10 +387,13 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     draw() {
         const sketch = this.sketch
 
-        // if folding or moving, clear and reset draw to beginning of path
+        // if folding or mouse moving,
+        // then clear and reset draw to beginning of path
         if (this.sketch.mouseIsPressed) {
             this.mouseCount = sketch.frameCount
         }
+        // magic number 10 is how many frames to go before quitting after
+        // a mouse event
         if (this.folding || this.mouseCount > sketch.frameCount - 10) {
             this.sketch.clear().background(this.bgColor)
             this.beginStep = 0n
@@ -417,7 +405,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         if (this.path.length > 1) {
             let startState = this.path[0]
             let endState = this.path[1]
-            console.log(this.path)
             for (let i = 1; i < this.path.length; i++) {
                 endState = this.path[i]
                 sketch.line(
@@ -438,8 +425,11 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         }
 
         // stop drawing if no animation
-        if (!this.folding && this.growth === 0n && !this.pathFailure) {
-            console.log('stopping')
+        if (
+            !this.folding
+            && this.currentLength === this.pathLength
+            && !this.pathFailure
+        ) {
             this.stop()
         }
 
@@ -454,7 +444,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         }
 
         // create the path needed for next draw loop
-        console.log('next path', this.beginStep, this.currentLength)
         this.createpath(
             sketch.frameCount,
             this.beginStep,

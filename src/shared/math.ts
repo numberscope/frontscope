@@ -94,9 +94,6 @@ type ExtendedMathJs = MathJsInstance & {
     negInfinity: TnegInfinity
     posInfinity: TposInfinity
     safeNumber(n: Integer): number
-    bigadd(a: Integer, b: Integer): ExtendedBigint
-    bigsub(a: Integer, b: Integer): ExtendedBigint
-    bigmul(a: Integer, b: Integer): ExtendedBigint
     floorSqrt(n: Integer): bigint
     modulo(n: Integer, modulus: Integer): bigint
     bigIsFinite(n: Integer): boolean
@@ -129,58 +126,6 @@ math.safeNumber = (n: Integer): number => {
         throw new RangeError(`Attempt to use ${bn} as a number`)
     }
     return Number(bn)
-}
-
-/** md
-#### bigadd(a: number | bigint, b: number | bigint): ExtendedBigint
-
-Returns the ExtendedBigint mathematically equal to the sum of _a_ and _b_.
-**/
-
-// Extend the math module to add arithmetic operations for ExtendedBigint
-math.bigadd = (a: ExtendedBigint, b: ExtendedBigint): ExtendedBigint => {
-    if (a === math.posInfinity || b === math.posInfinity)
-        return math.posInfinity
-    if (a === math.negInfinity || b === math.negInfinity)
-        return math.negInfinity
-    return BigInt(a) + BigInt(b)
-}
-
-/** md
-#### bigsub(a: number | bigint, b: number | bigint): ExtendedBigint
-
-Returns the ExtendedBigint mathematically equal to the difference
-of _a_ and _b_.
-**/
-math.bigsub = (a: ExtendedBigint, b: ExtendedBigint): ExtendedBigint => {
-    if (a === math.posInfinity || b === math.negInfinity)
-        return math.posInfinity
-    if (a === math.negInfinity || b === math.posInfinity)
-        return math.negInfinity
-    return BigInt(a) - BigInt(b)
-}
-
-/** md
-#### bigmul(a: number | bigint, b: number | bigint): ExtendedBigint
-
-Returns the ExtendedBigint mathematically equal to the product of _a_ and _b_.
-
-Note:  0 times positive or negative Infinity is undefined
-**/
-math.bigmul = (a: ExtendedBigint, b: ExtendedBigint): ExtendedBigint => {
-    if (a === 0n || b === 0n)
-        return !math.bigIsFinite(a) || !math.bigIsFinite(b)
-            ? math.posInfinity
-            : 0n
-    if (a === math.posInfinity || b === math.posInfinity)
-        return BigInt(a) < 0n || BigInt(b) < 0n
-            ? math.negInfinity
-            : math.posInfinity
-    if (a === math.negInfinity || b === math.negInfinity)
-        return BigInt(a) > 0n || BigInt(b) > 0n
-            ? math.negInfinity
-            : math.posInfinity
-    return BigInt(a) * BigInt(b)
 }
 
 /** md
