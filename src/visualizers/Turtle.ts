@@ -4,6 +4,7 @@ import type {ViewSize} from './VisualizerInterface'
 import {VisualizerExportModule} from './VisualizerInterface'
 import {P5GLVisualizer} from './P5GLVisualizer'
 
+import {CachingError} from '@/sequences/Cached'
 import type {
     GenericParamDescription,
     ParamValues,
@@ -525,11 +526,12 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                     Math.sin(orientation)
                 )
                 step.mult(stepLength ?? 0)
-                // are we not serving caching errors anymore? lint
-                // objects to this
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            } catch (CachingError) {
-                this.pathFailure = true
+            } catch (e) {
+                if (e instanceof CachingError) {
+                    this.pathFailure = true
+                } else {
+                    console.log('mystery error:', e)
+                }
             }
             // happens whether step has info or not
             position.add(step)
@@ -545,7 +547,10 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         this.continue()
     }
     // why doesn't super work on mouseWheel? where do I get a mouseEvent?
-    // mouseWheel(){ super.mouseWheel(); this.mouseReaction() }
+    mouseWheel(event: WheelEvent) {
+        super.mouseWheel(event)
+        this.mouseReaction()
+    }
     mouseDragged() {
         super.mouseDragged()
         this.mouseReaction()
