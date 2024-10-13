@@ -1,7 +1,6 @@
 import p5 from 'p5'
 import {markRaw} from 'vue'
 
-import type {ViewSize} from './VisualizerInterface'
 import {VisualizerExportModule} from './VisualizerInterface'
 import {P5GLVisualizer} from './P5GLVisualizer'
 
@@ -221,8 +220,8 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     private foldsInternal: number[] = []
 
     // variables controlling path to draw in a given frame
-    private beginStep: ExtendedBigint = 0n // path step at which drawing begins
-    private currentLength: ExtendedBigint = 1n // length of path
+    private beginStep = 0n // path step at which drawing begins
+    private currentLength = 1n // length of path
     private turtleState = new TurtleData(new p5.Vector(), 0) // current state
     private path: TurtleData[] = markRaw([]) // array of path info
 
@@ -230,8 +229,8 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     // these won't change
     private firstIndex = 0n // first term
     private folding = false // whether there's any folding
-    private growthInitial = 0 // growth is turned on or off overall
-    private growth = 0 // growth currently happening or not
+    private growthInitial = 0n // growth is turned on or off overall
+    private growth = 0n // growth currently happening or not
     private pathLength: ExtendedBigint = 1n // can be infinity
 
     // controlling the folding smoothness/speed/units
@@ -377,13 +376,13 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         // reset variables
         this.beginStep = 0n
         this.currentLength = 1n
-        this.growthInitial = this.speed
+        this.growthInitial = BigInt(this.speed)
         this.growth = this.growthInitial
 
         // if not growing, set to full length immediately
         // pathLength is finite if growth is zero (from
         // parameter verification)
-        if (this.growth == 0) this.currentLength = this.pathLength
+        if (this.growth === 0n) this.currentLength = BigInt(this.pathLength)
 
         // create initial path
         // must be in setup not presketch since uses p5.Vector
@@ -433,28 +432,25 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             // advance this.beginStep and this.turtleState
             // unless the path failed somehow
             if (!this.pathFailure) {
-                this.beginStep = math.bigadd(
-                    this.beginStep,
-                    BigInt(this.path.length - 1)
-                )
+                this.beginStep += BigInt(this.path.length - 1)
                 this.turtleState = endState
             }
         }
 
         // stop drawing if no animation
-        if (!this.folding && this.growth === 0 && !this.pathFailure) {
+        if (!this.folding && this.growth === 0n && !this.pathFailure) {
             console.log('stopping')
             this.stop()
         }
 
         // if path is growing, lengthen path
         if (!this.pathFailure) {
-            this.currentLength = math.bigadd(this.currentLength, this.growth)
+            this.currentLength += this.growth
         }
         // if reached full length, stop growing
         if (this.currentLength > this.pathLength) {
-            this.currentLength = this.pathLength
-            this.growth = 0
+            this.currentLength = BigInt(this.pathLength) // must be finite
+            this.growth = 0n
         }
 
         // create the path needed for next draw loop
@@ -474,8 +470,8 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     // meaning that path.length = that + 1
     createpath(
         currentFrames: number,
-        beginStep: ExtendedBigint,
-        currentLength: ExtendedBigint,
+        beginStep: bigint,
+        currentLength: bigint,
         turtleState?: TurtleData
     ) {
         this.pathFailure = false
@@ -494,9 +490,9 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         // read sequence to create path
         // start at beginStep past firstIndex
         // go until currentLength allows
-        const startIndex = math.bigadd(this.firstIndex, this.beginStep)
-        const numSteps = math.bigsub(this.currentLength, this.beginStep)
-        for (let i = startIndex; i < math.bigadd(numSteps, startIndex); i++) {
+        const startIndex = this.firstIndex + this.beginStep
+        const numSteps = this.currentLength - this.beginStep
+        for (let i = startIndex; i < numSteps + startIndex; i++) {
             // get the current sequence element and infer
             // the rotation/step/increment
             let step = new p5.Vector(0, 0)
