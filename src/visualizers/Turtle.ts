@@ -43,21 +43,23 @@ protein-folding effect.
 
 const paramDesc = {
     /** md
-- domain: A list of all of the values that may occur in the sequence.
-Values of the sequence not occurring in this list will be ignored.
+- domain: a list of numbers.  These are the values that
+that the turtle should pay attention to when appearing as
+terms of the sequence.  Values of the sequence
+not occurring in this list will be ignored.
 (One way to ensure a small number of possible values is to use a
-sequence that has been reduced with respect to some small modulus.) But
+sequence that has been reduced with respect to some small modulus. But
 some sequences, like A014577 "The regular paper-folding sequence", naturally
 have a small domain.)
      **/
     domain: {
         default: [0n, 1n, 2n, 3n, 4n] as bigint[],
         type: ParamType.BIGINT_ARRAY,
-        displayName: 'Sequence Domain',
+        displayName: 'Domain',
         required: true,
         description:
-            'values to interpret as rules; sequence values not '
-            + ' matching any term here are ignored',
+            'sequence values to interpret as rules; terms not '
+            + ' matching any value here are ignored',
         hideDescription: false,
     },
     /** md
@@ -107,7 +109,8 @@ will be interpreted as the step length for the n-th domain element.
 These are angle increments added to the turning
 angles each frame.  They correspond
 positionally to the domain elements.  Must contain the same number of elements
-as domain.  The units is (1/10^5)-th of a degree.  For example, if the first
+as the domain.  The units are (1/10^5)-th of a degree.
+For example, if the first
 entry here is a `2`, then in each frame of the animation, the turn angle for
 the first domain element will increase by (2/10^5)-th of a degree.  The result
 looks a little like protein folding.
@@ -119,7 +122,7 @@ looks a little like protein folding.
         required: false,
         description:
             'turns on animation:  list of angle increments per frame in units'
-            + ' of 0.01 degree, in order corresponding'
+            + ' of 1/10^5 degree, in order corresponding'
             + ' to the sequence values listed in domain',
         hideDescription: false,
         visibleDependency: 'foldControls',
@@ -138,7 +141,7 @@ looks a little like protein folding.
 - speed: a number.  If zero, the full path is drawn all at once.
 Otherwise, the visualizer will animate: this is the number of steps of the path
 to grow per frame, until the path reaches its maximum length (give by sequence
- last parameter).  The visualizer has a brake on it to prevent hangs: the speed
+ last parameter).  The visualizer has a brake on it to prevent lag: the speed
  cannot exceed 100 steps per frame.
      **/
     speed: {
@@ -151,8 +154,8 @@ to grow per frame, until the path reaches its maximum length (give by sequence
         visibleDependency: 'pathLook',
         visibleValue: true,
         validate: function (n: number, status: ValidationStatus) {
-            if (n <= 0 || n > 100)
-                status.addError('speed must be between 1 and 100')
+            if (n <= 0) status.addError('Speed must be positive')
+            if (n > 100) status.addWarning('Speed capped at 100')
         },
     },
     /**
@@ -194,6 +197,7 @@ in pixels.
     },
 } satisfies GenericParamDescription
 
+// current position and orientation of a turtle
 class TurtleData {
     position: p5.Vector
     orientation: number // angle in degrees
@@ -220,6 +224,9 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     private foldsInternal: number[] = []
 
     // variables controlling path to draw in a given frame
+    // "step" refers to steps of turtle
+    // "index" refers to sequence index
+    // (the two are not always the same)
     private beginStep = 0n // path step at which drawing begins
     private currentLength = 1n // length of path
     private turtleState = new TurtleData(new p5.Vector(), 0) // current state
@@ -229,7 +236,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     // these won't change
     private firstIndex = 0n // first term
     private folding = false // whether there's any folding
-    private growth = 0n // growth currently happening or not
+    private growth = 0n // growth per frame
     private pathLength: ExtendedBigint = 1n // can be infinity
 
     // controlling the folding smoothness/speed/units
@@ -249,23 +256,26 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 param: this.turns,
                 desc: paramDesc.turns as ParamInterface<ParamType.NUMBER_ARRAY>,
                 text: 'turns',
+                startText: 'Turning angles ',
             },
             {
                 param: this.steps,
                 desc: paramDesc.steps as ParamInterface<ParamType.NUMBER_ARRAY>,
                 text: 'steps',
+                startText: 'Step lengths ',
             },
             {
                 param: this.folds,
                 desc: paramDesc.folds as ParamInterface<ParamType.NUMBER_ARRAY>,
                 text: 'folds',
+                startText: 'Folding rates ',
             },
         ]
         for (const rule of ruleParams) {
             // how can I add a newline before parenthetical?
             rule.desc.displayName =
-                rule.desc.displayName
-                + ` (must match domain length, ${params.domain.length})`
+                rule.startText
+                + ` (should match domain length, ${params.domain.length})`
             if (rule.param.length < params.domain.length) {
                 status.addWarning(
                     'Fewer entries ('
@@ -288,6 +298,29 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                         + '); ignoring extras.'
                 )
             }
+        }
+
+        // warn when folding is turned on for long paths
+        // BUG:  when sequence params change this isn't re-run
+        // so the warning may be out of date
+        if (
+            params.folds.some(value => value !== 0)
+            && this.seq.length > 1000
+            && this.seq.length <= 4000
+        ) {
+            status.addWarning(
+                'Turning on folding with more than 1000 terms is likely'
+                    + ' to be quite laggy.'
+            )
+        }
+        if (
+            params.folds.some(value => value !== 0)
+            && this.seq.length > 4000
+        ) {
+            status.addWarning(
+                'Folding animation not available with more than'
+                    + ' 4000 terms; using only 4000.'
+            )
         }
         return status
     }
@@ -360,17 +393,14 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         this.storeRules()
 
         // reset variables
-        // "step" represents steps of turtle
-        // "index" represents sequence index
-        // (the two are not always the same)
         this.firstIndex = this.seq.first
         this.pathLength = this.seq.length
+        if (this.folding && this.seq.length > 4000) this.pathLength = 4000n
         this.beginStep = 0n
         this.currentLength = 1n
         this.growth = BigInt(math.bigmin(100n, BigInt(this.speed)))
 
         // create initial path
-        // must be in setup not presketch since uses p5.Vector
         // in case we are animating, we will recompute anyway,
         // so use current length only, for efficiency
         this.createpath(0, 0n, this.currentLength)
@@ -453,7 +483,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     }
 
     // this should be run each time the path needs to be extended
-    // or re-calculated
+    // or re-calculated.
     // if folding, include current frames; otherwise `frames=0`
     // resulting path should be currentLength - beginStep steps
     // meaning that path.length = that + 1
