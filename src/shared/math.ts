@@ -162,7 +162,7 @@ math.modulo = (n: Integer, modulus: Integer): bigint => {
 }
 
 /** md
-#### isFinite(n: number| bigint): boolean
+#### bigIsFinite(n: number| bigint): boolean
 
 Returns true if and only if the input is a finite number
 **/
