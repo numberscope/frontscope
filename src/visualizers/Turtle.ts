@@ -12,8 +12,6 @@ import type {
 } from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
-import type {ExtendedBigint} from '@/shared/math'
-import {math} from '@/shared/math'
 
 /** md
 # Turtle Visualizer
@@ -197,47 +195,31 @@ in pixels.
     },
 } satisfies GenericParamDescription
 
-// current position and orientation of a turtle
-class TurtleData {
-    position: p5.Vector
-    orientation: number // angle in degrees
-
-    constructor(position: p5.Vector, orientation: number) {
-        this.position = position
-        this.orientation = orientation
-        markRaw(this)
-    }
-}
-
 class Turtle extends P5GLVisualizer(paramDesc) {
     static category = 'Turtle'
     static description =
         'Use a sequence to steer a virtual turtle that leaves a visible trail'
 
     // maps from domain to rotations and steps
-    private rotMap = new Map<string, number>()
-    private stepMap = new Map<string, number>()
-    private foldMap = new Map<string, number>()
+    private rotMap = markRaw(new Map<string, number>())
+    private stepMap = markRaw(new Map<string, number>())
+    private foldMap = markRaw(new Map<string, number>())
     // private copies of rule arrays
     private turnsInternal: number[] = []
     private stepsInternal: number[] = []
     private foldsInternal: number[] = []
 
-    // variables controlling path to draw in a given frame
-    // "step" refers to steps of turtle
-    // "index" refers to sequence index
-    // (the two are not always the same)
-    private beginStep = 0n // path step at which drawing begins
-    private currentLength = 1n // length of path
-    private turtleState = new TurtleData(new p5.Vector(), 0) // current state
-    private path: TurtleData[] = markRaw([]) // array of path info
+    // variables recording the path
+    private vertices = markRaw([new p5.Vector()]) // nodes of path
+    private bearing = 0 // heading at tip of path
+    private cursor = 0 // vertices up to this one have already been drawn
 
     // variables holding the parameter values
-    // these won't change
+    // these don't change except in setup()
     private firstIndex = 0n // first term
     private folding = false // whether there's any folding
-    private growth = 0n // growth per frame
-    private pathLength: ExtendedBigint = 1n // can be infinity
+    private growth = 0 // growth of path per frame
+    private maxLength = -1 // longest we will allow path to get
 
     // controlling the folding smoothness/speed/units
     // the units of the folding entry field are 1/denom degrees
@@ -380,8 +362,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             if (this.foldsInternal[i] != 0) this.folding = true
             this.foldMap.set(
                 this.domain[i].toString(),
-                this.foldsInternal[i]
-                // in units of this.incrementFactor
+                (Math.PI / 180) * (this.foldsInternal[i] / this.denom)
             )
         }
     }
@@ -394,17 +375,27 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
         // reset variables
         this.firstIndex = this.seq.first
-        this.pathLength = this.seq.length
-        if (this.folding && this.seq.length > 4000) this.pathLength = 4000n
-        this.beginStep = 0n
-        this.currentLength = 1n
-        this.growth = BigInt(math.bigmin(100n, BigInt(this.speed)))
+        this.maxLength = this.folding ? 4000 : Number.MAX_SAFE_INTEGER
+        if (this.seq.length < this.maxLength) {
+            this.maxLength = Number(this.seq.length)
+        }
+        this.growth = Math.min(this.speed, 100)
+        // draw the entire path every frame if folding
+        if (this.folding) this.growth = this.maxLength
 
-        // create initial path
-        // in case we are animating, we will recompute anyway,
-        // so use current length only, for efficiency
-        this.createpath(0, 0n, this.currentLength)
+        this.refresh()
+    }
 
+    refresh() {
+        // eliminates the path so it will be recomputed, and redraws
+        this.vertices = markRaw([new p5.Vector()]) // nodes of path
+        this.bearing = 0
+        this.redraw()
+    }
+
+    redraw() {
+        // blanks the screen and sets up to redraw the path
+        this.cursor = 0
         // prepare sketch
         this.sketch
             .background(this.bgColor)
@@ -416,141 +407,93 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
     draw() {
         const sketch = this.sketch
+        if (this.folding) this.refresh()
+        else if (this.cursor === 0) this.redraw()
 
-        // if folding or mouse moving,
-        // then clear and reset draw to beginning of path
-        if (this.sketch.mouseIsPressed) {
-            this.mouseCount = sketch.frameCount
-        }
-        // magic number 10 is how many frames to go before quitting after
-        // a mouse event
-        if (this.folding || this.mouseCount > sketch.frameCount - 10) {
-            this.sketch.clear().background(this.bgColor)
-            this.beginStep = 0n
-            this.createpath(sketch.frameCount, 0n, this.currentLength)
-        }
+        // compute more of path as needed:
+        console.log(this.vertices.length, this.growth, this.maxLength)
+        const targetLength = Math.min(
+            this.vertices.length - 1 + this.growth,
+            this.maxLength
+        )
+        this.extendPath(sketch.frameCount, targetLength)
 
-        // draw path
-        // but only if there's more path to draw
-        if (this.path.length > 1) {
+        // draw path from cursor to tip:
+        if (this.cursor < this.vertices.length - 1) {
             sketch.beginShape()
-            this.path.forEach(state =>
-                sketch.vertex(state.position.x, state.position.y)
-            )
-            sketch.endShape()
-            // since we did some steps, must
-            // advance this.beginStep and this.turtleState
-            // unless the path failed somehow
-            if (!this.pathFailure) {
-                const last = this.path.length - 1
-                this.beginStep += BigInt(last)
-                this.turtleState = this.path[last]
+            let lastPos: undefined | p5.Vector = undefined
+            while (this.cursor < this.vertices.length) {
+                const pos = this.vertices[this.cursor++]
+                if (pos.x !== lastPos?.x || pos.y !== lastPos?.y) {
+                    sketch.vertex(pos.x, pos.y)
+                }
+                lastPos = pos
             }
+            this.cursor-- // get it back in range
+            sketch.endShape()
         }
 
         // stop drawing if no animation
         if (
             !this.folding
-            && this.currentLength === this.pathLength
+            && this.vertices.length > this.maxLength
             && !this.pathFailure
         ) {
             this.stop()
         }
-
-        // if path is growing, lengthen path
-        if (!this.pathFailure) {
-            this.currentLength += this.growth
-        }
-        // if reached full length, stop growing
-        if (this.currentLength > this.pathLength) {
-            this.currentLength = BigInt(this.pathLength) // must be finite
-            this.growth = 0n
-        }
-
-        // create the path needed for next draw loop
-        this.createpath(
-            sketch.frameCount,
-            this.beginStep,
-            this.currentLength,
-            this.turtleState
-        )
     }
 
-    // this should be run each time the path needs to be extended
-    // or re-calculated.
-    // if folding, include current frames; otherwise `frames=0`
-    // resulting path should be currentLength - beginStep steps
-    // meaning that path.length = that + 1
-    createpath(
-        currentFrames: number,
-        beginStep: bigint,
-        currentLength: bigint,
-        turtleState?: TurtleData
-    ) {
-        this.pathFailure = false
-
-        // initialize turtle position
-        if (!turtleState) {
-            const canvasCtr = new p5.Vector(0, 0)
-            turtleState = new TurtleData(canvasCtr, 0)
+    // This should be run each time the path needs to be extended.
+    // If folding, increment parameters by current frames.
+    // Resulting path should be targetLength steps
+    // meaning that vertices.length = that + 1
+    extendPath(currentFrames: number, targetLength: number) {
+        console.log(`Frame ${currentFrames}, to ${targetLength}`)
+        // First compute the rotMap to use:
+        let rotMap = this.rotMap
+        if (this.folding) {
+            rotMap = new Map<string, number>()
+            for (const [entry, rot] of this.rotMap) {
+                const extra = currentFrames * (this.foldMap.get(entry) ?? 0)
+                rotMap.set(entry, rot + extra)
+            }
         }
-        let orientation = turtleState.orientation
-        const position = turtleState.position.copy()
-
-        // clear path
-        this.path = markRaw([turtleState])
-
-        // read sequence to create path
-        // start at beginStep past firstIndex
-        // go until currentLength allows
-        const startIndex = this.firstIndex + this.beginStep
-        const numSteps = this.currentLength - this.beginStep
-        for (let i = startIndex; i < numSteps + startIndex; i++) {
+        // Now compute the new vertices in the path:
+        this.pathFailure = false
+        const len = this.vertices.length - 1
+        const position = this.vertices[len].copy()
+        const startIndex = this.firstIndex + BigInt(len)
+        const endIndex = this.firstIndex + BigInt(targetLength)
+        console.log('Indices', startIndex, 'to', endIndex - 1n)
+        for (let i = startIndex; i < endIndex; i++) {
             // get the current sequence element and infer
             // the rotation/step/increment
-            let step = new p5.Vector(0, 0)
+            let currElement = 0n
             try {
-                const currElement: ExtendedBigint = this.seq.getElement(
-                    BigInt(i)
-                )
-                const currElementString = currElement.toString()
-                const turnAngle = this.rotMap.get(currElementString)
-                const stepLength = this.stepMap.get(currElementString)
-                const turnIncrement = this.foldMap.get(currElementString)
-
-                // turn (thisIncrement is raw increment)
-                const thisIncrement = currentFrames * (turnIncrement ?? 0)
-                orientation
-                    += (turnAngle ?? 0)
-                    + (Number(math.modulo(thisIncrement, 360 * this.denom))
-                        / this.denom)
-                        * (Math.PI / 180)
-
-                // step
-                step = new p5.Vector(
-                    Math.cos(orientation),
-                    Math.sin(orientation)
-                )
-                step.mult(stepLength ?? 0)
+                currElement = this.seq.getElement(i)
             } catch (e) {
+                this.pathFailure = true
                 if (e instanceof CachingError) {
-                    this.pathFailure = true
+                    return // need to wait for more elements
                 } else {
-                    console.log('mystery error:', e)
-                    this.pathFailure = true
+                    // don't know what to do with this
+                    throw e
                 }
             }
-            // happens whether step has info or not
-            position.add(step)
-
-            // add the new position to the path
-            turtleState = new TurtleData(position.copy(), orientation)
-            this.path.push(turtleState)
+            const currElementString = currElement.toString()
+            const turnAngle = rotMap.get(currElementString)
+            if (turnAngle !== undefined) {
+                const stepLength = this.stepMap.get(currElementString) ?? 0
+                this.bearing += turnAngle
+                position.x += Math.cos(this.bearing) * stepLength
+                position.y += Math.sin(this.bearing) * stepLength
+            }
+            this.vertices.push(position.copy())
         }
     }
 
     mouseReaction() {
-        this.mouseCount = this.sketch.frameCount
+        this.cursor = 0
         this.continue()
     }
     mouseWheel(event: WheelEvent) {
