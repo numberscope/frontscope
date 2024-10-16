@@ -408,7 +408,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         // prepare sketch
         this.sketch
             .background(this.bgColor)
-            .fill(this.bgColor)
+            .noFill()
             .stroke(this.strokeColor)
             .strokeWeight(this.strokeWeight)
             .frameRate(30)
@@ -433,24 +433,18 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         // draw path
         // but only if there's more path to draw
         if (this.path.length > 1) {
-            let startState = this.path[0]
-            let endState = this.path[1]
-            for (let i = 1; i < this.path.length; i++) {
-                endState = this.path[i]
-                sketch.line(
-                    startState.position.x,
-                    startState.position.y,
-                    endState.position.x,
-                    endState.position.y
-                )
-                startState = endState
-            }
+            sketch.beginShape()
+            this.path.forEach(state =>
+                sketch.vertex(state.position.x, state.position.y)
+            )
+            sketch.endShape()
             // since we did some steps, must
             // advance this.beginStep and this.turtleState
             // unless the path failed somehow
             if (!this.pathFailure) {
-                this.beginStep += BigInt(this.path.length - 1)
-                this.turtleState = endState
+                const last = this.path.length - 1
+                this.beginStep += BigInt(last)
+                this.turtleState = this.path[last]
             }
         }
 
