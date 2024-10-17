@@ -1,12 +1,14 @@
 <template>
     <div>
         <div v-if="status.defective()" class="error-box">
+            <p v-if="status.invalid()" class="error-message">Errors:</p>
             <p
                 v-for="error in status.errors"
                 :key="error"
                 class="error-message">
                 {{ error }}
             </p>
+            <p v-if="status.isWarned()" class="warning-message">Warnings:</p>
             <p
                 v-for="warning in status.warnings"
                 :key="warning"
@@ -221,6 +223,6 @@
     }
 
     .warning-message {
-        color: orange;
+        color: #f08000;
     }
 </style>

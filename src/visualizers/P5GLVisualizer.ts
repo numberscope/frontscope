@@ -1,5 +1,6 @@
 import p5 from 'p5'
 import * as brush from 'p5.brush'
+import {markRaw} from 'vue'
 
 import {P5Visualizer} from './P5Visualizer'
 import type {P5VizInterface} from './P5Visualizer'
@@ -48,7 +49,7 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
                     this.size.height,
                     this.sketch.WEBGL
                 )
-            this.camera = this.sketch.createCamera()
+            this.camera = markRaw(this.sketch.createCamera())
             this.initialCameraZ = this.camera.eyeZ
             brush.load()
         }
