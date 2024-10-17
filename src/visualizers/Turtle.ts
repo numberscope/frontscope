@@ -195,6 +195,10 @@ in pixels.
     },
 } satisfies GenericParamDescription
 
+// How many segments to gather into a reusable Geometry object
+// Might need tuning
+const CHUNK_SIZE = 1000
+
 class Turtle extends P5GLVisualizer(paramDesc) {
     static category = 'Turtle'
     static description =
@@ -211,6 +215,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
     // variables recording the path
     private vertices = markRaw([new p5.Vector()]) // nodes of path
+    private chunks: p5.Geometry[] = markRaw([]) // "frozen" chunks of path
     private bearing = 0 // heading at tip of path
     private cursor = 0 // vertices up to this one have already been drawn
 
@@ -389,6 +394,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     refresh() {
         // eliminates the path so it will be recomputed, and redraws
         this.vertices = markRaw([new p5.Vector()]) // nodes of path
+        this.chunks = markRaw([])
         this.bearing = 0
         this.redraw()
     }
@@ -405,13 +411,24 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             .frameRate(30)
     }
 
+    // Adds the vertices between start and end INCLUSIVE to the current shape
+    addVertices(start: number, end: number) {
+        let lastPos: undefined | p5.Vector = undefined
+        for (let i = start; i <= end; ++i) {
+            const pos = this.vertices[i]
+            if (pos.x !== lastPos?.x || pos.y !== lastPos?.y) {
+                this.sketch.vertex(pos.x, pos.y)
+            }
+            lastPos = pos
+        }
+    }
+
     draw() {
         const sketch = this.sketch
         if (this.folding) this.refresh()
         else if (this.cursor === 0) this.redraw()
 
         // compute more of path as needed:
-        console.log(this.vertices.length, this.growth, this.maxLength)
         const targetLength = Math.min(
             this.vertices.length - 1 + this.growth,
             this.maxLength
@@ -419,18 +436,35 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         this.extendPath(sketch.frameCount, targetLength)
 
         // draw path from cursor to tip:
-        if (this.cursor < this.vertices.length - 1) {
+        const newCursor = this.vertices.length - 1
+        // First see if we can use any chunks:
+        const fullChunksIn = Math.floor(this.cursor / CHUNK_SIZE)
+        let drewSome = false
+        for (let chunk = fullChunksIn; chunk < this.chunks.length; ++chunk) {
+            sketch.model(this.chunks[chunk])
+            drewSome = true
+        }
+        if (drewSome) this.cursor = this.chunks.length * CHUNK_SIZE
+        if (this.cursor < newCursor) {
             sketch.beginShape()
-            let lastPos: undefined | p5.Vector = undefined
-            while (this.cursor < this.vertices.length) {
-                const pos = this.vertices[this.cursor++]
-                if (pos.x !== lastPos?.x || pos.y !== lastPos?.y) {
-                    sketch.vertex(pos.x, pos.y)
-                }
-                lastPos = pos
-            }
-            this.cursor-- // get it back in range
+            this.addVertices(this.cursor, newCursor)
             sketch.endShape()
+            this.cursor = newCursor
+        }
+
+        // See if we can create a new chunk:
+        const fullChunks = Math.floor(this.cursor / CHUNK_SIZE)
+        if (!this.folding && fullChunks > this.chunks.length) {
+            // @ts-expect-error  The @types/p5 package omitted this function
+            sketch.beginGeometry()
+            sketch.beginShape()
+            this.addVertices(
+                (fullChunks - 1) * CHUNK_SIZE,
+                fullChunks * CHUNK_SIZE
+            )
+            sketch.endShape()
+            // @ts-expect-error  Ditto :-(
+            this.chunks.push(sketch.endGeometry())
         }
 
         // stop drawing if no animation
@@ -448,7 +482,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     // Resulting path should be targetLength steps
     // meaning that vertices.length = that + 1
     extendPath(currentFrames: number, targetLength: number) {
-        console.log(`Frame ${currentFrames}, to ${targetLength}`)
         // First compute the rotMap to use:
         let rotMap = this.rotMap
         if (this.folding) {
@@ -464,7 +497,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         const position = this.vertices[len].copy()
         const startIndex = this.firstIndex + BigInt(len)
         const endIndex = this.firstIndex + BigInt(targetLength)
-        console.log('Indices', startIndex, 'to', endIndex - 1n)
         for (let i = startIndex; i < endIndex; i++) {
             // get the current sequence element and infer
             // the rotation/step/increment
