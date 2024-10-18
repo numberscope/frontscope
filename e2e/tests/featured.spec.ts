@@ -8,7 +8,10 @@ test.describe('Featured gallery images', () => {
     for (const feature of featured) {
         const featProps = parseSpecimenQuery(feature.query)
         const details = {}
-        if (featProps.visualizerKind === 'Histogram') {
+        if (
+            featProps.visualizerKind === 'Histogram'
+            || featProps.visualizerKind === 'Turtle'
+        ) {
             details.tag = '@webGL'
         }
         test(featProps.name, details, async ({page, browserName}) => {

@@ -90,7 +90,7 @@
         "bigint-isqrt": "^0.3.2",
         "bigint-mod-arith": "^3.3.1",
         "interactjs": "^1.10.27",
-        "p5": "^1.10.0",
+        "p5": "^1.11.0",
         "p5.brush": "^1.1.2",
         "vue": "^3.4.31",
         "vue-router": "^4.4.0"
