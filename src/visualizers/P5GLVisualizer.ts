@@ -81,10 +81,12 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
         }
 
         // Provide default camera controls: left drag pans, mouse wheel zooms
+        // right mouse button rotates
         mouseDragged() {
             const sketch = this.sketch
             if (this.camera && sketch.mouseButton === 'left') {
                 const {scale} = this.mouseToPlot()
+                console.log(scale)
                 this.camera.move(
                     -sketch.movedX * scale,
                     -sketch.movedY * scale,
@@ -92,11 +94,18 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
                 )
                 this.continue()
             }
+            if (this.camera && sketch.mouseButton === 'right') {
+                const rotateSpeed = 0.001
+                // typescript problem
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ;(this.camera as any).roll(sketch.movedX * rotateSpeed)
+                this.continue()
+            }
         }
 
         mouseWheel(event: WheelEvent) {
             if (this.camera) {
-                this.camera.move(0, 0, event.deltaY)
+                this.camera.move(0, 0, event.deltaY / 10)
                 this.continue()
             }
         }

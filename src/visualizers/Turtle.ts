@@ -126,6 +126,25 @@ looks a little like protein folding.
         visibleDependency: 'foldControls',
         visibleValue: true,
     },
+    /** md
+- stretching: a list of numbers. When these are non-zero, the path will animate.
+These are step-length increments added to the step lengths
+each frame.  They correspond positionally to the domain elements.
+Must contain the same number of elements as the domain.
+     **/
+    stretches: {
+        default: [0, 0, 0, 0, 0] as number[],
+        type: ParamType.NUMBER_ARRAY,
+        displayName: 'Stretching rates',
+        required: false,
+        description:
+            'turns on animation:  list of step length increments'
+            + 'per frame, in order corresponding'
+            + ' to the sequence values listed in domain',
+        hideDescription: false,
+        visibleDependency: 'foldControls',
+        visibleValue: true,
+    },
     /**
 - pathLook: boolean. If true, show path style controls
     **/
@@ -208,10 +227,12 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     private rotMap = markRaw(new Map<string, number>())
     private stepMap = markRaw(new Map<string, number>())
     private foldMap = markRaw(new Map<string, number>())
+    private stretchMap = markRaw(new Map<string, number>())
     // private copies of rule arrays
     private turnsInternal: number[] = []
     private stepsInternal: number[] = []
     private foldsInternal: number[] = []
+    private stretchesInternal: number[] = []
 
     // variables recording the path
     private vertices = markRaw([new p5.Vector()]) // nodes of path
@@ -228,7 +249,13 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
     // controlling the folding smoothness/speed/units
     // the units of the folding entry field are 1/denom degrees
-    private denom = 100000 // larger = more precision/slower
+    private foldDenom = 100000 // larger = more precision/slower
+    private stretchDenom = 100 // larger = more precision/slower
+
+    // throttling (max step lengths for animating)
+    private throttleWarn = 5000
+    private throttleLimit = 15000
+    private throttleGrowth = 100
 
     // handling slow caching & mouse
     private pathFailure = false
@@ -256,6 +283,13 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 desc: paramDesc.folds as ParamInterface<ParamType.NUMBER_ARRAY>,
                 text: 'folds',
                 startText: 'Folding rates ',
+            },
+            {
+                param: this.stretches,
+                // eslint-disable-next-line max-len
+                desc: paramDesc.stretches as ParamInterface<ParamType.NUMBER_ARRAY>,
+                text: 'stretches',
+                startText: 'Stretching rates ',
             },
         ]
         for (const rule of ruleParams) {
@@ -287,26 +321,31 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             }
         }
 
-        // warn when folding is turned on for long paths
+        // warn when animation is turned on for long paths
         // BUG:  when sequence params change this isn't re-run
         // so the warning may be out of date
         if (
             params.folds.some(value => value !== 0)
-            && this.seq.length > 1000
-            && this.seq.length <= 4000
+            && this.seq.length > this.throttleWarn
+            && this.seq.length <= this.throttleLimit
         ) {
+            // bug... why isn't this displaying?
             status.addWarning(
-                'Turning on folding with more than 1000 terms is likely'
+                'Turning on folding with more than '
+                    //		+ this.throttleWarn.toString() + ' terms is likely'
                     + ' to be quite laggy.'
             )
         }
         if (
             params.folds.some(value => value !== 0)
-            && this.seq.length > 4000
+            && this.seq.length > this.throttleLimit
         ) {
             status.addWarning(
-                'Folding animation not available with more than'
-                    + ' 4000 terms; using only 4000.'
+                'Folding animation not available with more than '
+                    + this.throttleLimit.toString()
+                    + ' terms; using only '
+                    + this.throttleLimit.toString()
+                    + '.'
             )
         }
         return status
@@ -329,6 +368,10 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 param: this.folds,
                 local: [0],
             },
+            {
+                param: this.stretches,
+                local: [0],
+            },
         ]
         ruleParams.forEach(rule => {
             rule.local = [...rule.param]
@@ -346,6 +389,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         this.turnsInternal = ruleParams[0].local
         this.stepsInternal = ruleParams[1].local
         this.foldsInternal = ruleParams[2].local
+        this.stretchesInternal = ruleParams[3].local
 
         // create a map from sequence values to rotations
         for (let i = 0; i < this.domain.length; i++) {
@@ -367,7 +411,18 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             if (this.foldsInternal[i] != 0) this.folding = true
             this.foldMap.set(
                 this.domain[i].toString(),
-                (Math.PI / 180) * (this.foldsInternal[i] / this.denom)
+                (Math.PI / 180) * (this.foldsInternal[i] / this.foldDenom)
+            )
+        }
+
+        // create a map from sequence values to stretch increments
+        // notice if path is static or we are animating
+        // rename folding to animating?
+        for (let i = 0; i < this.domain.length; i++) {
+            if (this.stretchesInternal[i] != 0) this.folding = true
+            this.stretchMap.set(
+                this.domain[i].toString(),
+                this.stretchesInternal[i] / this.stretchDenom
             )
         }
     }
@@ -380,11 +435,13 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
         // reset variables
         this.firstIndex = this.seq.first
-        this.maxLength = this.folding ? 4000 : Number.MAX_SAFE_INTEGER
+        this.maxLength = this.folding
+            ? this.throttleLimit
+            : Number.MAX_SAFE_INTEGER
         if (this.seq.length < this.maxLength) {
             this.maxLength = Number(this.seq.length)
         }
-        this.growth = Math.min(this.speed, 100)
+        this.growth = Math.min(this.speed, this.throttleGrowth)
         // draw the entire path every frame if folding
         if (this.folding) this.growth = this.maxLength
 
@@ -482,7 +539,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     // Resulting path should be targetLength steps
     // meaning that vertices.length = that + 1
     extendPath(currentFrames: number, targetLength: number) {
-        // First compute the rotMap to use:
+        // First compute the rotMap and stepMap to use:
         let rotMap = this.rotMap
         if (this.folding) {
             rotMap = new Map<string, number>()
@@ -491,6 +548,16 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 rotMap.set(entry, rot + extra)
             }
         }
+        let stepMap = this.stepMap
+        if (this.folding) {
+            stepMap = new Map<string, number>()
+            for (const [entry, step] of this.stepMap) {
+                const extra =
+                    currentFrames * (this.stretchMap.get(entry) ?? 0)
+                stepMap.set(entry, step + extra)
+            }
+        }
+
         // Now compute the new vertices in the path:
         this.pathFailure = false
         const len = this.vertices.length - 1
@@ -499,7 +566,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         const endIndex = this.firstIndex + BigInt(targetLength)
         for (let i = startIndex; i < endIndex; i++) {
             // get the current sequence element and infer
-            // the rotation/step/increment
+            // the rotation/step
             let currElement = 0n
             try {
                 currElement = this.seq.getElement(i)
@@ -515,7 +582,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             const currElementString = currElement.toString()
             const turnAngle = rotMap.get(currElementString)
             if (turnAngle !== undefined) {
-                const stepLength = this.stepMap.get(currElementString) ?? 0
+                const stepLength = stepMap.get(currElementString) ?? 0
                 this.bearing += turnAngle
                 position.x += Math.cos(this.bearing) * stepLength
                 position.y += Math.sin(this.bearing) * stepLength
