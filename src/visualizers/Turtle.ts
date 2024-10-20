@@ -481,6 +481,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     }
 
     draw() {
+        if (this.handleDrags()) this.cursor = 0
         const sketch = this.sketch
         if (this.folding) this.refresh()
         else if (this.cursor === 0) this.redraw()
@@ -527,6 +528,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         // stop drawing if no animation
         if (
             !this.folding
+            && !sketch.mouseIsPressed
             && this.vertices.length > this.maxLength
             && !this.pathFailure
         ) {
@@ -591,17 +593,9 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         }
     }
 
-    mouseReaction() {
-        this.cursor = 0
-        this.continue()
-    }
     mouseWheel(event: WheelEvent) {
         super.mouseWheel(event)
-        this.mouseReaction()
-    }
-    mouseDragged() {
-        super.mouseDragged()
-        this.mouseReaction()
+        this.cursor = 0 // make sure we redraw
     }
 }
 

@@ -267,6 +267,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     }
 
     draw() {
+        this.handleDrags()
         const sketch = this.sketch
         sketch.background(176, 227, 255) // light blue
         // Convert back to the ordinary p5 coordinates as this was
@@ -424,7 +425,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     }
 
     mousePressed() {
-        this.continue()
+        super.mousePressed()
         this.stop(3)
     }
 }
