@@ -94,12 +94,12 @@ will be interpreted as the step length for the n-th domain element.
         hideDescription: false,
     },
     /**
-- foldControls: boolean. If true, show folding controls
+- animationControls: boolean. If true, show folding controls
     **/
-    foldControls: {
+    animationControls: {
         default: false,
         type: ParamType.BOOLEAN,
-        displayName: 'Protein folding animation ↴',
+        displayName: 'Animation ↴',
         required: false,
     },
     /** md
@@ -123,7 +123,7 @@ looks a little like protein folding.
             + ' of 1/10^5 degree, in order corresponding'
             + ' to the sequence values listed in domain',
         hideDescription: false,
-        visibleDependency: 'foldControls',
+        visibleDependency: 'animationControls',
         visibleValue: true,
     },
     /** md
@@ -142,7 +142,7 @@ Must contain the same number of elements as the domain.
             + 'per frame, in order corresponding'
             + ' to the sequence values listed in domain',
         hideDescription: false,
-        visibleDependency: 'foldControls',
+        visibleDependency: 'animationControls',
         visibleValue: true,
     },
     /**
@@ -151,7 +151,7 @@ Must contain the same number of elements as the domain.
     pathLook: {
         default: true,
         type: ParamType.BOOLEAN,
-        displayName: 'Path speed/styling ↴',
+        displayName: 'Path start/speed/styling ↴',
         required: false,
     },
     /**
@@ -159,7 +159,7 @@ Must contain the same number of elements as the domain.
 Otherwise, the visualizer will animate: this is the number of steps of the path
 to grow per frame, until the path reaches its maximum length (give by sequence
  last parameter).  The visualizer has a brake on it to prevent lag: the speed
- cannot exceed 100 steps per frame.
+ cannot exceed 1000 steps per frame.
      **/
     speed: {
         default: 1,
@@ -172,7 +172,7 @@ to grow per frame, until the path reaches its maximum length (give by sequence
         visibleValue: true,
         validate: function (n: number, status: ValidationStatus) {
             if (n <= 0) status.addError('Speed must be positive')
-            if (n > 100) status.addWarning('Speed capped at 100')
+            if (n > 1000) status.addError('Speed capped at 1000')
         },
     },
     /**
@@ -209,6 +209,33 @@ in pixels.
         type: ParamType.COLOR,
         displayName: 'Stroke Color',
         required: true,
+        visibleDependency: 'pathLook',
+        visibleValue: true,
+    },
+    /**
+- initAngle: a number. Gives the angle the turtle starts at, in degrees.
+     **/
+    initAngle: {
+        default: 0,
+        type: ParamType.INTEGER,
+        displayName: 'Start angle',
+        required: false,
+        visibleDependency: 'pathLook',
+        visibleValue: true,
+    },
+    /**
+- initPosition: a pair of numbers x, y. Gives the offset (x,y) of the
+turtle start position from canvas centre, in pixels.
+     **/
+    initPosition: {
+        default: [0, 0] as number[],
+        type: ParamType.NUMBER_ARRAY,
+        displayName: 'Start position',
+        required: false,
+        validate: function (pos: number[], status: ValidationStatus) {
+            if (pos.length != 2)
+                status.addError('Start position must' + 'be two integers')
+        },
         visibleDependency: 'pathLook',
         visibleValue: true,
     },
@@ -255,7 +282,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     // throttling (max step lengths for animating)
     private throttleWarn = 5000
     private throttleLimit = 15000
-    private throttleGrowth = 100
 
     // handling slow caching & mouse
     private pathFailure = false
@@ -441,7 +467,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         if (this.seq.length < this.maxLength) {
             this.maxLength = Number(this.seq.length)
         }
-        this.growth = Math.min(this.speed, this.throttleGrowth)
+        this.growth = this.speed
         // draw the entire path every frame if folding
         if (this.folding) this.growth = this.maxLength
 
@@ -450,9 +476,11 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
     refresh() {
         // eliminates the path so it will be recomputed, and redraws
-        this.vertices = markRaw([new p5.Vector()]) // nodes of path
+        this.vertices = markRaw([
+            new p5.Vector(this.initPosition[0], this.initPosition[1]),
+        ]) // nodes of path
         this.chunks = markRaw([])
-        this.bearing = 0
+        this.bearing = this.initAngle
         this.redraw()
     }
 
