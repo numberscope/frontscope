@@ -212,33 +212,6 @@ in pixels.
         visibleDependency: 'pathLook',
         visibleValue: true,
     },
-    /**
-- initAngle: a number. Gives the angle the turtle starts at, in degrees.
-     **/
-    initAngle: {
-        default: 0,
-        type: ParamType.INTEGER,
-        displayName: 'Start angle',
-        required: false,
-        visibleDependency: 'pathLook',
-        visibleValue: true,
-    },
-    /**
-- initPosition: a pair of numbers x, y. Gives the offset (x,y) of the
-turtle start position from canvas centre, in pixels.
-     **/
-    initPosition: {
-        default: [0, 0] as number[],
-        type: ParamType.NUMBER_ARRAY,
-        displayName: 'Start position',
-        required: false,
-        validate: function (pos: number[], status: ValidationStatus) {
-            if (pos.length != 2)
-                status.addError('Start position must' + 'be two integers')
-        },
-        visibleDependency: 'pathLook',
-        visibleValue: true,
-    },
 } satisfies GenericParamDescription
 
 // How many segments to gather into a reusable Geometry object
@@ -476,11 +449,9 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
     refresh() {
         // eliminates the path so it will be recomputed, and redraws
-        this.vertices = markRaw([
-            new p5.Vector(this.initPosition[0], this.initPosition[1]),
-        ]) // nodes of path
+        this.vertices = markRaw([new p5.Vector()]) // nodes of path
         this.chunks = markRaw([])
-        this.bearing = this.initAngle
+        this.bearing = 0
         this.redraw()
     }
 
