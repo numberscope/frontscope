@@ -331,6 +331,30 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                     + 'entries of the sequence.'
             )
         }
+
+        // Check that the domain seems suitable for the sequence:
+        const toTest = 100n
+        const threshold = 10
+        if (this.seq.length >= toTest) {
+            let nIn = 0
+            const limit = this.seq.first + toTest
+            for (let i = this.seq.first; i < limit; ++i) {
+                try {
+                    const val = this.seq.getElement(i)
+                    if (params.domain.includes(val)) ++nIn
+                } catch {
+                    // bag the test
+                    return status
+                }
+            }
+            if (nIn < threshold) {
+                status.addWarning(
+                    `Only ${nIn} of the first ${toTest} entries are in the `
+                        + `domain (${params.domain}); consider adjusting.`
+                )
+            }
+        }
+
         return status
     }
 
