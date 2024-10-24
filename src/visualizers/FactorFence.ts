@@ -83,7 +83,7 @@ const paramDesc = {
     in the display
      **/
     highlight: {
-        default: 1,
+        default: 1n,
         type: ParamType.BIGINT,
         displayName: 'Your favourite number',
         required: true,

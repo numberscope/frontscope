@@ -1,8 +1,9 @@
 import p5 from 'p5'
 import {markRaw} from 'vue'
 
-import {VisualizerExportModule} from './VisualizerInterface'
 import {P5GLVisualizer} from './P5GLVisualizer'
+import {VisualizerExportModule} from './VisualizerInterface'
+import type {ViewSize} from './VisualizerInterface'
 
 import {CachingError} from '@/sequences/Cached'
 import type {
@@ -618,6 +619,11 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             }
             this.vertices.push(position.copy())
         }
+    }
+
+    async resized(_toSize: ViewSize) {
+        this.cursor = 0 // make sure we redraw
+        return true // we handled it; framework need not do anything
     }
 
     mouseWheel(event: WheelEvent) {
