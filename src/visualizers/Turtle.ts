@@ -51,7 +51,7 @@ some sequences, like A014577 "The regular paper-folding sequence", naturally
 have a small domain.)
      **/
     domain: {
-        default: [0n, 1n, 2n, 3n, 4n] as bigint[],
+        default: [0n, 1n, 2n] as bigint[],
         type: ParamType.BIGINT_ARRAY,
         displayName: 'Domain',
         required: true,
@@ -68,7 +68,7 @@ element of the domain will be interpreted as an instruction to turn
 x degrees, where x is the first number in this field.
      **/
     turns: {
-        default: [30, 45, 60, 90, 120] as number[],
+        default: [30, 45, 60] as number[],
         type: ParamType.NUMBER_ARRAY,
         displayName: 'Turning angles',
         required: true,
@@ -84,7 +84,7 @@ elements as the domain.  As with turn angles, the n-th step length
 will be interpreted as the step length for the n-th domain element.
      **/
     steps: {
-        default: [20, 20, 20, 20, 20] as number[],
+        default: [20, 20, 20] as number[],
         type: ParamType.NUMBER_ARRAY,
         displayName: 'Step lengths',
         required: true,
@@ -103,6 +103,29 @@ will be interpreted as the step length for the n-th domain element.
         required: false,
     },
     /** md
+- foldRate: When this is non-zero, the path will animate.
+This is the angle increment added to the turning
+angles each frame.  The units are (1/10^5)-th of a degree.
+For example, if the entry is a `2`, then in each
+frame of the animation, the turn angle for
+the every domain element will increase by (2/10^5)-th
+of a degree.  The result
+looks a little like protein folding.
+     **/
+    foldRate: {
+        default: 0,
+        type: ParamType.NUMBER,
+        displayName: 'Uniform folding rate',
+        required: false,
+        description:
+            'turns on animation:  rate of increase of'
+            + ' turn angles; '
+            + 'units of 1/10^5 degree per frame',
+        hideDescription: false,
+        visibleDependency: 'animationControls',
+        visibleValue: true,
+    },
+    /** md
 - folding: a list of numbers. When these are non-zero, the path will animate.
 These are angle increments added to the turning
 angles each frame.  They correspond
@@ -110,16 +133,19 @@ positionally to the domain elements.  Must contain the same number of elements
 as the domain.  The units are (1/10^5)-th of a degree.
 For example, if the first
 entry here is a `2`, then in each frame of the animation, the turn angle for
-the first domain element will increase by (2/10^5)-th of a degree.  The result
+the first domain element will increase by (2/10^5)-th of a degree.
+If foldRate is set, the effect is cumulative.
+The result
 looks a little like protein folding.
      **/
     folds: {
-        default: [0, 0, 0, 0, 0] as number[],
+        default: [0, 0, 0] as number[],
         type: ParamType.NUMBER_ARRAY,
-        displayName: 'Folding rates',
+        displayName: 'Individual folding rates',
         required: false,
         description:
-            'turns on animation:  list of angle increments per frame in units'
+            'turns on animation:  list'
+            + ' of angle increments per frame in units'
             + ' of 1/10^5 degree, in order corresponding'
             + ' to the sequence values listed in domain',
         hideDescription: false,
@@ -133,9 +159,9 @@ each frame.  They correspond positionally to the domain elements.
 Must contain the same number of elements as the domain.
      **/
     stretches: {
-        default: [0, 0, 0, 0, 0] as number[],
+        default: [0, 0, 0] as number[],
         type: ParamType.NUMBER_ARRAY,
-        displayName: 'Stretching rates',
+        displayName: 'Individual stretching rates',
         required: false,
         description:
             'turns on animation:  list of step length increments'
@@ -151,7 +177,7 @@ Must contain the same number of elements as the domain.
     pathLook: {
         default: true,
         type: ParamType.BOOLEAN,
-        displayName: 'Path start/speed/styling ↴',
+        displayName: 'Path speed/styling ↴',
         required: false,
     },
     /**
@@ -243,7 +269,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     // variables holding the parameter values
     // these don't change except in setup()
     private firstIndex = 0n // first term
-    private folding = false // whether there's any folding
+    private animating = false // whether there's any fold/stretch
     private growth = 0 // growth of path per frame
     private maxLength = -1 // longest we will allow path to get
 
@@ -405,12 +431,14 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
         // create a map from sequence values to turn increments
         // notice if path is static or we are folding
-        this.folding = false
+        this.animating = false
         for (let i = 0; i < this.domain.length; i++) {
-            if (this.foldsInternal[i] != 0) this.folding = true
+            // cumulative effect of two ways to turn on folding
+            const thisFold = this.foldsInternal[i] + this.foldRate
+            if (thisFold != 0) this.animating = true
             this.foldMap.set(
                 this.domain[i].toString(),
-                (Math.PI / 180) * (this.foldsInternal[i] / this.foldDenom)
+                (Math.PI / 180) * (thisFold / this.foldDenom)
             )
         }
 
@@ -418,7 +446,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         // notice if path is static or we are animating
         // rename folding to animating?
         for (let i = 0; i < this.domain.length; i++) {
-            if (this.stretchesInternal[i] != 0) this.folding = true
+            if (this.stretchesInternal[i] != 0) this.animating = true
             this.stretchMap.set(
                 this.domain[i].toString(),
                 this.stretchesInternal[i] / this.stretchDenom
@@ -434,7 +462,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
         // reset variables
         this.firstIndex = this.seq.first
-        this.maxLength = this.folding
+        this.maxLength = this.animating
             ? this.throttleLimit
             : Number.MAX_SAFE_INTEGER
         if (this.seq.length < this.maxLength) {
@@ -442,7 +470,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         }
         this.growth = this.speed
         // draw the entire path every frame if folding
-        if (this.folding) this.growth = this.maxLength
+        if (this.animating) this.growth = this.maxLength
 
         this.refresh()
     }
@@ -482,7 +510,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     draw() {
         if (this.handleDrags()) this.cursor = 0
         const sketch = this.sketch
-        if (this.folding) this.refresh()
+        if (this.animating) this.refresh()
         else if (this.cursor === 0) this.redraw()
 
         // compute more of path as needed:
@@ -511,7 +539,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
         // See if we can create a new chunk:
         const fullChunks = Math.floor(this.cursor / CHUNK_SIZE)
-        if (!this.folding && fullChunks > this.chunks.length) {
+        if (!this.animating && fullChunks > this.chunks.length) {
             // @ts-expect-error  The @types/p5 package omitted this function
             sketch.beginGeometry()
             sketch.beginShape()
@@ -526,7 +554,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
         // stop drawing if no animation
         if (
-            !this.folding
+            !this.animating
             && !sketch.mouseIsPressed
             && this.vertices.length > this.maxLength
             && !this.pathFailure
@@ -542,7 +570,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     extendPath(currentFrames: number, targetLength: number) {
         // First compute the rotMap and stepMap to use:
         let rotMap = this.rotMap
-        if (this.folding) {
+        if (this.animating) {
             rotMap = new Map<string, number>()
             for (const [entry, rot] of this.rotMap) {
                 const extra = currentFrames * (this.foldMap.get(entry) ?? 0)
@@ -550,7 +578,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             }
         }
         let stepMap = this.stepMap
-        if (this.folding) {
+        if (this.animating) {
             stepMap = new Map<string, number>()
             for (const [entry, step] of this.stepMap) {
                 const extra =
