@@ -6,11 +6,7 @@ import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
 
 import {CachingError} from '@/sequences/Cached'
-import type {
-    GenericParamDescription,
-    ParamValues,
-    ParamInterface,
-} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
@@ -23,75 +19,89 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
   style="margin-left: 1em; margin-right: 0.5em"
 />](../assets/img/Turtle/turtle-waitforit.png)
 
-This visualizer interprets a sequence as instructions for a drawing machine.
-For each value in a domain of possible sequence values, the entry determines
+This visualizer interprets a sequence as instructions for a drawing machine,
+often known as a "turtle" after a simple drawing robot built in the 1960s.
+For some domain of possible values, each entry in the sequence determines
 a turn angle and step length.  The visualizer displays the resulting polygonal
 path.
 
 There are two ways to animate the resulting path:
 
-1.  By setting the growth parameter to be positive, you can watch the path
-being drawn some number of steps per frame until it reaches the full length.
+1.  By setting the speed parameter to be positive, you can watch the path
+being drawn some number of steps per frame, as long as more terms of the
+sequence are available.
 
-2.  By setting non-zero values for the `Folding rates', the user can set the
-turn angles to gradually increase or decrease over time, resulting a
-protein-folding effect.
+2.  By setting non-zero values for the fold and stretch parameters in the
+animation section, the user can set the turn angles and/or step lengths to
+gradually increase or decrease over time, resulting in a visual effect
+reminiscent of protein folding. In this mode, the same fixed number of steps
+of the path are re-drawn in every frame.
 
 ## Parameters
 **/
 
 const paramDesc = {
     /** md
-- domain: a list of numbers.  These are the values that
+- Domain: a list of numbers.  These are the values that
 that the turtle should pay attention to when appearing as
-terms of the sequence.  Values of the sequence
-not occurring in this list will be ignored.
+entries of the sequence.  Values of the sequence
+not occurring in this list will be skipped.
 (One way to ensure a small number of possible values is to use a
 sequence that has been reduced with respect to some small modulus. But
 some sequences, like A014577 "The regular paper-folding sequence", naturally
 have a small domain.)
      **/
     domain: {
-        default: [0n, 1n, 2n] as bigint[],
+        default: [0n, 1n, 2n],
         type: ParamType.BIGINT_ARRAY,
         displayName: 'Domain',
         required: true,
         description:
-            'sequence values to interpret as rules; terms not '
-            + ' matching any value here are ignored',
+            'sequence values to interpret as rules; entries not '
+            + 'matching any value here are skipped',
         hideDescription: false,
     },
     /** md
-- turns: a list of numbers. These are turning angles, in degrees,
-corresponding positionally to the domain elements. Must contain
-the same number of elements as the domain.  In other words, the first
-element of the domain will be interpreted as an instruction to turn
-x degrees, where x is the first number in this field.
+
+The next four parameters give the instructions for the turtle's path (and how
+it changes from frame to frame). Each one can be a single number, in which
+case it is used for every element of the domain. Or it can be a list of
+numbers the same length as the domain, in which case the numbers correspond in
+order: the first number is used when an entry is equal to the first value in
+the domain, the second number is used for entries equal to the second value,
+and so on. For example, if the "Steps" parameter below is "10", then a segment
+10 pixels long will be drawn for every sequence entry in the domain, whereas if
+the domain is "0 1 2" and "Steps" is "20 10 0", then the turtle will move 20
+pixels each time it sees a sequence entry of 0, 10 pixels for each 1, and it
+won't draw anything when the entry is equal to 2 (but it might turn).
+
+- Turn angle(s): Specifies (in degrees) how much the turtle should turn for
+each sequence entry in the domain. Positive values turn counterclockwise,
+and negative values clockwise.
      **/
     turns: {
-        default: [30, 45, 60] as number[],
+        default: [30, 45, 60],
         type: ParamType.NUMBER_ARRAY,
-        displayName: 'Turning angles',
+        displayName: 'Turn angle(s)',
         required: true,
         description:
-            'list of angles in degrees, in order corresponding'
-            + ' to the sequence values listed in domain',
+            'An angle (in degrees) or a list of angles, in order '
+            + 'corresponding to the sequence values listed in Domain',
         hideDescription: false,
     },
     /** md
-- steps: a list of numbers. These are step lengths, corresponding
-positionally to the domain elements.  Must contain the same number of
-elements as the domain.  As with turn angles, the n-th step length
-will be interpreted as the step length for the n-th domain element.
+- Step length(s): Specifies (in pixels) how far the turtle should move (and
+draw a line segment as it goes) for each sequence entry in the domain. Note
+negative values (for moving backward) are allowed.
      **/
     steps: {
-        default: [20, 20, 20] as number[],
+        default: [20],
         type: ParamType.NUMBER_ARRAY,
-        displayName: 'Step lengths',
+        displayName: 'Step length(s)',
         required: true,
         description:
-            'list of step lengths in pixels, in order corresponding'
-            + ' to the sequence values listed in domain',
+            'A length (in pixels), or a list of lengths, in order '
+            + 'corresponding to the sequence values listed in Domain',
         hideDescription: false,
     },
     /**
@@ -104,70 +114,45 @@ will be interpreted as the step length for the n-th domain element.
         required: false,
     },
     /** md
-- foldRate: When this is non-zero, the path will animate.
-This is the angle increment added to the turning
-angles each frame.  The units are (1/10^5)-th of a degree.
-For example, if the entry is a `2`, then in each
-frame of the animation, the turn angle for
-the every domain element will increase by (2/10^5)-th
-of a degree.  The result
-looks a little like protein folding.
-     **/
-    foldRate: {
-        default: 0,
-        type: ParamType.NUMBER,
-        displayName: 'Uniform folding rate',
-        required: false,
-        description:
-            'turns on animation:  rate of increase of'
-            + ' turn angles; '
-            + 'units of 1/10^5 degree per frame',
-        hideDescription: false,
-        visibleDependency: 'animationControls',
-        visibleValue: true,
-    },
-    /** md
-- folding: a list of numbers. When these are non-zero, the path will animate.
-These are angle increments added to the turning
-angles each frame.  They correspond
-positionally to the domain elements.  Must contain the same number of elements
-as the domain.  The units are (1/10^5)-th of a degree.
-For example, if the first
-entry here is a `2`, then in each frame of the animation, the turn angle for
-the first domain element will increase by (2/10^5)-th of a degree.
-If foldRate is set, the effect is cumulative.
-The result
-looks a little like protein folding.
+- Fold rate(s): Specifies (in units of 0.00001 degree) how each turn angle
+changes from one frame to the next. For example, if there is just one entry
+of "5" here, then in each frame of the animation, the turn angle for every
+element of the domain will increase by 0.00005 degree. Similarly, if the
+domain is "0 1" and this list is "200 -100" then in each frame the turn angle
+for 0 entries will increase by 0.002 degrees, and the turn angle for 1 entries
+will decrease by 0.001 degree. These increments might seem small, but with
+so many turns in a turtle path, a little goes a long way.
      **/
     folds: {
-        default: [0, 0, 0] as number[],
+        default: [0],
         type: ParamType.NUMBER_ARRAY,
-        displayName: 'Individual folding rates',
+        displayName: 'Folding rate(s)',
         required: false,
         description:
-            'turns on animation:  list'
-            + ' of angle increments per frame in units'
-            + ' of 1/10^5 degree, in order corresponding'
-            + ' to the sequence values listed in domain',
+            'An angle increment (in units of 0.00001 degree), or list of '
+            + 'angle increments in order corresponding to the sequence '
+            + 'values listed in Domain. If any are nonzero, the path will '
+            + 'animate, adding the increment(s) to the turn angle(s) before '
+            + 'each frame; these additions accumulate from frame to frame. '
+            + 'Produces a visual effect akin to protein folding.',
         hideDescription: false,
         visibleDependency: 'animationControls',
         visibleValue: true,
     },
     /** md
-- stretching: a list of numbers. When these are non-zero, the path will animate.
-These are step-length increments added to the step lengths
-each frame.  They correspond positionally to the domain elements.
-Must contain the same number of elements as the domain.
+- Stretch rate(s): Specifies (in units of 0.01 pixel) how each step length
+changes from one frame to the next.
      **/
     stretches: {
-        default: [0, 0, 0] as number[],
+        default: [0],
         type: ParamType.NUMBER_ARRAY,
-        displayName: 'Individual stretching rates',
+        displayName: 'Stretch rate(s)',
         required: false,
         description:
-            'turns on animation:  list of step length increments'
-            + 'per frame, in order corresponding'
-            + ' to the sequence values listed in domain',
+            'A length increment (in units of 0.01 pixel), or list of length '
+            + 'increments in order corresponding to the sequence values '
+            + ' listed in Domain. Similarly to Fold rate, these increment(s) '
+            + ' are added to the step length(s) each frame.',
         hideDescription: false,
         visibleDependency: 'animationControls',
         visibleValue: true,
@@ -181,12 +166,23 @@ Must contain the same number of elements as the domain.
         displayName: 'Path speed/styling ↴',
         required: false,
     },
-    /**
-- speed: a number.  If zero, the full path is drawn all at once.
-Otherwise, the visualizer will animate: this is the number of steps of the path
-to grow per frame, until the path reaches its maximum length (give by sequence
- last parameter).  The visualizer has a brake on it to prevent lag: the speed
- cannot exceed 1000 steps per frame.
+    /** md
+
+(Note that as an advanced convenience feature, useful mainly when the domain is
+large, you may specify fewer entries in one of these lists than there are
+elements in the domain, and the last one will be re-used as many times as
+necessary. Using this feature will display a warning, in case you inadvertently
+left out a value.)
+
+The remaining parameters control the speed and style of the turtle path
+display.
+
+- Turtle speed: a number.  If zero (or if any of the fold or stretch rates
+are nonzero), the full path is drawn all at once. Otherwise, the path drawing
+will be animated, and the Turtle speed specifies the number of steps of the
+path to draw per frame. The drawing continues as long as there are additional
+entries of the sequence to display. The Turtle visualizer has a brake on it
+to prevent lag: this speed cannot exceed 1000 steps per frame.
      **/
     speed: {
         default: 1,
@@ -198,18 +194,18 @@ to grow per frame, until the path reaches its maximum length (give by sequence
         visibleDependency: 'pathLook',
         visibleValue: true,
         validate: function (n: number, status: ValidationStatus) {
-            if (n <= 0) status.addError('Speed must be positive')
+            if (n < 0) status.addError('Speed must non-negative')
             if (n > 1000) status.addError('Speed capped at 1000')
         },
     },
-    /**
-- strokeWeight: a number. Gives the width of the segment drawn for each entry,
+    /** md
+- Stroke width: a number. Gives the width of the segment drawn for each entry,
 in pixels.
      **/
     strokeWeight: {
         default: 1,
         type: ParamType.INTEGER,
-        displayName: 'Stroke Width',
+        displayName: 'Stroke width',
         required: false,
         validate: function (n: number, status: ValidationStatus) {
             if (n <= 0) status.addError('Stroke width must be positive')
@@ -218,28 +214,30 @@ in pixels.
         visibleValue: true,
     },
     /**
-- bgColor: The background color of the visualizer canvas.
+- Background color: The color of the visualizer canvas.
      **/
     bgColor: {
         default: '#6b1a1a',
         type: ParamType.COLOR,
-        displayName: 'Background Color',
+        displayName: 'Background color',
         required: true,
         visibleDependency: 'pathLook',
         visibleValue: true,
     },
     /**
-- strokeColor: The color used for drawing the path.
+- Stroke color: The color used for drawing the path.
      **/
     strokeColor: {
         default: '#c98787',
         type: ParamType.COLOR,
-        displayName: 'Stroke Color',
+        displayName: 'Stroke color',
         required: true,
         visibleDependency: 'pathLook',
         visibleValue: true,
     },
 } satisfies GenericParamDescription
+
+const ruleParams = ['turns', 'steps', 'folds', 'stretches'] as const
 
 // How many segments to gather into a reusable Geometry object
 // Might need tuning
@@ -291,87 +289,46 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         const status = super.checkParameters(params)
 
         // lengths of rulesets should match length of domain
-        const ruleParams = [
-            {
-                param: this.turns,
-                desc: paramDesc.turns as ParamInterface<ParamType.NUMBER_ARRAY>,
-                text: 'turns',
-                startText: 'Turning angles ',
-            },
-            {
-                param: this.steps,
-                desc: paramDesc.steps as ParamInterface<ParamType.NUMBER_ARRAY>,
-                text: 'steps',
-                startText: 'Step lengths ',
-            },
-            {
-                param: this.folds,
-                desc: paramDesc.folds as ParamInterface<ParamType.NUMBER_ARRAY>,
-                text: 'folds',
-                startText: 'Folding rates ',
-            },
-            {
-                param: this.stretches,
-                // eslint-disable-next-line max-len
-                desc: paramDesc.stretches as ParamInterface<ParamType.NUMBER_ARRAY>,
-                text: 'stretches',
-                startText: 'Stretching rates ',
-            },
-        ]
         for (const rule of ruleParams) {
-            // how can I add a newline before parenthetical?
-            rule.desc.displayName =
-                rule.startText
-                + ` (should match domain length, ${params.domain.length})`
-            if (rule.param.length < params.domain.length) {
+            const entries = params[rule].length
+            if (entries > 1 && entries < params.domain.length) {
                 status.addWarning(
-                    'Fewer entries ('
-                        + rule.param.length
-                        + ') in '
-                        + rule.text
-                        + ' than in domain ('
-                        + params.domain.length
-                        + '); using trivial behaviour for missing terms.'
+                    `Only ${entries} entries in `
+                        + `${paramDesc[rule].displayName}; reusing last entry`
+                        + `(${params[rule][entries - 1]}) for the rest of the`
+                        + `${params.domain.length}-element Domain.`
                 )
             }
-            if (rule.param.length > params.domain.length) {
+            if (entries > params.domain.length) {
                 status.addWarning(
-                    'More entries ('
-                        + rule.param.length
-                        + ') in '
-                        + rule.text
-                        + ' than in domain ('
-                        + params.domain.length
-                        + '); ignoring extras.'
+                    `More entries (${entries}) in `
+                        + `${paramDesc[rule].displayName} than in Domain `
+                        + `(${params.domain.length}); ignoring extras.`
                 )
             }
         }
 
+        const animating =
+            params.folds.some(value => value !== 0)
+            || params.stretches.some(value => value !== 0)
         // warn when animation is turned on for long paths
         // BUG:  when sequence params change this isn't re-run
         // so the warning may be out of date
         if (
-            params.folds.some(value => value !== 0)
+            animating
             && this.seq.length > this.throttleWarn
             && this.seq.length <= this.throttleLimit
         ) {
             // bug... why isn't this displaying?
             status.addWarning(
-                'Turning on folding with more than '
-                    //		+ this.throttleWarn.toString() + ' terms is likely'
-                    + ' to be quite laggy.'
+                `Animating with more than ${this.throttleWarn} terms is `
+                    + 'likely to be quite laggy.'
             )
         }
-        if (
-            params.folds.some(value => value !== 0)
-            && this.seq.length > this.throttleLimit
-        ) {
+        if (animating && this.seq.length > this.throttleLimit) {
             status.addWarning(
-                'Folding animation not available with more than '
-                    + this.throttleLimit.toString()
-                    + ' terms; using only '
-                    + this.throttleLimit.toString()
-                    + '.'
+                `Path animation limited to the first ${this.throttleLimit} `
+                    + 'entries of the sequence.'
             )
         }
         return status
@@ -406,7 +363,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         // terms compared to domain length
         ruleParams.forEach(rule => {
             while (rule.local.length < this.domain.length) {
-                rule.local.push(0)
+                rule.local.push(rule.local[rule.local.length - 1])
             }
             while (rule.local.length > this.domain.length) {
                 rule.local.pop()
@@ -435,7 +392,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         this.animating = false
         for (let i = 0; i < this.domain.length; i++) {
             // cumulative effect of two ways to turn on folding
-            const thisFold = this.foldsInternal[i] + this.foldRate
+            const thisFold = this.foldsInternal[i]
             if (thisFold != 0) this.animating = true
             this.foldMap.set(
                 this.domain[i].toString(),

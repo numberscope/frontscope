@@ -7,9 +7,8 @@ const featuredSIMs = [
         'Thue Trellis',
         'Turtle',
         'OEIS A010060',
-        'domain=0+1&turns=15+-165&steps=2+3&speed=10'
-            + '&folds=0+0&stretches=0+0'
-            + '&pathLook=false&bgColor=e0def7&strokeColor=5e8d85'
+        'domain=0+1&turns=15+-165&steps=2+3'
+            + '&pathLook=true&speed=10&bgColor=e0def7&strokeColor=5e8d85'
     ),
     specimenQuery(
         'Divisor Square',
@@ -50,8 +49,7 @@ const featuredSIMs = [
         'Wait For It',
         'Turtle',
         'Formula',
-        '&domain=-1+1&turns=30+120&steps=30+30&strokeWeight=2'
-            + '&folds=0+0&stretches=0+0'
+        'domain=-1+1&turns=30+120&steps=30+30&pathLook=true&strokeWeight=2'
             + '&bgColor=5d509f&strokeColor=7a9f6f',
         'formula=sign%28sin%28n%2B1%29%29'
     ),
@@ -65,19 +63,17 @@ const featuredSIMs = [
         'VFib Snowflake',
         'Turtle',
         'OEIS A000045',
-        '&domain=0+1+2+3+4+5+6+7+8&turns=8+120+0+0+0+0+0+0+0'
-            + '&steps=40+400+0+0+0+0+0+0+0&foldControls=true'
-            + '&folds=200+0+0+0+0+0+0+0+0&stretches=0+0+0+0+0+0+0+0+0'
-            + '&speed=100&bgColor=4f4875'
-            + '&strokeColor=cec0c0',
-        '&modulus=9&last=999&length=1000'
+        'domain=0+1&turns=8+120&steps=40+400'
+            + '&animationControls=true&folds=200+0'
+            + '&bgColor=4f4875&strokeColor=cec0c0',
+        'modulus=9&last=999&length=1000'
     ),
     specimenQuery(
         'Beatty DNA',
         'Turtle',
         'OEIS A001951',
-        '&domain=0+1+2&turns=79+0+45&steps=2.5+1.5+3&folds=0+0+0'
-            + '&speed=10&bgColor=6c162b&strokeColor=be9b9b',
+        '&domain=0+1+2&turns=79+0+45&steps=2.5+1.5+3'
+            + '&pathLook=true&speed=10&bgColor=6c162b&strokeColor=be9b9b',
         '&modulus=3'
     ),
 ]
