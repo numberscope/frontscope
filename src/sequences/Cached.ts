@@ -349,9 +349,14 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
          * cache and reinitialize the sequence so that every element is
          * recomputed when queried.
          */
-        async parameterChanged(name: string) {
-            await super.parameterChanged(name)
-            if (name in standardSequenceParameters) {
+        async parametersChanged(nameList: string[]) {
+            await super.parametersChanged(nameList)
+            let needsReset = false
+            for (const name of nameList) {
+                if (!(name in standardSequenceParameters)) {
+                    needsReset = true
+                    continue
+                }
                 if (name === 'first') {
                     // recompute last, leaving length
                     // unchanged if possible
@@ -367,9 +372,9 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
                     }
                     // See if we need to rebase the cache
                     // We have to assume that cache coverage may be
-                    // patchy; all we can rely on is that the closed interval
-                    // from the _previous_ value of `this.first` to
-                    // `this.lastValueCached` is full.
+                    // patchy; all we can rely on is that the closed
+                    // interval from the _previous_ value of `this.first`
+                    // to `this.lastValueCached` is full.
                     if (
                         this.first < this.firstValueCached
                         || this.first > this.lastValueCached + 1n
@@ -416,12 +421,13 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
                     }
                 }
                 this.refreshParams()
-                return
             }
-            this.ready = false
-            await this.valueCachingPromise
-            await this.factorCachingPromise
-            this.initialize()
+            if (needsReset) {
+                this.ready = false
+                await this.valueCachingPromise
+                await this.factorCachingPromise
+                this.initialize()
+            }
         }
     }
 

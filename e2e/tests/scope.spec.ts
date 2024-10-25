@@ -2,12 +2,12 @@ import {test, expect} from '@playwright/test'
 
 import {parseSpecimenQuery} from '../../src/shared/specimenEncoding'
 
-test.beforeEach(async ({page}) => {
-    await page.goto('/', {waitUntil: 'domcontentloaded'})
-    await page.evaluate(() => localStorage.clear())
-})
+test.describe('Scope: on some featured visualization', () => {
+    test.beforeEach(async ({page}) => {
+        await page.goto('/', {waitUntil: 'domcontentloaded'})
+        await page.evaluate(() => localStorage.clear())
+    })
 
-test.describe('Scope', () => {
     test('Has a title', async ({page}) => {
         await expect(page).toHaveTitle(/Numberscope/)
     })
@@ -99,18 +99,6 @@ test.describe('Scope', () => {
             })
         ).toBeGreaterThan(375)
     })
-    test('Changing a parameter', async ({page}) => {
-        // test originally written when the following was the default:
-        await page.goto('/?name=Specimen&viz=ModFill&seq=Random', {
-            waitUntil: 'domcontentloaded',
-        })
-        const oldURL = page.url()
-
-        await page.locator('#modDimension').fill('100')
-        await expect(page.locator('#modDimension')).toHaveValue('100')
-
-        await expect(page.url()).not.toEqual(oldURL)
-    })
     test('changing the specimen name', async ({page}) => {
         const oldURL = page.url()
 
@@ -127,19 +115,6 @@ test.describe('Scope', () => {
         await expect(currentProperties.name).toEqual('test')
         await expect(page.url()).not.toEqual(oldURL)
     })
-    test('refreshing the specimen', async ({page}) => {
-        const oldCanvas = await page.locator('#canvas-container canvas')
-
-        await oldCanvas.evaluate(canvas => {
-            canvas.classList.add('old-canvas')
-        })
-        await page.locator('#specimen-bar-desktop #refresh-button').click()
-
-        const newCanvas = await page.locator('#canvas-container canvas')
-        await expect(newCanvas).not.toBe(oldCanvas)
-        await expect(newCanvas).not.toHaveClass('old-canvas')
-    })
-
     test('copying to clipboard', async ({page, context, browserName}) => {
         // grant clipboard permissions for chromium, other browsers don't
         // allow this due to privacy concerns
@@ -165,5 +140,35 @@ test.describe('Scope', () => {
 
         const url = page.url()
         await expect(clipboardContent).toMatch(url)
+    })
+})
+
+test.describe('Scope: on Random Modfill', () => {
+    test.beforeEach(async ({page}) => {
+        await page.goto('/?name=Specimen&viz=ModFill&seq=Random', {
+            waitUntil: 'domcontentloaded',
+        })
+        await page.evaluate(() => localStorage.clear())
+    })
+
+    test('Changing a parameter', async ({page}) => {
+        const oldURL = page.url()
+
+        await page.locator('#modDimension').fill('100')
+        await expect(page.locator('#modDimension')).toHaveValue('100')
+
+        await expect(page.url()).not.toEqual(oldURL)
+    })
+    test('refreshing the specimen', async ({page}) => {
+        const oldCanvas = await page.locator('#canvas-container canvas')
+
+        await oldCanvas.evaluate(canvas => {
+            canvas.classList.add('old-canvas')
+        })
+        await page.locator('#specimen-bar-desktop #refresh-button').click()
+
+        const newCanvas = await page.locator('#canvas-container canvas')
+        await expect(newCanvas).not.toBe(oldCanvas)
+        await expect(newCanvas).not.toHaveClass('old-canvas')
     })
 })
