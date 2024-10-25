@@ -54,24 +54,6 @@ describe('modulo', () => {
     })
 })
 
-describe('bigIsFinite', () => {
-    it('returns false on Infinity', () => {
-        expect(math.bigIsFinite(Infinity)).toBe(false)
-        expect(math.bigIsFinite(-Infinity)).toBe(false)
-    })
-    it('returns true on finite values', () => {
-        expect(math.bigIsFinite(-3n)).toBe(true)
-        expect(math.bigIsFinite(0n)).toBe(true)
-        expect(math.bigIsFinite(3n)).toBe(true)
-        expect(math.bigIsFinite(3000000000000000000000000000000000n)).toBe(
-            true
-        )
-        expect(math.bigIsFinite(-3000000000000000000000000000000000n)).toBe(
-            true
-        )
-    })
-})
-
 describe('powmod', () => {
     it('computes n**exponent modulo the modulus', () => {
         expect(math.powmod(2, 3, 7)).toBe(1n)

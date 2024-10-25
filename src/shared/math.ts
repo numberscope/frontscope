@@ -96,7 +96,6 @@ type ExtendedMathJs = MathJsInstance & {
     safeNumber(n: Integer): number
     floorSqrt(n: Integer): bigint
     modulo(n: Integer, modulus: Integer): bigint
-    bigIsFinite(n: Integer): boolean
     divides(a: Integer, b: Integer): boolean
     powmod(n: Integer, exponent: Integer, modulus: Integer): bigint
     natlog(n: Integer): number
@@ -159,16 +158,6 @@ math.modulo = (n: Integer, modulus: Integer): bigint => {
     }
     const result = bn % bmodulus
     return result < 0n ? result + bmodulus : result
-}
-
-/** md
-#### bigIsFinite(n: number| bigint): boolean
-
-Returns true if and only if the input is a finite number
-**/
-math.bigIsFinite = (n: Integer): boolean => {
-    if (n === Infinity || n === -Infinity) return false
-    return true
 }
 
 /** md
