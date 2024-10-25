@@ -480,16 +480,21 @@ export class Paramable implements ParamableInterface {
             const me = this as Record<string, unknown>
             props.push(prop)
             if (realized[prop] !== me[prop]) {
-                me[prop] = realized[prop]
-                changed.push(prop)
+                // Looks like we might need to change my value of the prop
+                // However, we only want to do this if the two items
+                // derealize into different strings:
+                const derealizer =
+                    typeFunctions[this.params[prop].type].derealize
+                const myVersion = derealizer(me[prop] as never)
+                const newVersion = derealizer(realized[prop] as never)
+                if (newVersion !== myVersion) {
+                    // OK, really have to change
+                    me[prop] = realized[prop]
+                    changed.push(prop)
+                }
             }
         }
-        // We could change the cutoff between individual calls to
-        // parameterChanged and a single call with `#multiple`, if we ever
-        // encounter any evidence that would be helpful.
-        if (changed.length < props.length - 1 || changed.length < 3)
-            for (const prop of changed) await this.parameterChanged(prop)
-        else await this.parameterChanged('#multiple')
+        if (changed.length > 0) await this.parametersChanged(changed)
     }
     /**
      * refreshParams() copies the current values of top-level properties into
@@ -527,15 +532,15 @@ export class Paramable implements ParamableInterface {
     }
 
     /**
-     * parameterChanged() is called whenever the value of a particular parameter
-     * is changed. By default, this does nothing, but may be overriden to
-     * perform any kind of update action for that given parameter.
+     * parametersChanged() is called whenever the values of one or more
+     * parameters have changed. (Sometimes multiple parameters change
+     * simultaneously, as when loading parameters at startup.) By default,
+     * this method does nothing, but may be overriden to perform any kind of
+     * update actions for the listed parameters.
      *
-     * Note that if almost all of the parameters have changed at once, this
-     * function will be called a single time with the name value '#multiple'.
-     * @param {string} name  the name of the parameter which has been changed
+     * @param {string[]} name  the names of one or more parameters that changed
      */
-    async parameterChanged(_name: string) {
+    async parametersChanged(_name: string[]) {
         return
     }
 

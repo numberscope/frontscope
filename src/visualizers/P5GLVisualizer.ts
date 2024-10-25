@@ -1,5 +1,6 @@
 import p5 from 'p5'
 import * as brush from 'p5.brush'
+import {markRaw} from 'vue'
 
 import {P5Visualizer} from './P5Visualizer'
 import type {P5VizInterface} from './P5Visualizer'
@@ -17,6 +18,8 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
     ) => ReturnType<typeof P5Visualizer<PD>> & P5VizInterface) {
         name = 'uninitialized P5-based WebGL visualizer'
         camera: p5.Camera | undefined = undefined
+        lastMX: number | undefined = undefined
+        lastMY: number | undefined = undefined
         initialCameraZ = 800
 
         // Have to reassign name as category because of JavaScript default
@@ -48,7 +51,7 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
                     this.size.height,
                     this.sketch.WEBGL
                 )
-            this.camera = this.sketch.createCamera()
+            this.camera = markRaw(this.sketch.createCamera())
             this.initialCameraZ = this.camera.eyeZ
             brush.load()
         }
@@ -79,23 +82,60 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
             return this.canvasToPlot(this.sketch.mouseX, this.sketch.mouseY)
         }
 
-        // Provide default camera controls: left drag pans, mouse wheel zooms
-        mouseDragged() {
-            const sketch = this.sketch
-            if (this.camera && sketch.mouseButton === 'left') {
-                const {scale} = this.mouseToPlot()
-                this.camera.move(
-                    -sketch.movedX * scale,
-                    -sketch.movedY * scale,
-                    0
-                )
-                this.continue()
-            }
+        mousePressed() {
+            // Remember where the mouse was pressed
+            this.lastMX = this.sketch.mouseX
+            this.lastMY = this.sketch.mouseY
+            // And restart the animation in case there's a move
+            this.continue()
         }
 
+        mouseReleased() {
+            // clear the mousepress info so we don't then respond to stray
+            // clicks elsewhere on the screen
+            this.lastMX = undefined
+            this.lastMY = undefined
+        }
+
+        // Call this at the top of your draw() function to handle
+        // left drag pan, right drag rotate.
+        // NOTE: returns true if the camera moved
+        handleDrags() {
+            const sketch = this.sketch
+            if (
+                !sketch.mouseIsPressed
+                || !this.camera
+                || this.lastMX === undefined
+                || this.lastMY === undefined
+            ) {
+                return false
+            }
+            const {pX: lX, pY: lY} = this.canvasToPlot(
+                this.lastMX,
+                this.lastMY
+            )
+            const {pX, pY} = this.mouseToPlot()
+            this.lastMX = sketch.mouseX
+            this.lastMY = sketch.mouseY
+            if (sketch.mouseButton === 'left') {
+                if (lX === pX && lY === pY) return false
+                this.camera.move(lX - pX, lY - pY, 0)
+                return true
+            }
+            if (sketch.mouseButton === 'right') {
+                const rotateSpeed = 0.002
+                if (lX === pX) return false
+                // @ts-expect-error  The @types/p5 package omits roll
+                this.camera.roll((lX - pX) * rotateSpeed)
+                return true
+            }
+            return false
+        }
+
+        // Provides default mouse wheel behavior: zoom
         mouseWheel(event: WheelEvent) {
             if (this.camera) {
-                this.camera.move(0, 0, event.deltaY)
+                this.camera.move(0, 0, event.deltaY / 10)
                 this.continue()
             }
         }

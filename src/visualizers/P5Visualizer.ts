@@ -30,7 +30,7 @@ class WithP5 extends Paramable {
     keyReleased(_event: KeyboardEvent) {}
     keyTyped(_event: KeyboardEvent) {}
     mouseClicked(_event: MouseEvent) {}
-    mouseDragged() {}
+    mouseDragged(_event: MouseEvent) {}
     mouseMoved(_event: MouseEvent) {}
     mousePressed(_event: MouseEvent) {}
     mouseReleased() {}
@@ -89,7 +89,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
 
         within?: HTMLElement
         get sketch(): p5 {
-            if (!this._sketch) {
+            if (this._sketch === undefined) {
                 throw (
                     'Attempt to access p5 sketch '
                     + 'while Visualizer is unmounted.'
@@ -381,8 +381,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             a div that it's already inhabiting, nothing will happen.
         */
 
-        async parameterChanged(_name: string) {
-            await super.parameterChanged(_name)
+        async parametersChanged(name: string[]) {
+            await super.parametersChanged(name)
             await this.reset()
         }
 
