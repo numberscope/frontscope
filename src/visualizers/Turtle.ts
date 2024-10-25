@@ -60,6 +60,19 @@ have a small domain.)
             'sequence values to interpret as rules; entries not '
             + 'matching any value here are skipped',
         hideDescription: false,
+        validate: function (dom: bigint[], status: ValidationStatus) {
+            const seen = new Set()
+            for (const element of dom) {
+                if (seen.has(element)) {
+                    status.addError(
+                        'Domain elements may only occur once, but '
+                            + `${element} is repeated.`
+                    )
+                    return
+                }
+                seen.add(element)
+            }
+        },
     },
     /** md
 
