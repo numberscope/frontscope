@@ -226,7 +226,7 @@ in pixels.
         visibleDependency: 'pathLook',
         visibleValue: true,
     },
-    /**
+    /** md
 - Background color: The color of the visualizer canvas.
      **/
     bgColor: {
@@ -237,7 +237,7 @@ in pixels.
         visibleDependency: 'pathLook',
         visibleValue: true,
     },
-    /**
+    /** md
 - Stroke color: The color used for drawing the path.
      **/
     strokeColor: {
