@@ -1,10 +1,5 @@
 <template>
     <div style="margin-bottom: 32px">
-        <p
-            v-if="!param.hideDescription && param.description"
-            class="param-description">
-            {{ param.description }}
-        </p>
         <div class="input-container">
             <label>
                 {{ param.displayName }}
@@ -50,6 +45,11 @@
                 <div class="desc-tooltip-text">{{ param.description }}</div>
             </div>
         </div>
+        <p
+            v-if="!param.hideDescription && param.description"
+            class="param-description">
+            {{ param.description }}
+        </p>
         <p v-for="error in status.errors" :key="error" class="error-message">
             {{ error }}
         </p>
