@@ -83,7 +83,7 @@ const paramDesc = {
     in the display
      **/
     highlight: {
-        default: 1,
+        default: 1n,
         type: ParamType.BIGINT,
         displayName: 'Your favourite number',
         required: true,
@@ -91,7 +91,7 @@ const paramDesc = {
             'We highlight primes dividing this number.'
             + ' To highlight none, put 1.',
         hideDescription: true,
-        validate: function (n: number, status: ValidationStatus) {
+        validate: function (n: bigint, status: ValidationStatus) {
             if (n <= 0) {
                 status.addError('Your favourite number must be positive.')
             }

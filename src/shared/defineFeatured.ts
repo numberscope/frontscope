@@ -7,8 +7,8 @@ const featuredSIMs = [
         'Thue Trellis',
         'Turtle',
         'OEIS A010060',
-        'domain=0+1&range=15+180&stepSize=10&start=0+200'
-            + '&strokeWeight=1&bgColor=e0def7&strokeColor=5e8d85'
+        'domain=0+1&turns=15+-165&steps=2+3'
+            + '&pathLook=true&speed=10&bgColor=e0def7&strokeColor=5e8d85'
     ),
     specimenQuery(
         'Divisor Square',
@@ -22,14 +22,6 @@ const featuredSIMs = [
         'Formula',
         'modDimension=12',
         'formula=12'
-    ),
-    specimenQuery(
-        'Latticework',
-        'Turtle',
-        'Random',
-        'domain=0+1&range=45+135&strokeWeight=3'
-            + '&bgColor=6b1a1a&strokeColor=c98787',
-        'min=0&max=1'
     ),
     specimenQuery(
         'Residue Rise',
@@ -57,7 +49,7 @@ const featuredSIMs = [
         'Wait For It',
         'Turtle',
         'Formula',
-        'domain=-1+1&range=30+120&stepSize=30&strokeWeight=2'
+        'domain=-1+1&turns=30+120&steps=30+30&pathLook=true&strokeWeight=2'
             + '&bgColor=5d509f&strokeColor=7a9f6f',
         'formula=sign%28sin%28n%2B1%29%29'
     ),
@@ -66,6 +58,23 @@ const featuredSIMs = [
         'FactorFence',
         'OEIS A000594',
         'signs=false'
+    ),
+    specimenQuery(
+        'VFib Snowflake',
+        'Turtle',
+        'OEIS A000045',
+        'domain=0+1&turns=8+120&steps=40+400'
+            + '&animationControls=true&folds=200+0'
+            + '&bgColor=4f4875&strokeColor=cec0c0',
+        'modulus=9&last=999&length=1000'
+    ),
+    specimenQuery(
+        'Beatty DNA',
+        'Turtle',
+        'OEIS A001951',
+        '&domain=0+1+2&turns=79+0+45&steps=2.5+1.5+3'
+            + '&pathLook=true&speed=10&bgColor=6c162b&strokeColor=be9b9b',
+        '&modulus=3'
     ),
 ]
 
