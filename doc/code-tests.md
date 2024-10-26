@@ -161,6 +161,44 @@ snapshots, check in a "dummy" commit that uncomments this section (from the
 usual, but unlike the standard runs, it will save all of the actual output
 files of the end-to-end test after it has completed.
 
+Once the CI test has completed (presumably failed, because why else would you
+need to update snapshots?), navigate in the Github web interface to the page
+for your pull request. At the bottom, you will see the test results, similar
+to the following image:
+
+[<img src="../img/ci-results.png" />](./img/ci-results.png)
+
+Click on the "Details" link for the failing test. It should automatically
+scroll the output to the end of the tests (which will likely say "Error:
+Process completed with exit code 1"), and then the next item in the outline of
+the results should be "Extract snapshots", as in this screenshot:
+
+[<img src="../img/extract-snapshots.png" />](./img/extract-snapshots.png)
+
+Click on the right-pointing arrowhead at the left end of this line to drop
+down the details of this "Extract snapshots" section. At the bottom of those
+details will be an "Artifact download URL". Click on that link, and save the
+resulting `ci_actual_snapshots.zip` ZIP file in a convenient temporary
+location on your computer.
+
+Open or extract that ZIP file, as convenient, and navigate within its
+directory structure to find the "...-actual.png" files with the images you
+need. (You can find their exact paths in the detail report of the failed
+test.) You should open them in an image viewer to make certain that they
+reflect the new, desired behavior of the test. Save each one in place of the
+corresponding "expected" snapshot in the
+`e2e/tests/ci_snaps/[TEST_NAME_HERE].spec.ts-snapshots/` directory, noting
+that you will have to remove the "-actual.png" suffix and replace it with
+something like "-firefox-linux.png" depending on the browser and operating
+system in question.
+
+When all of the expected files have been updated on your machine, go back to
+the `.github/workflows/ci.yaml` file and put the comment characters back in
+for the "Extract snapshots" block, as it is shown above. Make a new commit
+with the updated snapshots and the reverted ci.yaml file, and push that to
+your PR. Hopefully, the CI tests will now succeed and your PR will be back on
+track for review.
+
 ### Adding an end-to-end test
 
 The Playwright framework for end-to-end testing is broadly similar. In this

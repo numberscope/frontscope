@@ -47,9 +47,9 @@ jobs:
             - name: End-to-end test
               run: npx playwright test -c e2e/playci.config.ts
 ### Uncomment when you need to re-extract snapshots
-            - name: Extract snapshots
-              if: always()
-              uses: actions/upload-artifact@v4
-              with:
-                  name: ci_actual_snapshots
-                  path: e2e/results/manual/output
+#            - name: Extract snapshots
+#              if: always()
+#              uses: actions/upload-artifact@v4
+#              with:
+#                  name: ci_actual_snapshots
+#                  path: e2e/results/manual/output
