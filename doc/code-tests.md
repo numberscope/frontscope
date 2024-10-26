@@ -28,7 +28,7 @@ Here is some more detailed information about running the end-to-end tests:
     output should typically look as follows: (There are two copies of the
     "status": "passed" line because there are two batches of tests.)
 
-```
+```txt
   "status": "passed",
   "status": "passed",
 echo 'All tests passed' > e2e/certificate
@@ -99,14 +99,14 @@ the specimens for the Featured Gallery. So, we simply created
 to import the test facilities from `vitest`, and typically all of the exported
 entities from the module being tested, like so:
 
-```
+```typescript
 {! ../src/shared/__tests__/defineFeatured.spec.ts extract: { stop: ibe..g } !}
 ```
 
 In this case, there is only one export, `getFeatured`, so the test
 specification is pretty brief. Here it is in full:
 
-```
+```typescript
 {! ../src/shared/__tests__/defineFeatured.spec.ts extract: { start: tured } !}
 ```
 
@@ -139,6 +139,28 @@ command `npm run test:e2e -- --update-snapshots`. This will produce new
 expected snapshots in the directory /e2e/tests, which you will need to add as
 part of your commit.
 
+### Updating snapshots for the Github Continuous Integration (CI) testing
+
+Sometimes the new behavior will also affect the snapshots for tests that are
+run automatically when pull requests (PR)s are created or updated, or new code
+is merged into main. (Note there is a separate set of snapshots for such
+tests, because the images for some of the tests end up slightly different in
+the Github CI runtime environment than on our local machines.)
+
+To do such an update, the first challenge is to obtain the actual images that
+were produced in the Github CI. For this, there is a commented-out section in
+the Github CI specification file `.github/workflows/ci.yaml`:
+
+```yaml
+{! ../.github/workflows/ci.yaml extract: { start: playwright.test } !}
+```
+
+When you file your PR, or when you realize that you need to update the CI
+snapshots, check in a "dummy" commit that uncomments this section (from the
+`name:` line on). When you push that to Github, it will run the CI tests as
+usual, but unlike the standard runs, it will save all of the actual output
+files of the end-to-end test after it has completed.
+
 ### Adding an end-to-end test
 
 The Playwright framework for end-to-end testing is broadly similar. In this
@@ -152,7 +174,7 @@ operation of the page reached by clicking on the "Gallery" item in
 Numberscope's navigation bar. As with vitest, there's a preamble importing the
 test framework:
 
-```
+```typescript
 {! ../e2e/tests/gallery.spec.ts extract: { stop: before } !}
 ```
 
@@ -165,7 +187,7 @@ Playwright tests manipulate that browser and verify it operates as expected.
 Next, we see a new test framework feature: the ability to run code before
 every one of the tests in this file:
 
-```
+```typescript
 {! ../e2e/tests/gallery.spec.ts extract: { start: play, stop: describe} !}
 ```
 
@@ -180,7 +202,7 @@ to call a block of code before each test, if needed.
 
 Finally, let's look at the second test in this suite:
 
-```
+```typescript
 {! ../e2e/tests/gallery.spec.ts extract:
     start: '(.*describe.*)'
     stop: title
