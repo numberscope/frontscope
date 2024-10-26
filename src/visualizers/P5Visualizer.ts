@@ -237,8 +237,11 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             if (this.within) {
                 // oops, already inhabiting somewhere else; depart there
                 this.depart(this.within)
-                // Only do the presketch initialization once, though:
-                needsPresketch = false
+                // Only do the presketch initialization if the size has
+                // changed, though:
+                needsPresketch =
+                    size.width !== this.size.width
+                    || size.height !== this.size.height
             }
             this.size = size
             this.within = element
