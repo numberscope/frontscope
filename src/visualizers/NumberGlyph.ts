@@ -160,6 +160,9 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         try {
             parsetree = math.parse(params.formula)
         } catch (err: unknown) {
+            // TODO in overhaul: make a utility somewhere that both this
+            // SequenceFormula.ts can use; also move this into the individual
+            // param validator for the 'formula' param
             status.addError(
                 'Could not parse formula: ' + params.formula,
                 (err as Error).message

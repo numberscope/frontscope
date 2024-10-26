@@ -4,8 +4,9 @@ import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
 import {math} from '@/shared/math'
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
+import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
 # Shift Compare Visualizer
@@ -31,6 +32,9 @@ const paramDesc = {
         displayName: 'Modulo',
         required: true,
         description: 'Modulus used to compare sequence elements',
+        validate(m: number, status: ValidationStatus) {
+            if (m <= 0n) status.addError('Modulo must be positive')
+        },
     },
 } satisfies GenericParamDescription
 
@@ -44,14 +48,6 @@ class ShiftCompare extends P5Visualizer(paramDesc) {
 
     private img: p5.Image = new p5.Image(1, 1) // just a dummy
     mod = 2n
-
-    checkParameters(params: ParamValues<typeof paramDesc>) {
-        const status = super.checkParameters(params)
-
-        if (params.mod <= 0n) status.addError('Modulo must be positive')
-
-        return status
-    }
 
     setup() {
         super.setup()

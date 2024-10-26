@@ -56,6 +56,13 @@ export class ValidationStatus {
         this.warnings.push(...warnings)
     }
     /**
+     * Returns the status to the OK state, with no errors or warnings
+     */
+    reset() {
+        this.errors.length = 0
+        this.warnings.length = 0
+    }
+    /**
      * Returns a `ValidationStatus` in a valid state, with no warnings
      * @returns the resulting `ValidationStatus`
      */

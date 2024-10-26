@@ -1,16 +1,24 @@
 <template>
     <div>
-        <div v-if="status.defective()" class="error-box">
-            <p v-if="status.invalid()" class="error-message">Errors:</p>
+        <div v-if="paramable.validationStatus.defective()" class="error-box">
             <p
-                v-for="error in status.errors"
+                v-if="paramable.validationStatus.invalid()"
+                class="error-message">
+                Errors:
+            </p>
+            <p
+                v-for="error in paramable.validationStatus.errors"
                 :key="error"
                 class="error-message">
                 {{ error }}
             </p>
-            <p v-if="status.isWarned()" class="warning-message">Warnings:</p>
             <p
-                v-for="warning in status.warnings"
+                v-if="paramable.validationStatus.isWarned()"
+                class="warning-message">
+                Warnings:
+            </p>
+            <p
+                v-for="warning in paramable.validationStatus.warnings"
                 :key="warning"
                 class="warning-message">
                 {{ warning }}
@@ -36,7 +44,7 @@
                 :param="hierarchy.param"
                 :value="paramable.tentativeValues[name]"
                 :param-name="name as string"
-                :status="paramStatuses[name]"
+                :status="paramable.statusOf[name]"
                 @update-param="updateParam(name as string, $event)" />
             <div class="sub-param-box">
                 <div
@@ -47,7 +55,7 @@
                         :param="subParam"
                         :value="paramable.tentativeValues[subName]"
                         :param-name="subName as string"
-                        :status="paramStatuses[subName]"
+                        :status="paramable.statusOf[subName]"
                         @update-param="
                             updateParam(subName as string, $event)
                         " />
@@ -64,7 +72,6 @@
         ParamableInterface,
     } from '../shared/Paramable'
     import typeFunctions, {ParamType} from '../shared/ParamType'
-    import {ValidationStatus} from '../shared/ValidationStatus'
     import MageExchangeA from './MageExchangeA.vue'
     import ParamField from './ParamField.vue'
 
@@ -74,13 +81,6 @@
     }
 
     type Paramable = () => ParamableInterface
-
-    function resetStatuses(
-        items: {[key: string]: unknown},
-        statuses: {[key: string]: ValidationStatus}
-    ) {
-        for (const item in items) statuses[item] = ValidationStatus.ok()
-    }
 
     export default defineComponent({
         name: 'ParamEditor',
@@ -96,12 +96,6 @@
             },
         },
         emits: ['changed', 'openSwitcher'],
-        data() {
-            const status = ValidationStatus.ok()
-            const paramStatuses: {[key: string]: ValidationStatus} = {}
-            resetStatuses(this.paramable.params, paramStatuses)
-            return {paramStatuses, status}
-        },
         computed: {
             sortedParams() {
                 const sortedParams: {[key: string]: ParamHierarchy} = {}
@@ -119,46 +113,28 @@
                 return sortedParams
             },
         },
-        watch: {
-            paramable() {
-                resetStatuses(this.paramable.params, this.paramStatuses)
-            },
-        },
-        async created() {
-            const pstatus = this.paramStatuses
-            resetStatuses(this.paramable.params, pstatus)
-            let good = true
-            for (const param in this.paramable.params) {
-                this.paramable.validateIndividual(param, pstatus[param])
-                good &&= pstatus[param].isValid()
-            }
-            if (good) {
-                // The argument '.' to validate below skips all
-                // individual validation because we just checked them
-                this.status = await this.paramable.validate('.')
-            }
-        },
         methods: {
             async updateParam(paramName: string, value: string) {
                 const paramable = this.paramable
                 paramable.tentativeValues[paramName] = value
-                const newStatus = ValidationStatus.ok()
-                paramable.validateIndividual(paramName, newStatus)
-                this.paramStatuses[paramName] = newStatus
-                if (newStatus.invalid()) return
-                this.status = await paramable.validate()
-                if (paramable.isValid) this.$emit('changed')
+                paramable.validateIndividual(paramName)
+                if (paramable.statusOf[paramName].invalid()) return
+                await paramable.validate()
+                if (paramable.validationStatus.isValid()) {
+                    this.$emit('changed')
+                }
             },
             checkDependency(param: ParamInterface<ParamType>): boolean {
-                if (!this.paramStatuses[param.visibleDependency!].isValid())
-                    return false
-                const parent = this.paramable.params[param.visibleDependency!]
+                const dep = param.visibleDependency
+                if (!dep) return true
+                if (this.paramable.statusOf[dep].invalid()) return false
+                const parent = this.paramable.params[dep]
                 const v = typeFunctions[parent.type].realize(
-                    this.paramable.tentativeValues[param.visibleDependency!]
+                    this.paramable.tentativeValues[dep]
                 )
-                if (param.visiblePredicate)
+                if (param.visiblePredicate) {
                     return param.visiblePredicate(v as never)
-                else return param.visibleValue! === v
+                } else return param.visibleValue! === v
             },
             openSwitcher() {
                 this.$emit('openSwitcher')

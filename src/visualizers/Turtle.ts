@@ -305,18 +305,16 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         for (const rule of ruleParams) {
             const entries = params[rule].length
             if (entries > 1 && entries < params.domain.length) {
-                status.addWarning(
-                    `Only ${entries} entries in `
-                        + `${paramDesc[rule].displayName}; reusing last entry`
-                        + `(${params[rule][entries - 1]}) for the rest of the`
-                        + `${params.domain.length}-element Domain.`
+                this.statusOf[rule].addWarning(
+                    `Fewer entries than the ${params.domain.length}-element `
+                        + 'Domain; reusing last entry '
+                        + `${params[rule][entries - 1]} for the remainder.`
                 )
             }
             if (entries > params.domain.length) {
-                status.addWarning(
-                    `More entries (${entries}) in `
-                        + `${paramDesc[rule].displayName} than in Domain `
-                        + `(${params.domain.length}); ignoring extras.`
+                this.statusOf[rule].addWarning(
+                    `More entries than the ${params.domain.length}-element `
+                        + 'Domain; ignoring extras.'
                 )
             }
         }
@@ -334,7 +332,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         ) {
             // bug... why isn't this displaying?
             status.addWarning(
-                `Animating with more than ${this.throttleWarn} terms is `
+                `Animating with more than ${this.throttleWarn} steps is `
                     + 'likely to be quite laggy.'
             )
         }
@@ -361,9 +359,9 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 }
             }
             if (nIn < threshold) {
-                status.addWarning(
-                    `Only ${nIn} of the first ${toTest} entries are in the `
-                        + `domain (${params.domain}); consider adjusting.`
+                this.statusOf.domain.addWarning(
+                    `Only ${nIn} of the first ${toTest} sequence entries `
+                        + 'are in this domain; consider adjusting.'
                 )
             }
         }

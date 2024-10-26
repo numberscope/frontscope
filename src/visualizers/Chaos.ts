@@ -6,6 +6,7 @@ import {VisualizerExportModule} from './VisualizerInterface'
 import {math} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
+import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
 # Chaos Visualizer
@@ -57,6 +58,9 @@ const paramDesc = {
         description:
             'The number of vertices of the polygon; this value is also '
             + 'used as a modulus applied to the entries.',
+        validate(c: number, status: ValidationStatus) {
+            if (c < 2) status.addError('must be at least 2')
+        },
     },
     frac: {
         default: 0.5,
@@ -65,8 +69,12 @@ const paramDesc = {
         required: false,
         description:
             'What fraction of the way each step takes you toward the '
-            + 'vertex specified by the entry. It should be a '
-            + 'value between 0 and 1 inclusive.',
+            + 'vertex specified by the entry.',
+        validate(f: number, status: ValidationStatus) {
+            if (f < 0 || f > 1) {
+                status.addError('must be between 0 and 1, inclusive')
+            }
+        },
     },
     walkers: {
         default: 1,
@@ -77,6 +85,9 @@ const paramDesc = {
             'The number w of walkers. The sequence will be broken into '
             + 'subsequences based on the residue mod w '
             + 'of the index, each with a separate walker.',
+        validate(w: number, status: ValidationStatus) {
+            if (w < 1) status.addError('must be at least 1')
+        },
     },
     colorStyle: {
         default: ColorStyle.Walker,
@@ -95,6 +106,9 @@ const paramDesc = {
         visibleValue: ColorStyle.Index,
         description:
             'The number of entries before recycling the color sequence.',
+        validate(gl: number, status: ValidationStatus) {
+            if (gl < 1) status.addError('must be at least 1')
+        },
     },
     highlightWalker: {
         default: 0,
@@ -103,6 +117,9 @@ const paramDesc = {
         required: false,
         visibleDependency: 'colorStyle',
         visibleValue: ColorStyle.Highlighting_one_walker,
+        validate(hw: number, status: ValidationStatus) {
+            if (hw < 0) status.addError('must be 0 or higher')
+        },
     },
     dummyDotControl: {
         default: false,
@@ -117,6 +134,9 @@ const paramDesc = {
         required: false,
         visibleDependency: 'dummyDotControl',
         visibleValue: true,
+        validate(cs: number, status: ValidationStatus) {
+            if (cs <= 0) status.addError('must be positive')
+        },
     },
     alpha: {
         default: 0.9,
@@ -127,6 +147,11 @@ const paramDesc = {
             'Alpha factor (from 0.0=transparent to 1.0=solid) of the dots.',
         visibleDependency: 'dummyDotControl',
         visibleValue: true,
+        validate(a: number, status: ValidationStatus) {
+            if (a < 0 || a > 1) {
+                status.addError('must be between 0 and 1, inclusive.')
+            }
+        },
     },
     pixelsPerFrame: {
         default: 400n,
@@ -136,6 +161,9 @@ const paramDesc = {
         description: '(more = faster).',
         visibleDependency: 'dummyDotControl',
         visibleValue: true,
+        validate(p: number, status: ValidationStatus) {
+            if (p < 1) status.addError('must be at least 1')
+        },
     },
     showLabels: {
         default: false,
@@ -171,41 +199,18 @@ class Chaos extends P5Visualizer(paramDesc) {
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-        if (params.corners < 2) {
-            status.addError('The number of corners must be an integer > 1.')
-        }
-        if (params.frac < 0 || params.frac > 1) {
-            status.addError('The fraction must be between 0 and 1 inclusive.')
-        }
-        if (params.walkers < 1) {
+        if (params.highlightWalker >= params.walkers) {
             status.addError(
-                'The number of walkers must be a positive integer.'
+                'The highlighted walker must be less than '
+                    + 'the number of walkers.'
+            )
+            this.statusOf.highlightWalker.addWarning(
+                'must be less than the number of walkers'
+            )
+            this.statusOf.walkers.addWarning(
+                'must be larger than the highlighted walker'
             )
         }
-        if (params.gradientLength < 1) {
-            status.addError(
-                'The colour cycle length must be a positive integer.'
-            )
-        }
-        if (
-            params.highlightWalker < 0
-            || params.highlightWalker >= params.walkers
-        ) {
-            status.addError(
-                'The highlighted walker must be an integer '
-                    + 'between 0 and one less than the number of walkers.'
-            )
-        }
-        if (params.circSize < 0) {
-            status.addError('The circle size must be positive.')
-        }
-        if (params.alpha < 0 || params.alpha > 1) {
-            status.addError('The alpha must be between 0 and 1 inclusive.')
-        }
-        if (params.pixelsPerFrame < 1) {
-            status.addError('The dots per frame must be a positive integer.')
-        }
-
         return status
     }
 
