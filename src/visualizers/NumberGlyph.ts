@@ -4,9 +4,8 @@ import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
 
-import type {SequenceInterface} from '@/sequences/SequenceInterface'
-import {math} from '@/shared/math'
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import {math, MathFormula} from '@/shared/math'
+import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
 /** md
@@ -81,14 +80,15 @@ and higher values are brighter.
 
 The default value is `log(max(abs(n),2)^x) % 25`.
 **/
-    formula: {
-        default: 'log(max(abs(n),2)^x) % 25',
-        type: ParamType.STRING,
+    growthFormula: {
+        default: new MathFormula('(log(max(abs(n),2)) * x) % 25'),
+        type: ParamType.FORMULA,
+        inputs: ['n', 'x'],
         displayName: 'Growth Function',
         description: "A function in 'n' (term) and 'x' (growth variable)",
         visibleDependency: 'customize',
         visibleValue: true,
-        required: true,
+        required: false,
     },
     /** md
 ##### Brightness Adjustment
@@ -125,8 +125,6 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         'Map entries to colorful glyphs '
         + 'using their magnitudes and prime factors'
 
-    private evaluator: math.EvalFunction
-
     hueMap = new Map()
     private n = 0n
     private last = 0n
@@ -144,51 +142,6 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     // dot control
     private radii = 50 // increments of radius in a dot
     private initialRadius = 50 // size of dots
-
-    constructor(seq: SequenceInterface) {
-        super(seq)
-        // It is mandatory to initialize the `evaluator` property here,
-        // so just use a simple dummy formula until the user provides one.
-        this.evaluator = math.compile(this.formula)
-    }
-
-    checkParameters(params: ParamValues<typeof paramDesc>) {
-        // code currently re-used from SequenceFormula.ts
-        const status = super.checkParameters(params)
-
-        let parsetree = undefined
-        try {
-            parsetree = math.parse(params.formula)
-        } catch (err: unknown) {
-            // TODO in overhaul: make a utility somewhere that both this
-            // SequenceFormula.ts can use; also move this into the individual
-            // param validator for the 'formula' param
-            status.addError(
-                'Could not parse formula: ' + params.formula,
-                (err as Error).message
-            )
-            return status
-        }
-        const othersymbs = parsetree.filter(
-            (node, path, parent) =>
-                math.isSymbolNode(node)
-                && parent?.type !== 'FunctionNode'
-                && node.name !== 'n'
-                && node.name !== 'x'
-        )
-        if (othersymbs.length > 0) {
-            status.errors.push(
-                "Only 'n' and 'x' may occur as a free variable in formula.",
-                `Please remove '${(othersymbs[0] as math.SymbolNode).name}'`
-            )
-        }
-        this.evaluator = parsetree.compile()
-        return status
-    }
-
-    growthFunction(n: number, x: number) {
-        return this.evaluator.evaluate({n: n, x: x})
-    }
 
     adjustTermsAndColumns(size: ViewSize) {
         // Calculate the number of terms we are actually going to show:
@@ -314,7 +267,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         // iterate smaller and smaller circles
         for (let x = 0; x < this.radii; x++) {
             // set brightness based on function value
-            const val = this.growthFunction(numberNow, x)
+            const val = this.growthFormula.compute(numberNow, x)
             bright = val
             if (bright < 0) {
                 bright = -bright

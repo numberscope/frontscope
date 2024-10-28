@@ -87,6 +87,9 @@ export interface ParamInterface<T extends ParamType> {
     // Option to hide the description in a tooltip:
     hideDescription?: boolean
 
+    // List of input variables for a FORMULA parameter, defaults to ['n']
+    inputs?: string[]
+
     /* An independent validation function, which may validate the value of
      * this parameter irrespective of the values of other parameters. The
      * advantage of using this over the aggregate validation function within
@@ -321,7 +324,7 @@ function realizeOne<T extends ParamType>(
     tentative: string
 ): RealizedParamType[T] {
     if (!spec.required && tentative === '') return spec.default
-    return typeFunctions[spec.type].realize(tentative)
+    return typeFunctions[spec.type].realize.call(spec, tentative)
 }
 
 function realizeAll<PD extends GenericParamDescription>(
@@ -367,7 +370,7 @@ export class Paramable implements ParamableInterface {
             if (param.required)
                 this.tentativeValues[prop] = typeFunctions[
                     param.type
-                ].derealize(param.default as never)
+                ].derealize.call(param, param.default as never)
             // We assume the default value is valid
             this.statusOf[prop] = ValidationStatus.ok()
         }
@@ -447,9 +450,17 @@ export class Paramable implements ParamableInterface {
         if (!paramSpec.required && tentative === '') {
             return paramSpec.default
         }
-        typeFunctions[paramSpec.type].validate(tentative, status)
+        typeFunctions[paramSpec.type].validate.call(
+            paramSpec,
+            tentative,
+            status
+        )
         if (status.invalid()) return undefined
-        const realization = typeFunctions[paramSpec.type].realize(tentative)
+        const realizer = typeFunctions[paramSpec.type].realize as (
+            this: typeof paramSpec,
+            t: string
+        ) => RealizedParamType[typeof paramSpec.type]
+        const realization = realizer.call(paramSpec, tentative)
         if (paramSpec.validate) {
             paramSpec.validate.call(this, realization, status)
         }
@@ -494,10 +505,13 @@ export class Paramable implements ParamableInterface {
                 // Looks like we might need to change my value of the prop
                 // However, we only want to do this if the two items
                 // derealize into different strings:
-                const derealizer =
-                    typeFunctions[this.params[prop].type].derealize
-                const myVersion = derealizer(me[prop] as never)
-                const newVersion = derealizer(realized[prop] as never)
+                const param = this.params[prop]
+                const derealizer = typeFunctions[param.type].derealize
+                const myVersion = derealizer.call(param, me[prop] as never)
+                const newVersion = derealizer.call(
+                    param,
+                    realized[prop] as never
+                )
                 if (newVersion !== myVersion) {
                     // OK, really have to change
                     me[prop] = realized[prop]
@@ -524,7 +538,11 @@ export class Paramable implements ParamableInterface {
             const status = ValidationStatus.ok()
             // No need to validate empty optional params
             if (tentative || param.required)
-                typeFunctions[param.type].validate(tentative, status)
+                typeFunctions[param.type].validate.call(
+                    param,
+                    tentative,
+                    status
+                )
             if (status.isValid()) {
                 // Skip any parameters that already produce the current value
                 if (me[prop] === realizeOne(param, tentative)) continue
@@ -536,7 +554,10 @@ export class Paramable implements ParamableInterface {
                 continue
             }
 
-            this.tentativeValues[prop] = typeFunctions[param.type].derealize(
+            this.tentativeValues[prop] = typeFunctions[
+                param.type
+            ].derealize.call(
+                param,
                 me[prop] as never // looks odd, TypeScript hack
             )
         }
@@ -565,9 +586,9 @@ export class Paramable implements ParamableInterface {
             // leave out blank/default parameters
             if (tv[key]) {
                 const param = this.params[key]
-                const defaultString = typeFunctions[param.type].derealize(
-                    param.default as never
-                )
+                const defaultString = typeFunctions[
+                    param.type
+                ].derealize.call(param, param.default as never)
                 if (tv[key] !== defaultString) {
                     // Avoid percent-encoding for colors
                     let qv = tv[key]

@@ -95,7 +95,7 @@ const paramDesc = {
         from: ColorStyle,
         displayName: 'Color dots by',
         required: true,
-        description: 'The way the dots should be colored',
+        description: 'The way the dots should be colored.',
     },
     gradientLength: {
         default: 10000,
@@ -149,7 +149,7 @@ const paramDesc = {
         visibleValue: true,
         validate(a: number, status: ValidationStatus) {
             if (a < 0 || a > 1) {
-                status.addError('must be between 0 and 1, inclusive.')
+                status.addError('must be between 0 and 1, inclusive')
             }
         },
     },
@@ -176,7 +176,7 @@ const paramDesc = {
         type: ParamType.BOOLEAN,
         displayName: 'Use dark mode?',
         required: false,
-        description: 'If checked, uses light colors on a dark background',
+        description: 'If checked, uses light colors on a dark background.',
     },
 } satisfies GenericParamDescription
 

@@ -78,7 +78,8 @@ const anotherNegInf = math.bigmin(5n, math.negInfinity, -3)
 import isqrt from 'bigint-isqrt'
 import {modPow} from 'bigint-mod-arith'
 import {create, all} from 'mathjs'
-import type {MathJsInstance} from 'mathjs'
+import type {MathJsInstance, EvalFunction, SymbolNode} from 'mathjs'
+export type {MathNode, SymbolNode} from 'mathjs'
 
 type Integer = number | bigint
 
@@ -261,4 +262,41 @@ math.bigmin = (...args: Integer[]): ExtendedBigint => {
         }
     }
     return ret
+}
+
+/**
+ * Class to encapsulate a mathjs formula
+ */
+
+export class MathFormula {
+    evaluator: EvalFunction
+    inputs: string[]
+    source: string
+    constructor(fmla: string, inputs?: string[]) {
+        this.source = fmla
+        if (inputs) {
+            this.inputs = inputs
+            this.evaluator = math.compile(fmla)
+        } else {
+            // inputs default to all free variables
+            const parsetree = math.parse(fmla)
+            this.inputs = parsetree
+                .filter(
+                    (node, path) => math.isSymbolNode(node) && path !== 'fn'
+                )
+                .map(node => (node as SymbolNode).name)
+            console.log('FOUND', this.inputs)
+            this.evaluator = parsetree.compile()
+        }
+    }
+    compute(a: number | Record<string, number>, ...rst: number[]) {
+        if (typeof a === 'object' && this.inputs.every(i => i in a)) {
+            return this.evaluator.evaluate(a)
+        }
+        const scope = {[this.inputs[0]]: a}
+        for (let ix = 0; ix < rst.length; ++ix) {
+            scope[this.inputs[ix + 1]] = rst[ix]
+        }
+        return this.evaluator.evaluate(scope)
+    }
 }

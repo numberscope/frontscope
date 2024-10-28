@@ -67,11 +67,10 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
-    import type {
-        ParamInterface,
-        ParamableInterface,
-    } from '../shared/Paramable'
-    import typeFunctions, {ParamType} from '../shared/ParamType'
+    import type {ParamInterface, ParamableInterface} from '@/shared/Paramable'
+    import typeFunctions, {ParamType} from '@/shared/ParamType'
+    import type {RealizedParamType} from '@/shared/ParamType'
+
     import MageExchangeA from './MageExchangeA.vue'
     import ParamField from './ParamField.vue'
 
@@ -129,7 +128,12 @@
                 if (!dep) return true
                 if (this.paramable.statusOf[dep].invalid()) return false
                 const parent = this.paramable.params[dep]
-                const v = typeFunctions[parent.type].realize(
+                const realizer = typeFunctions[parent.type].realize as (
+                    this: ParamInterface<typeof parent.type>,
+                    tentative: string
+                ) => RealizedParamType[typeof parent.type]
+                const v = realizer.call(
+                    parent,
                     this.paramable.tentativeValues[dep]
                 )
                 if (param.visiblePredicate) {

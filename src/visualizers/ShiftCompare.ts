@@ -29,11 +29,11 @@ const paramDesc = {
     mod: {
         default: 2n,
         type: ParamType.BIGINT,
-        displayName: 'Modulo',
+        displayName: 'Modulus',
         required: true,
-        description: 'Modulus used to compare sequence elements',
+        description: 'Modulus used to compare sequence elements.',
         validate(m: number, status: ValidationStatus) {
-            if (m <= 0n) status.addError('Modulo must be positive')
+            if (m <= 0n) status.addError('must be positive')
         },
     },
 } satisfies GenericParamDescription

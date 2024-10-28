@@ -143,13 +143,21 @@ part of your commit.
 
 Sometimes the new behavior will also affect the snapshots for tests that are
 run automatically when pull requests (PR)s are created or updated, or new code
-is merged into main. (Note there is a separate set of snapshots for such
-tests, because the images for some of the tests end up slightly different in
-the Github CI runtime environment than on our local machines.)
+is merged into main. Note there is a separate set of snapshots for such tests,
+because the images for some of the tests end up slightly different in the
+Github CI runtime environment than on our local machines.
 
-To do such an update, the first challenge is to obtain the actual images that
-were produced in the Github CI. For this, there is a commented-out section in
-the Github CI specification file `.github/workflows/ci.yaml`:
+If you're not sure whether you might be in this situation, you can tell after
+you create a PR: if `npm run test:e2e` succeeds on your machine, but the
+GitHub CI tests fail, and when you look at the details of the tests (see just
+below for the procedure to find those details), the failures are caused by
+snapshot mismatches for snapshots with file names that include `ci_snaps` in
+the full path to the "expected" image.
+
+To go ahead and update thse CI snapshots, the first challenge is to obtain the
+actual images that were produced in the Github CI. For this, there is a
+commented-out section in the Github CI specification file
+`.github/workflows/ci.yaml`:
 
 ```yaml
 {! ../.github/workflows/ci.yaml extract: { start: playwright.test } !}

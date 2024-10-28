@@ -175,35 +175,40 @@ the sketch. However, you still have no access to the p5 canvas or the
 `this.sketch` object.
 
 Note also that `presketch()` is called when there is a new visualizer, when
-the sequence changes, when you visit a new Numberscope URL, but not when
-visualizer parameters change or the screen is resized. So if there is
-initialization you want to do only on these more signifcant changes but not on
-parameter changes or resizes, then `presketch()` is a good method.
+the sequence changes, when the canvas size changes, and when you reload the
+page or visit a new Numberscope URL. It is not called when visualizer
+parameters change. So if there is initialization you want to do only on these
+more signifcant changes but not on parameter changes, then `presketch()` is a
+good method.
 
-The next opportunity is when the p5 graphics context becomes available, which
-occurs after `presketch()` completes. At this time, `setup()` is called,
-giving you your first chance to set graphics options and draw on the canvas.
-For example, p5 colors cannot be dealt with in `presketch()`, but can be set
-up here. This is a good place for one-time graphics operations, like painting
-the background of a static visualizer or setting colors and stroke options
-that won't change from frame to frame.
+The next opportunity to do initialization/precomputations is when the p5
+graphics context becomes available, which occurs after `presketch()`
+completes. At this time, `setup()` is called, giving you your first chance to
+set graphics options and draw on the canvas. For example, p5 colors cannot be
+dealt with in `presketch()`, but can be set up here. This is a good place for
+one-time graphics operations, like painting the background of a static
+visualizer or setting colors and stroke options that won't change from frame
+to frame.
 
 If you implement `setup()`, start by calling `super.setup()`, which includes
 the [`createCanvas()`](https://p5js.org/reference/#/p5/createCanvas) call that
 must appear in every p5 setup function.
 
 When a visualizer is resized, or the restart button on Numberscope is pressed,
-the class function `reset()` is called. By default, this calls `setup()` but
-not `presketch()`, and a new canvas is created. However, the visualizer object
-constructor is not re-run and any data stored in variables in the visualizer
-object persists. Those defaults mean that you have the option to forgo
-re-doing expensive pre-computations: if they don't need sketch access, you can
-put such calculations in `presketch()`. For even greater customization of what
-happens when, you can override/extend `reset()` from the `P5Visualizer` base
-class, or you can define a `resized()` method for behavior that only occurs
-when the canvas is resized. Note that in this latter case, if you do want
-`reset()` to occur on resize, you will need to call it yourself, as the
-presence of a `resized()` method replaces the default behavior.
+the class function `reset()` is called. By default, this calls `setup()`, and
+a new canvas is created. In this event, `presketch()` will only be called if
+that new canvas is a different size than the previous one. However, the
+visualizer object constructor is not re-run and any data stored in variables
+in the visualizer object persists. Those defaults mean that you have the
+option to forgo re-doing expensive pre-computations: if they don't need sketch
+access, you can put such calculations in `presketch()`.
+
+For even greater customization of what happens when, you can override/extend
+`reset()` from the `P5Visualizer` base class, or you can define a `resized()`
+method for behavior that only occurs when the canvas is resized. Note that in
+this latter case, you can control whether the framework does the `reset()` for
+you: return `true` if you have handled any need to reset (and so the framework
+should NOT call `reset`), and false if you do want the framework to `reset()`.
 
 -   **p5 Template:** Go to the beginning of the sequence. Create palette
     colors. Set text alignment.

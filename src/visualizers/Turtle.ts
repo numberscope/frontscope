@@ -57,16 +57,16 @@ have a small domain.)
         displayName: 'Domain',
         required: true,
         description:
-            'sequence values to interpret as rules; entries not '
-            + 'matching any value here are skipped',
+            'Sequence values to interpret as rules; entries not '
+            + 'matching any value here are skipped.',
         hideDescription: false,
         validate: function (dom: bigint[], status: ValidationStatus) {
             const seen = new Set()
             for (const element of dom) {
                 if (seen.has(element)) {
                     status.addError(
-                        'Domain elements may only occur once, but '
-                            + `${element} is repeated.`
+                        `elements may only occur once (${element} `
+                            + 'is repeated.'
                     )
                     return
                 }
@@ -99,7 +99,7 @@ and negative values clockwise.
         required: true,
         description:
             'An angle (in degrees) or a list of angles, in order '
-            + 'corresponding to the sequence values listed in Domain',
+            + 'corresponding to the sequence values listed in Domain.',
         hideDescription: false,
     },
     /** md
@@ -114,7 +114,7 @@ negative values (for moving backward) are allowed.
         required: true,
         description:
             'A length (in pixels), or a list of lengths, in order '
-            + 'corresponding to the sequence values listed in Domain',
+            + 'corresponding to the sequence values listed in Domain.',
         hideDescription: false,
     },
     /**
@@ -164,8 +164,8 @@ changes from one frame to the next.
         description:
             'A length increment (in units of 0.01 pixel), or list of length '
             + 'increments in order corresponding to the sequence values '
-            + ' listed in Domain. Similarly to Fold rate, these increment(s) '
-            + ' are added to the step length(s) each frame.',
+            + 'listed in Domain. Similarly to Fold rate, these increment(s) '
+            + 'are added to the step length(s) each frame.',
         hideDescription: false,
         visibleDependency: 'animationControls',
         visibleValue: true,
@@ -202,13 +202,13 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         type: ParamType.INTEGER,
         displayName: 'Turtle speed',
         required: false,
-        description: 'steps added per frame',
+        description: 'Steps added per frame.',
         hideDescription: false,
         visibleDependency: 'pathLook',
         visibleValue: true,
         validate: function (n: number, status: ValidationStatus) {
-            if (n < 0) status.addError('Speed must non-negative')
-            if (n > 1000) status.addError('Speed capped at 1000')
+            if (n < 0) status.addError('must non-negative')
+            if (n > 1000) status.addError('the speed is capped at 1000')
         },
     },
     /** md
@@ -221,7 +221,7 @@ in pixels.
         displayName: 'Stroke width',
         required: false,
         validate: function (n: number, status: ValidationStatus) {
-            if (n <= 0) status.addError('Stroke width must be positive')
+            if (n <= 0) status.addError('must be positive')
         },
         visibleDependency: 'pathLook',
         visibleValue: true,
@@ -306,15 +306,15 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             const entries = params[rule].length
             if (entries > 1 && entries < params.domain.length) {
                 this.statusOf[rule].addWarning(
-                    `Fewer entries than the ${params.domain.length}-element `
+                    `fewer entries than the ${params.domain.length}-element `
                         + 'Domain; reusing last entry '
-                        + `${params[rule][entries - 1]} for the remainder.`
+                        + `${params[rule][entries - 1]} for the remainder`
                 )
             }
             if (entries > params.domain.length) {
                 this.statusOf[rule].addWarning(
-                    `More entries than the ${params.domain.length}-element `
-                        + 'Domain; ignoring extras.'
+                    `more entries than the ${params.domain.length}-element `
+                        + 'Domain; ignoring extras'
                 )
             }
         }
@@ -360,8 +360,8 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             }
             if (nIn < threshold) {
                 this.statusOf.domain.addWarning(
-                    `Only ${nIn} of the first ${toTest} sequence entries `
-                        + 'are in this domain; consider adjusting.'
+                    `only ${nIn} of the first ${toTest} sequence entries `
+                        + 'are in this list; consider adjusting'
                 )
             }
         }
