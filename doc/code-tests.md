@@ -28,7 +28,7 @@ Here is some more detailed information about running the end-to-end tests:
     output should typically look as follows: (There are two copies of the
     "status": "passed" line because there are two batches of tests.)
 
-```
+```txt
   "status": "passed",
   "status": "passed",
 echo 'All tests passed' > e2e/certificate
@@ -99,14 +99,14 @@ the specimens for the Featured Gallery. So, we simply created
 to import the test facilities from `vitest`, and typically all of the exported
 entities from the module being tested, like so:
 
-```
+```typescript
 {! ../src/shared/__tests__/defineFeatured.spec.ts extract: { stop: ibe..g } !}
 ```
 
 In this case, there is only one export, `getFeatured`, so the test
 specification is pretty brief. Here it is in full:
 
-```
+```typescript
 {! ../src/shared/__tests__/defineFeatured.spec.ts extract: { start: tured } !}
 ```
 
@@ -139,6 +139,74 @@ command `npm run test:e2e -- --update-snapshots`. This will produce new
 expected snapshots in the directory /e2e/tests, which you will need to add as
 part of your commit.
 
+### Updating snapshots for the Github Continuous Integration (CI) testing
+
+Sometimes the new behavior will also affect the snapshots for tests that are
+run automatically when pull requests (PR)s are created or updated, or new code
+is merged into main. Note there is a separate set of snapshots for such tests,
+because the images for some of the tests end up slightly different in the
+Github CI runtime environment than on our local machines.
+
+If you're not sure whether you might be in this situation, you can tell after
+you create a PR: if `npm run test:e2e` succeeds on your machine, but the
+GitHub CI tests fail, and when you look at the details of the tests (see just
+below for the procedure to find those details), the failures are caused by
+snapshot mismatches for snapshots with file names that include `ci_snaps` in
+the full path to the "expected" image.
+
+To go ahead and update these CI snapshots, the first challenge is to obtain
+the actual images that were produced in the Github CI. For this, there is a
+commented-out section in the Github CI specification file
+`.github/workflows/ci.yaml`:
+
+```yaml
+{! ../.github/workflows/ci.yaml extract: { start: playwright.test } !}
+```
+
+When you file your PR, or when you realize that you need to update the CI
+snapshots, check in a "dummy" commit that uncomments this section (from the
+`name:` line on). When you push that to Github, it will run the CI tests as
+usual, but unlike the standard runs, it will save all of the actual output
+files of the end-to-end test after it has completed.
+
+Once the CI test has completed (presumably failed, because why else would you
+need to update snapshots?), navigate in the Github web interface to the page
+for your pull request. At the bottom, you will see the test results, similar
+to the following image:
+
+[<img src="../img/ci-results.png" />](./img/ci-results.png)
+
+Click on the "Details" link for the failing test. It should automatically
+scroll the output to the end of the tests (which will likely say "Error:
+Process completed with exit code 1"), and then the next item in the outline of
+the results should be "Extract snapshots", as in this screenshot:
+
+[<img src="../img/extract-snapshots.png" />](./img/extract-snapshots.png)
+
+Click on the right-pointing arrowhead at the left end of this line to drop
+down the details of this "Extract snapshots" section. At the bottom of those
+details will be an "Artifact download URL". Click on that link, and save the
+resulting `ci_actual_snapshots.zip` ZIP file in a convenient temporary
+location on your computer.
+
+Open or extract that ZIP file, as convenient, and navigate within its
+directory structure to find the "...-actual.png" files with the images you
+need. (You can find their exact paths in the detail report of the failed
+test.) You should open them in an image viewer to make certain that they
+reflect the new, desired behavior of the test. Save each one in place of the
+corresponding "expected" snapshot in the
+`e2e/tests/ci_snaps/[TEST_NAME_HERE].spec.ts-snapshots/` directory, noting
+that you will have to remove the "-actual.png" suffix and replace it with
+something like "-firefox-linux.png" depending on the browser and operating
+system in question.
+
+When all of the expected files have been updated on your machine, go back to
+the `.github/workflows/ci.yaml` file and put the comment characters back in
+for the "Extract snapshots" block, as it is shown above. Make a new commit
+with the updated snapshots and the reverted ci.yaml file, and push that to
+your PR. Hopefully, the CI tests will now succeed and your PR will be back on
+track for review.
+
 ### Adding an end-to-end test
 
 The Playwright framework for end-to-end testing is broadly similar. In this
@@ -152,7 +220,7 @@ operation of the page reached by clicking on the "Gallery" item in
 Numberscope's navigation bar. As with vitest, there's a preamble importing the
 test framework:
 
-```
+```typescript
 {! ../e2e/tests/gallery.spec.ts extract: { stop: before } !}
 ```
 
@@ -165,7 +233,7 @@ Playwright tests manipulate that browser and verify it operates as expected.
 Next, we see a new test framework feature: the ability to run code before
 every one of the tests in this file:
 
-```
+```typescript
 {! ../e2e/tests/gallery.spec.ts extract: { start: play, stop: describe} !}
 ```
 
@@ -180,7 +248,7 @@ to call a block of code before each test, if needed.
 
 Finally, let's look at the second test in this suite:
 
-```
+```typescript
 {! ../e2e/tests/gallery.spec.ts extract:
     start: '(.*describe.*)'
     stop: title

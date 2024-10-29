@@ -1,7 +1,8 @@
 import p5 from 'p5'
 
-import {math} from './math'
-import type {ExtendedBigint} from './math'
+import {math, MathFormula} from './math'
+import type {ExtendedBigint, MathNode, SymbolNode} from './math'
+import type {ParamInterface} from './Paramable'
 import {ValidationStatus} from './ValidationStatus'
 
 /**
@@ -42,6 +43,14 @@ export enum ParamType {
      */
     EXTENDED_BIGINT,
     /**
+     * A mathjs formula (entered as a string in a standard input field)
+     * with single free variable `n` for the input. Delivered to the
+     * Paramable object as a Formula interface from `./math.ts` that
+     * allows you to compute with the formula (by passing in a value for
+     * n) and access the original string form of the formula.
+     */
+    FORMULA,
+    /**
      * An enum value, i.e. one of a list of options. Realized as a
      * number, and rendered as a drop down menu in the parameter UI.
      */
@@ -81,6 +90,7 @@ export type RealizedParamType = {
     [ParamType.INTEGER]: number
     [ParamType.BIGINT]: bigint
     [ParamType.EXTENDED_BIGINT]: ExtendedBigint
+    [ParamType.FORMULA]: MathFormula
     [ParamType.ENUM]: number
     [ParamType.STRING]: string
     [ParamType.NUMBER_ARRAY]: number[]
@@ -88,9 +98,13 @@ export type RealizedParamType = {
     [ParamType.VECTOR]: p5.Vector
 }
 
+type PIObj = ParamInterface<ParamType>
+
 /**
  * `ParamTypeFunctions` contains information about validation and to/from
- * string conversion for supported parameter types
+ * string conversion for supported parameter types. Note that each of these is
+ * called with the parameter description as the value of `this`, so that
+ * they can if need be refer to the other fields of the description.
  */
 export interface ParamTypeFunctions<T> {
     /**
@@ -99,7 +113,7 @@ export interface ParamTypeFunctions<T> {
      * @param {string} value  the input value to be validated
      * @param {ValidationStatus} status  the validation status to update
      */
-    validate(value: string, status: ValidationStatus): void
+    validate(this: PIObj, value: string, status: ValidationStatus): void
     /**
      * Converts a particular input string for a given parameter type
      * into a corresponding instance of that parameter type. For example:
@@ -108,22 +122,22 @@ export interface ParamTypeFunctions<T> {
      * @param value the string input value to be converted
      * @return the realized input value
      */
-    realize(value: string): T
+    realize(this: PIObj, value: string): T
     /**
      * Performs the inverse of `realize(...)`, converting the parameter
      * value back into a string to be placed into an input field.
      * @param value the parameter value to be converted back into a string
      * @return the derealized parameter value
      */
-    derealize(value: T): string
+    derealize(this: PIObj, value: T): string
 }
 
 // Helper function for arrays:
-const validateNumbers = (
+function validateNumbers(
     value: string,
     status: ValidationStatus,
     nParts?: number
-) => {
+) {
     const parts = value.trim().split(/\s*[\s,]\s*/)
     let bad = parts.some(part => isNaN(Number(part)))
     let many = ' '
@@ -139,7 +153,7 @@ const validateNumbers = (
 }
 
 // Helper function for number types:
-const validateExtInt = (value: string, status: ValidationStatus) => {
+function validateExtInt(value: string, status: ValidationStatus) {
     if (value.trim().match(/^-?Infinity$/)) return
     if (value.trim().match(/^-?\d+$/) === null)
         status.addError('Input must be an integer or ±Infinity')
@@ -149,15 +163,19 @@ const typeFunctions: {
     [K in ParamType]: ParamTypeFunctions<RealizedParamType[K]>
 } = {
     [ParamType.BOOLEAN]: {
-        validate: (value, status) => {
+        validate: function (value, status) {
             if (value.trim().match(/^true|false$/) === null)
                 status.addError('Input must be a boolean')
         },
-        realize: value => value === 'true',
-        derealize: value => `${value}`,
+        realize: function (value) {
+            return value === 'true'
+        },
+        derealize: function (value) {
+            return `${value}`
+        },
     },
     [ParamType.COLOR]: {
-        validate: (value, status) => {
+        validate: function (value, status) {
             if (
                 value
                     .trim()
@@ -165,36 +183,52 @@ const typeFunctions: {
             )
                 status.addError('Input must be a valid color specification')
         },
-        realize: value => value,
-        derealize: value => `${value}`,
+        realize: function (value) {
+            return value
+        },
+        derealize: function (value) {
+            return `${value}`
+        },
     },
     [ParamType.NUMBER]: {
-        validate: (value, status) => {
+        validate: function (value, status) {
             if (
                 value.trim().match(/^-?((\d+\.\d*|\.?\d+)|Infinity)$/)
                 === null
             )
                 status.addError('Input must be a number')
         },
-        realize: value => parseFloat(value),
-        derealize: value => (Number.isNaN(value) ? '' : `${value}`),
+        realize: function (value) {
+            return parseFloat(value)
+        },
+        derealize: function (value) {
+            return Number.isNaN(value) ? '' : `${value}`
+        },
     },
     [ParamType.INTEGER]: {
         validate: validateExtInt,
-        realize: value => parseInt(value),
-        derealize: value => (Number.isNaN(value) ? '' : `${value}`),
+        realize: function (value) {
+            return parseInt(value)
+        },
+        derealize: function (value) {
+            return Number.isNaN(value) ? '' : `${value}`
+        },
     },
     [ParamType.BIGINT]: {
-        validate: (value, status) => {
+        validate: function (value, status) {
             if (value.trim().match(/^-?\d+$/) === null)
                 status.addError('Input must be an integer')
         },
-        realize: value => BigInt(value),
-        derealize: value => `${value}`,
+        realize: function (value) {
+            return BigInt(value)
+        },
+        derealize: function (value) {
+            return `${value}`
+        },
     },
     [ParamType.EXTENDED_BIGINT]: {
         validate: validateExtInt,
-        realize: value => {
+        realize: function (value) {
             value = value.trim()
             if (value.endsWith('Infinity')) {
                 if (value.startsWith('-')) return math.negInfinity
@@ -202,56 +236,113 @@ const typeFunctions: {
             }
             return BigInt(value)
         },
-        derealize: value => `${value}`,
+        derealize: function (value) {
+            return `${value}`
+        },
+    },
+    [ParamType.FORMULA]: {
+        validate: function (value, status) {
+            if (value.length === 0) {
+                status.addError(`empty formula not allowed`)
+                return
+            }
+            let parsetree: MathNode | undefined = undefined
+            try {
+                parsetree = math.parse(value)
+            } catch (err: unknown) {
+                status.addError(
+                    `could not parse formula: ${value}`,
+                    (err as Error).message
+                )
+                return
+            }
+
+            const inputSymbols = this.inputs || ['n']
+            const othersymbs = parsetree.filter(
+                (node, path) =>
+                    math.isSymbolNode(node)
+                    && path !== 'fn'
+                    && !inputSymbols.includes(node.name)
+            )
+            if (othersymbs.length > 0) {
+                status.addError(
+                    `free variables limited to ${inputSymbols}; `,
+                    `please remove '${(othersymbs[0] as SymbolNode).name}'`
+                )
+            }
+        },
+        realize: function (value) {
+            return new MathFormula(value, this.inputs || ['n'])
+        },
+        derealize: function (value) {
+            return value.source
+        },
     },
     [ParamType.ENUM]: {
-        validate: (value, status) => {
+        validate: function (value, status) {
             if (value.trim().match(/^-?\d+$/) === null)
                 status.addError('Input must be an integer')
         },
-        realize: value => parseInt(value),
-        derealize: value => `${value as number}`,
+        realize: function (value) {
+            return parseInt(value)
+        },
+        derealize: function (value) {
+            return `${value as number}`
+        },
     },
     [ParamType.STRING]: {
         // Strings are always valid so there is nothing to do.
         // ESlint hates us for that :-)
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        validate: (_value, _status) => {},
-        realize: value => value,
-        derealize: value => `${value}`,
+        validate: function (_value, _status) {},
+        realize: function (value) {
+            return value
+        },
+        derealize: function (value) {
+            return value
+        },
     },
     [ParamType.NUMBER_ARRAY]: {
         validate: validateNumbers,
-        realize: value =>
-            value
+        realize: function (value) {
+            return value
                 .trim()
                 .split(/\s*[\s,]\s*/)
-                .map(part => parseFloat(part)),
-        derealize: value => (value as number[]).join(' '),
+                .map(part => parseFloat(part))
+        },
+        derealize: function (value) {
+            return value.join(' ')
+        },
     },
     [ParamType.BIGINT_ARRAY]: {
-        validate: (value, status) => {
+        validate: function (value, status) {
             if (value.trim().match(/^(-?\d+(\s*[\s,]\s*-?\d+)*)?$/) === null)
                 status.addError(
                     'Input must be a list of integers '
                         + 'separated by whitespace or commas'
                 )
         },
-        realize: value =>
-            value
+        realize: function (value) {
+            return value
                 .trim()
                 .split(/\s*[\s,]\s*/)
-                .map(part => BigInt(part)),
-        derealize: value => (value as bigint[]).join(' '),
+                .map(part => BigInt(part))
+        },
+        derealize: function (value) {
+            return value.join(' ')
+        },
     },
     [ParamType.VECTOR]: {
-        validate: (value, status) => validateNumbers(value, status, 2),
-        realize: value => {
+        validate: function (value, status) {
+            validateNumbers(value, status, 2)
+        },
+        realize: function (value) {
             const coords = value.split(/\s*[\s,]\s*/)
             return new p5.Vector(parseFloat(coords[0]), parseFloat(coords[1]))
         },
-        derealize: value =>
-            `${(value as p5.Vector).x} ${(value as p5.Vector).y}`,
+        derealize: function (value) {
+            return `${value.x} ${value.y}`
+        },
     },
 }
 
