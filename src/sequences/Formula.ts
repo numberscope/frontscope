@@ -1,14 +1,14 @@
 import {Cached} from './Cached'
 import {SequenceExportModule} from './SequenceInterface'
 
-import {math} from '@/shared/math'
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import {MathFormula} from '@/shared/math'
+import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
 const paramDesc = {
     formula: {
-        default: 'n',
-        type: ParamType.STRING,
+        default: new MathFormula('n'),
+        type: ParamType.FORMULA,
         displayName: 'Formula',
         required: true,
     },
@@ -27,55 +27,13 @@ class Formula extends Cached(paramDesc) {
     name = `${Formula.category}: ${paramDesc.formula.default}`
     static description = 'A sequence defined by a formula in n'
 
-    private evaluator: math.EvalFunction
-
-    /**
-     *Creates an instance of Formula
-     * @param {*} sequenceID the sequence identifier of the sequence
-     */
-    constructor() {
-        super()
-        // It is mandatory to initialize the `evaluator` property here,
-        // so just use a simple dummy formula until the user provides one.
-        this.evaluator = math.compile(this.formula)
-    }
-
-    checkParameters(params: ParamValues<typeof paramDesc>) {
-        const status = super.checkParameters(params)
-
-        let parsetree = undefined
-        try {
-            parsetree = math.parse(params.formula)
-        } catch (err: unknown) {
-            status.addError(
-                'Could not parse formula: ' + params.formula,
-                (err as Error).message
-            )
-            return status
-        }
-        const othersymbs = parsetree.filter(
-            (node, path, parent) =>
-                math.isSymbolNode(node)
-                && parent?.type !== 'FunctionNode'
-                && node.name !== 'n'
-        )
-        if (othersymbs.length > 0) {
-            status.addError(
-                "Only 'n' may occur as a free variable in formula.",
-                `Please remove '${(othersymbs[0] as math.SymbolNode).name}'`
-            )
-        }
-        this.evaluator = parsetree.compile()
-        return status
-    }
-
     initialize(): void {
         super.initialize()
-        this.name = 'Formula: ' + this.formula
+        this.name = 'Formula: ' + this.formula.source
     }
 
     calculate(n: bigint) {
-        const result = this.evaluator.evaluate({n: Number(n)})
+        const result = this.formula.compute(Number(n))
         if (result === Infinity) return BigInt(Number.MAX_SAFE_INTEGER)
         else if (result === -Infinity) return BigInt(Number.MIN_SAFE_INTEGER)
         else if (Number.isNaN(result)) return BigInt(0)

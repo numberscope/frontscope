@@ -5,8 +5,9 @@ import {P5GLVisualizer} from './P5GLVisualizer'
 
 import interFont from '@/assets/fonts/inter/Inter-VariableFont_slnt,wght.ttf'
 import {math} from '@/shared/math'
-import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
+import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
 # Factor Histogram
@@ -42,6 +43,9 @@ of the histogram.
         type: ParamType.INTEGER,
         displayName: 'Bin Size',
         required: false,
+        validate(s: number, status: ValidationStatus) {
+            if (s < 1) status.addError('cannot be less than 1')
+        },
     },
     /** md
 - Mouse Over:   This turns on a mouse over feature that shows you the height
@@ -65,15 +69,6 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     binFactorArray: number[] = []
     numUnknown = 0
     fontsLoaded = false
-
-    checkParameters(params: ParamValues<typeof paramDesc>) {
-        const status = super.checkParameters(params)
-
-        if (params.binSize < 1)
-            status.addError('Bin Size can not be less than 1')
-
-        return status
-    }
 
     // Obtain the binned difference of an input
     binOf(input: number): number {

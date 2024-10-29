@@ -120,7 +120,10 @@
             placehold(par: ParamInterface<ParamType>) {
                 if (typeof par.placeholder === 'string')
                     return par.placeholder
-                return typeFunctions[par.type].derealize(par.default as never)
+                return typeFunctions[par.type].derealize.call(
+                    par,
+                    par.default as never
+                )
             },
         },
     })

@@ -154,7 +154,6 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
             super(paramClone(fullDesc)) // need to clone because
             // OEIS (at least) writes into its own param description
             this.ready = false
-            this.isValid = false
             // Even though TypeScript knows defaultObject has the following
             // three keys, the Object.assign below is not enough to avoid the
             // error that they must be assigned in the constructor #IhateTS
@@ -166,7 +165,7 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
 
         initialize(): void {
             if (this.ready) return
-            if (this.isValid) {
+            if (this.validationStatus.isValid()) {
                 this.cache = {}
                 this.factorCache = {}
                 this.lastValueCached = this.first - 1n
