@@ -154,8 +154,8 @@ below for the procedure to find those details), the failures are caused by
 snapshot mismatches for snapshots with file names that include `ci_snaps` in
 the full path to the "expected" image.
 
-To go ahead and update thse CI snapshots, the first challenge is to obtain the
-actual images that were produced in the Github CI. For this, there is a
+To go ahead and update these CI snapshots, the first challenge is to obtain
+the actual images that were produced in the Github CI. For this, there is a
 commented-out section in the Github CI specification file
 `.github/workflows/ci.yaml`:
 
