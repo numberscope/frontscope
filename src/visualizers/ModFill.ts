@@ -1,5 +1,6 @@
 import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
+import type {ViewSize} from './VisualizerInterface'
 
 import {math} from '@/shared/math'
 import type {GenericParamDescription} from '@/shared/Paramable'
@@ -42,6 +43,7 @@ class ModFill extends P5Visualizer(paramDesc) {
     static description =
         'A triangular grid showing which residues occur, to each modulus'
 
+    maxModulus = 0
     rectWidth = 0
     rectHeight = 0
     useMod = 0
@@ -59,20 +61,39 @@ class ModFill extends P5Visualizer(paramDesc) {
         }
     }
 
-    setup() {
-        super.setup()
-        const minDimension = Math.min(this.sketch.width, this.sketch.height)
+    async presketch(size: ViewSize) {
+        await super.presketch(size)
+        const minDimension = Math.min(size.width, size.height)
         // 16 was chosen in the following expression by doubling the
         // multiplier until the traces were almost too faint to see at all.
-        const maxMod = 16 * minDimension
-        if (this.modDimension > maxMod) {
-            // TODO: Need to allow status updates after checkParameters!
-            // status.addWarning(
-            //    `Running with maximum modulus ${this.maxMod}; `
-            //        + `${params.modDimension} will not fit on screen.`
-            // )
-            this.useMod = maxMod
+        this.maxModulus = 16 * minDimension
+    }
+
+    setup() {
+        super.setup()
+        const modDimWarning = 'Running with maximum modulus'
+
+        // We need to check if the "mod dimension" fits on screen,
+        // and adjust if not.
+
+        // First, remove any prior modDimWarning that might be there
+        // (so they don't accumulate from repeated parameter changes):
+        const warnings = this.statusOf.modDimension.warnings
+        const oldWarning = warnings.findIndex(warn =>
+            warn.startsWith(modDimWarning)
+        )
+        if (oldWarning >= 0) warnings.splice(oldWarning, 1)
+
+        // Now check the dimension and warn if need be:
+        if (this.modDimension > this.maxModulus) {
+            warnings.push(
+                `${modDimWarning} ${this.maxModulus}, since `
+                    + `${this.modDimension} will not fit on screen.`
+            )
+            this.useMod = this.maxModulus
         } else this.useMod = Number(this.modDimension)
+
+        // Now we can calculate the cell size and set up to draw:
         this.rectWidth = this.sketch.width / this.useMod
         this.rectHeight = this.sketch.height / this.useMod
         this.sketch.noStroke()

@@ -87,6 +87,9 @@ export interface ParamInterface<T extends ParamType> {
     // Option to hide the description in a tooltip:
     hideDescription?: boolean
 
+    // List of input variables for a FORMULA parameter, defaults to ['n']
+    inputs?: string[]
+
     /* An independent validation function, which may validate the value of
      * this parameter irrespective of the values of other parameters. The
      * advantage of using this over the aggregate validation function within
@@ -148,7 +151,7 @@ export type ParamValues<PD extends GenericParamDescription> = {
  of the hierarchy and become specific (only) in the "leaf" classes that
  are directly used at runtime. The mechanism for the narrowing consists
  of several generic "class factory" functions that generate base classes
- for the final layer of derivation of end-implemenations classes.
+ for the final layer of derivation of end-implementation classes.
 
  Full discussion:
 
@@ -229,8 +232,6 @@ export interface ParamableInterface {
     // available via instances; note that by convention it should only
     // depend on the class.
     readonly description: string
-    // Was the last check of tentative values successful?:
-    isValid: boolean
     /**
      * params determines the parameters that will be settable via the
      * user interface. Each key should match a top-level property name of the
@@ -246,32 +247,39 @@ export interface ParamableInterface {
      */
     tentativeValues: GenericStringFields
     /**
-     * A validation function for the `ParamableInterface`. This function
-     * is expected to check that all tentative values of parameters are
-     * valid when considered in isolation, or if the param argument is
-     * supplied, check just that one. Then it must check that all parameters
-     * considered together are valid. It must set the isValid property of
-     * this paramable object. Finally, it must assign the valid
-     * realized values to the internal properties of the paramable object.
-     *
-     * @param {string?} param  Optional, specific parameter needing validation
-     * @return the result of the validation
+     * The latest individual-parameter statuses of the tentative parameters.
      */
-    validate(param?: string): Promise<ValidationStatus>
+    statusOf: Record<string, ValidationStatus>
     /**
      * Validates one individual parameter, specified by name, updating the
-     * status argument. Does not perform interdependent validation checks
-     * or assign any parameters, but does return the realized value if it
-     * is valid, or returns undefined otherwise.
+     * corresponding status of that parameter in the statusOf property.
+     * Does not perform interdependent validation checks or assign any
+     * parameters within the paramable object, but does return the realized
+     * value if it is valid, or returns undefined otherwise.
      *
      * @param {string} param  param name
-     * @param {ValidationStatus} status  status object to update
      * @return {param type} realized value of parameter
      */
     validateIndividual<P extends string>(
-        param: P,
-        status: ValidationStatus
+        param: P
     ): ParamValues<GenericParamDescription>[string] | undefined
+    /**
+     * The latest overall status of the paramable object based on the
+     * tentative values:
+     */
+    validationStatus: ValidationStatus
+    /**
+     * A validation function for the `ParamableInterface`. This function
+     * is expected to check that all tentative values of parameters are
+     * valid when considered in isolation. Then it must check that all
+     * parameters considered together are valid. It should update the
+     * validationStatus property of this paramable object. Finally, it must
+     * assign the valid realized values to the internal properties of the
+     * paramable object.
+     *
+     * @return the result of the validation; will be this.validationStatus
+     */
+    validate(): Promise<ValidationStatus>
     /**
      * assignParameters() should copy the realized value of each tentative
      * value of each of the params to the place where the implementing object
@@ -316,7 +324,7 @@ function realizeOne<T extends ParamType>(
     tentative: string
 ): RealizedParamType[T] {
     if (!spec.required && tentative === '') return spec.default
-    return typeFunctions[spec.type].realize(tentative)
+    return typeFunctions[spec.type].realize.call(spec, tentative)
 }
 
 function realizeAll<PD extends GenericParamDescription>(
@@ -339,7 +347,8 @@ export class Paramable implements ParamableInterface {
     static description = 'An object with dynamically-specifiable parameters'
     params: GenericParamDescription
     tentativeValues: GenericStringFields
-    isValid = false
+    statusOf: Record<string, ValidationStatus> = {}
+    validationStatus: ValidationStatus
 
     constructor(params: GenericParamDescription) {
         this.params = params
@@ -361,8 +370,12 @@ export class Paramable implements ParamableInterface {
             if (param.required)
                 this.tentativeValues[prop] = typeFunctions[
                     param.type
-                ].derealize(param.default as never)
+                ].derealize.call(param, param.default as never)
+            // We assume the default value is valid
+            this.statusOf[prop] = ValidationStatus.ok()
         }
+        // We assume that the default values together make a valid object:
+        this.validationStatus = ValidationStatus.ok()
     }
 
     /* All leaf derived classes of Paramable should have a static
@@ -389,56 +402,65 @@ export class Paramable implements ParamableInterface {
      * All implementations based on this default delegate the aggregate
      * checking of parameters to the checkParameters() method.
      * That leaves the required validate() method to first validate the
-     * individual parameters (or just the one requested), then call
-     * checkParameters and set the isValid property based on the result.
+     * individual parameters, then call checkParameters.
      * Also, if the parameters are valid, it calls assignParameters to copy
      * the realized values into the working locations in the paramable object.
      * This validate() should generally not need to be overridden or extended;
      * extend checkParameters() instead.
      */
-    async validate(param?: string) {
-        // Presumption of guilt:
-        this.isValid = false
+    async validate() {
         // first handle the individual validations
-        let status = ValidationStatus.ok()
         const parmNames = Object.keys(this.params)
         const realized = Object.fromEntries(
-            parmNames.map(p => [
-                p,
-                !param || p === param
-                    ? (this.validateIndividual(p, status) ?? '')
-                    : realizeOne(this.params[p], this.tentativeValues[p]),
-            ])
+            parmNames.map(p => [p, this.validateIndividual(p) ?? ''])
         )
-        if (status.invalid()) return status
-        status = this.checkParameters(realized)
-        if (status.invalid()) return status
-        this.isValid = true
-        await this.assignParameters(realized)
-        return status
+        const invalidParms = parmNames.filter(parm =>
+            this.statusOf[parm].invalid()
+        )
+        if (invalidParms.length) {
+            this.validationStatus = ValidationStatus.error(
+                `Invalid parameters: ${invalidParms.join(', ')}`
+            )
+            return this.validationStatus
+        }
+        this.validationStatus = this.checkParameters(realized)
+        if (this.validationStatus.isValid()) {
+            await this.assignParameters(realized)
+        }
+        return this.validationStatus
     }
     /**
      * Validate one individual parameter, specified by name, updating the
-     * status argument. Does not perform interdependent validation checks
-     * or assign any parameters, but does return the realized value if it
-     * is valid or undefined otherwise.
+     * corresponding this.statusOf property. Does not perform interdependent
+     * validation checks or assign any parameters, but does return the realized
+     * value if it is valid, or undefined otherwise.
      *
      * @param {string} param  param name
-     * @param {ValidationStatus} status  status object to update
      * @return {param type} realized value of parameter
      */
     validateIndividual<P extends string>(
-        param: P,
-        status: ValidationStatus
+        param: P
     ): ParamValues<GenericParamDescription>[string] | undefined {
         const paramSpec = this.params[param]
         const tentative = this.tentativeValues[param]
+        if (param in this.statusOf) {
+            this.statusOf[param].reset()
+        } else this.statusOf[param] = ValidationStatus.ok()
+        const status = this.statusOf[param]
         if (!paramSpec.required && tentative === '') {
             return paramSpec.default
         }
-        typeFunctions[paramSpec.type].validate(tentative, status)
+        typeFunctions[paramSpec.type].validate.call(
+            paramSpec,
+            tentative,
+            status
+        )
         if (status.invalid()) return undefined
-        const realization = typeFunctions[paramSpec.type].realize(tentative)
+        const realizer = typeFunctions[paramSpec.type].realize as (
+            this: typeof paramSpec,
+            t: string
+        ) => RealizedParamType[typeof paramSpec.type]
+        const realization = realizer.call(paramSpec, tentative)
         if (paramSpec.validate) {
             paramSpec.validate.call(this, realization, status)
         }
@@ -483,10 +505,13 @@ export class Paramable implements ParamableInterface {
                 // Looks like we might need to change my value of the prop
                 // However, we only want to do this if the two items
                 // derealize into different strings:
-                const derealizer =
-                    typeFunctions[this.params[prop].type].derealize
-                const myVersion = derealizer(me[prop] as never)
-                const newVersion = derealizer(realized[prop] as never)
+                const param = this.params[prop]
+                const derealizer = typeFunctions[param.type].derealize
+                const myVersion = derealizer.call(param, me[prop] as never)
+                const newVersion = derealizer.call(
+                    param,
+                    realized[prop] as never
+                )
                 if (newVersion !== myVersion) {
                     // OK, really have to change
                     me[prop] = realized[prop]
@@ -513,7 +538,11 @@ export class Paramable implements ParamableInterface {
             const status = ValidationStatus.ok()
             // No need to validate empty optional params
             if (tentative || param.required)
-                typeFunctions[param.type].validate(tentative, status)
+                typeFunctions[param.type].validate.call(
+                    param,
+                    tentative,
+                    status
+                )
             if (status.isValid()) {
                 // Skip any parameters that already produce the current value
                 if (me[prop] === realizeOne(param, tentative)) continue
@@ -525,7 +554,10 @@ export class Paramable implements ParamableInterface {
                 continue
             }
 
-            this.tentativeValues[prop] = typeFunctions[param.type].derealize(
+            this.tentativeValues[prop] = typeFunctions[
+                param.type
+            ].derealize.call(
+                param,
                 me[prop] as never // looks odd, TypeScript hack
             )
         }
@@ -554,9 +586,9 @@ export class Paramable implements ParamableInterface {
             // leave out blank/default parameters
             if (tv[key]) {
                 const param = this.params[key]
-                const defaultString = typeFunctions[param.type].derealize(
-                    param.default as never
-                )
+                const defaultString = typeFunctions[
+                    param.type
+                ].derealize.call(param, param.default as never)
                 if (tv[key] !== defaultString) {
                     // Avoid percent-encoding for colors
                     let qv = tv[key]

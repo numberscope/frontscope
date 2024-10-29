@@ -63,7 +63,10 @@ integer.)_
         default: 1n, // Default value
         type: ParamType.BIGINT, // Type validated by UI on user input
         displayName: 'Step size', // Title of the field
-        description: 'The increment between subsequent values',
+        // By convention, complete sentences with periods:
+        description:
+            'The step size is added or subtracted to the current index '
+            + 'when you move right or left in the sequence.',
         hideDescription: true, // put the description in a tooltip
         // If required = true, default value is entered in field
         // If required = false, a greyed-out default or
@@ -75,7 +78,14 @@ integer.)_
         // restriction on the input should be validated with
         // a custom function here
         validate: function (n: bigint, status: ValidationStatus) {
-            if (n <= 0) status.addError('Step size must be positive')
+            // By convention, individual-parameter messages are
+            // uncapitalized phrases without periods
+            if (n <= 0) status.addError('must be positive')
+            // If you create diagnostics involving multiple parameters
+            // with a checkParameters method in the Visualizer class below,
+            // (there isn't one in this example), those messages should
+            // again be complete sentences with periods, as they appear by
+            // themselves at the top of the parameter tab.
         },
     },
 } satisfies GenericParamDescription
