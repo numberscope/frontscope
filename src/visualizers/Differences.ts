@@ -46,18 +46,23 @@ class Differences extends P5Visualizer(paramDesc) {
         'Produces a table of differences '
         + 'between consecutive entries, potentially iterated several times'
 
-    useTerms = 40n // Typically more than enough to fill screen
-    useLevels = 0n
+    // Dummy values, actually computed in setup()
+    useTerms = -1n
+    useLevels = -1n
 
     setup() {
         super.setup()
+        this.useTerms = 40n // Typically more than enough to fill screen
         if (this.seq.last < this.seq.first + this.useTerms - 1n) {
             this.useTerms = BigInt(this.seq.last) - this.seq.first + 1n
         }
         this.useLevels = this.levels
         if (this.useLevels > this.useTerms) {
             this.useLevels = this.useTerms
-            // TODO: Should really warn about this situation
+            // TODO IN OVERHAUL: Should really warn about this situation
+            // So some of this code will have to move into checkParameters
+            // maybe there will need to be a common helper function called
+            // from both there and here.
         }
     }
 

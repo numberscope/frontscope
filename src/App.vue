@@ -1,7 +1,7 @@
 <template>
     <div id="container">
         <main>
-            <Suspense><RouterView /></Suspense>
+            <RouterView />
         </main>
     </div>
 </template>
