@@ -7,6 +7,7 @@
             :subtitle="specimen.subtitle"
             :last-edited="specimen.lastEdited"
             :permanent="'canDelete' in specimen && !specimen.canDelete"
+            @selected="emit('selected')"
             @specimen-deleted="removeSpecimen" />
     </div>
 </template>
@@ -29,7 +30,7 @@
         specimens: CardSpecimen[]
     }>()
 
-    const emit = defineEmits(['removeSpecimen'])
+    const emit = defineEmits(['removeSpecimen', 'selected'])
 
     const currentSpecimens = ref(props.specimens)
 

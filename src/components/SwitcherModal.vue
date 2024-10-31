@@ -52,7 +52,8 @@ click on the trash button on its preview card.
                         <SpecimensGallery
                             class="results"
                             :specimens="cards"
-                            @remove-specimen="deleteModule" />
+                            @remove-specimen="deleteModule"
+                            @selected="emit('close')" />
                     </div>
                 </div>
             </div>

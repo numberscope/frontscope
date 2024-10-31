@@ -320,8 +320,8 @@ visualizers you can select.
 <script setup lang="ts">
     import interact from 'interactjs'
     import type {InteractEvent} from '@interactjs/types'
-    import {onMounted, onUnmounted, reactive, ref} from 'vue'
-    import {useRoute, useRouter} from 'vue-router'
+    import {onBeforeMount, onMounted, onUnmounted, reactive, ref} from 'vue'
+    import {useRoute, useRouter, onBeforeRouteUpdate} from 'vue-router'
 
     import {Specimen} from '@/shared/Specimen'
 
@@ -342,12 +342,22 @@ visualizers you can select.
         const end = path.indexOf('#', start)
         return path.substring(start + 1, end > start ? end : undefined)
     }
-    const urlQuery = extractQueryFromPath(route.fullPath)
 
-    const specimen = reactive(
-        await Specimen.fromQuery(urlQuery ? urlQuery : getCurrent().query)
-    )
-    updateCurrent(specimen)
+    const specimen = reactive(new Specimen()) // starts empty
+
+    async function showURL(url: string) {
+        const urlQuery = extractQueryFromPath(url)
+        if (urlQuery) {
+            await specimen.loadQuery(urlQuery)
+            updateCurrent(specimen)
+        } else {
+            // This should no longer be possible now that the router
+            // redirects `/` to `/?[CURRENT QUERY]` but in case we
+            // somehow end up with a URL with no query, we have to do
+            // something:
+            await specimen.loadQuery(getCurrent().query)
+        }
+    }
 
     const tabWidth = parseInt(
         window
@@ -381,10 +391,16 @@ visualizers you can select.
     type IntervalID = ReturnType<typeof setInterval>
     let resizePoll: IntervalID
 
+    onBeforeMount(() => {
+        // First load up the specimen
+        showURL(route.fullPath)
+    })
+
     onMounted(() => {
         const specimenContainer = document.getElementById(
             'specimen-container'
         )!
+
         positionAndSizeAllTabs()
 
         window.addEventListener('resize', () => {
@@ -405,6 +421,10 @@ visualizers you can select.
     onUnmounted(() => {
         clearInterval(resizePoll)
         specimen.visualizer.depart(canvasContainer)
+    })
+
+    onBeforeRouteUpdate((to, from) => {
+        showURL(to.fullPath)
     })
 
     // enable draggables to be dropped into this
@@ -513,7 +533,7 @@ visualizers you can select.
         modifiers: [
             // keep the edges inside the screen
             interact.modifiers.restrictEdges({
-                outer: '#speciment-container',
+                outer: '#specimen-container',
             }),
 
             // minimum size
