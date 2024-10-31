@@ -47,7 +47,7 @@
                 },
             },
         },
-        emits: ['specimenDeleted'],
+        emits: ['specimenDeleted', 'selected'],
         data() {
             return {specimenName: '', useSub: ''}
         },
@@ -58,9 +58,8 @@
         },
         methods: {
             openSpecimen() {
-                this.$router
-                    .push(`/?${this.query}`)
-                    .then(_value => window.location.reload())
+                this.$router.push(`/?${this.query}`)
+                this.$emit('selected')
             },
             deleteSpecimen() {
                 deleteSpecimen(this.specimenName)

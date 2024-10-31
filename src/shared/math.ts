@@ -285,7 +285,6 @@ export class MathFormula {
                     (node, path) => math.isSymbolNode(node) && path !== 'fn'
                 )
                 .map(node => (node as SymbolNode).name)
-            console.log('FOUND', this.inputs)
             this.evaluator = parsetree.compile()
         }
     }
