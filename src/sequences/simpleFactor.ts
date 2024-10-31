@@ -45,6 +45,11 @@ export default function simpleFactor(v: bigint): Factorization {
         v = -v
         factors.push([-1n, 1n])
     }
+    // don't report any factorizations of "unsafe" integers since we can't
+    // be sure it didn't come from a number => bigint conversion that created
+    // apparent accuracy where there was none.  TODO: when we upgrade to
+    // bigints in formulas, revisit this.
+    if (v > Number.MAX_SAFE_INTEGER) return null
     for (const p of smallPrimes) {
         let power = 0n
         // OK to use % since all we care about is divisibility:
