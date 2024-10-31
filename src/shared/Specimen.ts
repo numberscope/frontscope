@@ -11,52 +11,109 @@ import type {
 import vizMODULES from '@/visualizers/visualizers'
 
 /**
- * This class represents a specimen, containing a visualizer,
- * a sequence, and the set of all parameters that make both of them up.
- * Specimens can be converted to and from URL query string encodings so that
- * they can be saved.
+ * This class represents a "specimen,"  which is a container for a sequence
+ * and a visualizer that is viewing it, along with information about whether
+ * and where the resulting visualization is being displayed and some other
+ * setup data such as the random seed that was set when the specimen was
+ * created. You can load a specification of a sequence and a visualizer into
+ * the specimen, interact with and possibly modify the sequence and/or
+ * visualizer, insert it into an HTML element for display (via the `setup()`
+ * method), and obtain the string specifying the current sequence and
+ * visualizer in the specimen.
+ *
+ * Currently, these specifications are in the form of reasonably
+ * human-readable URL query strings (some special characters have to be
+ * %-encoded).
  */
 export class Specimen {
     name: string
-    private _visualizerKey: string
-    private _sequenceKey: string
-    private _visualizer: VisualizerInterface
-    private _sequence: SequenceInterface
+    private randomSeed?: string | null
+    private _visualizerKey = ''
+    private _sequenceKey = ''
+    private _visualizer?: VisualizerInterface
+    private _sequence?: SequenceInterface
     private location?: HTMLElement
-    private isSetup: boolean = false
+    private isSetup = false
     private size = nullSize
 
     /**
-     * Constructs a new specimen from a visualizer and a sequence.
-     * The string arguments passed in are expected to be keys
-     * for the visualizer/sequences' export modules.
-     * Optionally the URL query string encodings of the visualizer and sequence
-     * parameters can be passed in as well.
-     * @param {string} name
-     * @param {string} visualizerKey  the specimen's variety of visualizer
-     * @param {string} sequenceKey  the specimen's variety of sequence
-     * @param {string?} vizQuery  query string encoding visualizer parameters
-     * @param {string?} seqQuery  query string encoding sequence parameters
+     * Constructs an empty specimen.
      */
-    constructor(
-        name: string,
-        visualizerKey: string,
-        sequenceKey: string,
-        vizQuery?: string,
-        seqQuery?: string
-    ) {
-        this.name = name
-        this._visualizerKey = visualizerKey
-        this._sequenceKey = sequenceKey
-        this._sequence = Specimen.makeSequence(sequenceKey, seqQuery)
-
-        this._visualizer = new vizMODULES[visualizerKey].visualizer(
-            this._sequence
-        )
-        if (vizQuery) this._visualizer.loadQuery(vizQuery)
+    constructor() {
+        this.name = '*Uninitialized Specimen*'
     }
 
-    // Helper for constructor and for extracting sequence name
+    /**
+     * Loads new contents specified by a URL query string.
+     * Gracefully wraps up any prior visualization in this specimen.
+     * @param {string} query  query string encoding the visualizer
+     * @return {Specimen} this specimen
+     */
+    async loadQuery(query: string) {
+        // Do we need to destroy the current visualization and create anew?
+        let reload = false
+
+        // First deal with the random seed as that potentially affects
+        // everything:
+        const specs = parseSpecimenQuery(query)
+        const newRandomSeed = specs.seed ?? null
+        if (newRandomSeed != this.randomSeed) {
+            this.randomSeed = newRandomSeed
+            math.config({randomSeed: newRandomSeed})
+            reload = true
+        }
+
+        // Check if the visualizer changed:
+        if (
+            specs.visualizerKind !== this._visualizerKey
+            || specs.visualizerQuery !== this.visualizer?.query
+        ) {
+            reload = true
+        }
+        // If the visualizer kind and parameters match and we have not
+        // changed the random seed, it should be OK to proceed with the
+        // existing visualizer.
+
+        // Load the specs into the specimen:
+        this.name = specs.name
+
+        let sequenceChanged = false
+        if (
+            specs.sequenceKind !== this._sequenceKey
+            || specs.sequenceQuery !== this.sequence?.query
+        ) {
+            sequenceChanged = true
+            this._sequenceKey = specs.sequenceKind
+            this._sequence = Specimen.makeSequence(
+                this._sequenceKey,
+                specs.sequenceQuery
+            )
+        }
+
+        if (reload) {
+            const displayed = this.isSetup
+            if (displayed) this.visualizer?.depart(this.location!)
+
+            this._visualizerKey = specs.visualizerKind
+
+            this._visualizer = new vizMODULES[this._visualizerKey].visualizer(
+                this._sequence!
+            )
+            if (specs.visualizerQuery) {
+                this._visualizer.loadQuery(specs.visualizerQuery)
+            }
+            await this._sequence?.fill() // maybe needed to get index range
+            this._visualizer.validate()
+            this._visualizer.stop(specs.frames)
+
+            if (displayed) this.setup(this.location!)
+        } else if (sequenceChanged) {
+            this._visualizer?.view(this._sequence!)
+        }
+        return this
+    }
+
+    // Helper for loadQuery and for extracting sequence name
     static makeSequence(key: string, query?: string) {
         const sequence = produceSequence(key)
         if (query) sequence.loadQuery(query)
@@ -64,55 +121,37 @@ export class Specimen {
         sequence.initialize()
         return sequence
     }
+
     /**
-     * Call this as soon after construction as possible once the HTML
-     * element has been mounted
+     * Displays a specimen within an HTML element
      * @param {HTMLElement} location  where in the DOM to insert the specimen
      */
     async setup(location: HTMLElement) {
-        this.location = location
-        this.size = this.calculateSize(
-            {width: location.clientWidth, height: location.clientHeight},
-            this.visualizer.requestedAspectRatio()
-        )
+        if (!this._sequence || !this._visualizer) {
+            throw new Error('Attempt to display uninitialized Specimen.')
+        }
 
-        this.sequence.initialize()
-        await this.sequence.fill()
-        this.visualizer.view(this.sequence)
-        await this.visualizer.inhabit(this.location, this.size)
-        this.visualizer.show()
+        this.location = location
         this.isSetup = true
+        this.reset()
     }
+
     /**
      * Hard resets the specimen
      */
     async reset() {
-        if (!this.location) return
+        if (!this.isSetup) return
         this.size = this.calculateSize(
             {
-                width: this.location.clientWidth,
-                height: this.location.clientHeight,
+                width: this.location?.clientWidth ?? 0,
+                height: this.location?.clientHeight ?? 0,
             },
-            this.visualizer.requestedAspectRatio()
+            this._visualizer?.requestedAspectRatio()
         )
+        await this._visualizer?.inhabit(this.location!, this.size)
+        this._visualizer?.show()
+    }
 
-        await this.visualizer.inhabit(this.location, this.size)
-        this.visualizer.show()
-    }
-    /**
-     * Returns the key of the specimen's visualizer
-     * @return {string} the variety of visualizer used in this specimen
-     */
-    get visualizerKey(): string {
-        return this._visualizerKey
-    }
-    /**
-     * Returns the key of the specimen's sequence
-     * @return {string} the variety of sequence shown in this specimen
-     */
-    get sequenceKey(): string {
-        return this._sequenceKey
-    }
     /**
      * Returns the query-encoding of the specimen
      * @return {string} a URL query string that specifies this specimen
@@ -122,15 +161,34 @@ export class Specimen {
             this.name,
             this._visualizerKey,
             this._sequenceKey,
-            this._visualizer.query,
-            this._sequence.query
+            this._visualizer?.query,
+            this._sequence?.query
         )
     }
+
+    /**
+     * Returns the specimen's visualizer key
+     * @returns {string} what kind of visualizer the specimen uses
+     */
+    get visualizerKey() {
+        return this._visualizerKey
+    }
+
+    /** Returns the specimen's sequence key
+     * @returns {string} what kind of sequence the visualizer displays
+     */
+    get sequenceKey() {
+        return this._sequenceKey
+    }
+
     /**
      * Returns the specimen's visualizer
      * @returns {VisualizerInterface} the visualizer displaying this specimen
      */
     get visualizer(): VisualizerInterface {
+        if (!this._visualizer) {
+            throw new Error('Attempt to get visualizer of empty specimen')
+        }
         return this._visualizer
     }
     /**
@@ -138,40 +196,18 @@ export class Specimen {
      * @returns {SequenceInterface} the sequence shown in this specimen
      */
     get sequence(): SequenceInterface {
+        if (!this._sequence) {
+            throw new Error('Attempt to get sequence of empty specimen')
+        }
         return this._sequence
     }
-    /**
-     * Assigns a new visualizer to this specimen and updates its sequence
-     * to match the specimen. It also ensures this visualizer inhabits
-     * the correct HTML element and begins to render.
-     * @param {string} visualizerKey
-     *     the key of the desired visualizer's export module
-     */
-    set visualizerKey(visualizerKey: string) {
-        this._visualizerKey = visualizerKey
-        this._visualizer.depart(this.location!)
-        this._visualizer = new vizMODULES[visualizerKey].visualizer(
-            this._sequence
-        )
-        if (this.isSetup) this.setup(this.location!)
-    }
-    /**
-     * Assigns a new sequence to this specimen and updates the visualizer
-     * to reflect this change in the render.
-     * @param {string} specimenKey  key of the desired sequence's export module
-     */
-    set sequenceKey(sequenceKey: string) {
-        this._sequenceKey = sequenceKey
-        this._sequence = Specimen.makeSequence(sequenceKey)
-        this._sequence.initialize()
-        this.visualizer.view(this.sequence)
-    }
+
     /**
      * Ensures that the visualizer is aware that the sequence has been
      * updated.
      */
     updateSequence() {
-        return this.visualizer.view(this.sequence)
+        return this._visualizer?.view(this._sequence!)
     }
 
     /**
@@ -189,6 +225,7 @@ export class Specimen {
             height: constraint ? inSize.width / aspectRatio : inSize.height,
         }
     }
+
     /**
      * This function should be called when the size of the visualizer container
      * has changed. It calculates the size of the contents according to the
@@ -199,18 +236,19 @@ export class Specimen {
     async resized(toSize: ViewSize): Promise<void> {
         const newSize = this.calculateSize(
             toSize,
-            this.visualizer.requestedAspectRatio()
+            this._visualizer?.requestedAspectRatio()
         )
         if (sameSize(this.size, newSize)) return
         this.size = newSize
         // Reset the visualizer if the resized function isn't implemented
         // or returns false, meaning it didn't handle the redisplay
         let handled = false
-        if (this.visualizer.resized) {
-            handled = await this.visualizer.resized(this.size)
+        if (this._visualizer?.resized) {
+            handled = await this._visualizer.resized(this.size)
         }
         if (!handled) this.reset()
     }
+
     /**
      * Generates a specimen from a URL query string (as produced by the
      * query getter of a Specimen instance).
@@ -218,21 +256,10 @@ export class Specimen {
      * @return {Specimen} the corresponding specimen
      */
     static async fromQuery(query: string) {
-        const specs = parseSpecimenQuery(query)
-        if (specs.seed) math.config({randomSeed: specs.seed})
-        const specimen = new Specimen(
-            specs.name,
-            specs.visualizerKind,
-            specs.sequenceKind,
-            specs.visualizerQuery,
-            specs.sequenceQuery
-        )
-        specimen.sequence.validate()
-        await specimen.sequence.fill() // may determine sequence limits
-        specimen.visualizer.validate()
-        specimen.visualizer.stop(specs.frames)
-        return specimen
+        const result = new Specimen()
+        return result.loadQuery(query)
     }
+
     /**
      * Extracts the name of the variety of sequence a specimen is showing
      * from its query string encoding
@@ -245,7 +272,6 @@ export class Specimen {
             specs.sequenceKind,
             specs.sequenceQuery
         )
-        sequence.validate()
         return sequence.name
     }
 }

@@ -151,14 +151,19 @@ test.describe('Scope: on Random Modfill', () => {
         await page.evaluate(() => localStorage.clear())
     })
 
-    test('Changing a parameter', async ({page}) => {
+    test('Changing a parameter, then using back button', async ({page}) => {
         const oldURL = page.url()
 
         await page.locator('#modDimension').fill('100')
         await expect(page.locator('#modDimension')).toHaveValue('100')
 
         await expect(page.url()).not.toEqual(oldURL)
+
+        await page.goBack({waitUntil: 'domcontentloaded'})
+        await expect(page.url()).toEqual(oldURL)
+        await expect(page.locator('#modDimension')).toHaveValue('10')
     })
+
     test('refreshing the specimen', async ({page}) => {
         const oldCanvas = await page.locator('#canvas-container canvas')
 

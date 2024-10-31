@@ -79,7 +79,7 @@
         modifiers: [
             // keep the edges inside the screen
             interact.modifiers.restrictEdges({
-                outer: '#speciment-container',
+                outer: '#specimen-container',
             }),
 
             // minimum size
