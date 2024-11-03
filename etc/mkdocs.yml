@@ -41,10 +41,10 @@ validation:
         unrecognized_links: warn
 theme:
     name: readthedocs
-    custom_dir: doc_theme/
+    custom_dir: doc_theme
     prev_next_buttons_location: both
     sticky_navigation: false
-extra_css: [css/coordinate.css, css/override.css]
+extra_css: [doc/css/coordinate.css, css/override.css]
 extra_javascript:
     - js/scroll_navigation.js
     - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.min.js
@@ -54,14 +54,15 @@ plugins:
         filename: mkdocs-index.yml
     search: {}
     semiliterate:
+        copy: true
         exclude:
             - '.jpg'
-            - '.ttf'
             - '.ico'
             - '.spec.ts'
             - 'LICENSE.md'
-        ignore: [node_modules, dist, coverage, '.venv', '.git', tests]
-        include: ['.png', 'math.ts', '.yml']
+            - '~'
+        ignore: [node_modules, dist, coverage, '.venv', '.git', tests, e2e]
+        include: ['.png', 'math.ts', '.yml', '.svg', '.ttf']
         extract_on_copy: true
         extract_standard_markdown:
             terminate: '<!-- CUT HERE -->'
@@ -70,7 +71,7 @@ plugins:
             - pattern: '\.ts' # Standard in-code markup
               extract:
                   start: '^\s*/\*\*+\W?md\b' # Opening like /** md
-                  stop: '^\s*\*\*/\s*$' # closing **/ by itself on a line
+                  stop: '^\s*(?:/\*\s*)?\*\*/\s*$' # closing **/
             - pattern: '[.](.*).generator$'
               destination: '\1'
 markdown_extensions:

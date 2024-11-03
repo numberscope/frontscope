@@ -10,10 +10,12 @@
   start: template
   stop: template
   replace: [
-    ['^(.*)RouterLink(.*)to=(.*)$', '\1a\2href=\3'],
+    ['^(.*)RouterLink(.*)[:]to=(.*)([>])$', '\1a\2href="/"\4'],
     ['^(.*)RouterLink(.*)$', '\1a\2'], # For closing tag
-    ['^(.*):src="([^"]*)(".*)$', '\1src="/doc/src/assets/img/\2.png\3'],
-    ['copyright', 'Copyright © 2020-22 Regents of the University of Colorado']
+    ['^(.*):src="([^"]*)(".*)$', '\1src="/doc/src/assets/img/logo.svg\3'],
+    ['^(.*)RouterLink$', '\1a'],
+    ['^(\s*)to=(.*)', '\1href=\2'],
+    ['^[<]/RouterLink.', '</a>']
   ]
 !}
 {% endblock %}
