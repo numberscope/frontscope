@@ -473,7 +473,7 @@ export class Paramable implements ParamableInterface {
      * have to do this itself. Except in an extraordinary case in which a
      * derived-class Paramable object needed to do some cross-parameter
      * check based on the input strings as opposed to realized values, derived
-     * classes should essenitally always override this checkParameters() method,
+     * classes should essentially always override this checkParameters() method,
      * rather than `validate()`.
      * @param {ParamValues} params
      *     the collection of realized parameter values to be validated

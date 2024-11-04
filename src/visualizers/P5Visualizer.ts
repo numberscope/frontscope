@@ -60,6 +60,9 @@ const p5methods: P5Methods[] = Object.getOwnPropertyNames(
 */
 export const INVALID_COLOR = {} as p5.Color
 
+/* Flag to force a call to presketch in a reset() call: */
+export const P5ForcePresketch = true
+
 export interface P5VizInterface extends VisualizerInterface, WithP5 {
     _sketch?: p5
     _canvas?: p5.Renderer
@@ -271,13 +274,11 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          */
         async view(seq: SequenceInterface) {
             this.seq = seq
-            if (!this._sketch) return
-            const element = this.within!
-            this.stop()
-            this.depart(element) // ensures any sequence-dependent setup
-            // that the visualizer might do in presketch will be redone
-            await this.inhabit(element, this.size)
-            this.show()
+            await seq.fill()
+            this.validationStatus = this.checkParameters(
+                this as unknown as ParamValues<GenericParamDescription>
+            )
+            if (this.validationStatus.isValid()) this.reset(P5ForcePresketch)
         }
 
         /**
@@ -403,11 +404,16 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * it again. In other words, a hard reset. If a visualizer wishes to
          * have any of its internal state be reset during a hard reset event,
          * it should override this function.
+         * @param {boolean} forcePresketch
+         *     if true, ensures presketch initialization will also be redone;
+         *     defaults to false. Call with constant P5ForcePresketch for
+         *     readability of calling code.
          */
-        async reset() {
+        async reset(forcePresketch: boolean = false) {
             if (!this._sketch) return
             const element = this.within!
             this.stop()
+            if (forcePresketch) this.depart(element)
             await this.inhabit(element, this.size)
             this.show()
         }

@@ -9,13 +9,23 @@ some detailed examples and guidance.
 
 The easiest way to build a visualizer is to extend a pre-made visualizer base
 class, which automatically sets up a graphics framework for you to use. Right
-now, there's only one base class available:
+now, there are only two base classes available:
 
 -   [`P5Visualizer`](#making-a-p5-visualizer-in-detail) uses the
     [**p5.js**](https://p5js.org) library for graphics and user interaction.
+-   `P5GLVisualizer`: a slight variant of `P5Visualizer`. You should derive
+    from this base class if you wish to use p5.js in WebGL mode. See the
+    [Turtle](../src/visualizers/Turtle.md) visualizer for an example.
 
-For a quick start, copy and modify the template file for your chosen
-framework, which you can find in `src/visualizers-workbench`.
+Note that by "extend a base class," we mean that in the standard TypeScript
+sense: You will see that visualizer source code files literally contain a line
+like
+
+`class Differences extends P5Visualizer(paramDesc) {`
+
+followed by the code that implements the visualizer class. For a quick start,
+copy and modify the template file for your chosen framework, which you can
+find in `src/visualizers-workbench`.
 
 If you want to use a new graphics framework, you'll need to write your own
 implementation of the [visualizer interface](behind-the-scenes.md).
@@ -45,7 +55,7 @@ accepted into Numberscope. Even the humble template visualizer discussed below
 could be extended. You could shorten the infinite progress bar for finite
 sequences, allow fast navigation by holding down arrow keys, add a progress
 bar mouse-over that shows the index… the possibilities are endless. We invite
-you to try extending or enhancing existing Visualizers as well as building
+you to try extending or enhancing existing visualizers as well as building
 your own. For now, though, let's return to the process of making a new
 visualizer based on p5.
 
@@ -54,10 +64,66 @@ visualizer based on p5.
 A good way to start a p5 visualizer is to copy and modify the basic example in
 the `src/visualizers-workbench` directory:
 
--   `P5VisualizerTemplate.ts`
+-   [`P5VisualizerTemplate.ts`](https://github.com/numberscope/frontscope/blob/main/src/visualizers-workbench/P5VisualizerTemplate.ts)
 
 Let's look at the parts of a p5 visualizer. We recommend following along in
-the visualizer template as you read.
+the visualizer template as you read, and/or referring to the following
+lifecycle diagram of a visualizer. Don't worry if you don't recognize all of
+the terms and method names in the diagram at first; the descriptions of the
+methods below will help to understand the diagram, and vice versa.
+
+```mermaid
+
+flowchart TB
+   Start@{shape: circ, label: " "}
+   style Start fill:none,stroke:none
+   subgraph NSQNSK [neither sequence nor sketch OK]
+   Init@{shape: bow-rect, label: "property<br>initializers/<br>constructor"}
+   Start -->|page load/<br>visualizer change| Init
+   IPV@{shape: bow-rect, label: "individual parameter<br>validate() functions"}
+   Init --> IPV
+   end
+   style NSQNSK fill:#fee,text-align:left
+   subgraph SQBNSK [sequence OK, no sketch]
+   CP@{shape: rounded, label: "checkParameters()"}
+   IPV --> CP
+   Reset@{shape: rounded, label: "reset()"}
+   CP -->|initialization/<br>sequence change| Reset
+   PC@{shape: rounded, label: "parametersChanged()"}
+   CP -->|parameter update| PC
+   PC ==> Reset
+   PS@{shape: rounded, label: "presketch()"}
+   end
+   subgraph SQSK [sequence & sketch OK]
+   RS@{shape: rounded, label: "resized()"}
+   Setup@{shape: rounded, label: "setup()"}
+   Reset -->|initialization<br>canvas resize<br>sequence change| PS
+   Reset -->|otherwise| Setup
+   PS --> Setup
+   Draw@{shape: rounded, label: "draw()"}
+   Setup --> Draw
+   RS ==>|"↑<br>(returns true)<br>↑"| Reset
+   RS -->|"↗(returns false)↗"| Draw
+   Draw -->|"↑<br>change sequence<br>↑"| CP
+   Draw -->|"↑<br>change parameter<br>↑"| IPV
+   Draw -->|"[stop()/continue()]"| Draw
+   Draw -->|resize window| RS
+   end
+   style SQSK fill:#efe
+
+```
+
+A few notes on the diagram: Each lavender rounded rectangle represents a
+method of the visualizer class that you may override or extend. The rectangles
+with curved sides are other parts of the code you may write in your visualizer
+implementation. The shaded boxes let you know what context of the
+visualization is available for those parts of the code: is it OK to access the
+sequence that is being visualized? Is it OK to access the p5 sketch object
+that will be drawing the visualization? And finally, the bold arrows represent
+default actions that you can override by defining the corresponding methods of
+your visualizer.
+
+Now on to the parts of a visualizer implementation:
 
 #### 🔑️ Name _(required)_
 
@@ -106,28 +172,43 @@ The first is automatic type checking, based on the `type` property of a
 parameter. Type errors are announced by the UI next to the relevant input
 field.
 
-The second is storing a function in the `validate` property of a parameter,
-and such checks concern only that single parameter. For example, a parameter
-typed as an integer may run a validation to check if the integer entered is
-positive. Any errors on such checks will immediately be displayed to the user
-next to the relevant parameter entry field.
+The second is storing a function in the `validate` property of a parameter (in
+the paramDesc structure); such checks concern only that single parameter. For
+example, a parameter typed as an integer may run a validation to check that
+the integer entered is positive. Any errors or warning messages from such
+checks will immediately be displayed to the user next to the relevant
+parameter entry field.
 
 The third is an opportunity to check global consistency among many parameters.
 For example, it may be that the number of items in two separate list
 parameters must be equal. Such checks can be performed in the function
 `checkParameters()`, which is called whenever parameters are changed by the
 user, giving you a chance to check the parameter values and prompt the user to
-correct any invalid ones. Errors generated by such checks are displayed at the
-top of the parameters panel, and may be less immediately visible to the user,
-for which reason these should be avoided if type-checking or the `validate`
-property will suffice.
+correct any invalid ones. In this function, you can provide errors or warning
+messages to be displayed at the top of the parameters panel by placing them in
+the returned status object. You may also or instead put errors or warnings
+next to a specific parameter: suppose the parameter is named `speed`. Then you
+can write `this.statusOf.speed.addWarning(message)`, for example. Note that if
+you add an error to any specific parameter, you should also make sure that
+checkParameters returns an invalid status.
 
 By the time checkParameters() is called, the visualizer's sequence should be
 sufficiently initialized that you can depend on its `first` and `last` (index)
-values, in case you need those for validation. On the other hand, the sketch
+values, in case you need those for validation. (And hence, checkParameters()
+will be called again if the sequence changes.) On the other hand, the sketch
 will not necessarily yet be available. You can do sketch-dependent validation
-in [`setup()`](#set-up-the-visualizer-often-used), as described below, but you
-won't be able to prompt the user for corrections at that point.
+in [`setup()`](#set-up-the-visualizer-often-used), as described below. At that
+point, errors you add to the parameters or the visualizer's `validationStatus`
+won't block the new parameters from taking effect as they would if handled in
+checkParameters(), but at least the person running the visualization will be
+notified.
+
+Finally, note that checkParameters is called with _tentative_ parameter values
+and is not guaranteed that those parameter values will actually be loaded into
+the visualizer. So (a) only access the values through the passed-in `params`
+object, not thhrough the visualizer itself, and (b) don't start setting up for
+visualization using those values: leave that to one of the set-up functions
+discussed below.
 
 -   **p5 Template:** Make sure that the step size is positive.
 
@@ -160,16 +241,16 @@ maximal size with that ratio.
 There are two places to do pre-computation before the sketch begins looping
 through frames of the drawing. The first is `presketch()`, which runs
 asynchronously, meaning that the browser will not be blocked while this
-function completes. This is not a part of p5.js, but a part of Numberscope.
-The `presketch()` function is called by the framework with one argument,
-representing the size of the canvas to be created as a ViewSize object with
-number fields `width` and `height`.
+function completes. This facility is not a part of p5.js, but a part of
+Numberscope. The `presketch()` function is called by the framework with one
+argument, representing the size of the canvas to be created as a ViewSize
+object with number fields `width` and `height`.
 
 If you implement `presketch()`, begin by calling
 `await super.presketch(size)`, which will initialize the sequence. After this
-call, you have access to the sequence, so you can do sequence-dependent
-validation and initialization here. You do have the opportunity to set up
-private state variables. For example, this is a good place to populate an
+call, you have access to the values of the sequence, so you can do
+sequence-dependent initialization here. It is OK to set up private state
+variables in this method. For example, this is a good place to populate an
 array with time-consuming precomputed values you will use repeatedly during
 the sketch. However, you still have no access to the p5 canvas or the
 `this.sketch` object.
@@ -369,8 +450,8 @@ source file. That makes it easy to find.
 
 ## Where to put your visualizer
 
-However you made it, when a visualizer is ready for Numberscope users, place
-the file containing its class definition and export module in the folder
+However you made it, when a visualizer is ready for other Numberscope users,
+place the file containing its class definition and export module in the folder
 `src/visualizers`. When the frontscope client runs, it'll find your visualizer
 and compile it at runtime.
 

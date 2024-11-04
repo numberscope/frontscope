@@ -47,6 +47,7 @@ theme:
 extra_css: [doc/css/coordinate.css, css/override.css]
 extra_javascript:
     - js/scroll_navigation.js
+    - https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js
     - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.min.js
 plugins:
     awesome-pages:
@@ -75,5 +76,9 @@ plugins:
             - pattern: '[.](.*).generator$'
               destination: '\1'
 markdown_extensions:
-    - pymdownx.superfences
+    - pymdownx.superfences:
+          custom_fences:
+              - name: mermaid
+                class: mermaid
+                format: !!python/name:pymdownx.superfences.fence_div_format
     - mdx_math
