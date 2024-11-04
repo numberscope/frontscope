@@ -91,3 +91,20 @@ nav.stickynav {
 hr {
     clear: both;
 }
+
+a {
+    color: currentcolor;
+    text-decoration-line: underline;
+}
+
+a:visited {
+    color: currentcolor;
+}
+
+a:hover {
+    color: var(--ns-color-primary);
+}
+
+.wy-breadcrumbs a {
+    text-decoration-line: none;
+}
