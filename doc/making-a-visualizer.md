@@ -204,11 +204,11 @@ checkParameters(), but at least the person running the visualization will be
 notified.
 
 Finally, note that checkParameters is called with _tentative_ parameter values
-and is not guaranteed that those parameter values will actually be loaded into
-the visualizer. So (a) only access the values through the passed-in `params`
-object, not thhrough the visualizer itself, and (b) don't start setting up for
-visualization using those values: leave that to one of the set-up functions
-discussed below.
+and there is no guarantee that those parameter values will actually be loaded
+into the visualizer. So (a) only access the values through the passed-in
+`params` object, not through the visualizer itself, and (b) don't start
+setting up for visualization using those values: leave that to one of the
+set-up functions discussed [below](#set-up-the-visualizer-often-used).
 
 -   **p5 Template:** Make sure that the step size is positive.
 
@@ -282,7 +282,14 @@ that new canvas is a different size than the previous one. However, the
 visualizer object constructor is not re-run and any data stored in variables
 in the visualizer object persists. Those defaults mean that you have the
 option to forgo re-doing expensive pre-computations: if they don't need sketch
-access, you can put such calculations in `presketch()`.
+access, you can put such calculations in `presketch()`. But the flip side is
+that you can't rely on property initializers, your class constructor, or on
+(say) checkParameters() to put your other visualizer instance properties in a
+"clean" state. For example, if you need some array to be all zeros when you
+start drawing your visualization, and previous calls to `draw()` may have
+changed some of those array entries, you need to zero it out in `setup()`
+because after a parameter change, that's the only preparation function that
+will by default be called before going back into the drawing loop.
 
 For even greater customization of what happens when, you can override/extend
 `reset()` from the `P5Visualizer` base class, or you can define a `resized()`
