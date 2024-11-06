@@ -286,6 +286,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * All it has to do is call draw, since p5 calls setup for us.
          */
         show(): void {
+            // If not inhabiting an element, do nothing
+            if (!this._sketch) return
             // In the event that the rendering context isn't ready, this value
             // represents how long in milliseconds we should wait before trying
             // again
@@ -293,8 +295,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
 
             if (this._canvas) {
                 this.drawingState = Drawing
-                this._sketch?.loop()
-                this._sketch?.draw()
+                this._sketch.loop()
+                this._sketch.draw()
             } else {
                 // If the rendering context is not yet ready, start an interval
                 // that waits until the canvas is ready and shows when finished

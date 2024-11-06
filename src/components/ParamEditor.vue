@@ -69,7 +69,7 @@
     import {defineComponent} from 'vue'
     import type {ParamInterface, ParamableInterface} from '@/shared/Paramable'
     import typeFunctions, {ParamType} from '@/shared/ParamType'
-    import type {RealizedParamType} from '@/shared/ParamType'
+    import type {RealizedPropertyType} from '@/shared/ParamType'
 
     import MageExchangeA from './MageExchangeA.vue'
     import ParamField from './ParamField.vue'
@@ -131,7 +131,7 @@
                 const realizer = typeFunctions[parent.type].realize as (
                     this: ParamInterface<typeof parent.type>,
                     tentative: string
-                ) => RealizedParamType[typeof parent.type]
+                ) => RealizedPropertyType[typeof parent.type]
                 const v = realizer.call(
                     parent,
                     this.paramable.tentativeValues[dep]

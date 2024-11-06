@@ -22,7 +22,7 @@ nav:
           - doc/pull-request-checklist.md
           - doc/visual-studio-code-setup.md
     - Internal code and APIs:
-          - doc/behind-the-scenes.md
+          - src/visualizers/VisualizerInterface.md
           - doc/working-with-bigints.md
           - ... | flat | src/shared/*
     - Other Information:
@@ -76,9 +76,11 @@ plugins:
             - pattern: '[.](.*).generator$'
               destination: '\1'
 markdown_extensions:
+    - def_list
+    - markdown_grid_tables
+    - mdx_math
     - pymdownx.superfences:
           custom_fences:
               - name: mermaid
                 class: mermaid
                 format: !!python/name:pymdownx.superfences.fence_div_format
-    - mdx_math

@@ -11,7 +11,7 @@ The easiest way to build a visualizer is to extend a pre-made visualizer base
 class, which automatically sets up a graphics framework for you to use. Right
 now, there are only two base classes available:
 
--   [`P5Visualizer`](#making-a-p5-visualizer-in-detail) uses the
+-   [`P5Visualizer`](#a-p5-visualizer-in-detail) uses the
     [**p5.js**](https://p5js.org) library for graphics and user interaction.
 -   `P5GLVisualizer`: a slight variant of `P5Visualizer`. You should derive
     from this base class if you wish to use p5.js in WebGL mode. See the
@@ -28,7 +28,8 @@ copy and modify the template file for your chosen framework, which you can
 find in `src/visualizers-workbench`.
 
 If you want to use a new graphics framework, you'll need to write your own
-implementation of the [visualizer interface](behind-the-scenes.md).
+implementation of the
+[visualizer interface](../src/visualizers/VisualizerInterface.md).
 
 #### Document as you write
 
@@ -59,7 +60,7 @@ you to try extending or enhancing existing visualizers as well as building
 your own. For now, though, let's return to the process of making a new
 visualizer based on p5.
 
-## Making a p5 visualizer, in detail
+## A p5 visualizer, in detail
 
 A good way to start a p5 visualizer is to copy and modify the basic example in
 the `src/visualizers-workbench` directory:
@@ -144,8 +145,8 @@ running, you should refresh the corresponding parameter by calling
 The parameters are described in the `paramDesc` object. A parameter must
 specify a `default` value, a `type`, a name (`displayName`), and specify
 whether it is `required` (required parameters are displayed more prominently).
-Look in `src/shared/Paramable.ts`, or in other visualizers, to learn about the
-other options you can set in `paramDesc`, such as longer descriptions.
+You can find a complete list of the options you can set for a parameter on
+[this page](../src/shared/Paramable.md).
 
 -   **p5 Template:** `stepSize`.
 
@@ -219,7 +220,8 @@ function is called, giving you access to the element the visualizer is about
 to inhabit. If you don't need information from the web page your visualizer is
 running in, or access to its document object model (DOM), you shouldn't need
 to implement `inhabit()`. The full details on this method are in the
-[visualizer interface](behind-the-scenes.md) documentation.
+[visualizer interface](../src/visualizers/VisualizerInterface.md)
+documentation.
 
 #### 💡️ Handle aspect ratio _(often used)_
 
@@ -304,7 +306,8 @@ should NOT call `reset`), and false if you do want the framework to `reset()`.
 #### 🔩️ Show or stop the visualization; depart from a page element _(advanced)_
 
 You shouldn't frequently need to implement `show()`, `stop()`, or `depart()`.
-You can learn about them from the [visualizer interface](behind-the-scenes.md)
+You can learn about them from the
+[visualizer interface](../src/visualizers/VisualizerInterface.md)
 documentation, and from how they're implemented in the `P5Visualizer` base
 class.
 

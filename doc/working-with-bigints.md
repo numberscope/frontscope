@@ -20,7 +20,7 @@ code:
 -   Right now unfortunately mathjs does not work on bigints but soon we will
     update to a version that does.
 -   In the meantime to compensate for the lack of bigints in mathjs, we have a
-    module (`@/shared/math`) in numberscope that adds some utilities to the
+    code file (`@/shared/math`) in numberscope that adds some utilities to the
     `math` module for working with bigints. You should familiarize yourself
     with the [functions it offers](../src/shared/math.md).
 -   In particular, if you are forced to convert a bigint to the JavaScript
@@ -30,9 +30,18 @@ code:
     overflow checking and throw an error if accuracy would be lost. Note that
     any value you get from the OEIS may be too large to fit in the JavaScript
     number type.
--   In any math operations, both operands must be of the same type. So
-    generally prefer converting to bigints any numbers you may need to use in
-    a calculation with bigints, if possible.
+-   For example, you may want to evaluate a function like sine or log on a
+    bigint value. For sine, you will have to convert to a number; for log we
+    have `natlog` in the math module that works on both numbers and bigints.
+    Note that if you have a bigint larger than can safely be converted to a
+    number (e.g., larger than JavaScript `Number.MAX_SAFE_INTEGER`), and you
+    want to take say the sine of it, it should be possible to use double-angle
+    and sum formulas to bring the operand down into the safe range for
+    conversion. If there is demand for such operations, we could implement
+    them in the math module.
+-   In any arithmetic operations like + and \*, both operands must be of the
+    same type. So generally prefer converting to bigints any numbers you may
+    need to use in a calculation with bigints, if possible.
 -   However, note that the result of dividing one bigint by another is
     automatically "floored" to produce an integer result. Be careful to think
     if that's what you want; if not, you may need to rearrange your

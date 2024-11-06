@@ -1,112 +1,233 @@
 import {hasField, makeStringFields} from './fields'
 import type {StringFields, GenericStringFields} from './fields'
 import typeFunctions, {ParamType} from './ParamType'
-import type {RealizedParamType} from './ParamType'
+import type {RealizedPropertyType} from './ParamType'
 import {seqKey} from './specimenEncoding'
 import {ValidationStatus} from './ValidationStatus'
 
-/**
- * The following collection of properties specifies how a given parameter
- * should be displayed in the user interface (UI), and provides a location
- * for communicating tentative values of the parameter back to the
- * implementation.
- */
-export interface ParamInterface<T extends ParamType> {
-    /* The default property specifies the default value that this parameter
-     * will take in the UI when the paramable is loaded into the UI. This
-     * value is not updated as the user changes the value of the parameter,
-     * as the intermediate values are stored as strings in `Paramable`, and
-     * the realized values are stored as top level properties.
-     */
-    default: RealizedParamType[T]
-    /* This field is required for the sake of being explicit and ensuring type
-     * consistency for Paramable objects. Defines the type of this parameter as
-     * will be reflected by the type of its realized value and the type of input
-     * field in the UI. This field is specified as a `ParamType`, which is an
-     * enum of all supported parameter types by the parameter UI.
-     */
-    type: T
-    /* If the value is an element of an Enum, typescript/Vue unfortunately
-     * cannot extract the list of all of the possible enumerated values
-     * (so that the UI can create a dropdown select box). So in that case,
-     * set the `from` property of this object to the Enum object from
-     * which the `value` comes.
-     */
+/** md
+# Describing user-settable parameters
+
+Various entities in the frontscope system, particularly Sequences and
+Visualizers, can employ user-settable parameters for which controls will
+appear in the browser user interface (UI). The value selected for each
+parameter will be reflected in a property of the object implementing the
+entity. But many aspects of each parameter (what type of values it can have,
+how it should appear in the UI, and so on) must be specified in the
+TypeScript code by an object with a particular structure: an instance of the
+`ParamInterface`, documented here. (Then the collection of all of these
+specification objects for a given Visualizer, for example, is supplied to
+its implementation as its "parameter description," as detailed in the
+[visualizer building](../../doc/making-a-visualizer.md#parameters-often-used)
+documentation.)
+
+All of the properties that can be specified for a parameter are enumerated
+on this page. Most of them are data properties, and each of these is listed
+with its data type. To understand these data types, it is important to know
+that the `ParamInterface` is generic, depending on a `ParamType` from the
+following table of possibilities. Most importantly, each ParamType is
+associated with a TypeScript data type, which will be the type of the property
+in the Sequence or Visualizer associated with the parameter. In the table,
+the designation "input" in the "Rendering in UI" column means a standard
+browser text input box.
+
+<!-- Extract the table of ParamTypes from its source file -->
+{! ParamType.ts extract:
+    start: 'export enum ParamType'
+    stop: '[}]'
+    replace: [
+        '^\s*([|].*[|])\s*(?:[*][/])?$',
+        ['^\s*(.*), [/][/]\s*([|].*[|])$', '| \1 \2']
+    ]
+!}
+
+In the following descriptions of the `ParamInterface` properties, the
+ParamType specified for the instance is abbreviated as `PT`, and its
+associated TypeScript type is written as `RealizedPropertyType[PT]`.  Also,
+a question mark after the property name means that it is optional whether
+or not to specify that property; all other properties are required.
+
+**/
+export interface ParamInterface<PT extends ParamType> {
+    /** md */
+    default: RealizedPropertyType[PT]
+    /* **/
+    /** md
+:   Specifies the default value that this parameter will have in the UI
+    when the entity it belongs to is being displayed. If the user does not
+    enter any other value, this default value will show up as the
+    corresponding property of the entity.
+<!-- -->
+    **/
+    /** md */
+    type: PT
+    /* **/
+    /** md
+:   The `ParamType` of the parameter, from the above list. Note that if you
+    have imported `ParamType` into your code, this property must be specified
+    with the `ParamType.` prefix, for example, as `ParamType.NUMBER_ARRAY`.
+<!-- -->
+    **/
+    /** md */
     from?: {[key: string]: number | string}
-    // The main label of the control for this param; can depend on
-    // visibleDependency:
+    /* **/
+    /** md
+:   If the `type` property is `ParamType.ENUM`, this property should be
+    set to the Enum object from which the parameter value will be selected.
+<!-- -->
+    **/
+    /** md */
     displayName: string | ((dependency: never) => string)
-    // Whether the parameter must be specified. When this is set to false,
-    // a blank input in the UI will use the `default` property instead of
-    // displaying an error to the user.
+    /* **/
+    /** md
+:   The text label in the UI for the control corresponding to this parameter.
+    It may be specified as one specific string (and usually is), but if
+    the `visibleDependency` property of the `ParamInterface` (see below)
+    is set, it can also be specified by a function that takes the value
+    of the visibleDependency parameter and returns a string for the label.
+    That way, the displayed label can depend on the value of another
+    parameter, which is occasionally useful.
+<!-- -->
+    **/
+    /** md */
     required: boolean
-    // The placeholder text that appears in the entry box for the parameter
-    // when that box is empty. This is really only applicable to non-required
-    // parameters, because for required ones, that box is not allowed to be
-    // empty. The placeholder defaults to the string representation of the
-    // default value for the parameter.
+    /* **/
+    /** md
+:   Specifies whether the parameter must be set. When this property is true,
+    an empty input in the UI will cause an error, rather than using the value
+    of the `default` property.
+<!-- -->
+    **/
+    /** md */
     placeholder?: string
-    /* If you want the control for this parameter only to be visible when
-     * some other parameter has a specific value (because it is otherwise
-     * irrelevant), set this `visibleDependency` property to the name of
-     * the other parameter, and the following `visibleValue` property
-     * to the value that the `visibleDependency` parameter should have
-     * in order for this parameter to be visible.
-     * For example, if this parameter is 'backgroundColor' but it should
-     * only be displayed if the 'mode' parameter has the value 'color'
-     * (instead of, say, 'greyscale'), then on the 'backgroundColor' param,
-     * set `visibleDependency` to 'mode' and `visibleValue` to 'color'.
-     * If you want the control for this parameter only to be visible when
-     * some condition is true and that condition relates to another
-     * parameter's specific value (because it is otherwise irrelevant),
-     * set this `visibleDependency` property to the name of
-     * the other parameter, and the following `visiblePredicate` property
-     * to a boolean expression related to the other parameter in order for
-     * this parameter to be visible. For example, if this parameter is
-     * 'backgroundColor' but it should only be displayed if the 'mode'
-     * parameter doesn't has the value 'color'(instead of, say, 'greyscale'),
-     * then on the 'backgroundColor' param, et `visibleDependency` to 'mode'
-     * and `visiblePredicate` (dependentValue: mode) =>
-                dependentValue !== 'color,
-        },
-        Note that parameters with a `visibleDependency` will be displayed
-     *  with a distinctive appearance when they are visible.
-     */
-    visibleDependency?: string
-    /* The visible value property applies only if `visiblePredicate` is
-     * undefined.
-     */
-    visibleValue?: unknown
-    // Since functions are contravariant in their argument types,
-    // `never` below allows the predicate to take any argument type.
-    visiblePredicate?: (dependency: never) => boolean
-
-    // Additional explanation text to display:
+    /* **/
+    /** md
+:   The placeholder text that appears in the input box for the parameter
+    when that box is empty. This property is really only useful on parameters
+    for which the `required` property is false, because otherwise the input
+    box is not allowed to be empty. If the `placeholder` property is not
+    specified, the string representation of the `default` property is used
+    instead.
+<!-- -->
+    **/
+    /** md */
     description?: string
-
-    // Option to hide the description in a tooltip:
+    /* **/
+    /** md
+:   Additional explanatory text about the parameter to display.
+<!-- -->
+    **/
+    /** md */
     hideDescription?: boolean
+    /* **/
+    /** md
+:   If this property is specified as true, the description will appear as
+    a tooltip that pops up when the parameter's control in the UI is hovered.
+    Otherwise, the description will be (always) shown adjacent to the the
+    control.
+<!-- -->
+    **/
+    /** md */
+    visibleDependency?: string
+    /* **/
+    /** md
+:   If this property is specified, the value of the parameter whose name
+    is given by the `visibleDependency` property will determine whether or
+    not the control for this parameter is visible in the UI. The idea is that
+    the setting for one parameter may (or may not) make the value of another
+    parameter irrelevant. If `visibleDependency` is set, then just one of the
+    `visibleValue` or `visiblePredicate` properties must also be set to
+    determine when this parameter will in fact be shown.
 
-    // List of input variables for a FORMULA parameter, defaults to ['n']
+    For example, if this parameter is 'backgroundColor' but it should
+    only be displayed in the UI if the 'mode' parameter has the value 'color'
+    (instead of, say, 'greyscale'), then on this parameter set the
+    `visibleDependency` property to 'mode' and the `visibleValue` property
+    to 'color'. On the other hand, if 'backgroundColor' should only be
+    displayed when 'mode' is not 'greyscale' (instead of, say, 'rainbow'
+    or 'pastels'), then still set `visibleDependency` to 'mode' but set the
+    `visiblePredicate` property to
+
+    `(dependentValue: string) => dependentValue !== 'greyscale'`
+
+    Note that parameters with a `visibleDepenency` setting will be displayed
+    with a distinctive appearance, when they are visible.
+
+    Another common use for the `visibleDependency` property is to make one
+    or more parameters visible only if a checkbox corresponding to some
+    other BOOLEAN parameter is checked. This feature allows you to show
+    a core set of parameters at first, and allow the user to check a box
+    to reveal additional, more detailed controls.
+<!-- -->
+    **/
+    /** md */
+    visibleValue?: unknown
+    /* **/
+    /** md
+:   If the `visibleDependency` property is specified, gives the value for
+    the parameter named by `visibleDependency` which will cause this parameter
+    to be displayed. Note that `visibleValue` only matters if the
+    `visiblePredicate` property is not specified.
+<!-- -->
+    **/
+    /** md */
+    visiblePredicate?: (dependency: never) => boolean
+    /* **/
+    /** md
+:   If the `visibleDependency` property is specified, then this parameter
+    will only be visible in the UI if the function given as the
+    `visiblePredicate` property of this parameter returns true when called
+    with the value of the parameter nameed by the `visibleDependency`
+    property. Note that the `never` type above simply means that the argument
+    to the `visiblePredicate` function may have any type.
+<!-- -->
+    **/
+    /** md */
     inputs?: string[]
+    /* **/
+    /** md
+:   If the `type` property is `ParamType.FORMULA`, this property gives the
+    list of free variables that are allowed to occur in the formula. The
+    entity using the resulting MathFormula will have to supply the values
+    of those variables when it calls `compute()` on the MathFormula.
+<!-- -->
+    **/
+    /** md */
+    validate?(value: RealizedPropertyType[PT], status: ValidationStatus): void
+    /* **/
+    /** md
+:   This method, if it is defined, acts as an additional validity check on
+    input values of the parameter. It must take a possible _value_ of the
+    parameter (that has been entered in the UI), and update the supplied
+    _status_ with any errors or warnings based on that _value_ for the
+    parameter. For example, if the `speed` parameter with `type` equal to
+    `ParamType.NUMBER` must be positive and if the visualization may take
+    too long to update if the `speed` is bigger than 16, then its `validate`
+    method might look like
 
-    /* An independent validation function, which may validate the value of
-     * this parameter irrespective of the values of other parameters. The
-     * advantage of using this over the aggregate validation function within
-     * `ParamableInterface` is that it runs only when this parameter is updated,
-     * and provides more tailored error messages that appear at the site of
-     * the parameter, rather than above/below the entire list of parameters.
-     * It is also more flexible than the aggregate validation function, working
-     * even when the values of other parameters are currently invalid.
-     * It takes in a realized value of this parameter and a status, and
-     * updates the status accordingly. If this function is not implemented,
-     * it is assumed that any typographically valid parameter is semantically
-     * valid as well. Note that generally these should be regular functions
-     * rather than arrow functions as they are called with the this-context
-     * set to the Paramable object on which the parameter resides, so that
-     * they may use other data of the object in the validity check.
-     */
-    validate?(value: RealizedParamType[T], status: ValidationStatus): void
+    ```typescript
+        validate: function(value: number, status: ValidationStatus) {
+            if (value <= 0) status.addError('must be positive')
+            else if (value > 16) {
+                status.addWarning('when larger than 16, display may lag')
+            }
+       }
+    ```
+
+    Note that if a required condition on a parameter can be captured in
+    this sort of validation function, it is better to use this facility
+    rather than check the condition later on in the associated entity's code.
+    This way the error is caught earlier, with better feedback to the user,
+    and can prevent your Sequence or Visualizer code from wasting time on
+    useless inputs.
+
+    As a technical note, `validate` methods should generally be regular
+    JavaScript functions as opposed to "arrow functions," as they are called
+    with the `this`-context set to the entity (usually Sequence or Visualizer)
+    on which this parameter resides, so that the `validate` method may use
+    other data (but **not** other parameter values) of the entity in its
+    checks.
+    **/
 }
 
 export type ParamTypeChoices = {[key: string]: ParamType}
@@ -133,7 +254,7 @@ export type ExtractParamChoices<PD extends GenericParamDescription> = {
 type OneParamType<
     PD extends GenericParamDescription,
     K extends keyof PD,
-> = RealizedParamType[ExtractParamChoices<PD>[K]]
+> = RealizedPropertyType[ExtractParamChoices<PD>[K]]
 
 /* Represents a mapping of all realized values from a parameter description.
  * That is, contains the full set of parameters with their appropriate
@@ -144,10 +265,10 @@ export type ParamValues<PD extends GenericParamDescription> = {
 }
 
 /********
- Important nores on TypeScript and typing of the hierarchy of Paramable
+ Important notes on TypeScript and typing of the hierarchy of Paramable
  classes (which include all sequences and visualizers):
 
- TL;DR: Typings are loose and provide little safety in the higher levels
+ TL;DR: Typings are loose and provide little safety in the interior levels
  of the hierarchy and become specific (only) in the "leaf" classes that
  are directly used at runtime. The mechanism for the narrowing consists
  of several generic "class factory" functions that generate base classes
@@ -222,98 +343,160 @@ export type ParamValues<PD extends GenericParamDescription> = {
  submitted by a visualizer author.
  ********/
 
+/* NOTE that the rest of the documentation in this file is set off by
+   `xmd` comments, rather than `md`, because the remaining documentation
+   is extracted by the VisualizerInterface page rather than being part of
+   the `ParamInterface` page directly generated by this file
+*/
+
+/** xmd
+## The parameterizable object interface
+
+As mentioned above, any frontscope object that takes parameters, like a
+visualizer or a sequence, has to implement the `ParamableInterface`. Although
+the typical way to do this is to extend the base generic implementation
+[`Paramable`](#the-paramable-base-class) documented below, we begin with
+the details of the required interface itself. We use the same conventions
+as above for data properties and methods of the interface.
+**/
 export interface ParamableInterface {
-    // A per-instance identification of the paramable object. Note that
-    // all derived classes of the "Paramable" implementation of this
-    // interface will also have a _static_ `category` property identifying
-    // that particular kind of Paramable object.
-    name: string
-    // Make the per-class description of the category of paramable objects
-    // available via instances; note that by convention it should only
-    // depend on the class.
-    readonly description: string
-    /**
-     * params determines the parameters that will be settable via the
-     * user interface. Each key should match a top-level property name of the
-     * paramable object, and the values should be objects implementing the
-     * the ParamInterface as described above.
-     */
-    params: GenericParamDescription
-    /**
-     * A set of tentative (unrealized) values of the parameters. These values
-     * are always strings, and reflect what the user has currently entered into
-     * the input fields. `assignParameters()` will realize these values and copy
-     * them into top-level properties.
-     */
-    tentativeValues: GenericStringFields
-    /**
-     * The latest individual-parameter statuses of the tentative parameters.
-     */
-    statusOf: Record<string, ValidationStatus>
-    /**
-     * Validates one individual parameter, specified by name, updating the
-     * corresponding status of that parameter in the statusOf property.
-     * Does not perform interdependent validation checks or assign any
-     * parameters within the paramable object, but does return the realized
-     * value if it is valid, or returns undefined otherwise.
-     *
-     * @param {string} param  param name
-     * @return {param type} realized value of parameter
-     */
+    /** xmd */
+    name: string /* **/
+    /** xmd
+:   A per-instance identification of the paramable object. It is, however,
+    not required to be unique among all paramable objects.
+<!-- --> **/
+    /** xmd */
+    readonly description: string /* **/
+    /** xmd
+:   A description of the "category" of paramable objects to which this
+    instance belongs. The value of this property should depend only on the
+    _class_ of the instance, not vary from instance to instance of the same
+    class.
+<!-- --> **/
+    /** xmd */
+    params: GenericParamDescription /* **/
+    /** xmd
+:   A parameterizable object has to come with a collection of user-settable
+    parameters — even if that collection is empty. The keys of this _params_
+    property (which should be a plain object) comprise that collection. The
+    _value_ for each key describes how that parameter should appear in the
+    graphical user interface (UI), what kind of values it can take, whether
+    it is required, and so on. It does so by providing the properties of the
+    [`ParamInterface`](../shared/Paramable.md) interface. To summarize, the
+    _params_ property should be an object mapping parameter names to
+    instances of `ParamInterface`.
+<!-- --> **/
+    /** xmd */
+    tentativeValues: GenericStringFields /* **/
+    /** xmd
+:   This property will hold the latest raw string value for each parameter
+    that has been set in the UI (even if that string does not translate to
+    a proper value for the parameter, hence the "tentative" moniker).
+    Note the frontscope infrastructure will set this property for you.
+    Specifically, its value will be a plain object, the keys of which
+    are all of the parameter names, and all of the values of which are strings.
+    Note that the `assignParameters()` method will convert these strings into
+    actual properly-typed values and copy them into top-level properties of
+    the `ParamableInterface` instance.
+<!-- --> **/
+    /** xmd */
+    statusOf: Record<string, ValidationStatus> /* **/
+    /** xmd
+:   A plain object mapping each parameter name to the validation status of
+    its current value in the `tentativeValues` object.
+<!-- --> **/
+    /** xmd */
     validateIndividual<P extends string>(
         param: P
-    ): ParamValues<GenericParamDescription>[string] | undefined
-    /**
-     * The latest overall status of the paramable object based on the
-     * tentative values:
-     */
-    validationStatus: ValidationStatus
-    /**
-     * A validation function for the `ParamableInterface`. This function
-     * is expected to check that all tentative values of parameters are
-     * valid when considered in isolation. Then it must check that all
-     * parameters considered together are valid. It should update the
-     * validationStatus property of this paramable object. Finally, it must
-     * assign the valid realized values to the internal properties of the
-     * paramable object.
-     *
-     * @return the result of the validation; will be this.validationStatus
-     */
-    validate(): Promise<ValidationStatus>
-    /**
-     * assignParameters() should copy the realized value of each tentative
-     * value of each of the params to the place where the implementing object
-     * will access it.
-     * Typically, that means copying to top-level properties of the object.
-     * The implementing object should only use parameter values supplied by
-     * assignParameters(), because these have been vetted with a validate()
-     * call. In contrast, values taken directly from the tentativeValues
-     * are unvalidated, and they can change from valid to invalid at any time.
-     *
-     * It can optionally take a pre-realized parameter values object, to save
-     * the trouble of re-realizing the tentative values.
-     */
+    ): ParamValues<GenericParamDescription>[string] | undefined /* **/
+    /** xmd
+:   This method should check the validity of the `tentativeValue` of the
+    single parameter named _param_ and update the status of that parameter
+    in the statusOf property accordingly. This method should not perform
+    interdependent validation checks that involve  multiple parameters, or
+    assign any value to property named _param_ in this instance of the
+    `ParamableInterface`. If the value of _param_ is valid, this method
+    should return its "realized value" (i.e., `tentativeValue` converted to
+    its intended type per this parameter's `ParamType`). The return value
+    should be `undefined` otherwise.
+<!-- --> **/
+    /** xmd */
+    validationStatus: ValidationStatus /* **/
+    /** xmd
+:   The latest overall status of this instance of the `ParamableInterface`
+    based on all of the `tentativeValeues`. In other words, if all of the
+    tentative parameter values were assigned to this object, would that
+    produce a valid entity (typically Sequence or Visualizer)?
+<!-- --> **/
+    /** xmd */
+    validate(): Promise<ValidationStatus> /* **/
+    /** xmd
+:   This method should determine the overall validity of all of the
+    `tentativeValues` of this instance of the `ParamableInterface`. It is
+    expected to check the validity of each parameter individually, and
+    perform any necessary cross-checks between different parameter values.
+    This method should update the `validationStatus` property accordingly.
+    Finally, if that outcome is indeed valid, this method must _assign_ the
+    realized values of all tentative parameters to the correspondingly named
+    top-level properties of this instance of the `ParamableInterface`
+    (presumably by calling the `assignParameters()` method.
+<!-- --> **/
+    /** xmd */
     assignParameters(
         realized?: ParamValues<GenericParamDescription>
-    ): Promise<void>
-    /**
-     * refreshParams() should copy the current working values of all of the
-     * params back into the tentativeValues, in case they have changed.
-     * This way the true current values can be represented in the user
-     * interface presenting the params.
-     */
-    refreshParams(): void
-    /**
-     * The query property should have the value of the tentative parameters in
-     * URL query string format
-     */
-    readonly query: string
-    /**
-     * loadQuery() should restore the state of the tentative parameters
-     * to those specified in the query. Returns the paramable object itself
-     * for chaining purposes.
-     */
-    loadQuery(query: string): ParamableInterface
+    ): Promise<void> /* **/
+    /** xmd
+:   This method must copy the realized value of the proper type of the
+    tentative value of each paramaeter to the location where this instance
+    of the `ParamableInterface` will access it in its computations. That
+    is to say, each value is assigned to a top-level instance property with
+    the same name as the parameter (although a specific implementation could
+    use a different convention).
+
+    The instance should only use parameter values that have been supplied by
+    assignParameters(), because these have been vetted with a validate()
+    call. In contrast, values taken directly from the `tentativeValues`
+    property are unvalidated, and can change from valid to invalid at any
+    time unpredictably, as the UI is manipulated.
+
+    This method may optionally be called with a pre-realized parameter
+    values object, which it may then assume is correct, in order to avoid
+    the computation of re-realizing the tentative values. Note the method is
+    typically `async` as indicatd by its Promise return value, in case the
+    consequences of the parameter assignment are computationally intensive
+    (the new parameter values could trigger extensive internal recompuations
+    in the instance object).
+<!-- --> **/
+    /** xmd */
+    refreshParams(): void /* **/
+    /** xmd
+:   This method is the reverse of `assignParameters()`; it should copy the
+    string representations of all of the current internal values of the
+    parameters back into the `tentativeValues` property. The idea is that
+    in its operation, the instance may need to modify one or more of its
+    parameter values. If so, it should call the `refreshParams()` method
+    afterwards so that the new authoritative values of the parameters can
+    have their representations in the UI updated accordingly.
+<!-- --> **/
+    /** xmd */
+    readonly query: string /* **/
+    /** xmd
+:   An instance of the `ParamableInterface` must be able to encode the
+    state of its parameters in string form, called the `query` of the
+    entity (because the representation should also be a valid URL query
+    string). The value of this `query` property should be that encoding of
+    the current parameter values.
+<!-- --> **/
+    /** xmd */
+    loadQuery(query: string): ParamableInterface /* **/
+    /** xmd
+:   This method should decode the provided _query_ string and copy the
+    values it encodes back into the `tentativeValues` property. It should
+    return the `ParamableInterface` instance itself, for chaining purposes
+    (typically you may want to call `validate()` immediately after
+    `loadQuery()`).
+<!-- --> **/
 }
 
 /* Helper functions to realize parameters given parameter description(s)
@@ -322,7 +505,7 @@ export interface ParamableInterface {
 function realizeOne<T extends ParamType>(
     spec: ParamInterface<T>,
     tentative: string
-): RealizedParamType[T] {
+): RealizedPropertyType[T] {
     if (!spec.required && tentative === '') return spec.default
     return typeFunctions[spec.type].realize.call(spec, tentative)
 }
@@ -337,14 +520,39 @@ function realizeAll<PD extends GenericParamDescription>(
     ) as ParamValues<PD>
 }
 
-/**
- * @class Paramable
- * a generic implementation of a class with parameters to be exposed in the UI
- * Designed to be used as a common base class for such classes.
- */
+/** xmd
+## The Paramable base class
+
+This is a default implementation of the `ParamInterface` described above. It
+takes care of much of the parameter bookkeeping and transference between
+tentative and realized values for you. In the guide below, you may presume
+that any of the properties of the interface that are not mentioned are
+implemented to fulfill the responsibilities outlined above, and will
+generally not need to be overridden or extended. There are some methods and
+data properties of this base class that are either not present or are likely
+to need to be modified in derived classes, and those are listed in this
+last section.
+**/
 export class Paramable implements ParamableInterface {
-    name = 'A generic object with parameters'
+    /** xmd */
+    name = 'A generic object with parameters' /* **/
+    /** xmd
+:   (Instances of) derived classes will surely want to override this
+    placeholder value.
+<!-- --> **/
+    /** xmd */
     static description = 'An object with dynamically-specifiable parameters'
+    /* **/
+    /** xmd
+:   Similarly, derived classes should override this placeholder value, but
+    note that it should be made a _static_ property of the class, in line
+    with the provision that `description` should depend only on the class
+    of a `Paramable` object, not the individual instance.
+`static category: string`
+:   All derived classes should have a static `category` property, giving
+    a class-level analogue of the `name` property, that will not vary from
+    instance to instance of the same class.
+<!-- --> **/
     params: GenericParamDescription
     tentativeValues: GenericStringFields
     statusOf: Record<string, ValidationStatus> = {}
@@ -378,9 +586,6 @@ export class Paramable implements ParamableInterface {
         this.validationStatus = ValidationStatus.ok()
     }
 
-    /* All leaf derived classes of Paramable should have a static
-       property called 'description' to fulfill the ParamableInterface
-    */
     get description() {
         // Need to let Typescript know there is a static description property
         return (
@@ -389,25 +594,13 @@ export class Paramable implements ParamableInterface {
             }
         ).description
     }
-    /* All leaf derived classes of Paramable should have a static
-       property called 'category' that gives the name of that particular
-       class of Paramable object
-    */
+
     get category() {
         return (
             this.constructor as typeof this.constructor & {category: string}
         ).category
     }
-    /**
-     * All implementations based on this default delegate the aggregate
-     * checking of parameters to the checkParameters() method.
-     * That leaves the required validate() method to first validate the
-     * individual parameters, then call checkParameters.
-     * Also, if the parameters are valid, it calls assignParameters to copy
-     * the realized values into the working locations in the paramable object.
-     * This validate() should generally not need to be overridden or extended;
-     * extend checkParameters() instead.
-     */
+
     async validate() {
         // first handle the individual validations
         const parmNames = Object.keys(this.params)
@@ -429,15 +622,7 @@ export class Paramable implements ParamableInterface {
         }
         return this.validationStatus
     }
-    /**
-     * Validate one individual parameter, specified by name, updating the
-     * corresponding this.statusOf property. Does not perform interdependent
-     * validation checks or assign any parameters, but does return the realized
-     * value if it is valid, or undefined otherwise.
-     *
-     * @param {string} param  param name
-     * @return {param type} realized value of parameter
-     */
+
     validateIndividual<P extends string>(
         param: P
     ): ParamValues<GenericParamDescription>[string] | undefined {
@@ -459,7 +644,7 @@ export class Paramable implements ParamableInterface {
         const realizer = typeFunctions[paramSpec.type].realize as (
             this: typeof paramSpec,
             t: string
-        ) => RealizedParamType[typeof paramSpec.type]
+        ) => RealizedPropertyType[typeof paramSpec.type]
         const realization = realizer.call(paramSpec, tentative)
         if (paramSpec.validate) {
             paramSpec.validate.call(this, realization, status)
@@ -467,29 +652,44 @@ export class Paramable implements ParamableInterface {
         if (status.invalid()) return undefined
         return realization
     }
-    /**
-     * Performs the same purpose as `validate()`, but takes as a parameter
-     * a list of realized values of the parameters, so that the function doesn't
-     * have to do this itself. Except in an extraordinary case in which a
-     * derived-class Paramable object needed to do some cross-parameter
-     * check based on the input strings as opposed to realized values, derived
-     * classes should essentially always override this checkParameters() method,
-     * rather than `validate()`.
-     * @param {ParamValues} params
-     *     the collection of realized parameter values to be validated
-     * @return {ValidationStatus} the result of the validation
-     */
+    /** xmd */
     checkParameters(
         _params: ParamValues<GenericParamDescription>
-    ): ValidationStatus {
+    ): ValidationStatus /* **/ {
         return ValidationStatus.ok()
     }
-    /**
-     * assignParameters() copies parameters into top-level properties. It
-     * should not generally need to be overridden or extended, and it should
-     * only be called when isValid is true.
-     * @param {ParamValues?} realized  Optionally supply pre-realized parameters
-     */
+    /** xmd
+:   Given an object containing a potential realized value for each parameter
+    of this `Paramable` object, this method should perform any dependency
+    checks that involve multiple parameters or other state of the object,
+    and return a ValidationStatus accordingly. (Checks that only involve
+    a single parameter should be encoded in the `validate()` method of the
+    [`ParamInterface` object](../shared/Paramable.md) describing that
+    parameter.) This method is called from the base class implementation of
+    `validate()`, and will copy the returned status of `checkParameters()`
+    into the `validationStatus` property of the `Paramable` object. With this
+    mechanism, you don't have to worry about realizing the parameters yourself,
+    and you generally shouldn't need to override or extend the `validate()`
+    method. Just implement `checkParameters()` if you have any interdependency
+    checks among your parameters. Note that the base class implementation
+    performs no checks and simply returns a good status. Hence, it is a good
+    habit to start derived implementations with, e.g.,
+
+    `const status = super().checkParamaters()`
+
+    and then update `status` (with methods like `.addError()` and
+    `.addWarning()` as you perform your checks, finally returning it at the
+    end.
+
+    Finally, one caveat: this method being called is no guarantee that the
+    provided values _will_ be assigned into the internal properties of the
+    `Paramable` object as the new "official" values, so don't presume the
+    values in the `params` argument are necessarily the new correct ones
+    and save them away or start computing with them, in this method. Wait
+    until after `assignParameters()` has been called, and then use the
+    properties that have been written into the object.
+<!-- --> **/
+
     async assignParameters(realized?: ParamValues<GenericParamDescription>) {
         if (!realized)
             realized = realizeAll(this.params, this.tentativeValues)
@@ -521,13 +721,7 @@ export class Paramable implements ParamableInterface {
         }
         if (changed.length > 0) await this.parametersChanged(changed)
     }
-    /**
-     * refreshParams() copies the current values of top-level properties into
-     * the params object. It should not generally need to be overridden or
-     * extended. However, it is (currently) never called automatically; it
-     * should be called whenever implementation code changes the working values,
-     * to keep the values reflected correctly in the UI.
-     */
+
     refreshParams(): void {
         const me = this as unknown as ParamValues<GenericParamDescription>
         for (const prop in this.params) {
@@ -562,23 +756,20 @@ export class Paramable implements ParamableInterface {
             )
         }
     }
-
-    /**
-     * parametersChanged() is called whenever the values of one or more
-     * parameters have changed. (Sometimes multiple parameters change
-     * simultaneously, as when loading parameters at startup.) By default,
-     * this method does nothing, but may be overriden to perform any kind of
-     * update actions for the listed parameters.
-     *
-     * @param {string[]} name  the names of one or more parameters that changed
-     */
-    async parametersChanged(_name: string[]) {
+    /** xmd */
+    async parametersChanged(_name: string[]): Promise<void> /* **/ {
         return
     }
+    /** xmd
+:   This method will be called (by the base class implementation) whenever
+    the values of one or more parameters have changed.  The _name_ argument
+    is a list of the names of parameters that have changed. Note there can
+    be more than one, since sometimes multiple parameters change
+    simultaneously, as in a call to `loadQuery()`. In the base class itself,
+    this method does nothing, but it may be overridden in derived classes to
+    perform any kind of update actions for the parameters listed in _name_.
+<!-- --> **/
 
-    /**
-     * Provides the tentative parameter values in URL query string format
-     */
     get query(): string {
         const tv = this.tentativeValues // just because we use it so many times
         const saveParams: Record<string, string> = {}
@@ -602,13 +793,7 @@ export class Paramable implements ParamableInterface {
         const urlParams = new URLSearchParams(saveParams)
         return urlParams.toString()
     }
-    /**
-     * Updates the tentative values of the parameter to those specified in
-     * the given URL query string. Note that the values are not validated or
-     * assigned in this process.
-     * @param {string} query  the URL query string containing parameters
-     * @return {ParamableInterface}  the updated paramable itself
-     */
+
     loadQuery(query: string): ParamableInterface {
         const params = new URLSearchParams(query)
         for (const [key, value] of params) {
