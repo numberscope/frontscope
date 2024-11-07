@@ -9,7 +9,10 @@ nav:
     - Extending:
           - doc/extending.md
           - doc/running-from-source.md
-          - doc/making-a-visualizer.md
+    - Building a Visualizer:
+          - doc/visualizer-overview.md
+          - doc/visualizer-basics.md
+          - doc/visualizer-in-depth.md
     - Contributing:
           - CONTRIBUTING.md
           - doc/onboarding.md

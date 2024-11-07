@@ -25,7 +25,7 @@ class WithP5 extends Paramable {
     deviceMoved() {}
     deviceShaken() {}
     deviceTurned() {}
-    doubleClicked() {}
+    doubleClicked(_event: MouseEvent) {}
     keyPressed(_event: KeyboardEvent) {}
     keyReleased(_event: KeyboardEvent) {}
     keyTyped(_event: KeyboardEvent) {}
@@ -35,11 +35,11 @@ class WithP5 extends Paramable {
     mousePressed(_event: MouseEvent) {}
     mouseReleased() {}
     mouseWheel(_event: WheelEvent) {}
-    setup() {}
     touchEnded() {}
     touchMoved() {}
     touchStarted() {}
     windowResized() {}
+    setup() {}
 }
 
 // The following is used to check if a visualizer has defined

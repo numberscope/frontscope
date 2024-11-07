@@ -18,7 +18,7 @@ TypeScript code by an object with a particular structure: an instance of the
 `ParamInterface`, documented here. (Then the collection of all of these
 specification objects for a given Visualizer, for example, is supplied to
 its implementation as its "parameter description," as detailed in the
-[visualizer building](../../doc/making-a-visualizer.md#parameters-often-used)
+[visualizer building](../../doc/visualizer-basics.md#parameters-often-used)
 documentation.)
 
 All of the properties that can be specified for a parameter are enumerated

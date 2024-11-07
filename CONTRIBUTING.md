@@ -9,32 +9,32 @@ Read our [onboarding doc](./doc/onboarding.md).
 (This assumes you're working on the numberscope/frontscope repository, but it
 applies to other repos as well. If you are unfamiliear with basic git
 operations or would like a refresher, we
-[have a guide](./doc/working-with-git-and-github.md#basic-operations).)
+[have a guide](doc/working-with-git-and-github.md#basic-operations).)
 
-1. [Clone the numberscope/frontscope repository](./doc/working-with-git-and-github.md#clone-a-repo).
-2. [Create a branch for your contribution](./doc/working-with-git-and-github.md#create-a-branch).
-3. [Read Numberscope's coding principles guide](./doc/code-principles.md).
+1. [Clone the numberscope/frontscope repository](doc/working-with-git-and-github.md#clone-a-repo).
+2. [Create a branch for your contribution](doc/working-with-git-and-github.md#create-a-branch).
+3. [Read Numberscope's coding principles guide](doc/code-principles.md).
 4. Familiarize yourself with frontscope's
-   [code organization](./doc/code-organization.md) and internal APIs. Some
+   [code organization](doc/code-organization.md) and internal APIs. Some
    information on the latter topic may only be found in comments in the
    relevant sources files, as the documentation project is ongoing. However,
    all such formal documentation currently being generated is gathered in the
    "Internal code and APIs" section of the navigation bar in the
    [online docs](https://numberscope.colorado.edu/doc).
-5. If you are working on a visualizer, read
-   [the doc on making a visualizer](./doc/making-a-visualizer.md).
+5. If you are working on a visualizer, read the documentation section on
+   [making a visualizer](doc/visualizer-overview.md).
 6. Implement your changes.
-7. [Create a fork of the numberscope/frontscope repo](./doc/working-with-git-and-github.md#create-a-fork).
-8. [Add your fork as a remote](./doc/working-with-git-and-github.md#add-a-remote).
-9. [Push your branch to GitHub](./doc/working-with-git-and-github.md#push-a-branch).
-10. [Work through Numberscope's pull request checklist](./doc/pull-request-checklist.md).
-11. [Submit a pull request](./doc/working-with-git-and-github.md#submit-a-pull-request).
+7. [Create a fork of the numberscope/frontscope repo](doc/working-with-git-and-github.md#create-a-fork).
+8. [Add your fork as a remote](doc/working-with-git-and-github.md#add-a-remote).
+9. [Push your branch to GitHub](doc/working-with-git-and-github.md#push-a-branch).
+10. [Work through Numberscope's pull request checklist](doc/pull-request-checklist.md).
+11. [Submit a pull request](doc/working-with-git-and-github.md#submit-a-pull-request).
 
 ## If you need help with Git and contributing...
 
 If you have a Git setup that isn't what Numberscope requires (i.e. do your
 work in your own fork on a feature branch) check out our doc on
-[Gitting it right](./doc/gitting-it-right.md).
+[Gitting it right](doc/gitting-it-right.md).
 
 ## A note on code organization
 
@@ -67,17 +67,17 @@ code is ready to be reviewed by someone at Numberscope, follow these steps:
    [Numberscope's pull request checklist](./doc/pull-request-checklist.md).
 2. Make sure your branch is based on the latest version of the `main` branch
    from the official repository. The simplest way to do this is to
-   [sync your local clone](./doc/working-with-git-and-github.md#sync-a-local-clone)
+   [sync your local clone](doc/working-with-git-and-github.md#sync-a-local-clone)
    and if your copy of `main` pulled additional new commits in that process
    (as opposed to being reported as "already up to date"), then go ahead and
-   [rebase your branch](./doc/working-with-git-and-github.md#rebase-your-branch).
+   [rebase your branch](doc/working-with-git-and-github.md#rebase-your-branch).
 3. Navigate to the numberscope/frontscope repository. If your fork is synced
    up with the main numberscope/frontscope repository correctly, you should
    see a button (see the image below) that says "Compare & pull request".
    ![A screenshot of the Compare & pull request
-button](./doc/img/compare-and-pull-request.png)
+button](doc/img/compare-and-pull-request.png)
    Click that button, write up some notes for your pull request, and click the
    "Create pull request button". Our
-   [Working with Git guide](./doc/working-with-git-and-github.md) has more
+   [Working with Git guide](doc/working-with-git-and-github.md) has more
    details about
-   [submitting a pull request](./doc/working-with-git-and-github.md#submit-a-pull-request).
+   [submitting a pull request](doc/working-with-git-and-github.md#submit-a-pull-request).

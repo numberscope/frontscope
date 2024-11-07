@@ -3,9 +3,9 @@ import type {ParamableInterface} from '../shared/Paramable'
 
 /** md
 # Visualizers: Behind the Scenes
-In the guide to [making a visualizer](../../doc/making-a-visualizer.md), we
+In the guide to [making a visualizer](../../doc/visualizer-overview.md), we
 saw how to extend the
-[`P5Visualizer`](../../doc/making-a-visualizer.md#a-p5-visualizer-in-detail)
+[`P5Visualizer`](../../doc/visualizer-in-depth.md#a-p5-visualizer-in-detail)
 base class. Now, let's take a peek at how a base class works internally.
 
 This page will be most useful to you if you want to write a new base class.
@@ -237,7 +237,7 @@ with correct TypeScript types. For example, if the visualizer has a
 parameter `speed` of `ParamType.NUMBER`, then a visualizer method should be
 able to write `this.speed` and have it be of type `number`. These types
 are deduced from the "parameter description" object (see its
-[documentation](../../doc/making-a-visualizer.md#parameters-often-used)).
+[documentation](../../doc/visualizer-basics.md#parameters-often-used)).
 Because of limitations on how TypeScript can inherit from generic classes,
 these requirements mean that a Visualizer base class cannot be an ordinary
 generic class.
