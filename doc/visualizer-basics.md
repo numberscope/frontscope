@@ -11,15 +11,87 @@ will provide a complete summary of all of the methods and data properties you
 can use to implement more involved features and to handle additional
 possibilities that might come up in the use of a visualizer.
 
-Let's start with a diagram showing the basic lifecycle of a visualizer.
+Let's start with a diagram showing the basic lifecycle of a visualizer:
 
-[SIMPLIFIED DIAGRAM GOES HERE]
+````d2 layout="elk"
+direction: right
+classes: {
+  method: {
+    height: 40
+    style: {
+      border-radius: 10
+      font-size: 20
+    }
+  }
+}
+
+Start: "" {
+   style: {fill: blue}
+   shape: circle
+   width: 10
+}
+Init: |md
+    ### Create visualizer object
+    ```txt
+    property initializers,
+    constructor
+    ```
+|
+Start -> Init: | page load/
+visualizer change|
+SPC: |md
+    ### Parameter checks
+    ```txt
+         individual
+    validate() functions
+    ```
+|
+Init -> SPC
+Setup: "setup()" {class: method}
+SPC -> Setup
+Draw: "draw()" {class: method}
+Setup -> Draw
+Draw -> Draw: {target-arrowhead: "[stop()/continue()]"}
+Draw -> SPC: "change parameter" {style.font-size: 18}
+key: {
+  near: bottom-center
+  label.near: top-left
+  direction: right
+  method: "classMethod()" {
+    class: method
+    height: 24
+    style: {
+      opacity: 0.6
+      font-size: 16
+    }
+  }
+  otherCode: |
+    ### Other code section
+    ```txt
+    details
+    ...
+    ```
+  | {
+    width: 200
+    style: {
+      opacity: 0.6
+      font-size: 15
+    }
+  }
+  method -> otherCode: "action/event" {style.font-size: 18}
+  style {
+    opacity: 0.4
+    font-size: 24
+  }
+}
+````
 
 When someone visits a Numberscope URL that uses a particular visualizer, or
 selects it from the Visualizer Switcher popup or from a Specimen Gallery, then
-the frontscope system has to create the visualizer object, which in TypeScript
-language terms means to execute the statements in its class definition that
-assign initial values to its properties, and call its constructor method.
+the frontscope system has to create the Visualizer class object, which in
+TypeScript language terms means to execute the statements in its class
+definition that assign initial values to its properties, and call its
+constructor method.
 
 Then the values of the parameters specifying the details of the behavior of
 that visualizer have to be checked, to make sure they make sense. The

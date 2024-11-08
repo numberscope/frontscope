@@ -56,6 +56,7 @@ plugins:
     awesome-pages:
         collapse_single_pages: true
         filename: mkdocs-index.yml
+    d2: {}
     search: {}
     semiliterate:
         copy: true
@@ -82,8 +83,4 @@ markdown_extensions:
     - def_list
     - markdown_grid_tables
     - mdx_math
-    - pymdownx.superfences:
-          custom_fences:
-              - name: mermaid
-                class: mermaid
-                format: !!python/name:pymdownx.superfences.fence_div_format
+    - pymdownx.superfences

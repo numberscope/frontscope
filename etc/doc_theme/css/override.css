@@ -108,3 +108,12 @@ a:hover {
 .wy-breadcrumbs a {
     text-decoration-line: none;
 }
+
+.d2 div.md {
+    background-color: lavender;
+    border: 2px solid purple;
+}
+
+.text-italic tspan {
+    font-style: italic;
+}

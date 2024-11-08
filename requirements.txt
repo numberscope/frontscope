@@ -1,5 +1,6 @@
 markdown-grid-tables ~= 0.3
 mkdocs ~= 1.6
+mkdocs-d2-plugin ~= 1.5
 mkdocs-semiliterate ~= 0.8.3
 mkdocs-awesome-pages-plugin ~= 2.9.3
 pymdown-extensions ~= 10.8
