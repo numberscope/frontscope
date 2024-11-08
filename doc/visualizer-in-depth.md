@@ -247,6 +247,8 @@ fills it in from the `category`, and makes it read-only.
 
 ### Other properties
 
+#### Vue and reactive objects
+
 It is important to know that Vue will instrument (i.e., insert code into) your
 Visualizer class to be a "reactive" object so that changes to its properties
 can trigger changes to what's displayed in the browser window. This
@@ -267,6 +269,25 @@ the view when needed, so there is unlikely to be a problem. Note, however,
 that you should not call `markRaw()` on the values of _parameters_ even if
 they are objects, as in the case of `ParamType.NUMBER_ARRAY`; doing so could
 prevent proper display updating.
+
+#### p5 color values
+
+Many visualizers want to manipulate and store p5.Color objects in data
+properties. TypeScript throws a bit of a hitch into this process. If you
+declare a property of your Visualizer class to have type `p5.Color`, it will
+naturally insist that you initialize that property, either on the line in
+which you declare it, or in the class constructor function. However, the p5
+system is (as of this writing) designed so that there is no way to construct a
+p5.Color object without access to the p5 sketch in which the color is to be
+used. But at Visualizer construction time, there is no p5 sketch available --
+it doesn't exist yet.
+
+As a workaround to this impasse, `src/visualizers/P5Visualizer.ts` exports
+`INVALID_COLOR`, a value forcibly typed to `p5.Color` that you can use to
+initialize your p5.Color properties. Then in the `setup()` method, you can
+fill in these properties with the actual colors you want them to represent.
+Make sure you do fill them all in -- if you attempt to draw with an
+`INVALID_COLOR`, p5 will crash.
 
 ### React to parameter changes
 
