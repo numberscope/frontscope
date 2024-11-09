@@ -46,7 +46,20 @@ const sequenceBounds = {
     },
 }
 
+// We document this using xmd tags, rather than md. That way, it does not
+// generate its own documentation page, but instead can be extracted into
+// all user-facing Sequence pages with the following markdown block:
+// {! Cached.ts extract:
+//    start: '^\s*[/]\*\*+\W?xmd\b' # Opening like /** xmd
+//    stop: '^\s*(?:/\*\s*)?\*\*[/]\s*$' # closing comment with two *
+// !}
 const standardSequenceParameters = {
+    /** xmd
+-   **First index:** the first index of the sequence to use in visualization.
+    Many sequences have a smallest available index; if so, that number will
+    be the default value for thus parameter. Otherwise, the default will be
+    zero.
+    **/
     first: {
         default: 0n, // dummy value, will be replaced by firstAvailable
         type: ParamType.BIGINT,
@@ -54,6 +67,13 @@ const standardSequenceParameters = {
         required: false,
         validate: sequenceBounds.validateBounds,
     },
+    /** xmd
+-   **Last index:** the index of the last entry of the sequence to use in
+    visualization. Similarly, many sequences have a largest available index,
+    which will become the default value for this parameter. If not, the
+    default is `Infinity`, which means that the visualizer may continue to
+    request more and more terms indefinitely.
+    **/
     last: {
         default: math.posInfinity as ExtendedBigint, // will be replaced
         // by lastAvailable if/when that is set
@@ -62,6 +82,15 @@ const standardSequenceParameters = {
         required: false,
         validate: sequenceBounds.validateBounds,
     },
+    /** xmd
+-   **Number of terms:** the number of terms of the sequence to use in
+    visualization. Of course, the number of terms must be the last index,
+    minus the first index, plus one. So this parameter and the previous two
+    can not actually be independently set. What will happen in practice is
+    that changing any one of them will automatically change the value of
+    one of the others to keep things consistent. The default value for
+    this parameter is determined by the first and last index.
+    **/
     length: {
         default: math.posInfinity as ExtendedBigint, // will be replaced
         // by lastAvailable - firstAvailable + 1 once those are known
