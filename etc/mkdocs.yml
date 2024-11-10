@@ -9,14 +9,14 @@ nav:
                 - ... | flat | src/visualizers/*
           - Sequences:
                 - ... | flat | src/sequences/*
-    - Extending:
+    - Adding to what the 'scope can do:
           - doc/extending.md
           - doc/running-from-source.md
-    - Building a Visualizer:
-          - doc/visualizer-overview.md
-          - doc/visualizer-basics.md
-          - doc/visualizer-in-depth.md
-    - Contributing:
+          - Building a Visualizer:
+                - doc/visualizer-overview.md
+                - doc/visualizer-basics.md
+                - doc/visualizer-in-depth.md
+    - Contributing your changes:
           - CONTRIBUTING.md
           - doc/onboarding.md
           - doc/working-with-pm.md
