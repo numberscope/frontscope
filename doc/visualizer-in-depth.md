@@ -68,7 +68,7 @@ early: {
 }
 mid: {
   near: center-left
-  label: "    sequence OK,\nno sketch"
+  label: "    sequence available,\nno sketch"
   label.near: top-left
   style.fill: "#ffe"
   style.font-size: 18
@@ -93,7 +93,7 @@ early.SPC -> mid.CheckPar
 late: {
   near: center-right
   direction: up
-  label: "sequence & sketch OK"
+  label: "sequence & sketch available"
   label.near: top-right
   style.fill: "#efe"
   style.font-size: 18
@@ -381,7 +381,8 @@ For even greater customization of what happens when, you can override/extend
 method for behavior that only occurs when the canvas is resized. Note that in
 this latter case, you can control whether the framework does the `reset()` for
 you: return `true` if you have handled any need to reset (and so the framework
-should NOT call `reset`), and false if you do want the framework to `reset()`.
+should NOT call `reset()`), and false if you do want the framework to
+`reset()`.
 
 ### Show or stop the visualization; depart from a page element
 

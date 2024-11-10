@@ -3,7 +3,7 @@
 The main initial way that people excited by Numberscope's possibilities want
 to extend it is by creating their own Visualizer. Sometimes this addition is
 to tweak the behavior or add a feature to an existing Visualizer, or sometimes
-it's a whole new idea on how to look at the universe of numbers. Whichever is
+it's a whole new idea about looking at the universe of numbers. Whichever is
 the case for you, this guide will show you how to go about implementing a new
 Visualizer.
 

@@ -15,8 +15,8 @@ code:
 -   The name of the TypeScript type for bigints is `bigint`. However, when you
     want to make a value `v` of some other type into a bigint, you call
     `BigInt(v)`.
--   Literal values of type `bigint` consist digits followed by a lower-case n,
-    like 73n for the bigint with value 73, or 0n or -10n, etc.
+-   Literal values of type `bigint` consist of digits followed by a lower-case
+    n, like 73n for the bigint with value 73, or 0n or -10n, etc.
 -   Right now unfortunately mathjs does not work on bigints but soon we will
     update to a version that does.
 -   In the meantime to compensate for the lack of bigints in mathjs, we have a

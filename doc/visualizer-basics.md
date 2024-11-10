@@ -59,10 +59,10 @@ key: {
   direction: right
   method: "classMethod()" {
     class: method
-    height: 24
+    height: 20
     style: {
       opacity: 0.6
-      font-size: 16
+      font-size: 14
     }
   }
   otherCode: |
@@ -75,13 +75,13 @@ key: {
     width: 200
     style: {
       opacity: 0.6
-      font-size: 15
+      font-size: 12
     }
   }
-  method -> otherCode: "action/event" {style.font-size: 18}
+  method -> otherCode: "action/event" {style.font-size: 14}
   style {
     opacity: 0.4
-    font-size: 24
+    font-size: 18
   }
 }
 ````
@@ -261,13 +261,13 @@ all of Numberscope's controls remain properly updated.
 ### 💡️ Respond to user interactions _(often used)_
 
 Each time the user interacts with your visualization, an
-[event handling](https://p5js.org/reference/#group-Events) function like
+[event handling](https://p5js.org/reference/#Events) function like
 `keyPressed()` (used by the `P5VisualizerTemplate` to move the current index
 back and forth) or `mouseClicked()` will be called, giving you a chance to
 respond. There are handlers for a wide variety of input events. Note that if
-you previously stopped drawing by calling the `.stop()` method but would like
+you previously stopped drawing by calling the `stop()` method but would like
 to draw some more frames based on the event that occurred, you can call the
-`.continue()` method to restart the drawing loop.
+`continue()` method to restart the drawing loop.
 
 ## 🔑️ How to make your visualizer available _(required)_
 

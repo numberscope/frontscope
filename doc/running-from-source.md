@@ -50,6 +50,10 @@
     The output of this command will provide instructions for connecting to the
     new running instance of frontscope with your browser.
 
+There are a number of [other `npm` scripts](working-with-pm.md) that will let
+you do things like generate the documentation pages or run tests on the code,
+as well.
+
 ## Adding to and modifying code
 
 To add to the code, you will need to use either what's called an "editor" or

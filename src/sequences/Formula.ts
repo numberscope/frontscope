@@ -36,7 +36,9 @@ All familiar arithmetic operations may be used in the formula:
 
 `%`
 :   remainder, e.g. `18 % 5` will produce 3 because that's the remainder
-    when dividing 18 by 5
+    when dividing 18 by 5. Note that this is the so-called "mathematician's
+    modulo": it is always a positive number, so `-18 % 5` produces 2, not
+    -3 as in JavaScript.
 
 `!`
 :   factorial, e.g. `4!` will produce `4*3*2*1` = 24

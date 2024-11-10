@@ -201,11 +201,11 @@ export interface VisualizerInterface extends ParamableInterface {
 :   Remove the visualization from the given DOM _element_, release its
     resources, and do any other required cleanup. It is an error to call this
     method if the visualization is not currently `inhabit()`ing any element.
-    If the visualization is currently inhabit()ing a **different** location
+    If the visualization is currently `inhabit()`ing a **different** location
     in the DOM than _element_, it is presumed that the realization within
     _element_ was already cleaned up, and this can be a no-op. Note that after
-    this call, it must be ok to call inhabit() again, possibly with a different
-    location in the DOM, to reinitialize it.
+    this call, it must be ok to call `inhabit()` again, possibly with a
+    different location in the DOM, to reinitialize it.
 <!-- -->
     **/
     /** md */
@@ -223,7 +223,7 @@ export interface VisualizerInterface extends ParamableInterface {
     If it is implemented, returning true means that the visualizer has itself
     handled the resize (so it will **not** be reset by the frontscope), and
     so returning false means that it will be reset. Note that it is typically
-    async.
+    `async`.
 <!-- -->
     **/
 }

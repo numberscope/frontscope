@@ -17,7 +17,9 @@ The testing framework used for frontscope will fail if the built-in JavaScript
 
 Other than that, only the Numberscope extensions to mathjs are documented
 below; refer to the [mathjs documentation](http://mathjs.org/docs) to see all
-of the other facilities available.
+of the other facilities available. We also have some additional tips for
+[working with bigint numbers](../../doc/working-with-bigints.md) in
+Numberscope.
 
 Note that currently every one of the extension functions described
 below accepts either `number` or `bigint` inputs for all arguments and
