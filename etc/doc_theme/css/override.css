@@ -54,6 +54,10 @@ header {
     display: none;
 }
 
+.wy-menu-vertical a {
+    color: currentcolor;
+}
+
 .wy-menu-vertical p.caption {
     color: var(--ns-navigation-foreground);
 }
