@@ -28,17 +28,21 @@
                         Help
                         <div id="help-popup">
                             <div class="nav-link">
+                                <a href="/doc/doc/user_guide/">User Guide</a>
+                            </div>
+                            <div class="nav-link leftdented">
                                 <a :href="vizLink()">
                                     {{ specimen.visualizer.name }} Visualizer
+                                    ┤
                                 </a>
                             </div>
-                            <div class="nav-link">
+                            <div class="nav-link leftdented tweakup">
                                 <a :href="seqLink()">
-                                    {{ seqWord() }} Sequence
+                                    {{ seqWord() }} Sequence ┘
                                 </a>
                             </div>
                             <div class="nav-link">
-                                <a href="/doc/">Documentation</a>
+                                <a href="/doc/">Full Documentation</a>
                             </div>
                         </div>
                     </div>
@@ -164,6 +168,27 @@
                     opacity: 1;
                     padding-bottom: 0.5ex;
                     padding-top: 0.5ex;
+                    border: 1px solid var(--ns-color-black);
+
+                    .leftdented {
+                        padding-right: 0.7em;
+                    }
+
+                    .tweakup {
+                        position: relative;
+                        bottom: 6px;
+                    }
+
+                    .nav-link {
+                        padding-top: 0ex;
+                        padding-bottom: 0ex;
+                    }
+
+                    a {
+                        font-family: var(--ns-font-main);
+                        font-size: var(--ns-size-heading);
+                        text-decoration: none;
+                    }
                 }
 
                 &:hover #help-popup {
@@ -181,11 +206,6 @@
                 padding-top: 0.2ex;
                 padding-bottom: 0.2ex;
                 text-decoration: none;
-
-                a {
-                    font-family: var(--ns-font-display);
-                    text-decoration: none;
-                }
 
                 &:focus,
                 &:hover {
