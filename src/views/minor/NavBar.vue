@@ -30,16 +30,14 @@
                             <div class="nav-link">
                                 <a href="/doc/doc/user_guide/">User Guide</a>
                             </div>
-                            <div class="nav-link leftdented">
-                                <a :href="vizLink()">
-                                    {{ specimen.visualizer.name }} Visualizer
-                                    ┤
-                                </a>
+                            <div class="leftdented">
+                                <a class="nav-link" :href="vizLink()">
+                                    {{ specimen.visualizer.name }}
+                                    Visualizer </a>┤
                             </div>
-                            <div class="nav-link leftdented tweakup">
-                                <a :href="seqLink()">
-                                    {{ seqWord() }} Sequence ┘
-                                </a>
+                            <div class="leftdented tweakup">
+                                <a class="nav-link" :href="seqLink()">
+                                    {{ seqWord() }} Sequence </a>┘
                             </div>
                             <div class="nav-link">
                                 <a href="/doc/">Full Documentation</a>
@@ -147,6 +145,7 @@
             }
 
             .help-popper {
+                cursor: pointer;
                 font-family: var(--ns-font-display);
                 font-size: var(--ns-size-display);
                 background-color: var(--ns-color-white);
@@ -166,12 +165,13 @@
                     z-index: 10000;
                     background-color: var(--ns-color-white);
                     opacity: 1;
+                    margin-top: 0.3ex;
                     padding-bottom: 0.5ex;
                     padding-top: 0.5ex;
                     border: 1px solid var(--ns-color-black);
 
                     .leftdented {
-                        padding-right: 0.7em;
+                        padding-right: 0.5em;
                     }
 
                     .tweakup {
@@ -188,6 +188,11 @@
                         font-family: var(--ns-font-main);
                         font-size: var(--ns-size-heading);
                         text-decoration: none;
+                        padding-right: 0px;
+                    }
+
+                    a:hover {
+                        text-decoration: underline;
                     }
                 }
 

@@ -14,7 +14,7 @@ import {ParamType} from '@/shared/ParamType'
 # OEIS sequence
 [<img
   src="../../assets/img/OEIS/PrimeDiffs.png"
-  style="margin-left: 1em; margin-right: 0.5em; max-width: 696px"
+  style="float: right; margin-left: 1em; width: 250px"
 />](../assets/img/OEIS/PrimeDiffs.png)
 
 This Sequence implementation allows access to any integer sequence in the

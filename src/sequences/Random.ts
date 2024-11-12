@@ -9,7 +9,7 @@ import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 # Random sequence
 [<img
   src="../../assets/img/Random/LittleBoxes.png"
-  style="margin-left: 1em; margin-right: 0.5em; max-width: 696px"
+  style="float: right; margin-left: 1em; width: 250px"
 />](../assets/img/Random/LittleBoxes.png)
 
 The entries of this sequence are computer-generated pseudo-random integers
