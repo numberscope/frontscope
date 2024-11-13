@@ -106,7 +106,7 @@ a:visited {
 }
 
 a:hover {
-    color: var(--ns-color-primary);
+    color: var(--ns-color-black);
 }
 
 .wy-breadcrumbs a {

@@ -33,7 +33,7 @@
             </div>
             <div class="change-tooltip tooltip-anchor button">
                 <MageExchangeA id="change-icon" />
-                <div class="desc-tooltip-text help-box">
+                <div class="desc-tooltip-text help-box shadowed">
                     Change {{ title }}
                 </div>
             </div>

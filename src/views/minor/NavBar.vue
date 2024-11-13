@@ -26,7 +26,7 @@
                     </RouterLink>
                     <div class="help-popper">
                         Help
-                        <div id="help-popup">
+                        <div id="help-popup" class="shadowed">
                             <div class="nav-link">
                                 <a href="/doc/doc/user_guide/">User Guide</a>
                             </div>
@@ -134,7 +134,6 @@
             flex-direction: column;
             margin-top: 8px;
             color: var(--ns-color-black);
-            background-color: var(--ns-color-white);
             &.open {
                 display: flex;
                 z-index: 1000;
@@ -148,7 +147,6 @@
                 cursor: pointer;
                 font-family: var(--ns-font-display);
                 font-size: var(--ns-size-display);
-                background-color: var(--ns-color-white);
                 position: relative;
                 padding-right: 0.5em;
 
@@ -169,7 +167,6 @@
                     padding-bottom: 0.5ex;
                     padding-top: 0.5ex;
                     border: 1px solid var(--ns-color-black);
-                    box-shadow: 4px 4px 0 px var(--ns-color-primary);
 
                     .leftdented {
                         padding-right: 0.5em;
@@ -181,6 +178,7 @@
                     }
 
                     .nav-link {
+                        color: var(--ns-color-black);
                         padding-top: 0ex;
                         padding-bottom: 0ex;
                     }
@@ -206,6 +204,7 @@
             .nav-link {
                 font-family: var(--ns-font-display);
                 font-size: var(--ns-size-display);
+                color: var(--ns-color-black);
                 margin-top: 8px;
                 padding-left: 0.5em;
                 padding-right: 0.5em;
