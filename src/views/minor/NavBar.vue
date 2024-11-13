@@ -169,6 +169,7 @@
                     padding-bottom: 0.5ex;
                     padding-top: 0.5ex;
                     border: 1px solid var(--ns-color-black);
+                    box-shadow: 4px 4px 0 px var(--ns-color-primary);
 
                     .leftdented {
                         padding-right: 0.5em;

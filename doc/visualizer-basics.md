@@ -53,7 +53,8 @@ Draw: "draw()" {class: method}
 Setup -> Draw
 Draw -> Draw: {target-arrowhead: "[stop()/continue()]"}
 Draw -> SPC: "change parameter" {style.font-size: 18}
-key: {
+
+legend: {
   near: bottom-center
   label.near: top-left
   direction: right

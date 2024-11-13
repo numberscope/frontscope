@@ -10,8 +10,33 @@ visualizer.
 ````d2 layout="elk"
 direction: down
 classes: {
+  init: {style: {
+     stroke: red
+     font-size: 18
+     font-color: darkred
+  } }
+  parChg: {style: {
+     stroke: orange
+     font-size: 18
+     font-color: chocolate
+  } }
+  seqChg: {style: {
+     stroke: green
+     font-size: 18
+     font-color: darkGreen
+  } }
+  resize: {style: {
+     stroke: purple
+     font-size: 18
+     font-color: indigo
+  } }
+  any: {style: {
+     stroke: black
+     stroke-width: 2
+     font-size: 18
+     font-color: black
+  } }
   dot: {
-    style.fill: blue
     shape: circle
     width: 10
   }
@@ -41,14 +66,27 @@ classes: {
   }
 }
 
+secret: {
+   label: ""
+   near: center-left
+   style: {opacity: 0.0}
+   Start: "" {
+      class: [dot; init]
+      style.fill: red
+   }
+   dummy: "" {
+      height: 1115
+      style.opacity: 0.0
+   }
+   Start -> dummy {style.opacity: 0.0}
+}
+
 early: {
   direction: right
-  near: top-left
-  label: "can't use\n    sequence or sketch"
-  label.near: top-left
+  label: "can't use\nsequence or sketch       "
+  label.near: top-right
   style.fill: "#fee"
   style.font-size: 18
-  Start: "" {class: dot}
   Init: |md
     ### Create visualizer object
     ```txt
@@ -56,7 +94,6 @@ early: {
     constructor
     ```
   |
-  Start -> Init: "page load/\nvisualizer change" {style.font-size: 20}
   SPC: |md
     ### Parameter checks
     ```txt
@@ -64,32 +101,43 @@ early: {
     validate() functions
     ```
   |
-  Init -> SPC
+  Init -> SPC: {class: init}
 }
+
+secret.Start -> early.Init: "init (page load/\nvisualizer change)" {
+   class: init
+   style.font-size: 20
+}
+
 mid: {
-  near: center-left
   label: "    sequence available,\nno sketch"
   label.near: top-left
   style.fill: "#ffe"
   style.font-size: 18
   CheckPar: "checkParameters()" {class: method}
-  parUp: "parameter\nupdate" {class: pseudolabel}
-  inSeq: "initialization\nsequence change" {class: pseudolabel}
-  checkPar -- parUp
-  checkPar -- inseq
+  parUp: "parameter\nchange" {class: [pseudolabel; parChg]}
+  checkPar -- parUp {class: parChg}
   ParChg: "parametersChanged()" {class: method}
-  parUp -> ParChg
-  aligner: "" {
-    class: dot
-    width: 1
-  }
+  parUp -> ParChg {class: parChg}
   Reset: "reset()" {class: method}
-  inseq -- aligner -> Reset
-  ParChg -> Reset {class: deflt}
+  checkPar --> Reset: "init" {class: init}
+  checkPar --> Reset: "sequence\nchange" {class: seqChg}
+  ParChg -> Reset {class: [deflt; parChg]}
   PreSk: "presketch()" {class: method}
-  Reset -> PreSk: "initialization\ncanvas resize\nsequence change"
+  Reset -> PreSk: "init" {class: init}
+  Reset -> PreSk: "sequence\nchange" {class: seqChg}
+  Reset -> PreSk: "canvas\nresize" {class: resize}
+  routingQ: "" {class: [dot; resize]; width: 2}
+  routingR: "" {class: [dot; resize]; width: 2}
+  routingQ -- routingR -> Reset: {class: [deflt; resize]}
+  routingZ: "" {class: [dot; any]; width: 1}
+  PreSk <-- routingZ {
+     class: any
+     source-arrowhead: "in any\nevent" {shape: cf-many}
+  }
 }
-early.SPC -> mid.CheckPar
+early.SPC -> mid.CheckPar: "init" {class: init}
+early.SPC -> mid.CheckPar: "parameter\nchange" {class: parChg}
 late: {
   near: center-right
   direction: up
@@ -98,48 +146,51 @@ late: {
   style.fill: "#efe"
   style.font-size: 18
   Setup: "setup()" {class: method}
-  Draw: "draw()" {
-    class: method
-    height: 50
-    style.font-size: 24
-  }
+  Draw: |md
+     ### p5 Draw Loop
+     ```txt
+     repeatedly calls
+       draw() method
+     for you; you can
+     stop()/continue()
+       in any method
+     ```
+  | {style.font-size: 20}
   Setup -> Draw
-  Draw -> Draw {target-arrowhead: "[stop()/\ncontinue()]    "}
+  Draw -> Draw
+  routingP: "" {
+     class: [dot; parChg]
+     width: 1
+  }
+  Draw -- routingP {class: parChg}
   Resize: "resized()" {class: method}
-  Draw -> Resize: "resize\nwindow"
+  Draw -> Resize: "canvas\nresize" {class: resize}
   Resize <-> Draw {
-    source-arrowhead: "(returns\nfalse)" {shape: cf-many}
+    class: resize
+    source-arrowhead: "  (returns\nfalse)" {
+       shape: cf-many
+    }
   }
-  routing1: "" {
-    class: dot
-    width: 2
-  }
-  routing2: "" {
-    class: dot
-    width: 2
-  }
-  Resize <- routing1: {
-    class: deflt
-    source-arrowhead: "(returns\ntrue)" {shape: cf-many}
-  }
-  routing1 -- routing2 {class: deflt}
-  Event: "" {class: dot}
+  Event: "" {class: dot; style.fill: blue}
   Handler: "(handler method)" {class: method}
   Event -> Handler: "mouse click/\nkey press/\netc."
 }
-mid.Reset -> late.Setup: "otherwise" {style.font-size: 20}
-mid.PreSK -> late.Setup
-late.Draw -> early.SPC: "parameter\nchange"
-late.Draw -> mid.CheckPar: "change\nsequence"
-late.routing2 -> mid.Reset: {class: deflt}
-
-spacer: " " {
-  near: bottom-center
-  width: 120
+spacer: "" {
+  width: 200
   style.opacity: 0.0
 }
-key: {
-  near: bottom-left
+
+mid.routingQ -> late.Resize: "canvas\nresize" {
+    class: [deflt; resize]
+    target-arrowhead: "(returns    \ntrue)" {shape: cf-many}
+}
+mid.Reset -> late.Setup: "parameter\nchange" {class: parChg}
+mid.routingZ -> late.Setup {class: any}
+late.routingP -> early.SPC: "parameter\nchange" {class: parChg}
+late.Draw -> mid.CheckPar: "    sequence\nchange" {class: seqChg}
+
+legend: {
+  near: top-right
   label.near: top-left
   direction: right
   method: "classMethod()" {
@@ -154,7 +205,7 @@ key: {
     ```
   | {style.opacity: 0.6}
   method -> otherCode: "action/event" {style.font-size: 18}
-  method -> otherCode: "default behavior\ncan override" {class: deflt}
+  method -> otherCode: "default behavior\ncan be overridden" {class: deflt}
   style.opacity: 0.4
 }
 ````
