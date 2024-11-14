@@ -18,18 +18,28 @@ You can find [Numberscope on GitHub](https://github.com/numberscope) or
 
 ## Contributors
 
-|                                                                                                                              |                       |
-| ---------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| • Abdullatif Khalid Abduljaleel                                                                                              | • Steven Hristopoulos |
-| • Tobias Aldape                                                                                                              | • Clyde Kertzer       |
-| • Khaled Allen                                                                                                               | • Jennifer Leong      |
-| • Isabel Anaya                                                                                                               | • Ang Li              |
-| • Sebastian Bozlee                                                                                                           | • Theodore Lincke     |
-| • Olivia Brobin                                                                                                              | • Josiah Martinez     |
-| • Devlin Costello                                                                                                            | • Willem Mirkovich    |
-| • Delft CSE2000 Spring '24 Team: Matej Bavec, Ziggy Beijer,<br/>&nbsp;&nbsp; Kaldis Bērziņš, Max Derbenwick, and Gido Vitner | • Liam Mulhall        |
-| • Aaron Fenyes                                                                                                               | • Daniel H. Taylor    |
-| • Brendan Heaney                                                                                                             |                       |
-|                                                                                                                              |                       |
+<!-- prettier-ignore -->
++---------------------------------+-------------------------------+
+| • Abdullatif Khalid Abduljaleel | • Steven Hristopoulos         |
++---------------------------------+-------------------------------+
+| • Tobias Aldape                 | • Clyde Kertzer               |
++---------------------------------+-------------------------------+
+| • Khaled Allen                  | • Jennifer Leong              |
++---------------------------------+-------------------------------+
+| • Isabel Anaya                  | • Ang Li                      |
++---------------------------------+-------------------------------+
+| • Sebastian Bozlee              | • Theodore Lincke             |
++---------------------------------+-------------------------------+
+| • Olivia Brobin                 | • Josiah Martinez             |
++---------------------------------+-------------------------------+
+| • Devlin Costello               | • Willem Mirkovich            |
++---------------------------------+-------------------------------+
+| • Aaron Fenyes                  | • Liam Mulhall                |
++---------------------------------+-------------------------------+
+| • Brendan Heaney                | • Daniel H. Taylor            |
++---------------------------------+-------------------------------+
+| • Delft CSE2000 Spring '24 Team: Matej Bavec, Ziggy Beijer,<br> |
+| &nbsp; &nbsp;Kaldis Bērziņš, Max Derbenwick, and Gido Vitner    |
++-----------------------------------------------------------------+
 
 [Acknowledgments](acknowledgments.md)
