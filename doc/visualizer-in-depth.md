@@ -144,7 +144,7 @@ late: {
   label: "sequence & sketch available"
   label.near: top-right
   style.fill: "#efe"
-  style.font-size: 18
+  style.font-size: 19
   Setup: "setup()" {class: method}
   Draw: |md
      ### p5 Draw Loop
