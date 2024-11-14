@@ -293,6 +293,7 @@ click on the trash button on its preview card.
 
     .results {
         display: flex;
+        height: min-content;
         flex-wrap: wrap;
         overflow: auto;
         flex: 1;
