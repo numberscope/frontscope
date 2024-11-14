@@ -205,7 +205,7 @@ legend: {
     ```
   | {style.opacity: 0.6}
   method -> otherCode: "action/event" {style.font-size: 18}
-  method -> otherCode: "default behavior\ncan be overridden" {class: deflt}
+  method -> otherCode: "default behavior\n(can be overridden)" {class: deflt}
   style.opacity: 0.4
 }
 ````
