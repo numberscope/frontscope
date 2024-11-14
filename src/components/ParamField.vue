@@ -42,7 +42,9 @@
                 v-if="param.hideDescription && param.description"
                 class="desc-tooltip">
                 <span class="material-icons-sharp">help</span>
-                <div class="desc-tooltip-text">{{ param.description }}</div>
+                <div class="desc-tooltip-text shadowed">
+                    {{ param.description }}
+                </div>
             </div>
         </div>
         <p

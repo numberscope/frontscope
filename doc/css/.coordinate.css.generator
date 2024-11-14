@@ -1,0 +1,17 @@
+{! ../../src/views/minor/NavBar.vue extract:
+    start: 'style'
+    stop: 'style'
+    replace: [
+        ['^(.*)[$]tablet-breakpoint(.*)', '\1 800px\2'],
+        ['^(.*)[$]mobile-breakpoint(.*)', '\1 580px\2']
+    ]
+!}
+{! ../../src/App.vue extract:
+    start: '[<]style[>]'
+    stop: '[<]/style[>]'
+    replace: [
+        ['^(.*)[$]tablet-breakpoint(.*)', '\1 800px\2'],
+        ['^(.*)[$]mobile-breakpoint(.*)', '\1 580px\2'],
+        ['^(.*)(src: url..)[@](.*)', '\1\2/doc/src\3']
+    ]
+!}

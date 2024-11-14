@@ -7,83 +7,36 @@ import {ValidationStatus} from './ValidationStatus'
 
 /**
  * `ParamType` is the enum of all supported parameter types for visualizers
- * and sequences. These types are supported by the interface and internal
- * type checker
+ * and sequences.
+ * The specially formatted comments below are extracted as a table into
+ * the Paramable.ts documentation page. Sadly I couldn't find a way to make the
+ * following doc table DRY with respect to RealizedPropertyType below; each
+ * associated type is listed in both places, and if you modify this file,
+ * make certain these types match.
  */
-export enum ParamType {
-    /**
-     * A true or false value, realized as a `boolean`, and rendered as a
-     * checkbox in the parameter UI.
-     */
-    BOOLEAN,
-    /**
-     * A color value, realized as a hex code string, and rendered as a
-     * color picker in the parameter UI.
-     */
-    COLOR,
-    /**
-     * A floating point numerical value, realized as a `number`, and
-     * rendered as a standard input field in the parameter UI.
-     */
-    NUMBER,
-    /**
-     * An integer numerical value, realized as a `number`, and rendered
-     * as a standard input field in the parameter UI.
-     */
-    INTEGER,
-    /**
-     * An integer numerical value, realized as a `bigint`, and rendered
-     * as a standard input field in the parameter UI.
-     */
-    BIGINT,
-    /**
-     * Either a bigint or the specific numbers -Infinity or Infinity, to
-     * "complete" the integers in both directions. Rendered as a standard
-     * input field in the parameter UI.
-     */
-    EXTENDED_BIGINT,
-    /**
-     * A mathjs formula (entered as a string in a standard input field)
-     * with single free variable `n` for the input. Delivered to the
-     * Paramable object as a Formula interface from `./math.ts` that
-     * allows you to compute with the formula (by passing in a value for
-     * n) and access the original string form of the formula.
-     */
-    FORMULA,
-    /**
-     * An enum value, i.e. one of a list of options. Realized as a
-     * number, and rendered as a drop down menu in the parameter UI.
-     */
-    ENUM,
-    /**
-     * A regular string value. Realized as `string` and rendered as
-     * a standard input field in the parameter UI.
-     */
-    STRING,
-    /**
-     * An array of numbers realized as a `number[]`. It is rendered as a
-     * standard input field, but is expected to take the form of a list
-     * of floating point numbers separated by whitespace or commas.
-     */
-    NUMBER_ARRAY,
-    /**
-     * An array of integers realized as a `bigint[]`. It is rendered
-     * as a standard input field, but is expected to take the form
-     * of a list of integers spearated by whitespace or commas.
-     */
-    BIGINT_ARRAY,
-    /**
-     * A two-element vector, realized as `p5.Vector`. It is rendered
-     * as a standard input field, but is expected to take the form of
-     * two floating point numbers separated by whitespace or a comma.
-     */
-    VECTOR,
+
+// prettier-ignore
+export enum ParamType { /** table header to extract:
+    | ParamType | Associated TypeScript type | Rendering in UI | Comments |
+    | --------- | -------------------------- | --------------- | -------- | */
+    BOOLEAN, // | boolean | checkbox       | true or false |
+    COLOR, //   | string  | color picker   | hex color code |
+    NUMBER, //  | number  | input          | arbitrary floating point value |
+    INTEGER, // | number  | input          | must be a whole number |
+    BIGINT, //  | bigint  | input          | must be a whole number |
+    EXTENDED_BIGINT, // | bigint \| ±Infinity | input | |
+    FORMULA, // | MathFormula | input      | mathjs formula expression |
+    ENUM, //    | number  | drop down menu | restricted to a list of options |
+    STRING, //  | string  | input          | arbitrary string value |
+    NUMBER_ARRAY, // | number[] | input    | whitespace- or comma-separated |
+    BIGINT_ARRAY, // | bigint[] | input    | whitespace- or comma-separated |
+    VECTOR, //  | p5.Vector | input | 2 numbers separated by whitespace or , |
 }
 
 /**
  * A mapping of the parameter types to their realized TypeScript types
  */
-export type RealizedParamType = {
+export type RealizedPropertyType = {
     [ParamType.BOOLEAN]: boolean
     [ParamType.COLOR]: string
     [ParamType.NUMBER]: number
@@ -160,7 +113,7 @@ function validateExtInt(value: string, status: ValidationStatus) {
 }
 
 const typeFunctions: {
-    [K in ParamType]: ParamTypeFunctions<RealizedParamType[K]>
+    [K in ParamType]: ParamTypeFunctions<RealizedPropertyType[K]>
 } = {
     [ParamType.BOOLEAN]: {
         validate: function (value, status) {

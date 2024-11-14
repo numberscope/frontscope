@@ -1,5 +1,5 @@
 <template>
-    <NavBar class="navbar" />
+    <NavBar :specimen="dummy" class="navbar" />
     <div id="gallery-content">
         <div id="header-mobile">
             <div>
@@ -52,10 +52,12 @@
     import {getSIMs} from '../shared/browserCaching'
     import {getFeatured} from '../shared/defineFeatured'
     import type {SIM} from '../shared/browserCaching'
+    import {Specimen} from '@/shared/Specimen'
     import NavBar from '../views/minor/NavBar.vue'
 
     const saved = ref<SIM[]>([])
     const featured = ref<SIM[]>([])
+    const dummy = new Specimen('OEIS A000040', 'Turtle')
 
     const showFeatured = ref(true)
     const showSaved = ref(true)

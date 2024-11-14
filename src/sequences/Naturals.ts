@@ -4,6 +4,9 @@ import {Cached} from './Cached'
 import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
+// Note no documentation page because this Sequence is slated to be
+// retired.
+
 const paramDesc = {
     includeZero: {
         default: false,

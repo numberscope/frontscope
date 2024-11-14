@@ -37,10 +37,22 @@ export class Specimen {
     private size = nullSize
 
     /**
-     * Constructs an empty specimen.
+     * Constructs an empty specimen. If you supply both a seqKey
+     * and a vizKey, it makes the specimen have those sorts of
+     * sequence and visualizer, but it will still be a sort of
+     * "dummy" specimen, not really able to operate, until
+     * loadQuery() is called.
      */
-    constructor() {
+    constructor(seqKey?: string, vizKey?: string) {
         this.name = '*Uninitialized Specimen*'
+        if (seqKey && vizKey) {
+            this._sequenceKey = seqKey
+            this._sequence = Specimen.makeSequence(seqKey)
+            this._visualizerKey = vizKey
+            this._visualizer = new vizMODULES[vizKey].visualizer(
+                this._sequence
+            )
+        }
     }
 
     /**

@@ -25,7 +25,7 @@ class WithP5 extends Paramable {
     deviceMoved() {}
     deviceShaken() {}
     deviceTurned() {}
-    doubleClicked() {}
+    doubleClicked(_event: MouseEvent) {}
     keyPressed(_event: KeyboardEvent) {}
     keyReleased(_event: KeyboardEvent) {}
     keyTyped(_event: KeyboardEvent) {}
@@ -35,11 +35,11 @@ class WithP5 extends Paramable {
     mousePressed(_event: MouseEvent) {}
     mouseReleased() {}
     mouseWheel(_event: WheelEvent) {}
-    setup() {}
     touchEnded() {}
     touchMoved() {}
     touchStarted() {}
     windowResized() {}
+    setup() {}
 }
 
 // The following is used to check if a visualizer has defined
@@ -59,6 +59,9 @@ const p5methods: P5Methods[] = Object.getOwnPropertyNames(
     color from a sketch object.`
 */
 export const INVALID_COLOR = {} as p5.Color
+
+/* Flag to force a call to presketch in a reset() call: */
+export const P5ForcePresketch = true
 
 export interface P5VizInterface extends VisualizerInterface, WithP5 {
     _sketch?: p5
@@ -271,13 +274,11 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          */
         async view(seq: SequenceInterface) {
             this.seq = seq
-            if (!this._sketch) return
-            const element = this.within!
-            this.stop()
-            this.depart(element) // ensures any sequence-dependent setup
-            // that the visualizer might do in presketch will be redone
-            await this.inhabit(element, this.size)
-            this.show()
+            await seq.fill()
+            this.validationStatus = this.checkParameters(
+                this as unknown as ParamValues<GenericParamDescription>
+            )
+            if (this.validationStatus.isValid()) this.reset(P5ForcePresketch)
         }
 
         /**
@@ -285,6 +286,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * All it has to do is call draw, since p5 calls setup for us.
          */
         show(): void {
+            // If not inhabiting an element, do nothing
+            if (!this._sketch) return
             // In the event that the rendering context isn't ready, this value
             // represents how long in milliseconds we should wait before trying
             // again
@@ -292,8 +295,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
 
             if (this._canvas) {
                 this.drawingState = Drawing
-                this._sketch?.loop()
-                this._sketch?.draw()
+                this._sketch.loop()
+                this._sketch.draw()
             } else {
                 // If the rendering context is not yet ready, start an interval
                 // that waits until the canvas is ready and shows when finished
@@ -403,11 +406,16 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * it again. In other words, a hard reset. If a visualizer wishes to
          * have any of its internal state be reset during a hard reset event,
          * it should override this function.
+         * @param {boolean} forcePresketch
+         *     if true, ensures presketch initialization will also be redone;
+         *     defaults to false. Call with constant P5ForcePresketch for
+         *     readability of calling code.
          */
-        async reset() {
+        async reset(forcePresketch: boolean = false) {
             if (!this._sketch) return
             const element = this.within!
             this.stop()
+            if (forcePresketch) this.depart(element)
             await this.inhabit(element, this.size)
             this.show()
         }
