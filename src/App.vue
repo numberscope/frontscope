@@ -107,4 +107,9 @@
         src: url('@/assets/fonts/inter/Inter-VariableFont_slnt,wght.ttf')
             format('truetype');
     }
+
+    /* Decorations */
+    .shadowed {
+        box-shadow: 4px 4px 0px var(--ns-color-primary);
+    }
 </style>

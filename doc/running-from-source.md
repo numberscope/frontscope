@@ -11,14 +11,21 @@
     install the venv module with a command like `apt install python3.11-venv`
     (you may have to replace the "3.11" with the version that is currently
     running in your installation).
-2.  Clone frontscope to an appropriate location on your computer, and switch
+2.  In addition, if you want to build the documentation website for the
+    `frontscope` system, you will need the [d2](https://d2lang.com) diagram
+    generation software installed on your system. This step is not necessary
+    just to run `frontscope` itself using the `npm run dev` command shown
+    below; but it is needed to build the production version of `frontscope`
+    and/or to run the end-to-end [tests](code-tests.md) which are required
+    before [contributing code](../CONTRIBUTING.md) to Numberscope.
+3.  Clone frontscope to an appropriate location on your computer, and switch
     into the new repository's top-level directory:
     ```sh
     cd /where/you/keep/your/code/
     git clone https://github.com/numberscope/frontscope.git
     cd frontscope
     ```
-3.  If you will be connecting to an instance of `backscope` (for obtaining
+4.  If you will be connecting to an instance of `backscope` (for obtaining
     information about OEIS sequences) running locally on your machine, then
     create a `.env.local` file to override the `.env` from the distribution:
     ```sh
@@ -27,7 +34,7 @@
     ```
     (When you want to go back to connecting to the standard backend server,
     remember to delete your `.env.local` or move it out of the way.)
-4.  Install dependencies:
+5.  Install dependencies:
     ```sh
     npm install
     ```
@@ -35,13 +42,17 @@
     [Husky](https://github.com/typicode/husky). For a comprehensive list of
     what commands are run when you `git commit` -- typically linting and
     testing -- see [Husky actions](husky-pre-commit.md).)
-5.  Compile and start a server running frontscope, with hot-reloading for
+6.  Compile and start a server running frontscope, with hot-reloading for
     development:
     ```sh
     npm run dev
     ```
     The output of this command will provide instructions for connecting to the
     new running instance of frontscope with your browser.
+
+There are a number of [other `npm` scripts](working-with-pm.md) that will let
+you do things like generate the documentation pages or run tests on the code,
+as well.
 
 ## Adding to and modifying code
 

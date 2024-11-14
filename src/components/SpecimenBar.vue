@@ -13,7 +13,7 @@
 
             <div class="desc-tooltip tooltip-anchor">
                 <span class="help material-icons-sharp">help</span>
-                <div class="desc-tooltip-text help-box">
+                <div class="desc-tooltip-text help-box shadowed">
                     You can enter the name you want to give this specimen
                 </div>
             </div>
@@ -234,6 +234,7 @@
             border: none;
             border-bottom: 1.5px solid var(--ns-color-black);
             font-size: var(--ns-size-heading-2);
+            background-color: inherit;
             padding: 6px 8px 6px 8px;
             width: 100%;
 

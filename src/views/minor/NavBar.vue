@@ -2,9 +2,9 @@
     <header>
         <nav>
             <div id="navbar-main">
-                <RouterLink id="logo" :to="toUrl()" @click="goToScope">
+                <a href="/doc/doc/about/">
                     <img :src="LogoWithMicroscope" alt="A microscope icon.">
-                </RouterLink>
+                </a>
                 <button
                     id="navbar-toggler"
                     type="button"
@@ -24,12 +24,26 @@
                         @click="closeMenu">
                         Gallery
                     </RouterLink>
-
-                    <a href="/doc/doc/about/index.html" class="nav-link">
-                        About
-                    </a>
-
-                    <a href="/doc/" class="nav-link"> Documentation </a>
+                    <div class="help-popper">
+                        Help
+                        <div id="help-popup" class="shadowed">
+                            <div class="nav-link">
+                                <a href="/doc/doc/user_guide/">User Guide</a>
+                            </div>
+                            <div class="leftdented">
+                                <a class="nav-link" :href="vizLink()">
+                                    {{ specimen.visualizer.name }}
+                                    Visualizer </a>┤
+                            </div>
+                            <div class="leftdented tweakup">
+                                <a class="nav-link" :href="seqLink()">
+                                    {{ seqWord() }} Sequence </a>┘
+                            </div>
+                            <div class="nav-link">
+                                <a href="/doc/">Full Documentation</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="close material-icons-sharp">close</div>
             </div>
@@ -38,41 +52,39 @@
 </template>
 
 <script setup lang="ts">
-    import LogoWithMicroscope from '../../assets/img/logo.svg'
-</script>
-
-<script lang="ts">
-    import {defineComponent} from 'vue'
+    import {ref} from 'vue'
+    import type {PropType, UnwrapNestedRefs} from 'vue'
     import {RouterLink} from 'vue-router'
-    import {getCurrent} from '../../shared/browserCaching'
 
-    export default defineComponent({
-        name: 'NavBar',
-        emits: ['goToScope'],
-        data: function () {
-            return {
-                menuOpen: false,
-            }
-        },
-        methods: {
-            toggleMenu: function () {
-                this.menuOpen = !this.menuOpen
-            },
+    import LogoWithMicroscope from '@/assets/img/logo.svg'
+    import type {Specimen} from '@/shared/Specimen'
 
-            closeMenu: function () {
-                this.menuOpen = false
-            },
-
-            goToScope: function () {
-                this.closeMenu()
-                this.$emit('goToScope')
-            },
-
-            toUrl: function () {
-                return `/?${getCurrent().query}`
-            },
+    const props = defineProps({
+        specimen: {
+            type: Object as PropType<UnwrapNestedRefs<Specimen>>,
+            required: true,
         },
     })
+
+    const menuOpen = ref(false)
+
+    function toggleMenu() {
+        menuOpen.value = !menuOpen.value
+    }
+
+    function closeMenu() {
+        menuOpen.value = false
+    }
+
+    function seqWord() {
+        return props.specimen.sequence.name.split(/[\s:]/, 2)[0]
+    }
+    function seqLink() {
+        return `/doc/src/sequences/${seqWord()}/`
+    }
+    function vizLink() {
+        return `/doc/src/visualizers/${props.specimen.visualizerKey}/`
+    }
 </script>
 
 <style scoped lang="scss">
@@ -122,7 +134,6 @@
             flex-direction: column;
             margin-top: 8px;
             color: var(--ns-color-black);
-            background-color: var(--ns-color-white);
             &.open {
                 display: flex;
                 z-index: 1000;
@@ -132,15 +143,81 @@
                 display: flex;
             }
 
+            .help-popper {
+                cursor: pointer;
+                font-family: var(--ns-font-display);
+                font-size: var(--ns-size-display);
+                position: relative;
+                padding-right: 0.5em;
+
+                #help-popup {
+                    visibility: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    align-content: flex-end;
+                    white-space: nowrap;
+                    position: absolute;
+                    right: 0;
+                    width: auto;
+                    z-index: 10000;
+                    background-color: var(--ns-color-white);
+                    opacity: 1;
+                    margin-top: 0.3ex;
+                    padding-bottom: 0.5ex;
+                    padding-top: 0.5ex;
+                    border: 1px solid var(--ns-color-black);
+
+                    .leftdented {
+                        padding-right: 0.5em;
+                    }
+
+                    .tweakup {
+                        position: relative;
+                        bottom: 6px;
+                    }
+
+                    .nav-link {
+                        color: var(--ns-color-black);
+                        padding-top: 0ex;
+                        padding-bottom: 0ex;
+                    }
+
+                    a {
+                        font-family: var(--ns-font-main);
+                        font-size: var(--ns-size-heading);
+                        text-decoration: none;
+                        padding-right: 0px;
+                    }
+
+                    a:hover {
+                        text-decoration: underline;
+                    }
+                }
+
+                &:hover #help-popup {
+                    visibility: visible;
+                    opacity: 1;
+                }
+            }
+
             .nav-link {
                 font-family: var(--ns-font-display);
                 font-size: var(--ns-size-display);
-
+                color: var(--ns-color-black);
                 margin-top: 8px;
+                padding-left: 0.5em;
+                padding-right: 0.5em;
+                padding-top: 0.2ex;
+                padding-bottom: 0.2ex;
                 text-decoration: none;
 
                 &:focus,
                 &:hover {
+                    text-decoration: underline;
+                }
+
+                a:hover {
                     text-decoration: underline;
                 }
             }

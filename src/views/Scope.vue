@@ -42,7 +42,7 @@ and then clicking on one of the preview cards in the resulting popup.
 The remaining pages of the User Guide provide information on each of the
 visualizers you can select.
       -->
-    <NavBar class="navbar" @go-to-scope="resetSpecimen">
+    <NavBar class="navbar" :specimen @go-to-scope="resetSpecimen">
         <SpecimenBar
             id="specimen-bar-desktop"
             :specimen

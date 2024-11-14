@@ -106,5 +106,9 @@
     .delete-button {
         user-select: none;
         margin-top: 1ex;
+        color: var(--ns-color-grey);
+        &:hover {
+            color: var(--ns-color-black);
+        }
     }
 </style>

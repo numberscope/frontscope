@@ -16,7 +16,7 @@
             </div>
             <button class="tooltip-anchor">
                 <MageSearchSquare />
-                <div class="desc-tooltip-text help-box">
+                <div class="desc-tooltip-text help-box shadowed">
                     Type a word, phrase, or sequence ID number. A list of
                     related OEIS sequences will pop up. Click on any item to
                     add it as a sequence option.
@@ -27,7 +27,7 @@
             v-if="results.length"
             id="results-backdrop"
             @click="results = []" />
-        <div v-if="results.length" id="oeis-results">
+        <div v-if="results.length" id="oeis-results" class="shadowed">
             <p
                 v-for="item in results"
                 :key="item[0]"

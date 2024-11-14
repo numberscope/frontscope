@@ -104,7 +104,7 @@ Boulder Experimental Mathematics Lab.)
     if Numberscope seems to be working.
 13. If you plan on contributing code to Numberscope, _you must_ work in your
     fork on a dedicated feature branch. To learn how to create a branch, see
-    [this doc](./working-with-git-and-github.md#create-a-branch).
+    [this doc](working-with-git-and-github.md#create-a-branch).
 14. Finally, before you start changing code, please read
     [our docs on submitting a pull request](../CONTRIBUTING.md#submit-a-pull-request).
 
@@ -113,4 +113,4 @@ information.
 
 ## Making a visualizer
 
-Now that you're set up, try [making a visualizer](making-a-visualizer.md)!
+Now that you're set up, try [making a visualizer](visualizer-overview.md)!
