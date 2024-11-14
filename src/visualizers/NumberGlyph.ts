@@ -78,10 +78,16 @@ center.  The absolute value of this function determines the brightness of the
 disk at that radius. A value of 0 is black
 and higher values are brighter.
 
-The default value is `log(max(abs(n),2)^x) % 25`.
+The default value is
 **/
     growthFormula: {
-        default: new MathFormula('(log(max(abs(n),2)) * x) % 25'),
+        default: new MathFormula(
+            // Note: he markdown comment closed with */ means to include code
+            // into the docs, until mkdocs reaches a comment ending with **/
+            /** md */
+            `(log(max(abs(n),2)) * x) % 25`
+            /* **/
+        ),
         type: ParamType.FORMULA,
         inputs: ['n', 'x'],
         displayName: 'Growth Function',

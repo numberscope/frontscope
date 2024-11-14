@@ -51,7 +51,7 @@ vueserve: $(typechecked)
 docserve: $(installed)
 |   node tools/pyrun.mjs mkdocs serve --strict -f $(or $(config),etc/mkdocs.yml)
 
-preview: $(dist)
+preview: dist
 |   npm run preview:cmd
 
 testunit: $(typechecked)

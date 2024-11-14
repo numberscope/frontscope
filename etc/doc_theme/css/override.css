@@ -5,13 +5,11 @@ header {
     z-index: 250;
 }
 
-nav {
-    font-family: Arial, Helvetica, sans-serif;
-}
-
 .wy-grid-for-nav,
 .wy-nav-side {
-    top: 50px;
+    position: fixed;
+    top: 76px;
+    height: calc(100vh - 76px);
 }
 
 .wy-nav-side .icon-home {
@@ -28,6 +26,11 @@ nav {
 .wy-nav-top,
 .wy-side-nav-search {
     background-color: var(--ns-navigation-background);
+}
+
+.wy-nav-content-wrap {
+    height: 100%;
+    overflow: scroll;
 }
 
 .wy-nav-top {
@@ -51,17 +54,33 @@ nav {
     display: none;
 }
 
+.wy-menu-vertical a {
+    color: currentcolor;
+}
+
 .wy-menu-vertical p.caption {
     color: var(--ns-navigation-foreground);
 }
 
 .wy-side-scroll {
+    width: 100%;
+    scroll-padding: 10ex;
     padding-bottom: 10ex;
+}
+
+.wy-side-nav-search {
+    width: 100%;
+}
+
+nav.stickynav {
+    padding-left: 0px;
+    padding-right: 0px;
 }
 
 .wy-nav-content {
     padding-top: 3ex;
     max-width: 100%;
+    height: auto;
 }
 
 .wy-breadcrumbs {
@@ -75,4 +94,30 @@ nav {
 
 hr {
     clear: both;
+}
+
+a {
+    color: currentcolor;
+    text-decoration-line: underline;
+}
+
+a:visited {
+    color: currentcolor;
+}
+
+a:hover {
+    color: var(--ns-color-black);
+}
+
+.wy-breadcrumbs a {
+    text-decoration-line: none;
+}
+
+.d2 div.md {
+    background-color: lavender;
+    border: 2px solid purple;
+}
+
+.text-italic tspan {
+    font-style: italic;
 }

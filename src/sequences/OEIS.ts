@@ -10,7 +10,50 @@ import type {ExtendedBigint} from '@/shared/math'
 import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
+/** md
+# OEIS sequence
+[<img
+  src="../../assets/img/OEIS/PrimeDiffs.png"
+  style="float: right; margin-left: 1em; width: 250px"
+/>](../assets/img/OEIS/PrimeDiffs.png)
+
+This Sequence implementation allows access to any integer sequence in the
+Online Encyclopedia of Integer Sequences ([OEIS](https://oeis.org)). Note
+that the specific sequence in the Encyclopedia represented by this sequence
+is determined at the time the sequence is created with the Sequence Switcher.
+In other words, the sequence ID (A000040 in the example depicted above,
+corresponding to the sequence of prime numbers) is not a parameter, and cannot
+be changed once the sequence is created. To view a sequence in the OEIS,
+open the Sequence Switcher (by clicking on the box where the sequence name
+appears in the Sequence tab). It will show a list of possible sequences, with
+previews of your current visualizer operating on them. Some of them will be
+OEIS sequences. If you see the sequence you want, just click on it.
+
+If not, enter any term related to the sequence (or just the ID of the sequence
+itself if you know it), and a list of matching sequences will come up. Click
+on the description of the sequence you want (clicking on its ID goes to the
+corresponding page in the OEIS), and it will be added to the list of sequences
+to preview, adding a thumbnail to the popup gallery. Now you can click on
+that preview to start visualizing with your desired sequence.
+
+One other note about OEIS sequences: your browser must download the entry
+values from the web. So although much of Numberscope will operate offline
+once you've fully loaded its page, if you want to visualize an OEIS sequence
+you will need an active internet connection.
+
+## Parameters
+**/
 const paramDesc = {
+    /** md
+-   **Modulus:** Since many visualizers work best when the input is in a
+    restricted range, or just because you might be interested in examining
+    a sequence with respect to modulo-m arithmetic for some m, you can specify
+    this "modulus" parameter. If you do, each entry of the OEIS sequence
+    will be divided by this modulus, and only the remainder from that division
+    will be sent to the visualizer as the entry value. If you don't specify
+    the modulus or set it to 0, the OEIS sequence values will be used
+    unchanged.
+    **/
     modulus: {
         default: 0n,
         type: ParamType.BIGINT,
@@ -20,6 +63,15 @@ const paramDesc = {
             'If nonzero, take the residue of each element to this modulus.',
     },
 } satisfies GenericParamDescription
+
+/** md
+
+Plus the standard parameters for all formulas:
+{! Cached.ts extract:
+   start: '^\s*[/]\*\*+\W?xmd\b' # Opening like /** xmd
+   stop: '^\s*(?:/\*\s*)?\*\*[/]\s*$' # closing comment with two *
+!}
+**/
 
 // Type of data we expect concerning an OEIS sequence
 type OEISdata = {

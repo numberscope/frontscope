@@ -4,13 +4,19 @@ nav:
     - Overview: README.md
     - User Guide:
           - Introduction: doc/user_guide.md
-          - ... | src/visualizers-workbench/*
-          - ... | flat | src/visualizers/*
-    - Extending:
+          - Visualizers:
+                - ... | src/visualizers-workbench/*
+                - ... | flat | src/visualizers/*
+          - Sequences:
+                - ... | flat | src/sequences/*
+    - Adding to Numberscope:
           - doc/extending.md
           - doc/running-from-source.md
-          - doc/making-a-visualizer.md
-    - Contributing:
+          - Building a Visualizer:
+                - doc/visualizer-overview.md
+                - doc/visualizer-basics.md
+                - doc/visualizer-in-depth.md
+    - Contributing your changes:
           - CONTRIBUTING.md
           - doc/onboarding.md
           - doc/working-with-pm.md
@@ -22,7 +28,7 @@ nav:
           - doc/pull-request-checklist.md
           - doc/visual-studio-code-setup.md
     - Internal code and APIs:
-          - doc/behind-the-scenes.md
+          - src/visualizers/VisualizerInterface.md
           - doc/working-with-bigints.md
           - ... | flat | src/shared/*
     - Other Information:
@@ -41,27 +47,30 @@ validation:
         unrecognized_links: warn
 theme:
     name: readthedocs
-    custom_dir: doc_theme/
+    custom_dir: doc_theme
     prev_next_buttons_location: both
     sticky_navigation: false
-extra_css: [css/coordinate.css, css/override.css]
+extra_css: [doc/css/coordinate.css, css/override.css]
 extra_javascript:
     - js/scroll_navigation.js
+    - https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js
     - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.min.js
 plugins:
     awesome-pages:
         collapse_single_pages: true
         filename: mkdocs-index.yml
+    d2: {}
     search: {}
     semiliterate:
+        copy: true
         exclude:
             - '.jpg'
-            - '.ttf'
             - '.ico'
             - '.spec.ts'
             - 'LICENSE.md'
-        ignore: [node_modules, dist, coverage, '.venv', '.git', tests]
-        include: ['.png', 'math.ts', '.yml']
+            - '~'
+        ignore: [node_modules, dist, coverage, '.venv', '.git', tests, e2e]
+        include: ['.png', 'math.ts', '.yml', '.svg', '.ttf']
         extract_on_copy: true
         extract_standard_markdown:
             terminate: '<!-- CUT HERE -->'
@@ -70,9 +79,11 @@ plugins:
             - pattern: '\.ts' # Standard in-code markup
               extract:
                   start: '^\s*/\*\*+\W?md\b' # Opening like /** md
-                  stop: '^\s*\*\*/\s*$' # closing **/ by itself on a line
+                  stop: '^\s*(?:/\*\s*)?\*\*/\s*$' # closing **/
             - pattern: '[.](.*).generator$'
               destination: '\1'
 markdown_extensions:
-    - pymdownx.superfences
+    - def_list
+    - markdown_grid_tables
     - mdx_math
+    - pymdownx.superfences
