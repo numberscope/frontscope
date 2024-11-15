@@ -80,8 +80,10 @@ const featuredSIMs = [
 
 // Is there any reason for us to associate dates with featured specimens? Do
 // we want to record when they were added and show that information somehow?
+// Also, we freeze each featured specimen to make sure it is an error if
+// any part of frontscope tries to modify it.
 const theSIMs = featuredSIMs.map(query => {
-    return {query, date: '', canDelete: false}
+    return Object.freeze({query, date: '', canDelete: false})
 })
 
 export function getFeatured() {

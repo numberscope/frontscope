@@ -146,7 +146,12 @@ export function getCurrent(): SIM {
         if ('en64' in data) return newSIMfromOld(data)
     }
 
-    return math.pickRandom(getFeatured())
+    // If there wasn't any current, set up the current to be
+    // a random selection from the featured items. Shallow clone
+    // it for the sake of updateCurrent().
+    const current = {...math.pickRandom(getFeatured())}
+    localStorage.setItem(currentKey, JSON.stringify(current))
+    return current
 }
 
 // Helper type for updateCurrent
