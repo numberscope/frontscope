@@ -14,6 +14,26 @@
                     placeholder="id, keyword, etc..."
                     @input="doSearch($event)">
             </div>
+            <div v-if="results.length" id="oeis-results" class="shadowed">
+                <p
+                    v-for="item in results"
+                    :key="item[0]"
+                    :class="item[0].startsWith('A') ? 'result-desc' : ''"
+                    @click.stop="select(item[0])">
+                    <span class="mono"> {{ item[0] }}&thinsp; </span>
+                    <a
+                        v-if="item[0].startsWith('A')"
+                        :href="`https://oeis.org/${item[0]}`"
+                        class="mono"
+                        target="_blank"
+                        @click.stop>
+                        <div class="info material-icons-sharp external">
+                            launch
+                        </div>
+                    </a>
+                    {{ item[1] }}
+                </p>
+            </div>
             <button class="tooltip-anchor">
                 <span class="help material-icons-sharp">help</span>
                 <div class="desc-tooltip-text help-box shadowed">
@@ -27,28 +47,6 @@
             v-if="results.length"
             id="results-backdrop"
             @click="results = []" />
-        <div v-if="results.length" id="oeis-results" class="shadowed">
-            <p
-                v-for="item in results"
-                :key="item[0]"
-                @click="select(item[0])">
-                <a
-                    v-if="item[0].startsWith('A')"
-                    :href="`https://oeis.org/${item[0]}`"
-                    class="mono"
-                    target="_blank"
-                    @click.stop>
-                    {{ item[0] }}&nbsp;
-                    <div class="info material-icons-sharp external">
-                        launch
-                    </div>
-                </a>
-                <span v-if="!item[0].startsWith('A')" class="mono">
-                    {{ item[0] }}
-                </span>
-                <span class="result-desc">{{ item[1] }}</span>
-            </p>
-        </div>
     </div>
 </template>
 
@@ -164,6 +162,10 @@
             color: var(--ns-color-light);
         }
 
+        .help-box {
+            z-index: 5;
+        }
+
         button {
             font-size: 24px;
             border: none;
@@ -196,6 +198,16 @@
             padding: 4px;
             margin: 0px;
         }
+
+        a {
+            color: var(--ns-color-grey);
+            .info:hover {
+                transform: scale(0.8);
+            }
+        }
+        a:hover {
+            color: var(--ns-color-black);
+        }
     }
 
     #results-backdrop {
@@ -221,7 +233,7 @@
         background-color: color-mix(
             in srgb,
             var(--ns-color-primary),
-            white 50%
+            white 80%
         );
     }
 </style>
