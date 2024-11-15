@@ -1,5 +1,5 @@
 <template>
-    <div class="card-body" @click="openSpecimen">
+    <div :id="`SC-${specimenName}`" class="card-body" @click="openSpecimen">
         <Thumbnail :query />
         <div class="card-title-box">
             <div>
@@ -78,6 +78,13 @@
         flex-direction: column;
         align-items: center;
         cursor: pointer;
+    }
+    .high-card {
+        background-color: var(--ns-color-primary);
+    }
+    .fade-card {
+        background-color: var(--ns-color-white);
+        transition: background-color 2s linear;
     }
     .card-title-box {
         width: 100%;
