@@ -15,7 +15,7 @@
                     @input="doSearch($event)">
             </div>
             <button class="tooltip-anchor">
-                <MageSearchSquare />
+                <span class="help material-icons-sharp">help</span>
                 <div class="desc-tooltip-text help-box shadowed">
                     Type a word, phrase, or sequence ID number. A list of
                     related OEIS sequences will pop up. Click on any item to
@@ -54,7 +54,6 @@
 
 <script setup lang="ts">
     import {OEIS} from '../sequences/OEIS'
-    import MageSearchSquare from './MageSearchSquare.vue'
 
     import axios from 'axios'
     import type {AxiosResponse} from 'axios'
