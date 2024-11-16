@@ -4,7 +4,16 @@
         <div class="card-title-box">
             <div>
                 <h5 class="card-title">
-                    {{ specimenName }}
+                    {{ specimenName
+                    }}<a
+                        v-if="specimenName.match(/A\d{6}\s*$/)"
+                        :href="oeisLinkFor(specimenName)"
+                        target="_blank"
+                        @click.stop>
+                        <div class="info material-icons-sharp external">
+                            launch
+                        </div>
+                    </a>
                 </h5>
                 <p class="card-text">
                     {{ useSub }}
@@ -25,7 +34,11 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import {Specimen} from '../shared/Specimen'
-    import {deleteSpecimen, nameOfQuery} from '../shared/browserCaching'
+    import {
+        deleteSpecimen,
+        nameOfQuery,
+        oeisLinkFor,
+    } from '../shared/browserCaching'
     import Thumbnail from './Thumbnail.vue'
 
     let cid_count = 0
@@ -65,6 +78,7 @@
                 deleteSpecimen(this.specimenName)
                 this.$emit('specimenDeleted', this.specimenName)
             },
+            oeisLinkFor,
         },
     })
 </script>
@@ -101,6 +115,19 @@
         margin-left: 8px;
         margin-bottom: 2px;
         margin-top: 8px;
+
+        a {
+            color: var(--ns-color-grey);
+            .info {
+                transform: scale(0.6);
+            }
+            .info:hover {
+                transform: scale(0.75);
+            }
+        }
+        a:hover {
+            color: var(--ns-color-black);
+        }
     }
     .card-text {
         font-size: 12px;
