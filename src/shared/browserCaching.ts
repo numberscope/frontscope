@@ -39,6 +39,16 @@ function getCurrentDate(): string {
     return new Intl.DateTimeFormat('en-US', options).format(currentDate)
 }
 
+/* Returns a link to the OEIS related to the first OEIS ID that appears in the
+   given string
+*/
+export function oeisLinkFor(words: string) {
+    const id = words.match(/A\d{6}/)
+    let url = 'https://oeis.org'
+    if (id) url += `/${id[0]}`
+    return url
+}
+
 // MEMORY RELATED HELPER FUNCTIONS AND VARIABLES
 
 // Keys of where the SIMs and IDs are saved (are arbitrary)

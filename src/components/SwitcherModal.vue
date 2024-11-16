@@ -62,7 +62,7 @@ click on the trash button on its preview card.
 </template>
 
 <script setup lang="ts">
-    import {ref, onMounted} from 'vue'
+    import {ref, nextTick, onMounted} from 'vue'
     import type {PropType, UnwrapNestedRefs} from 'vue'
 
     import SpecimensGallery from './SpecimensGallery.vue'
@@ -208,19 +208,34 @@ click on the trash button on its preview card.
         return cards
     }
 
+    function scrollToID(id: string) {
+        const myElement = document.getElementById(`SC-OEIS ${id}`)
+        if (myElement) {
+            myElement.scrollIntoView()
+            myElement.classList.add('high-card')
+            setTimeout(() => {
+                myElement.classList.add('fade-card')
+            }, 50)
+        }
+    }
+
     function addModule(id: string) {
         const seqLoad = enableOEIS(id)
         modules.sequence = getSequences()
         const nCards = cards.value.length
         cards.value.splice(0, nCards, ...altered(props.category))
         // Redo once we have the description of the sequence:
-        if (seqLoad)
+        if (seqLoad) {
             seqLoad.then(() => {
                 modules.sequence = getSequences()
                 const newCards = altered(props.category)
                 const nCards = cards.value.length
                 cards.value.splice(0, nCards, ...newCards)
+                nextTick(() => scrollToID(id))
             })
+        } else {
+            nextTick(() => scrollToID(id))
+        }
     }
 
     function deleteModule(name: string) {
