@@ -29,7 +29,18 @@
             @click="openSwitcher">
             <div class="visualizer-info" style="flex-grow: 1">
                 <h1>Current {{ title }}</h1>
-                <div class="item-name">{{ paramable.name }}</div>
+                <div class="item-name">
+                    {{ paramable.name
+                    }}<a
+                        v-if="paramable.name.match(/A\d{6}\s*$/)"
+                        :href="oeisLinkFor(paramable.name)"
+                        target="_blank"
+                        @click.stop>
+                        <div class="info material-icons-sharp external">
+                            launch
+                        </div>
+                    </a>
+                </div>
             </div>
             <div class="change-tooltip tooltip-anchor button">
                 <MageExchangeA id="change-icon" />
@@ -67,6 +78,7 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
+    import {oeisLinkFor} from '@/shared/browserCaching'
     import type {ParamInterface, ParamableInterface} from '@/shared/Paramable'
     import typeFunctions, {ParamType} from '@/shared/ParamType'
     import type {RealizedPropertyType} from '@/shared/ParamType'
@@ -143,6 +155,7 @@
             openSwitcher() {
                 this.$emit('openSwitcher')
             },
+            oeisLinkFor,
         },
     })
 </script>
@@ -163,6 +176,19 @@
         font-size: var(--ns-size-heading);
         padding: 6px 8px 6px 8px;
         width: 100%;
+
+        a {
+            color: var(--ns-color-grey);
+            .info {
+                transform: scale(0.7);
+            }
+            .info:hover {
+                transform: scale(0.85);
+            }
+        }
+        a:hover {
+            color: var(--ns-color-black);
+        }
     }
 
     .change-tooltip {
