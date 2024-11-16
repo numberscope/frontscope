@@ -68,10 +68,7 @@ export default tslint.config(
         },
     },
     {
-        files: [
-            'src/components/MageExchangeA.vue',
-            'src/components/MageSearchSquare.vue',
-        ],
+        files: ['src/components/MageExchangeA.vue'],
         rules: {'max-len': 'off'},
     },
     {
