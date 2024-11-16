@@ -101,18 +101,46 @@ Plus the standard parameters for all formulas:
 !}
 **/
 
+const maxWarns = 3
 class Formula extends Cached(paramDesc) {
     static category = 'Formula'
     name = `${Formula.category}: ${paramDesc.formula.default}`
     static description = 'A sequence defined by a formula in n'
+    nErrors = 0
 
     initialize(): void {
         super.initialize()
         this.name = 'Formula: ' + this.formula.source
+        this.nErrors = 0
     }
 
     calculate(n: bigint) {
-        const result = this.formula.compute(Number(n))
+        let result = 0
+        try {
+            result = this.formula.compute(Number(n))
+        } catch (err: unknown) {
+            this.nErrors++
+            if (this.nErrors < maxWarns) {
+                const message =
+                    err instanceof Error ? err.message : 'of unkown error.'
+                this.statusOf.formula.addWarning(
+                    `value for n=${n} set to ${result} because ${message}`
+                )
+            } else if (this.nErrors === maxWarns) {
+                this.statusOf.formula.addWarning(
+                    `[1 additional warning discarded]`
+                )
+            } else {
+                // replace discarded message
+                const ensure = this.statusOf.formula.warnings.pop()
+                console.assert(ensure && ensure.endsWith('discarded]'))
+                this.statusOf.formula.addWarning(
+                    `[${this.nErrors - maxWarns + 1} additional `
+                        + 'warnings discarded]'
+                )
+            }
+            return BigInt(result)
+        }
         if (result === Infinity) return BigInt(Number.MAX_SAFE_INTEGER)
         else if (result === -Infinity) return BigInt(Number.MIN_SAFE_INTEGER)
         else if (Number.isNaN(result)) return BigInt(0)
