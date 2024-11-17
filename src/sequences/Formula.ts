@@ -2,7 +2,7 @@ import {Cached} from './Cached'
 import {SequenceExportModule} from './SequenceInterface'
 
 import {math, MathFormula} from '@/shared/math'
-import type {GenericParamDescription} from '@/shared/Paramable'
+import type {ParamValues, GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
 /** md
@@ -112,6 +112,11 @@ class Formula extends Cached(paramDesc) {
     initialize(): void {
         super.initialize()
         this.name = formulaMark + this.formula.source
+    }
+
+    assignParameters(realized?: ParamValues<GenericParamDescription>) {
+        this.nErrors = 0
+        return super.assignParameters(realized)
     }
 
     calculate(n: bigint) {
