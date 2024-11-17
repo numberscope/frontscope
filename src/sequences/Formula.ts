@@ -2,7 +2,7 @@ import {Cached} from './Cached'
 import {SequenceExportModule} from './SequenceInterface'
 
 import {math, MathFormula} from '@/shared/math'
-import type {ParamValues, GenericParamDescription} from '@/shared/Paramable'
+import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
 /** md
@@ -102,21 +102,16 @@ Plus the standard parameters for all formulas:
 **/
 
 const maxWarns = 3
+const formulaMark = 'Formula: '
+
 class Formula extends Cached(paramDesc) {
     static category = 'Formula'
     name = `${Formula.category}: ${paramDesc.formula.default}`
     static description = 'A sequence defined by a formula in n'
-    nErrors = 0
 
     initialize(): void {
         super.initialize()
-        this.name = 'Formula: ' + this.formula.source
-        this.nErrors = 0
-    }
-
-    assignParameters(realized?: ParamValues<GenericParamDescription>) {
-        this.nErrors = 0
-        return super.assignParameters(realized)
+        this.name = formulaMark + this.formula.source
     }
 
     calculate(n: bigint) {
@@ -134,8 +129,12 @@ class Formula extends Cached(paramDesc) {
                 )
             }
         } catch (err: unknown) {
-            this.nErrors++
-            if (this.nErrors < maxWarns) {
+            let nWarns = this.statusOf.formula.warnings.reduce(
+                (k, warning) => k + (warning.startsWith(formulaMark) ? 1 : 0),
+                0
+            )
+            nWarns++ // We're about to add one
+            if (nWarns < maxWarns) {
                 let message =
                     err instanceof Error ? err.message : 'of unkown error.'
                 if (resultType && message.includes('convert')) {
@@ -145,19 +144,24 @@ class Formula extends Cached(paramDesc) {
                     )
                 }
                 this.statusOf.formula.addWarning(
-                    `value for n=${n} set to ${result} because ${message}`
+                    `${formulaMark}value for n=${n} set to ${result} `
+                        + `because ${message}`
                 )
-            } else if (this.nErrors === maxWarns) {
+            } else if (nWarns === maxWarns) {
                 this.statusOf.formula.addWarning(
-                    `[1 additional warning discarded]`
+                    `${formulaMark}1 additional warning discarded`
                 )
             } else {
                 // replace discarded message
-                const ensure = this.statusOf.formula.warnings.pop()
-                console.assert(ensure && ensure.endsWith('discarded]'))
+                const ensure = this.statusOf.formula.warnings.pop() || ''
+                console.assert(
+                    ensure
+                        && ensure.startsWith(formulaMark)
+                        && ensure.endsWith('discarded')
+                )
+                nWarns = parseInt(ensure.substr(formulaMark.length)) + 1
                 this.statusOf.formula.addWarning(
-                    `[${this.nErrors - maxWarns + 1} additional `
-                        + 'warnings discarded]'
+                    `${formulaMark}${nWarns} additional warnings discarded`
                 )
             }
             return BigInt(result)
