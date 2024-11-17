@@ -211,17 +211,27 @@ const typeFunctions: {
             }
 
             const inputSymbols = this.inputs || ['n']
-            const othersymbs = parsetree.filter(
-                (node, path) =>
-                    math.isSymbolNode(node)
-                    && path !== 'fn'
-                    && !inputSymbols.includes(node.name)
-            )
+            let unknownFunction = ''
+            const othersymbs = parsetree.filter((node, path) => {
+                if (math.isSymbolNode(node)) {
+                    if (path === 'fn') {
+                        if (!(node.name in math)) {
+                            unknownFunction = node.name
+                        }
+                        return false
+                    }
+                    return !inputSymbols.includes(node.name)
+                }
+                return false
+            })
             if (othersymbs.length > 0) {
                 status.addError(
                     `free variables limited to ${inputSymbols}; `,
                     `please remove '${(othersymbs[0] as SymbolNode).name}'`
                 )
+            }
+            if (unknownFunction) {
+                status.addError(`unknown function '${unknownFunction}'`)
             }
         },
         realize: function (value) {
