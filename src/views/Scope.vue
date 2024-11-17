@@ -434,19 +434,21 @@ visualizers you can select.
         overlap: 0.5,
         // activates when a tab is dragged over a dropzone
         ondragenter: function (event: InteractEvent) {
-            event.target.classList.add('drop-hover')
+            event.target.parentElement?.parentElement?.classList.add(
+                'drop-hover'
+            )
         },
 
         // activates when a tab is dragged out of a dropzone
         ondragleave: function (event: InteractEvent) {
-            event.target.classList.remove('drop-hover')
-
             const dropzone = event.target
             const dropzoneContainer = dropzone.parentElement?.parentElement
+            if (!(dropzoneContainer instanceof HTMLElement)) return
+            dropzoneContainer.classList.remove('drop-hover')
+
             const tab = event.relatedTarget?.parentElement
             if (
                 tab instanceof HTMLElement
-                && dropzoneContainer instanceof HTMLElement
                 && tab.classList.contains('docked')
             ) {
                 // Both individual dropzones and their containers have an
@@ -469,16 +471,31 @@ visualizers you can select.
         // activates when tab is dropped in dropzone
         ondrop: function (event) {
             const tab = event.relatedTarget.parentElement
-            const dropzone = event.target
+            let dropzone = event.target
             const dropzoneContainer = dropzone.parentElement.parentElement
 
             if (
                 tab instanceof HTMLElement
                 && dropzoneContainer instanceof HTMLElement
-                && dropzone.classList.contains('empty')
             ) {
+                if (!dropzone.classList.contains('empty')) {
+                    // Drop into any empty dropzone in same container
+                    const oldDropzone = dropzone
+                    for (const wrapper of dropzoneContainer.children) {
+                        const newDropzone = wrapper.children[0]
+                        if (
+                            newDropzone !== oldDropzone
+                            && newDropzone.classList.contains('empty')
+                        ) {
+                            dropzone = newDropzone
+                            break
+                        }
+                    }
+                    if (dropzone === oldDropzone) return // no empty zone here
+                }
+                // We have found an empty drop zone
                 dropzone.classList.remove('empty')
-                dropzone.classList.remove('drop-hover')
+                dropzoneContainer.classList.remove('drop-hover')
                 dropzoneContainer.classList.remove('empty')
                 tab.classList.add('docked')
                 tab.setAttribute('docked', dropzone.getAttribute('dropzone'))
@@ -689,13 +706,13 @@ visualizers you can select.
 
                 .dropzone {
                     flex-grow: 1;
-
-                    &.drop-hover {
-                        background-color: var(--ns-color-primary);
-                        filter: brightness(120%);
-                    }
                 }
             }
+        }
+
+        .dropzone-container.drop-hover .dropzone {
+            background-color: var(--ns-color-primary);
+            filter: brightness(120%);
         }
 
         .tab {
