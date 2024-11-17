@@ -116,8 +116,10 @@ class Formula extends Cached(paramDesc) {
 
     calculate(n: bigint) {
         let result = 0
+        let resultType = ''
         try {
             const rawResult = this.formula.compute(Number(n))
+            resultType = typeof rawResult
             result = math.floor(rawResult)
             if (isNaN(result)) {
                 result = 0
@@ -129,8 +131,14 @@ class Formula extends Cached(paramDesc) {
         } catch (err: unknown) {
             this.nErrors++
             if (this.nErrors < maxWarns) {
-                const message =
+                let message =
                     err instanceof Error ? err.message : 'of unkown error.'
+                if (resultType && message.includes('convert')) {
+                    message = message.replace(
+                        'convert',
+                        `convert ${resultType} value`
+                    )
+                }
                 this.statusOf.formula.addWarning(
                     `value for n=${n} set to ${result} because ${message}`
                 )
