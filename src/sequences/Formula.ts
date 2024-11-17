@@ -1,7 +1,7 @@
 import {Cached} from './Cached'
 import {SequenceExportModule} from './SequenceInterface'
 
-import {MathFormula} from '@/shared/math'
+import {math, MathFormula} from '@/shared/math'
 import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
@@ -117,7 +117,15 @@ class Formula extends Cached(paramDesc) {
     calculate(n: bigint) {
         let result = 0
         try {
-            result = this.formula.compute(Number(n))
+            const rawResult = this.formula.compute(Number(n))
+            result = math.floor(rawResult)
+            if (isNaN(result)) {
+                result = 0
+                throw new Error(
+                    `result '${rawResult}' of calculation is `
+                        + `not a number.`
+                )
+            }
         } catch (err: unknown) {
             this.nErrors++
             if (this.nErrors < maxWarns) {
@@ -143,8 +151,7 @@ class Formula extends Cached(paramDesc) {
         }
         if (result === Infinity) return BigInt(Number.MAX_SAFE_INTEGER)
         else if (result === -Infinity) return BigInt(Number.MIN_SAFE_INTEGER)
-        else if (Number.isNaN(result)) return BigInt(0)
-        return BigInt(Math.floor(result))
+        return BigInt(result)
     }
 }
 
