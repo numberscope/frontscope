@@ -53,7 +53,7 @@ click on the trash button on its preview card.
                             class="results"
                             :specimens="cards"
                             @remove-specimen="deleteModule"
-                            @selected="emit('close')" />
+                            @selected="madeSelection" />
                     </div>
                 </div>
             </div>
@@ -69,31 +69,20 @@ click on the trash button on its preview card.
     import OEISbar from './OEISbar.vue'
     import type {CardSpecimen} from './SpecimensGallery.vue'
 
-    import {seqMODULES, enableOEIS, disableOEIS} from '@/sequences/sequences'
-    import {getIDs} from '@/shared/browserCaching'
+    import type {OEIS} from '@/sequences/OEIS'
+    import {
+        standardSequences,
+        getSequences,
+        addSequence,
+        deleteSequence,
+    } from '@/shared/browserCaching'
     import {isMobile} from '@/shared/layoutUtilities'
     import {Specimen} from '@/shared/Specimen'
-    import {specimenQuery} from '@/shared/specimenEncoding'
+    import {
+        specimenQuery,
+        parseSpecimenQuery,
+    } from '@/shared/specimenEncoding'
     import vizMODULES from '@/visualizers/visualizers'
-
-    function descriptions(
-        mods: {[key: string]: {description: string}},
-        order?: string[]
-    ) {
-        // The control over the order is needed so that Sequences appear
-        // with the "always-there" ones first, followed by the OEIS ones
-        // in order from most recently added to longest-ago added.
-        const descArray: [string, string][] = []
-        for (const key in mods) {
-            if (order && order.includes(key)) break
-            descArray.push([key, mods[key].description])
-        }
-        if (order)
-            // Add the rest of the keys in order
-            for (const key of order)
-                if (key in mods) descArray.push([key, mods[key].description])
-        return Object.fromEntries(descArray)
-    }
 
     const emit = defineEmits(['close'])
     type Categories = 'sequence' | 'visualizer'
@@ -109,22 +98,57 @@ click on the trash button on its preview card.
         },
     })
 
-    function getSequences() {
-        return descriptions(
-            seqMODULES,
-            getIDs().map(id => `OEIS ${id}`)
-        )
-    }
-    const modules = {
-        sequence: getSequences(),
-        visualizer: descriptions(vizMODULES),
-    }
-    const cards = ref(altered(props.category))
+    const cards = ref([] as CardSpecimen[])
 
     const switcher = ref<HTMLElement | null>(null)
     const galleryWrap = ref<HTMLElement | null>(null)
     const aligner = ref<HTMLElement | null>(null)
-    onMounted(() => {
+
+    async function setupCards(cat: Categories) {
+        if (cat === 'visualizer') {
+            for (const module in vizMODULES) {
+                const query = specimenQuery(
+                    module,
+                    module,
+                    props.specimen.sequenceKey,
+                    '',
+                    props.specimen.sequence.query
+                )
+                cards.value.push({
+                    query,
+                    subtitle: vizMODULES[module].description,
+                })
+            }
+        } else {
+            for (const [seq, seqQuery] of getSequences()) {
+                const sequence = Specimen.makeSequence(seq, seqQuery)
+                const query = specimenQuery(
+                    sequence.name,
+                    props.specimen.visualizerKey,
+                    seq,
+                    props.specimen.visualizer.query,
+                    seqQuery
+                )
+                const subtitle = sequence.description
+                let canDelete = true
+                for (const [sseq, ssQuery] of standardSequences) {
+                    if (seq === sseq && seqQuery === ssQuery) {
+                        canDelete = false
+                        break
+                    }
+                }
+                const seqCard = {query, subtitle, canDelete}
+                if (seq.startsWith('OEIS')) {
+                    await (sequence as OEIS).cacheValues(0n)
+                    seqCard.subtitle = sequence.description
+                }
+                cards.value.push(seqCard)
+            }
+        }
+    }
+
+    onMounted(async () => {
+        await setupCards(props.category)
         // On mobile the switchers just cover the screen, so nothing to do:
         if (isMobile()) return
         // Keep TypeScript happy:
@@ -169,7 +193,7 @@ click on the trash button on its preview card.
 
         const cardHeight = 300 + gapWidth // approximate; they are not fixed
         const cardsHigh = specHeight / cardHeight
-        const nCards = Object.keys(modules[props.category]).length
+        const nCards = cards.value.length
         const needsHeight = Math.ceil(nCards / Math.floor(cardsWide))
         if (needsHeight < cardsHigh) {
             const extra = Math.floor((cardsHigh - needsHeight) * cardHeight)
@@ -186,28 +210,6 @@ click on the trash button on its preview card.
         }
     })
 
-    function altered(cat: Categories): CardSpecimen[] {
-        const cards: CardSpecimen[] = []
-        const options = modules[cat]
-        for (const module in options) {
-            const visKey =
-                cat === 'sequence' ? props.specimen.visualizerKey : module
-            const seqKey =
-                cat === 'sequence' ? module : props.specimen.sequenceKey
-            const visQ =
-                cat === 'sequence' ? props.specimen.visualizer.query : ''
-            const seqQ =
-                cat === 'sequence' ? '' : props.specimen.sequence.query
-            const newCard: CardSpecimen = {
-                query: specimenQuery(module, visKey, seqKey, visQ, seqQ),
-                subtitle: options[module],
-                canDelete: cat === 'sequence' && module.startsWith('OEIS'),
-            }
-            cards.push(newCard)
-        }
-        return cards
-    }
-
     function scrollToID(id: string) {
         const myElement = document.getElementById(`SC-OEIS ${id}`)
         if (myElement) {
@@ -219,28 +221,25 @@ click on the trash button on its preview card.
         }
     }
 
-    function addModule(id: string) {
-        const seqLoad = enableOEIS(id)
-        modules.sequence = getSequences()
-        const nCards = cards.value.length
-        cards.value.splice(0, nCards, ...altered(props.category))
-        // Redo once we have the description of the sequence:
-        if (seqLoad) {
-            seqLoad.then(() => {
-                modules.sequence = getSequences()
-                const newCards = altered(props.category)
-                const nCards = cards.value.length
-                cards.value.splice(0, nCards, ...newCards)
-                nextTick(() => scrollToID(id))
-            })
-        } else {
-            nextTick(() => scrollToID(id))
-        }
+    function madeSelection() {
+        addSequence(props.specimen.sequenceKey, props.specimen.sequence.query)
+        emit('close')
     }
 
-    function deleteModule(name: string) {
-        if (props.category !== 'sequence' || !name.startsWith('OEIS')) return
-        disableOEIS(name)
+    async function addModule(id: string) {
+        addSequence(`OEIS ${id}`, '')
+        const nCards = cards.value.length
+        cards.value.splice(0, nCards)
+        await setupCards(props.category)
+        nextTick(() => scrollToID(id))
+    }
+
+    function deleteModule(index: number) {
+        if (props.category !== 'sequence') return
+        const doomedQuery = cards.value[index].query
+        cards.value.splice(index, 1)
+        const {sequenceKind, sequenceQuery} = parseSpecimenQuery(doomedQuery)
+        deleteSequence(sequenceKind, sequenceQuery)
     }
 </script>
 

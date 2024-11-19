@@ -1,11 +1,12 @@
 import {getFeatured} from './defineFeatured'
 import {math} from './math'
-import {specimenQuery} from './specimenEncoding'
+import {parseSpecimenQuery, specimenQuery} from './specimenEncoding'
 
 /* This file is responsible for all of the state of Numberscope that is kept
    in browser localStorage. Currently that consists of a collection of saved
-   Specimens, and the list of IDs of OEIS sequences that will be shown in
-   the Sequence Switcher.
+   Specimens, and a collection of Sequences that will be shown in the Sequence
+   Switcher in addition to the "standard" sequences; these are called the
+   "canned" sequences in the comments below.
 */
 
 /* A "SIM" (Specimen In Memory) is an object with two string properties:
@@ -22,7 +23,7 @@ import {specimenQuery} from './specimenEncoding'
 export interface SIM {
     query: string
     date: string
-    canDelete: boolean
+    canDelete?: boolean // if not present, defaults to false
 }
 
 function getCurrentDate(): string {
@@ -51,10 +52,10 @@ export function oeisLinkFor(words: string) {
 
 // MEMORY RELATED HELPER FUNCTIONS AND VARIABLES
 
-// Keys of where the SIMs and IDs are saved (are arbitrary)
+// Keys of where the SIMs and s are saved (are arbitrary)
 const cacheKey = 'savedSpecimens'
 const currentKey = 'currentSpecimen'
-const idKey = 'activeIDs'
+const cannedKey = 'cannedSequences'
 
 // For backward compatibility:
 function newSIMfromOld(oldSim: {date: string; en64: string}): SIM {
@@ -202,6 +203,9 @@ export function saveSpecimen(query: string): void {
         savedSIMs.push({query, date, canDelete: true})
     }
     putSIMs(savedSIMs)
+    // We also save the current sequence:
+    const {sequenceKind, sequenceQuery} = parseSpecimenQuery(query)
+    addSequence(sequenceKind, sequenceQuery)
 }
 
 /**
@@ -219,41 +223,75 @@ export function deleteSpecimen(name: string): void {
 }
 
 /**
- * Fetches the array of IDs stored locally.
- * @return {string[]}
+ * Fetches the array of canned sequences stored locally.
+ * Each sequence is stored as a pair of strings [sequenceKey, queryString]
+ * @return {string[][]}
  */
-export function getIDs(): string[] {
-    // Retrieves the saved SIMs from browser cache
-    const savedIDsJson = localStorage.getItem(idKey)
-    // Creates default list in case none is found in browser storage
-    let savedIDs: string[] = ['A000040', 'A000045']
-
-    // Parses the saved IDs if they exist
-    if (savedIDsJson) savedIDs = JSON.parse(savedIDsJson)
-    return savedIDs
+export const standardSequences = [
+    ['Formula', ''],
+    ['Formula', 'formula=%28sqrt%282%29n%29+%25+3'],
+    ['Random', ''],
+]
+const defaultSequences = [
+    ...standardSequences,
+    ['OEIS A000040', ''],
+    ['OEIS A000045', ''],
+]
+export function getSequences(): string[][] {
+    const cannedJson = localStorage.getItem(cannedKey)
+    return cannedJson ? JSON.parse(cannedJson) : defaultSequences
 }
 
 /**
- * Adds another ID to the ones stored locally, if it is not already present.
- * @param {string} id  The id to potentially add
+ * Adds another sequence to the ones stored locally, if it is not already
+ * present. Note that in looking up whether the sequence is already present,
+ * the extent parameters 'first', 'last', and 'length' are ignored; but their
+ * new values overwrite the previously present values if it is.
+ * @param {string} key  The sequence key of the sequence to potentially add
+ * @param {string} query  The query of the sequence to potentially add
  */
-export function addID(id: string): void {
-    const savedIDs = getIDs()
-    if (!savedIDs.includes(id)) {
-        savedIDs.unshift(id)
-        localStorage.setItem(idKey, JSON.stringify(savedIDs))
-    }
+const cannedIgnore = new Set(['first', 'last', 'length'])
+export function addSequence(key: string, query: string): void {
+    const params = new URLSearchParams(query)
+    const canned = getSequences()
+    const present = canned.findIndex(element => {
+        if (element[0] !== key) return false
+        const cannedParams = new URLSearchParams(element[1])
+        for (const [prop, val] of params) {
+            if (cannedIgnore.has(prop)) continue
+            if (!cannedParams.has(prop)) return false
+            if (cannedParams.get(prop) !== val) return false
+        }
+        // OK, cannedParams has all of the properties of params with the
+        // same values. But it might have other properties, so check that:
+        for (const [prop] of cannedParams) {
+            if (cannedIgnore.has(prop)) continue
+            if (!params.has(prop)) return false
+        }
+        // Good enough match!
+        return true
+    })
+    // remove prior version of this sequence if there
+    if (present >= 0) canned.splice(present, 1)
+    // And put this sequence at front
+    canned.unshift([key, query])
+    localStorage.setItem(cannedKey, JSON.stringify(canned))
 }
 
 /**
- * Removes an ID from the ones stored locally, if it is present.
- * @param {string} id  The id to potentially delete
+ * Removes an a sequence from the ones stored locally, if it is present.
+ * @param {string} key  The sequence key to potentially delete
+ * @param {string} query  The query describing the sequence to delete.
  */
-export function deleteID(id: string): void {
-    const savedIDs = getIDs()
-    const index = savedIDs.indexOf(id)
+export function deleteSequence(key: string, query: string): void {
+    const canned = getSequences()
+    // We can use equality here because we will only ever try to remove
+    // exactly the sequence that is already there.
+    const index = canned.findIndex(
+        element => element[0] === key && element[1] === query
+    )
     if (index !== -1) {
-        savedIDs.splice(index, 1)
-        localStorage.setItem(idKey, JSON.stringify(savedIDs))
+        canned.splice(index, 1)
+        localStorage.setItem(cannedKey, JSON.stringify(canned))
     }
 }

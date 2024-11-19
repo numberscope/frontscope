@@ -1,14 +1,14 @@
 <template>
     <div class="gallery">
         <SpecimenCard
-            v-for="specimen in currentSpecs()"
+            v-for="specimen in specimens"
             :key="specimen.subtitle + specimen.query"
             :query="specimen.query"
             :subtitle="specimen.subtitle"
             :last-edited="specimen.lastEdited"
-            :permanent="'canDelete' in specimen && !specimen.canDelete"
+            :permanent="!specimen?.canDelete"
             @selected="emit('selected')"
-            @specimen-deleted="removeSpecimen" />
+            @specimen-deleted="removeSpecimen(specimen)" />
     </div>
 </template>
 
@@ -16,14 +16,12 @@
     // Note the :key above needs to include the subtitle so that
     // when the subtitle loads, the card will be replaced.
     import SpecimenCard from './SpecimenCard.vue'
-    import {nameOfQuery} from '../shared/browserCaching'
-    import {ref} from 'vue'
 
     export interface CardSpecimen {
         query: string
         subtitle?: string
         lastEdited?: string
-        canDelete: boolean
+        canDelete?: boolean // if not present defaults to false
     }
 
     const props = defineProps<{
@@ -32,20 +30,9 @@
 
     const emit = defineEmits(['removeSpecimen', 'selected'])
 
-    const currentSpecimens = ref(props.specimens)
-
-    function currentSpecs() {
-        if (currentSpecimens.value.length) return currentSpecimens.value
-        currentSpecimens.value = props.specimens
-        return currentSpecimens.value
-    }
-
-    function removeSpecimen(name: string) {
-        const index = currentSpecimens.value.findIndex(
-            spec => name === nameOfQuery(spec.query)
-        )
-        if (index > -1) currentSpecimens.value.splice(index, 1)
-        emit('removeSpecimen', name)
+    function removeSpecimen(spec: CardSpecimen) {
+        const index = props.specimens.indexOf(spec)
+        emit('removeSpecimen', index)
     }
 </script>
 

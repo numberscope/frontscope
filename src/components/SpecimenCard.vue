@@ -34,11 +34,7 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import {Specimen} from '../shared/Specimen'
-    import {
-        deleteSpecimen,
-        nameOfQuery,
-        oeisLinkFor,
-    } from '../shared/browserCaching'
+    import {nameOfQuery, oeisLinkFor} from '../shared/browserCaching'
     import Thumbnail from './Thumbnail.vue'
 
     let cid_count = 0
@@ -75,8 +71,7 @@
                 this.$emit('selected')
             },
             deleteSpecimen() {
-                deleteSpecimen(this.specimenName)
-                this.$emit('specimenDeleted', this.specimenName)
+                this.$emit('specimenDeleted')
             },
             oeisLinkFor,
         },

@@ -27,8 +27,7 @@
         <SpecimensGallery
             v-if="showFeatured"
             id="featured-gallery"
-            :specimens="featured"
-            :can-delete="false" />
+            :specimens="featured" />
 
         <div type="button" class="visualizer-bar">
             <h2>Saved Specimens</h2>
@@ -42,14 +41,19 @@
         <SpecimensGallery
             v-if="showSaved"
             id="saved-gallery"
-            :specimens="saved" />
+            :specimens="saved"
+            @remove-specimen="deleteSaved" />
     </div>
 </template>
 
 <script setup lang="ts">
     import SpecimensGallery from '../components/SpecimensGallery.vue'
     import {ref, onMounted, computed} from 'vue'
-    import {getSIMs} from '../shared/browserCaching'
+    import {
+        deleteSpecimen,
+        getSIMs,
+        nameOfQuery,
+    } from '../shared/browserCaching'
     import {getFeatured} from '../shared/defineFeatured'
     import type {SIM} from '../shared/browserCaching'
     import {Specimen} from '@/shared/Specimen'
@@ -82,6 +86,12 @@
 
     function loadSaved() {
         saved.value = getSIMs()
+    }
+
+    function deleteSaved(index: number) {
+        const doomedSpec = saved.value[index]
+        saved.value.splice(index, 1)
+        deleteSpecimen(nameOfQuery(doomedSpec.query))
     }
 
     onMounted(() => {
