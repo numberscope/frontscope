@@ -79,12 +79,7 @@ visualizers you can select.
             <ParamEditor
                 title="sequence"
                 :paramable="specimen.sequence"
-                @open-switcher="
-                    () => {
-                        pauseVisualizer()
-                        changeSequenceOpen = true
-                    }
-                "
+                @open-switcher="openSwitcher('sequence')"
                 @changed="
                     async () => {
                         await specimen.updateSequence()
@@ -103,12 +98,7 @@ visualizers you can select.
             <ParamEditor
                 title="visualizer"
                 :paramable="specimen.visualizer"
-                @open-switcher="
-                    () => {
-                        pauseVisualizer()
-                        changeVisualizerOpen = true
-                    }
-                "
+                @open-switcher="openSwitcher('visualizer')"
                 @changed="
                     () => {
                         continueVisualizer()
@@ -441,6 +431,16 @@ visualizers you can select.
         specimen.visualizer.continue()
     }
 
+    function openSwitcher(category: string) {
+        pauseVisualizer()
+        addSequence(specimen.sequenceKey, specimen.sequence.query)
+        if (category === 'sequence') {
+            changeSequenceOpen.value = true
+        } else {
+            changeVisualizerOpen.value = true
+        }
+    }
+
     let canvasContainer: HTMLElement = document.documentElement
     type IntervalID = ReturnType<typeof setInterval>
     let resizePoll: IntervalID
@@ -474,10 +474,7 @@ visualizers you can select.
 
     onUnmounted(() => {
         // Save the current sequence for future use
-        const {sequenceKind, sequenceQuery} = parseSpecimenQuery(
-            specimen.query
-        )
-        addSequence(sequenceKind, sequenceQuery)
+        addSequence(specimen.sequenceKey, specimen.sequence.query)
         // Now clean up
         clearInterval(resizePoll)
         specimen.visualizer.depart(canvasContainer)

@@ -112,7 +112,9 @@ export class OEIS extends Cached(paramDesc) {
 
     get description() {
         // Unusual: override the per-instance description
-        return this.oeisName
+        let desc = this.oeisName
+        if (this.modulus > 0n) desc += ` (mod ${this.modulus})`
+        return desc
     }
 
     /* We maintain a global cache for all OEIS sequences. These are grabbed

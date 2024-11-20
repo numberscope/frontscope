@@ -75,7 +75,7 @@ test.describe('Scope: on some featured visualization', () => {
     test('Changing a sequence', async ({page}) => {
         const lookFor = 'Formula: n'
         await page.locator('#sequenceTab .visualizer-info').click()
-        await page.getByText(lookFor).click()
+        await page.getByText(lookFor, {exact: true}).click()
         await expect(
             await page.locator('#sequenceTab .item-name').innerText()
         ).toMatch(lookFor)

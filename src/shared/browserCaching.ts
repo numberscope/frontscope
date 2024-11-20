@@ -242,19 +242,15 @@ export function getSequences(): string[][] {
     return cannedJson ? JSON.parse(cannedJson) : defaultSequences
 }
 
-/**
- * Adds another sequence to the ones stored locally, if it is not already
- * present. Note that in looking up whether the sequence is already present,
- * the extent parameters 'first', 'last', and 'length' are ignored; but their
- * new values overwrite the previously present values if it is.
- * @param {string} key  The sequence key of the sequence to potentially add
- * @param {string} query  The query of the sequence to potentially add
- */
+/** Utility to find a sequence in a list of sequences **/
 const cannedIgnore = new Set(['first', 'last', 'length'])
-export function addSequence(key: string, query: string): void {
+function findMatchingSequence(
+    canned: string[][],
+    key: string,
+    query: string
+): number {
     const params = new URLSearchParams(query)
-    const canned = getSequences()
-    const present = canned.findIndex(element => {
+    return canned.findIndex(element => {
         if (element[0] !== key) return false
         const cannedParams = new URLSearchParams(element[1])
         for (const [prop, val] of params) {
@@ -271,10 +267,30 @@ export function addSequence(key: string, query: string): void {
         // Good enough match!
         return true
     })
+}
+
+/**
+ * Adds another sequence to the ones stored locally, if it is not already
+ * present. Note that in looking up whether the sequence is already present,
+ * the extent parameters 'first', 'last', and 'length' are ignored; but their
+ * new values overwrite the previously present values if it is.
+ * @param {string} key  The sequence key of the sequence to potentially add
+ * @param {string} query  The query of the sequence to potentially add
+ */
+
+export function addSequence(key: string, query: string): void {
+    const canned = getSequences()
+    const present = findMatchingSequence(canned, key, query)
     // remove prior version of this sequence if there
     if (present >= 0) canned.splice(present, 1)
     // And put this sequence at front
     canned.unshift([key, query])
+    // Finally, make sure all standard sequences are there
+    for (const [skey, squery] of standardSequences) {
+        if (findMatchingSequence(canned, skey, squery) < 0) {
+            canned.push([skey, squery])
+        }
+    }
     localStorage.setItem(cannedKey, JSON.stringify(canned))
 }
 

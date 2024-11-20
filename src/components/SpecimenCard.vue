@@ -33,9 +33,16 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
-    import {Specimen} from '../shared/Specimen'
-    import {nameOfQuery, oeisLinkFor} from '../shared/browserCaching'
+
     import Thumbnail from './Thumbnail.vue'
+
+    import {
+        addSequence,
+        nameOfQuery,
+        oeisLinkFor,
+    } from '@/shared/browserCaching'
+    import {Specimen} from '@/shared/Specimen'
+    import {parseSpecimenQuery} from '@/shared/specimenEncoding'
 
     let cid_count = 0
 
@@ -67,6 +74,10 @@
         },
         methods: {
             openSpecimen() {
+                const {sequenceKind, sequenceQuery} = parseSpecimenQuery(
+                    this.query
+                )
+                addSequence(sequenceKind, sequenceQuery)
                 this.$router.push(`/?${this.query}`)
                 this.$emit('selected')
             },

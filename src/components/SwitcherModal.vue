@@ -222,7 +222,6 @@ click on the trash button on its preview card.
     }
 
     function madeSelection() {
-        addSequence(props.specimen.sequenceKey, props.specimen.sequence.query)
         emit('close')
     }
 
