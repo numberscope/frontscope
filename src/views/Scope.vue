@@ -179,7 +179,10 @@ visualizers you can select.
 
     /**
      * Positions a tab to be inside a dropzone
-     * Resizes the tab to be the same size as the dropzone
+     * If the other dropzone in its container is empty, resizes the zone
+     * to be the same size as the tab; otherwise, resizes the tab to be the
+     * same size as the dropzone.
+     *
      * @param tab The HTML container that the draggable tab lives in
      * @param dropzone The dropzone the tab is docked to
      */
@@ -189,9 +192,38 @@ visualizers you can select.
     ): void {
         if (isMobile()) return
 
-        const dropzoneContainer = dropzone.parentElement?.parentElement
-        const dropzoneRect = dropzone.getBoundingClientRect()
+        const dropzoneWrapper = dropzone.parentElement
+        if (!(dropzoneWrapper instanceof HTMLElement)) return
+        const dropzoneContainer = dropzoneWrapper.parentElement
+        if (!(dropzoneContainer instanceof HTMLElement)) return
+        const containerRect = dropzoneContainer.getBoundingClientRect()
+        const tabRect = tab.getBoundingClientRect()
 
+        let resizeDropzone = !!dropzoneContainer.querySelector('.empty')
+        let toHeight = 0
+        if (resizeDropzone) {
+            // Find the resizable dropzone wrapper
+            const resizeHandle =
+                dropzoneContainer.querySelector('.dropzone-resize')
+            if (!(resizeHandle instanceof HTMLElement)) return
+            const resizableWrapper = resizeHandle.parentElement
+            if (!(resizableWrapper instanceof HTMLElement)) return
+            if (resizableWrapper.classList.contains('resized')) {
+                resizeDropzone = false
+            } else {
+                if (resizableWrapper === dropzoneWrapper) {
+                    toHeight = tabRect.height + 16
+                } else {
+                    toHeight = containerRect.height - tabRect.height
+                }
+                resizableWrapper.style.height = toHeight + 'px'
+                resizableWrapper.classList.add('resized')
+            }
+        }
+        const dropzoneRect = dropzone.getBoundingClientRect()
+        if (!resizeDropzone) tab.style.height = dropzoneRect.height + 'px'
+
+        // Now that everything is the correct size, reposition the tab:
         const {x, y} = translateCoords(dropzoneRect.x, dropzoneRect.y)
 
         tab.style.top = y + 'px'
@@ -203,11 +235,10 @@ visualizers you can select.
             tab.style.removeProperty('right')
             tab.style.left = x + 'px'
         }
-        tab.style.height = dropzoneRect.height + 'px'
 
         // update the classlist with "minimized"
         // if the height is less or equal than 110
-        if (dropzoneRect.height <= 110) {
+        if (parseInt(getComputedStyle(tab).height) <= 110) {
             tab.classList.add('minimized')
         } else {
             tab.classList.remove('minimized')
@@ -216,12 +247,7 @@ visualizers you can select.
         tab.setAttribute('data-x', x.toString())
         tab.setAttribute('data-y', y.toString())
 
-        if (
-            tab instanceof HTMLElement
-            && dropzoneContainer instanceof HTMLElement
-            && dropzone instanceof HTMLElement
-            && dropzone.classList.contains('empty')
-        ) {
+        if (dropzone.classList.contains('empty')) {
             dropzone.classList.remove('empty')
             dropzone.classList.remove('drop-hover')
             dropzoneContainer.classList.remove('empty')
@@ -259,11 +285,25 @@ visualizers you can select.
     }
 
     /**
+     * Resets the state of a dropzone container if it empties out
+     */
+    export function maybeClearDropzoneContainer(container: Element) {
+        if (container.querySelectorAll('.empty').length == 2) {
+            container.classList.add('empty')
+            const resizableWrapper = container.firstChild
+            if (!(resizableWrapper instanceof HTMLElement)) return
+            resizableWrapper.classList.remove('resized')
+            resizableWrapper.style.removeProperty('height')
+        }
+    }
+
+    /**
      * Places every docked tab back in its position and size.
      * Doesn't affect non-docked tabs.
      * Used when the window is resized.
      */
     export function positionAndSizeAllTabs(): void {
+        // First reset the "empty" classes and recompute them, just in case:
         document
             .querySelectorAll('.dropzone')
             .forEach((dropzone: Element) => {
@@ -279,19 +319,25 @@ visualizers you can select.
             )
             if (!(dropzone instanceof HTMLElement)) return
             dropzone.classList.remove('empty')
-            positionAndSizeTab(tab, dropzone)
         })
 
         document
             .querySelectorAll('.dropzone-container')
-            .forEach((container: Element) => {
-                if (container.querySelectorAll('.empty').length == 2) {
-                    container.classList.add('empty')
-                } else {
-                    container.classList.remove('empty')
-                }
-            })
+            .forEach(dc => maybeClearDropzoneContainer(dc))
+
+        // Now actually position and resize all of the tabs
+        document.querySelectorAll('.tab').forEach((tab: Element) => {
+            if (!(tab instanceof HTMLElement)) return
+            if (tab.getAttribute('docked') === 'none') return
+
+            const dropzone = document.querySelector(
+                '#' + tab.getAttribute('docked') + '-dropzone'
+            )
+            if (!(dropzone instanceof HTMLElement)) return
+            positionAndSizeTab(tab, dropzone)
+        })
     }
+
     // selects a tab
     export function selectTab(tab: HTMLElement): void {
         deselectTab()
@@ -302,6 +348,7 @@ visualizers you can select.
         drag.style.backgroundColor = 'var(--ns-color-primary)'
         tab.style.zIndex = '100'
     }
+
     // deselects all tabs
     export function deselectTab(): void {
         const tabs = document.querySelectorAll('.tab')
@@ -459,12 +506,7 @@ visualizers you can select.
                 dropzone.classList.add('empty')
                 tab.classList.remove('docked')
                 tab.setAttribute('docked', 'none')
-
-                if (
-                    dropzoneContainer.querySelectorAll('.empty').length == 2
-                ) {
-                    dropzoneContainer.classList.add('empty')
-                }
+                maybeClearDropzoneContainer(dropzoneContainer)
             }
         },
 
@@ -478,7 +520,14 @@ visualizers you can select.
                 tab instanceof HTMLElement
                 && dropzoneContainer instanceof HTMLElement
             ) {
-                if (!dropzone.classList.contains('empty')) {
+                let occupied = !dropzone.classList.contains('empty')
+                if (
+                    tab.classList.contains('docked')
+                    && tab.getAttribute('docked')
+                        === dropzone.getAttribute('dropzone')
+                )
+                    occupied = false // ok to just go back into zone you're in
+                if (occupied) {
                     // Drop into any empty dropzone in same container
                     const oldDropzone = dropzone
                     for (const wrapper of dropzoneContainer.children) {
@@ -528,9 +577,7 @@ visualizers you can select.
 
             move(event: InteractEvent) {
                 const dropzoneWrapper = event.target
-                const dropzoneCont =
-                    dropzoneWrapper.parentElement?.parentElement
-
+                const dropzoneCont = dropzoneWrapper.parentElement
                 if (
                     dropzoneWrapper instanceof HTMLElement
                     && dropzoneCont instanceof HTMLElement

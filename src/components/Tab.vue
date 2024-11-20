@@ -25,6 +25,7 @@
     import interact from 'interactjs'
     import type {InteractEvent} from '@interactjs/types'
     import {
+        maybeClearDropzoneContainer,
         positionAndSizeTab,
         positionAndSizeAllTabs,
         selectTab,
@@ -258,8 +259,7 @@
             )
             const dropzoneContainer = dropzone?.parentElement?.parentElement
             if (
-                tab instanceof HTMLElement
-                && dropzone instanceof HTMLElement
+                dropzone instanceof HTMLElement
                 && dropzoneContainer instanceof HTMLElement
                 && tab.classList.contains('docked')
             ) {
@@ -267,13 +267,7 @@
                 dropzone.classList.add('empty')
                 tab.classList.remove('docked')
                 tab.setAttribute('docked', 'none')
-                // if both dropzones are empty,
-                // make the dropzone container empty aswell
-                if (
-                    dropzoneContainer.querySelectorAll('.empty').length == 2
-                ) {
-                    dropzoneContainer.classList.add('empty')
-                }
+                maybeClearDropzoneContainer(dropzoneContainer)
             }
             return
         }
