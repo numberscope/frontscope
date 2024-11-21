@@ -26,7 +26,7 @@
         </div>
         <SpecimensGallery
             v-if="showFeatured"
-            id="featured-gallery"
+            gallery-i-d="featured-gallery"
             :specimens="featured" />
 
         <div type="button" class="visualizer-bar">
@@ -40,27 +40,31 @@
         </div>
         <SpecimensGallery
             v-if="showSaved"
-            id="saved-gallery"
+            gallery-i-d="saved-gallery"
             :specimens="saved"
             @remove-specimen="deleteSaved" />
     </div>
 </template>
 
 <script setup lang="ts">
-    import SpecimensGallery from '../components/SpecimensGallery.vue'
     import {ref, onMounted, computed} from 'vue'
+
+    import SpecimensGallery from '@/components/SpecimensGallery.vue'
+    import type {CardSpecimen} from '@/components/SpecimensGallery.vue'
+    import NavBar from '@/views/minor/NavBar.vue'
+
     import {
         deleteSpecimen,
         getSIMs,
         nameOfQuery,
-    } from '../shared/browserCaching'
-    import {getFeatured} from '../shared/defineFeatured'
-    import type {SIM} from '../shared/browserCaching'
+    } from '@/shared/browserCaching'
+    import type {SIM} from '@/shared/browserCaching'
+    import {getFeatured} from '@/shared/defineFeatured'
     import {Specimen} from '@/shared/Specimen'
-    import NavBar from '../views/minor/NavBar.vue'
+    import {parseSpecimenQuery} from '@/shared/specimenEncoding'
 
-    const saved = ref<SIM[]>([])
-    const featured = ref<SIM[]>([])
+    const saved = ref<CardSpecimen[]>([])
+    const featured = ref<CardSpecimen[]>([])
     const dummy = new Specimen('OEIS A000040', 'Turtle')
 
     const showFeatured = ref(true)
@@ -80,12 +84,25 @@
         showSaved.value = !showSaved.value
     }
 
+    function fillTitles(simList: SIM[]): CardSpecimen[] {
+        return simList.map(sim => {
+            const {visualizerKind} = parseSpecimenQuery(sim.query)
+            return {
+                title: nameOfQuery(sim.query),
+                subtitle:
+                    `${visualizerKind} on `
+                    + Specimen.getSequenceNameFromQuery(sim.query),
+                ...sim,
+            }
+        })
+    }
+
     function loadFeatured() {
-        featured.value = getFeatured()
+        featured.value = fillTitles(getFeatured())
     }
 
     function loadSaved() {
-        saved.value = getSIMs()
+        saved.value = fillTitles(getSIMs())
     }
 
     function deleteSaved(index: number) {

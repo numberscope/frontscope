@@ -56,6 +56,7 @@
         /* Colors */
         --ns-color-primary: #809fff;
         --ns-color-white: #ffffff;
+        --ns-color-pale: #e5e5e5;
         --ns-color-light: #b5b5b5;
         --ns-color-grey: #636363;
         --ns-color-black: #2f2f2f;

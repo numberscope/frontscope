@@ -16,7 +16,7 @@
                     </a>
                 </h5>
                 <p class="card-text">
-                    {{ useSub }}
+                    {{ subtitle }}
                 </p>
             </div>
             <div
@@ -41,7 +41,6 @@
         nameOfQuery,
         oeisLinkFor,
     } from '@/shared/browserCaching'
-    import {Specimen} from '@/shared/Specimen'
     import {parseSpecimenQuery} from '@/shared/specimenEncoding'
 
     let cid_count = 0
@@ -65,12 +64,10 @@
         },
         emits: ['specimenDeleted', 'selected'],
         data() {
-            return {specimenName: '', useSub: ''}
+            return {specimenName: ''}
         },
         mounted() {
             this.specimenName = nameOfQuery(this.query)
-            if (this.subtitle) this.useSub = this.subtitle
-            else this.useSub = Specimen.getSequenceNameFromQuery(this.query)
         },
         methods: {
             openSpecimen() {

@@ -48,9 +48,8 @@ click on the trash button on its preview card.
                             v-if="category === 'sequence'"
                             @add-sequence="addModule" />
                     </div>
-                    <div ref="galleryWrap" class="results">
+                    <div id="gallery-wrap" ref="galleryWrap">
                         <SpecimensGallery
-                            class="results"
                             :specimens="cards"
                             @remove-specimen="deleteModule"
                             @selected="madeSelection" />
@@ -116,6 +115,7 @@ click on the trash button on its preview card.
                 )
                 cards.value.push({
                     query,
+                    title: module,
                     subtitle: vizMODULES[module].description,
                 })
             }
@@ -137,7 +137,12 @@ click on the trash button on its preview card.
                         break
                     }
                 }
-                const seqCard = {query, subtitle, canDelete}
+                const seqCard = {
+                    query,
+                    title: sequence.name,
+                    subtitle,
+                    canDelete,
+                }
                 if (seq.startsWith('OEIS')) {
                     await (sequence as OEIS).cacheValues(0n)
                     seqCard.subtitle = sequence.description
@@ -167,24 +172,30 @@ click on the trash button on its preview card.
         // can't be made that tall, ensure that it's _not_ roughly a
         // whole number of cards tall so that it's clear that it will be
         // necessary to scroll.
-        const specGallery = galleryWrap.value.firstChild
-        if (!specGallery) return
+        const specWrap = galleryWrap.value.children.item(1)
+        if (!specWrap) return
 
+        switcher.value.style.removeProperty('height')
+        switcher.value.style.removeProperty('width')
         const switchSty = window.getComputedStyle(switcher.value)
         const switchWidth = parseInt(switchSty.getPropertyValue('width'))
         const switchHeight = parseInt(switchSty.getPropertyValue('height'))
 
-        const specSty = window.getComputedStyle(specGallery as HTMLElement)
-        const specWidth = parseInt(specSty.getPropertyValue('width'))
-        const specHeight = parseInt(specSty.getPropertyValue('height'))
+        const wrapSty = window.getComputedStyle(specWrap as HTMLElement)
+        const wrapWidth = parseInt(wrapSty.getPropertyValue('width'))
+        const wrapHeight = parseInt(wrapSty.getPropertyValue('height'))
 
+        const specGallery = specWrap.firstChild
+        if (!specGallery) return
+        const specSty = window.getComputedStyle(specGallery as HTMLElement)
         const gapWidth = parseInt(specSty.getPropertyValue('gap'))
         const cardWidth = parseInt(
             specSty.getPropertyValue('--ns-specimen-card-width')
         )
 
-        const cardsWide = specWidth / (gapWidth + cardWidth)
+        const cardsWide = wrapWidth / (gapWidth + cardWidth)
         const fracCards = cardsWide - Math.floor(cardsWide)
+
         if (fracCards > 0.1) {
             // Pare it down to a nearest integer number of cards
             const extra = Math.floor(fracCards * (gapWidth + cardWidth))
@@ -192,7 +203,7 @@ click on the trash button on its preview card.
         }
 
         const cardHeight = 300 + gapWidth // approximate; they are not fixed
-        const cardsHigh = specHeight / cardHeight
+        const cardsHigh = wrapHeight / cardHeight
         const nCards = cards.value.length
         const needsHeight = Math.ceil(nCards / Math.floor(cardsWide))
         if (needsHeight < cardsHigh) {
@@ -304,13 +315,8 @@ click on the trash button on its preview card.
         }
     }
 
-    .results {
-        display: flex;
-        height: min-content;
-        flex-wrap: wrap;
-        overflow: auto;
-        flex: 1;
-        gap: 16px;
+    #gallery-wrap {
+        height: calc(100% - 40px);
     }
 
     @media (min-width: $tablet-breakpoint) {
