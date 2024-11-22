@@ -1,12 +1,13 @@
 <template>
     <div v-if="specimens.length === 0"><em>{No specimens found}</em></div>
     <div v-if="specimens.length" id="toggle-display">
-        Display as
-        <span :class="asList ? '' : 'chosen'" @click="asList = false">thumbnails
+        Display as:
+        <span :class="asList ? 'unchosen' : 'chosen'" @click="asList = false">
+            thumbnails
         </span>
         <BasicToggleSwitch v-model="asList" class="tswitch" />
-        <span :class="asList ? 'chosen' : ''" @click="asList = true">
-            table</span>
+        <span :class="asList ? 'chosen' : 'unchosen'" @click="asList = true">
+            list</span>
     </div>
     <div v-if="specimens.length" id="spec-wrap">
         <div v-if="!asList" :id="galleryID" class="gallery">
@@ -64,13 +65,20 @@
     // Note the :key above needs to include the subtitle so that
     // when the subtitle loads, the card will be replaced.
 
-    import {ref} from 'vue'
+    import {ref, watch} from 'vue'
     import {useRouter} from 'vue-router'
 
     import BasicToggleSwitch from './BasicToggleSwitch.vue'
     import SpecimenCard from './SpecimenCard.vue'
 
-    import {addSequence, oeisLinkFor} from '@/shared/browserCaching'
+    import {
+        LIST,
+        THUMBNAILS,
+        addSequence,
+        getPreferredGallery,
+        oeisLinkFor,
+        setPreferredGallery,
+    } from '@/shared/browserCaching'
     import {parseSpecimenQuery} from '@/shared/specimenEncoding'
 
     export interface CardSpecimen {
@@ -86,7 +94,8 @@
         galleryID?: string
     }>()
 
-    const asList = ref(false)
+    const asList = ref(getPreferredGallery() === LIST)
+    watch(asList, newPref => setPreferredGallery(newPref ? LIST : THUMBNAILS))
 
     const emit = defineEmits(['removeSpecimen', 'selected'])
     const router = useRouter()
@@ -109,7 +118,6 @@
         height: 32px;
         padding-left: 2em;
     }
-
     .tswitch {
         display: inline-block;
         position: relative;
@@ -117,16 +125,21 @@
         padding-left: 4px;
         padding-right: 4px;
     }
-
     .chosen {
-        color: var(--ns-color-primary);
+        font-weight: var(--ns-font-weight-medium);
+        color: var(--ns-color-grey);
     }
-
+    .unchosen {
+        color: var(--ns-color-grey);
+        cursor: pointer;
+    }
+    .unchosen:hover {
+        color: var(--ns-color-black);
+    }
     #spec-wrap {
         overflow: auto;
         height: calc(100% - 32px);
     }
-
     .gallery {
         display: flex;
         flex-wrap: wrap;

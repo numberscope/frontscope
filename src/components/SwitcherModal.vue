@@ -186,12 +186,17 @@ click on the trash button on its preview card.
         const wrapHeight = parseInt(wrapSty.getPropertyValue('height'))
 
         const specGallery = specWrap.firstChild
-        if (!specGallery) return
-        const specSty = window.getComputedStyle(specGallery as HTMLElement)
-        const gapWidth = parseInt(specSty.getPropertyValue('gap'))
-        const cardWidth = parseInt(
-            specSty.getPropertyValue('--ns-specimen-card-width')
-        )
+        let gapWidth = 30
+        let cardWidth = 216
+        if (specGallery instanceof HTMLElement) {
+            // Look the above values up so it's less critical we keep
+            // them in sync
+            const specSty = window.getComputedStyle(specGallery)
+            gapWidth = parseInt(specSty.getPropertyValue('gap'))
+            cardWidth = parseInt(
+                specSty.getPropertyValue('--ns-specimen-card-width')
+            )
+        }
 
         const cardsWide = wrapWidth / (gapWidth + cardWidth)
         const fracCards = cardsWide - Math.floor(cardsWide)

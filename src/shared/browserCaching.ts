@@ -3,10 +3,14 @@ import {math} from './math'
 import {parseSpecimenQuery, specimenQuery} from './specimenEncoding'
 
 /* This file is responsible for all of the state of Numberscope that is kept
-   in browser localStorage. Currently that consists of a collection of saved
-   Specimens, and a collection of Sequences that will be shown in the Sequence
-   Switcher in addition to the "standard" sequences; these are called the
-   "canned" sequences in the comments below.
+   in browser localStorage. Currently that state consists of
+
+   1. A list of saved Specimens,
+   2. A list ("history", since it is kept in most-recently-used order
+      except for the undeletable "standard" sequences at the front) of
+      Sequences that will be shown in the Sequence Switcher.
+   3. The "preferred" (most recently used) style of displaying a Gallery
+      of specimens: as THUMBNAILS or LIST.
 */
 
 /* A "SIM" (Specimen In Memory) is an object with two string properties:
@@ -55,7 +59,8 @@ export function oeisLinkFor(words: string) {
 // Keys of where the SIMs and s are saved (are arbitrary)
 const cacheKey = 'savedSpecimens'
 const currentKey = 'currentSpecimen'
-const cannedKey = 'cannedSequences'
+const cannedKey = 'sequenceHistory'
+const galleryKey = 'preferredGallery'
 
 // For backward compatibility:
 function newSIMfromOld(oldSim: {date: string; en64: string}): SIM {
@@ -229,11 +234,11 @@ export function deleteSpecimen(name: string): void {
  */
 export const standardSequences = [
     ['Formula', ''],
-    ['Formula', 'formula=%28sqrt%282%29n%29+%25+3'],
     ['Random', ''],
 ]
 const defaultSequences = [
     ...standardSequences,
+    ['Formula', 'formula=%28sqrt%282%29n%29+%25+3'],
     ['OEIS A000040', ''],
     ['OEIS A000045', ''],
 ]
@@ -281,16 +286,11 @@ function findMatchingSequence(
 export function addSequence(key: string, query: string): void {
     const canned = getSequences()
     const present = findMatchingSequence(canned, key, query)
-    // remove prior version of this sequence if there
-    if (present >= 0) canned.splice(present, 1)
-    // And put this sequence at front
-    canned.unshift([key, query])
-    // Finally, make sure all standard sequences are there
-    for (const [skey, squery] of standardSequences) {
-        if (findMatchingSequence(canned, skey, squery) < 0) {
-            canned.push([skey, squery])
-        }
-    }
+    // remove prior version of this sequence if there and is not standard
+    if (present >= standardSequences.length) canned.splice(present, 1)
+    // And put this sequence just after standard ones
+    canned.splice(standardSequences.length, 0, [key, query])
+
     localStorage.setItem(cannedKey, JSON.stringify(canned))
 }
 
@@ -310,4 +310,22 @@ export function deleteSequence(key: string, query: string): void {
         canned.splice(index, 1)
         localStorage.setItem(cannedKey, JSON.stringify(canned))
     }
+}
+
+/**
+ * Constants to use for getting/saving display state
+ */
+
+export const THUMBNAILS = false
+export const LIST = true
+export type GalleryPreference = typeof THUMBNAILS | typeof LIST
+
+export function getPreferredGallery() {
+    const pref = localStorage.getItem(galleryKey)
+    return pref ? LIST : THUMBNAILS
+}
+
+export function setPreferredGallery(pref: GalleryPreference) {
+    if (pref === THUMBNAILS) localStorage.setItem(galleryKey, '')
+    else localStorage.setItem(galleryKey, 'true')
 }
