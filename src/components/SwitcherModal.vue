@@ -208,12 +208,32 @@ click on the trash button on its preview card.
             switcher.value.style.width = `${switchWidth - extra}px`
         }
 
-        const cardHeight = 300 + gapWidth // approximate; they are not fixed
-        const cardsHigh = wrapHeight / cardHeight
+        console.log(
+            'HEIGHTA',
+            switcher,
+            switchHeight,
+            specWrap,
+            wrapHeight,
+            gapWidth
+        )
+        let maxCardHeight = 300
+        const galleryDiv = specWrap.firstChild
+        if (!(galleryDiv instanceof HTMLElement)) return
+        for (const card of galleryDiv.children) {
+            const cardSty = window.getComputedStyle(card as HTMLElement)
+            const cardHeight = parseInt(cardSty.getPropertyValue('height'))
+            if (cardHeight > maxCardHeight) maxCardHeight = cardHeight
+        }
+        maxCardHeight += gapWidth
+        const cardsHigh = wrapHeight / maxCardHeight
         const nCards = cards.value.length
-        const needsHeight = Math.ceil(nCards / Math.floor(cardsWide))
+        const needsHeight = Math.ceil(nCards / Math.floor(cardsWide)) + 0.05
+        console.log('HEIGHTB', maxCardHeight, cardsHigh, needsHeight)
         if (needsHeight < cardsHigh) {
-            const extra = Math.floor((cardsHigh - needsHeight) * cardHeight)
+            const extra = Math.floor(
+                (cardsHigh - needsHeight) * maxCardHeight
+            )
+            console.log('HEIGHTC', extra)
             switcher.value.style.height = `${switchHeight - extra}px`
             return
         }
@@ -222,7 +242,7 @@ click on the trash button on its preview card.
         if (fracHigh < 0.2 || fracHigh > 0.8) {
             // too near an integer
             const goalHeight = Math.round(cardsHigh) - 0.5
-            const extra = Math.floor((cardsHigh - goalHeight) * cardHeight)
+            const extra = Math.floor((cardsHigh - goalHeight) * maxCardHeight)
             switcher.value.style.height = `${switchHeight - extra}px`
         }
     })
