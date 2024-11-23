@@ -10,13 +10,24 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
 /** md
 # Mod Fill Visualizer
 
-[image should go here]
+[<img src="../../assets/img/ModFill/PrimeResidues.png" width="320"
+style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/ModFill/PrimeResidues.png)
+[<img src="../../assets/img/ModFill/DanceNo73.png" width="320"
+style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/ModFill/DanceNo73.png)
+[<img src="../../assets/img/ModFill/OEISA070826.png" width="320"
+style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/ModFill/OEISA070826.png)
 
-The _n_-th row of this triangular diagram has _n_ cells which are turned on
-or off according to whether the corresponding residue modulo _n_ occurs for
-some entry of the sequence. The entries are considered in order, filling the
-corresponding cells in turn, so you can get an idea of when various residues
-occur by watching the order the cells are filled in as the diagram is drawn.
+The _m_-th column of this triangular diagram (reading left to right)
+has _m_ cells (lowest is 0, highest is m-1), which are colored 
+each time the corresponding residue modulo _m_ occurs for
+some entry of the sequence. The sequence terms a(n) are considered in 
+order, filling the corresponding cells in turn, so you can get an
+idea of when various residues occur by watching the order 
+the cells are filled in as the diagram is drawn.  There are options 
+to control color and transparency of the fill.
 
 ## Parameters
 **/
@@ -37,7 +48,8 @@ modulus to consider.
         },
     },
     /** md
-- Alpha: The rate at which cells darken with repeated hits
+- Alpha: The rate at which cells darken with repeated hits.  This
+should be set between 1 (very transparent) and 255 (solid).
      **/
     alpha: {
         default: 10,
@@ -54,7 +66,7 @@ modulus to consider.
         },
     },
     /** md
-- Fill color: The color used to draw
+- Fill color: The color used to fill each cell by default.
      **/
     fillColor: {
         default: '#000000',
@@ -64,12 +76,14 @@ modulus to consider.
         visibleValue: true,
     },
     /** md
-- highlightFormula: A formula whose output, modulo 2, determines whether
-to apply the highlight color (residue 0) or fill color (residue 1)
+- highlightFormula: A formula computed on the index, i.e. on n for term a(n)
+whose output determines whether
+to apply the highlight color (odd integer or true boolean) 
+or fill color (even integer or false boolean).  Default: 
 **/
     highlightFormula: {
         default: new MathFormula(
-            // Note: he markdown comment closed with */ means to include code
+            // Note: the markdown comment closed with */ means to include code
             // into the docs, until mkdocs reaches a comment ending with **/
             /** md */
             `isPrime(n)`
@@ -86,7 +100,7 @@ to apply the highlight color (residue 0) or fill color (residue 1)
         required: false,
     },
     /** md
-- Highlight color: The color used to highlight indices
+- Highlight color: The color used for highlighting.
      **/
     highColor: {
         default: '#c98787',
