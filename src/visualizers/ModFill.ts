@@ -21,12 +21,12 @@ style="margin-left: 1em; margin-right: 0.5em"
 />](../assets/img/ModFill/OEISA070826.png)
 
 The _m_-th column of this triangular diagram (reading left to right)
-has _m_ cells (lowest is 0, highest is m-1), which are colored 
+has _m_ cells (lowest is 0, highest is m-1), which are colored
 each time the corresponding residue modulo _m_ occurs for
-some entry of the sequence. The sequence terms a(n) are considered in 
+some entry of the sequence. The sequence terms a(n) are considered in
 order, filling the corresponding cells in turn, so you can get an
-idea of when various residues occur by watching the order 
-the cells are filled in as the diagram is drawn.  There are options 
+idea of when various residues occur by watching the order
+the cells are filled in as the diagram is drawn.  There are options
 to control color and transparency of the fill.
 
 ## Parameters
@@ -78,8 +78,8 @@ should be set between 1 (very transparent) and 255 (solid).
     /** md
 - highlightFormula: A formula computed on the index, i.e. on n for term a(n)
 whose output determines whether
-to apply the highlight color (odd integer or true boolean) 
-or fill color (even integer or false boolean).  Default: 
+to apply the highlight color (odd integer or true boolean)
+or fill color (even integer or false boolean).  Default:
 **/
     highlightFormula: {
         default: new MathFormula(
