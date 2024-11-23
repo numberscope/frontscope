@@ -130,7 +130,14 @@ click on the trash button on its preview card.
                     props.specimen.visualizer.query,
                     seqQuery
                 )
-                const subtitle = sequence.description
+                let title = sequence.htmlName
+                // Special case for permanent Formula card:
+                if (seq === 'Formula' && seqQuery === '') title = seq
+                let subtitle = sequence.description
+                if (seq.startsWith('OEIS')) {
+                    await (sequence as OEIS).cacheValues(0n)
+                    subtitle = sequence.description
+                }
                 let canDelete = true
                 for (const [sseq, ssQuery] of standardSequences) {
                     if (seq === sseq && seqQuery === ssQuery) {
@@ -138,16 +145,7 @@ click on the trash button on its preview card.
                         break
                     }
                 }
-                const seqCard = {
-                    query,
-                    title: sequence.htmlName,
-                    subtitle,
-                    canDelete,
-                }
-                if (seq.startsWith('OEIS')) {
-                    await (sequence as OEIS).cacheValues(0n)
-                    seqCard.subtitle = sequence.description
-                }
+                const seqCard = {query, title, subtitle, canDelete}
                 cards.value.push(seqCard)
             }
         }
