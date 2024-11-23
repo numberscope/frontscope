@@ -293,7 +293,7 @@ export class MathFormula {
         this.source = fmla
         this.canonical = parsetree.toString({parenthesis: 'auto'})
         this.latex = 'a_n = ' + parsetree.toTex({parenthesis: 'auto'})
-        this.mathml = temml.renderToString(this.latex)
+        this.mathml = temml.renderToString(this.latex, {wrap: 'tex'})
         this.evaluator = parsetree.compile()
     }
 

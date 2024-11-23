@@ -39,6 +39,12 @@
         margin: 0;
         padding: 0;
     }
+    math {
+        display: inline-flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        row-gap: 6px;
+    }
     :root {
         /* Font sizes */
         --ns-size-body: 12px;
