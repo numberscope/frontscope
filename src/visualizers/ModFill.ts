@@ -1,4 +1,4 @@
-import {P5Visualizer} from './P5Visualizer'
+import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
 
@@ -28,29 +28,73 @@ modulus to consider.
      **/
     // note will be small enough to fit in a `number` when we need it to.
     modDimension: {
-        default: 10n,
+        default: 150n,
         type: ParamType.BIGINT,
-        displayName: 'Mod dimension',
+        displayName: 'Highest modulus',
         required: true,
         validate: function (n: number, status: ValidationStatus) {
             if (n <= 0) status.addError('Must be positive.')
         },
+    },
+    /** md
+- Alpha: The rate at which cells darken with repeated hits
+     **/
+    alpha: {
+        default: 10,
+        type: ParamType.NUMBER,
+        displayName: 'Alpha',
+        description:
+            'Transparency of each hit'
+            + '(1 = very transparent; 255 = solid)',
+        required: true,
+        visibleValue: true,
+        validate: function (n: number, status: ValidationStatus) {
+            if (n <= 0 || n > 255)
+                status.addError('Must be between 1 and 255.')
+        },
+    },
+    /** md
+- Fill color: The color used to draw
+     **/
+    fillColor: {
+        default: '#000000',
+        type: ParamType.COLOR,
+        displayName: 'Fill color',
+        required: true,
+        visibleValue: true,
+    },
+
+    /** md
+- Highlight color: The color used to highlight indices
+     **/
+    highColor: {
+        default: '#c98787',
+        type: ParamType.COLOR,
+        displayName: 'Highlight color',
+        required: true,
+        visibleValue: true,
     },
 } satisfies GenericParamDescription
 
 class ModFill extends P5Visualizer(paramDesc) {
     static category = 'Mod Fill'
     static description =
-        'A triangular grid showing which residues occur, to each modulus'
+        'A triangular grid showing which residues occur, for each modulus'
 
     maxModulus = 0
     rectWidth = 0
     rectHeight = 0
     useMod = 0
+    useFillColor = INVALID_COLOR
+    useHighColor = INVALID_COLOR
     i = 0n
 
     drawNew(num: bigint) {
-        this.sketch.fill(0)
+        if (Number(math.modulo(num, 2)) === 0) {
+            this.sketch.fill(this.useHighColor)
+        } else {
+            this.sketch.fill(this.useFillColor)
+        }
         for (let mod = 1; mod <= this.useMod; mod++) {
             const s = this.seq.getElement(num)
             const x = (mod - 1) * this.rectWidth
@@ -98,6 +142,12 @@ class ModFill extends P5Visualizer(paramDesc) {
         this.rectHeight = this.sketch.height / this.useMod
         this.sketch.noStroke()
         this.i = this.seq.first
+
+        // set fill color info
+        this.useFillColor = this.sketch.color(this.fillColor)
+        this.useHighColor = this.sketch.color(this.highColor)
+        this.useFillColor.setAlpha(this.alpha)
+        this.useHighColor.setAlpha(this.alpha)
     }
 
     draw() {
