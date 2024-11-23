@@ -80,7 +80,7 @@ to apply the highlight color (residue 0) or fill color (residue 1)
         displayName: 'Highlight Formula',
         description:
             "A function in 'n' (index); when output is odd "
-            + '(number) or true (boolean), draws residue of'
+            + '(number) or true (boolean), draws residue of '
             + 'a(n) in the highlight color.',
         visibleValue: true,
         required: false,
