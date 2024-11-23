@@ -1,26 +1,15 @@
 <template>
-    <div :id="`SC-${specimenName}`" class="card-body" @click="openSpecimen">
-        <Thumbnail :query />
+    <div :id="`SC-${spec.title}`" class="card-body" @click="openSpecimen">
+        <Thumbnail :query="spec.query" />
         <div class="card-title-box">
             <div>
                 <h5 class="card-title">
-                    {{ specimenName
-                    }}<a
-                        v-if="specimenName.match(/A\d{6}\s*$/)"
-                        :href="oeisLinkFor(specimenName)"
-                        target="_blank"
-                        @click.stop>
-                        <div class="info material-icons-sharp external">
-                            launch
-                        </div>
-                    </a>
+                    <SpecimenTitle :spec />
                 </h5>
-                <p class="card-text">
-                    {{ subtitle }}
-                </p>
+                <p v-safe-html="spec.subtitle" class="card-text" />
             </div>
             <div
-                v-if="!permanent"
+                v-if="spec.canDelete"
                 style="padding-right: 15px"
                 @click.stop="deleteSpecimen">
                 <span class="delete-button material-icons-sharp">
@@ -33,28 +22,32 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
+    import type {PropType} from 'vue'
 
+    import SpecimenTitle from './SpecimenTitle.vue'
     import Thumbnail from './Thumbnail.vue'
 
-    import {
-        addSequence,
-        nameOfQuery,
-        oeisLinkFor,
-    } from '@/shared/browserCaching'
+    import {addSequence} from '@/shared/browserCaching'
     import {parseSpecimenQuery} from '@/shared/specimenEncoding'
+
+    export interface CardSpecimen {
+        query: string
+        title?: string // defaults to the name encoded in the query
+        subtitle: string
+        lastEdited?: string
+        canDelete?: boolean // if not present defaults to false
+    }
 
     let cid_count = 0
 
     export default defineComponent({
         name: 'SpecimenCard',
         components: {
+            SpecimenTitle,
             Thumbnail,
         },
         props: {
-            query: {type: String, required: true},
-            lastEdited: {type: String, default: ''},
-            subtitle: {type: String, default: ''},
-            permanent: {type: Boolean},
+            spec: {type: Object as PropType<CardSpecimen>, required: true},
             cid: {
                 type: String,
                 default: function () {
@@ -63,25 +56,18 @@
             },
         },
         emits: ['specimenDeleted', 'selected'],
-        data() {
-            return {specimenName: ''}
-        },
-        mounted() {
-            this.specimenName = nameOfQuery(this.query)
-        },
         methods: {
             openSpecimen() {
                 const {sequenceKind, sequenceQuery} = parseSpecimenQuery(
-                    this.query
+                    this.spec.query
                 )
                 addSequence(sequenceKind, sequenceQuery)
-                this.$router.push(`/?${this.query}`)
+                this.$router.push(`/?${this.spec.query}`)
                 this.$emit('selected')
             },
             deleteSpecimen() {
                 this.$emit('specimenDeleted')
             },
-            oeisLinkFor,
         },
     })
 </script>

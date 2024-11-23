@@ -51,6 +51,7 @@ click on the trash button on its preview card.
                     <div id="gallery-wrap" ref="galleryWrap">
                         <SpecimensGallery
                             :specimens="cards"
+                            :name-label="category"
                             @remove-specimen="deleteModule"
                             @selected="madeSelection" />
                     </div>
@@ -66,7 +67,7 @@ click on the trash button on its preview card.
 
     import SpecimensGallery from './SpecimensGallery.vue'
     import OEISbar from './OEISbar.vue'
-    import type {CardSpecimen} from './SpecimensGallery.vue'
+    import type {CardSpecimen} from './SpecimenCard.vue'
 
     import type {OEIS} from '@/sequences/OEIS'
     import {
@@ -139,7 +140,7 @@ click on the trash button on its preview card.
                 }
                 const seqCard = {
                     query,
-                    title: sequence.name,
+                    title: sequence.htmlName,
                     subtitle,
                     canDelete,
                 }

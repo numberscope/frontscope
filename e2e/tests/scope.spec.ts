@@ -73,7 +73,7 @@ test.describe('Scope: on some featured visualization', () => {
     })
 
     test('Changing a sequence', async ({page}) => {
-        const lookFor = 'Formula: n'
+        const lookFor = 'Random integers 0 to 9'
         await page.locator('#sequenceTab .visualizer-info').click()
         await page.getByText(lookFor, {exact: true}).click()
         await expect(

@@ -49,8 +49,8 @@
 <script setup lang="ts">
     import {ref, onMounted, computed} from 'vue'
 
+    import type {CardSpecimen} from '@/components/SpecimenCard.vue'
     import SpecimensGallery from '@/components/SpecimensGallery.vue'
-    import type {CardSpecimen} from '@/components/SpecimensGallery.vue'
     import NavBar from '@/views/minor/NavBar.vue'
 
     import {
@@ -91,7 +91,7 @@
                 title: nameOfQuery(sim.query),
                 subtitle:
                     `${visualizerKind} on `
-                    + Specimen.getSequenceNameFromQuery(sim.query),
+                    + Specimen.getSequenceNameFromQuery(sim.query, 'html'),
                 ...sim,
             }
         })

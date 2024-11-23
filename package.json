@@ -89,10 +89,12 @@
         "axios": "^1.6.8",
         "bigint-isqrt": "^0.3.2",
         "bigint-mod-arith": "^3.3.1",
+        "dompurify": "^3.2.1",
         "interactjs": "^1.10.27",
         "p5": "^1.11.0",
-        "vue": "^3.4.31",
-        "vue-router": "^4.4.0"
+        "temml": "^0.10.30",
+        "vue": "^3.5.13",
+        "vue-router": "^4.4.5"
     },
     "devDependencies": {
         "@eslint/js": "^9.10.0",

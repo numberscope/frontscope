@@ -288,9 +288,10 @@ export function addSequence(key: string, query: string): void {
     const present = findMatchingSequence(canned, key, query)
     // remove prior version of this sequence if there and is not standard
     if (present >= standardSequences.length) canned.splice(present, 1)
-    // And put this sequence just after standard ones
-    canned.splice(standardSequences.length, 0, [key, query])
-
+    // And put this sequence just after standard ones if it is not standard
+    if (present < 0 || present >= standardSequences.length) {
+        canned.splice(standardSequences.length, 0, [key, query])
+    }
     localStorage.setItem(cannedKey, JSON.stringify(canned))
 }
 

@@ -14,17 +14,14 @@
             <SpecimenCard
                 v-for="specimen in specimens"
                 :key="specimen.subtitle + specimen.query"
-                :query="specimen.query"
-                :subtitle="specimen.subtitle"
-                :last-edited="specimen.lastEdited"
-                :permanent="!specimen?.canDelete"
+                :spec="specimen"
                 @selected="emit('selected')"
                 @specimen-deleted="removeSpecimen(specimen)" />
         </div>
         <table v-if="asList">
             <thead>
                 <tr>
-                    <th>Name</th>
+                    <th>{{ nameLabel }}</th>
                     <td>Description</td>
                     <td />
                 </tr>
@@ -34,19 +31,8 @@
                     v-for="specimen in specimens"
                     :key="specimen.subtitle + specimen.query"
                     @click="selectSpecimen(specimen)">
-                    <th>
-                        <span class="wrappable">{{ specimen.title }}</span>
-                        <a
-                            v-if="specimen.title.match(/A\d{6}\s*$/)"
-                            :href="oeisLinkFor(specimen.title)"
-                            target="_blank"
-                            @click.stop>
-                            <span class="info material-icons-sharp external">
-                                launch
-                            </span>
-                        </a>
-                    </th>
-                    <td>{{ specimen.subtitle }}</td>
+                    <th><SpecimenTitle :spec="specimen" /></th>
+                    <td v-safe-html="specimen.subtitle" />
                     <td v-if="specimen.canDelete">
                         <span
                             class="delete-button material-icons-sharp"
@@ -70,29 +56,29 @@
 
     import BasicToggleSwitch from './BasicToggleSwitch.vue'
     import SpecimenCard from './SpecimenCard.vue'
+    import SpecimenTitle from './SpecimenTitle.vue'
+    import type {CardSpecimen} from './SpecimenCard.vue'
 
     import {
         LIST,
         THUMBNAILS,
         addSequence,
         getPreferredGallery,
-        oeisLinkFor,
         setPreferredGallery,
     } from '@/shared/browserCaching'
     import {parseSpecimenQuery} from '@/shared/specimenEncoding'
 
-    export interface CardSpecimen {
-        query: string
-        title: string
-        subtitle: string
-        lastEdited?: string
-        canDelete?: boolean // if not present defaults to false
-    }
-
-    const props = defineProps<{
-        specimens: CardSpecimen[]
-        galleryID?: string
-    }>()
+    const props = withDefaults(
+        defineProps<{
+            specimens: CardSpecimen[]
+            galleryID?: string
+            nameLabel?: string
+        }>(),
+        {
+            galleryID: '',
+            nameLabel: 'Name',
+        }
+    )
 
     const asList = ref(getPreferredGallery() === LIST)
     watch(asList, newPref => setPreferredGallery(newPref ? LIST : THUMBNAILS))
@@ -165,21 +151,9 @@
         padding-right: 1em;
         font-weight: var(--ns-font-weight-medium);
         white-space: nowrap;
-        a {
-            color: var(--ns-color-grey);
-            .info {
-                transform: scale(0.6);
-            }
-            .info:hover {
-                transform: scale(0.75);
-            }
-        }
-        a:hover {
-            color: var(--ns-color-black);
-        }
-        .wrappable {
-            white-space: normal;
-        }
+    }
+    th::first-letter {
+        text-transform: capitalize;
     }
     td:last-child {
         background-color: var(--ns-color-white);
