@@ -2,7 +2,7 @@ import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
 
-import {math} from '@/shared/math'
+import {math, MathFormula} from '@/shared/math'
 import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
@@ -42,10 +42,10 @@ modulus to consider.
     alpha: {
         default: 10,
         type: ParamType.NUMBER,
-        displayName: 'Alpha',
+        displayName: 'Transparency',
         description:
             'Transparency of each hit'
-            + '(1 = very transparent; 255 = solid)',
+            + ' (1 = very transparent; 255 = solid)',
         required: true,
         visibleValue: true,
         validate: function (n: number, status: ValidationStatus) {
@@ -63,7 +63,28 @@ modulus to consider.
         required: true,
         visibleValue: true,
     },
-
+    /** md
+- highlightFormula: A formula whose output, modulo 2, determines whether
+to apply the highlight color (residue 0) or fill color (residue 1)
+**/
+    highlightFormula: {
+        default: new MathFormula(
+            // Note: he markdown comment closed with */ means to include code
+            // into the docs, until mkdocs reaches a comment ending with **/
+            /** md */
+            `isPrime(n)`
+            /* **/
+        ),
+        type: ParamType.FORMULA,
+        inputs: ['n'],
+        displayName: 'Highlight Formula',
+        description:
+            "A function in 'n' (index); when output is odd "
+            + '(number) or true (boolean), draws residue of'
+            + 'a(n) in the highlight color.',
+        visibleValue: true,
+        required: false,
+    },
     /** md
 - Highlight color: The color used to highlight indices
      **/
@@ -90,7 +111,11 @@ class ModFill extends P5Visualizer(paramDesc) {
     i = 0n
 
     drawNew(num: bigint) {
-        if (Number(math.modulo(num, 2)) === 0) {
+        if (
+            Number(
+                math.modulo(this.highlightFormula.compute(Number(num)), 2)
+            ) === 1
+        ) {
             this.sketch.fill(this.useHighColor)
         } else {
             this.sketch.fill(this.useFillColor)
