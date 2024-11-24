@@ -135,9 +135,17 @@ click on the trash button on its preview card.
                 // Special cases for the permanent Formula card:
                 if (seqQuery === '') title = seq
                 let subtitle = sequence.description
+                let id = ''
                 if (seq.startsWith('OEIS')) {
-                    await (sequence as OEIS).cacheValues(0n)
+                    const oeisSeq = sequence as OEIS
+                    await oeisSeq.cacheValues(0n)
                     subtitle = sequence.description
+                    const oeisMatch = seq.match(/A\d{6}/)
+                    if (oeisMatch) {
+                        let oeisID = oeisMatch[0]
+                        if (oeisSeq.modulus) oeisID += oeisSeq.modulus
+                        id = `OSC-${oeisID}`
+                    }
                 }
                 let canDelete = true
                 for (const [sseq, ssQuery] of standardSequences) {
@@ -146,7 +154,13 @@ click on the trash button on its preview card.
                         break
                     }
                 }
-                const seqCard = {query, title, subtitle, canDelete}
+                const seqCard: CardSpecimen = {
+                    query,
+                    title,
+                    subtitle,
+                    canDelete,
+                }
+                if (id) seqCard.id = id
                 cards.value.push(seqCard)
             }
         }
@@ -207,14 +221,6 @@ click on the trash button on its preview card.
             switcher.value.style.width = `${switchWidth - extra}px`
         }
 
-        console.log(
-            'HEIGHTA',
-            switcher,
-            switchHeight,
-            specWrap,
-            wrapHeight,
-            gapWidth
-        )
         let maxCardHeight = 300
         const galleryDiv = specWrap.firstChild
         if (!(galleryDiv instanceof HTMLElement)) return
@@ -227,12 +233,10 @@ click on the trash button on its preview card.
         const cardsHigh = wrapHeight / maxCardHeight
         const nCards = cards.value.length
         const needsHeight = Math.ceil(nCards / Math.floor(cardsWide)) + 0.05
-        console.log('HEIGHTB', maxCardHeight, cardsHigh, needsHeight)
         if (needsHeight < cardsHigh) {
             const extra = Math.floor(
                 (cardsHigh - needsHeight) * maxCardHeight
             )
-            console.log('HEIGHTC', extra)
             switcher.value.style.height = `${switchHeight - extra}px`
             return
         }
@@ -247,7 +251,7 @@ click on the trash button on its preview card.
     })
 
     function scrollToID(id: string) {
-        const myElement = document.getElementById(`SC-OEIS ${id}`)
+        const myElement = document.getElementById(`OSC-${id}`)
         if (myElement) {
             myElement.scrollIntoView()
             myElement.classList.add('high-card')
