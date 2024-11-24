@@ -9,7 +9,7 @@ import {parseSpecimenQuery, specimenQuery} from './specimenEncoding'
    2. A list ("history", since it is kept in most-recently-used order
       except for the undeletable "standard" sequences at the front) of
       Sequences that will be shown in the Sequence Switcher.
-   3. The "preferred" (most recently used) style of displaying a Gallery
+   3. The "preferred" (most recently used) style of displaying each Gallery
       of specimens: as THUMBNAILS or LIST.
 */
 
@@ -60,7 +60,7 @@ export function oeisLinkFor(words: string) {
 const cacheKey = 'savedSpecimens'
 const currentKey = 'currentSpecimen'
 const cannedKey = 'sequenceHistory'
-const galleryKey = 'preferredGallery'
+const galleryKey = 'preferredGalleries'
 
 // For backward compatibility:
 function newSIMfromOld(oldSim: {date: string; en64: string}): SIM {
@@ -321,12 +321,29 @@ export const THUMBNAILS = false
 export const LIST = true
 export type GalleryPreference = typeof THUMBNAILS | typeof LIST
 
-export function getPreferredGallery() {
-    const pref = localStorage.getItem(galleryKey)
-    return pref ? LIST : THUMBNAILS
+function getGalleryPrefs() {
+    const prefsJson = localStorage.getItem(galleryKey)
+    return prefsJson ? JSON.parse(prefsJson) : {}
+}
+/**
+ * Retrieves the preferred method of display for the Gallery named _gallery_.
+ * @param {string} gallery  name of Gallery to fetch the preference for
+ * @returns {GalleryPreference}  preferred format, THUMBNAILS or LIST
+ */
+export function getPreferredGallery(gallery: string) {
+    return getGalleryPrefs()[gallery] ? LIST : THUMBNAILS
 }
 
-export function setPreferredGallery(pref: GalleryPreference) {
-    if (pref === THUMBNAILS) localStorage.setItem(galleryKey, '')
-    else localStorage.setItem(galleryKey, 'true')
+/**
+ * Sets the preferred method of display for the Gallery named _gallery_.
+ * @param {string} gallery  name of Gallery to set the preference for
+ * @param {GalleryPreference} pref  new preferred display format
+ */
+export function setPreferredGallery(
+    gallery: string,
+    pref: GalleryPreference
+) {
+    const prefs = getGalleryPrefs()
+    prefs[gallery] = pref
+    localStorage.setItem(galleryKey, JSON.stringify(prefs))
 }

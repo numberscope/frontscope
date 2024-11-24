@@ -71,17 +71,18 @@
     const props = withDefaults(
         defineProps<{
             specimens: CardSpecimen[]
-            galleryID?: string
+            galleryID: string
             nameLabel?: string
         }>(),
         {
-            galleryID: '',
             nameLabel: 'Name',
         }
     )
 
-    const asList = ref(getPreferredGallery() === LIST)
-    watch(asList, newPref => setPreferredGallery(newPref ? LIST : THUMBNAILS))
+    const asList = ref(getPreferredGallery(props.galleryID) === LIST)
+    watch(asList, newPref =>
+        setPreferredGallery(props.galleryID, newPref ? LIST : THUMBNAILS)
+    )
 
     const emit = defineEmits(['removeSpecimen', 'selected'])
     const router = useRouter()
