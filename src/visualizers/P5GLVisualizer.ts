@@ -1,5 +1,4 @@
 import p5 from 'p5'
-import * as brush from 'p5.brush'
 import {markRaw} from 'vue'
 
 import {P5Visualizer} from './P5Visualizer'
@@ -29,15 +28,6 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
             this.name = this.category
         }
 
-        // Just like P5Visualizer, but also initialize the brush interface
-        _initializeSketch(): (sketch: p5) => void {
-            const superInit = super._initializeSketch()
-            return sketch => {
-                superInit(sketch)
-                brush.instance(sketch)
-            }
-        }
-
         // Just like P5Visualizer, but use WebGL renderer, load the brush,
         // and create a camera.
         // However we override rather than extend so there is only one call
@@ -53,7 +43,6 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
                 )
             this.camera = markRaw(this.sketch.createCamera())
             this.initialCameraZ = this.camera.eyeZ
-            brush.load()
         }
 
         // returns the coordinates and scaling of an absolute viewport position

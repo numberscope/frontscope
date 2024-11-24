@@ -81,6 +81,7 @@ import isqrt from 'bigint-isqrt'
 import {modPow} from 'bigint-mod-arith'
 import {create, all} from 'mathjs'
 import type {MathJsInstance, EvalFunction, SymbolNode} from 'mathjs'
+import temml from 'temml'
 export type {MathNode, SymbolNode} from 'mathjs'
 
 type Integer = number | bigint
@@ -274,22 +275,28 @@ export class MathFormula {
     evaluator: EvalFunction
     inputs: string[]
     source: string
+    canonical: string
+    latex: string
+    mathml: string
     constructor(fmla: string, inputs?: string[]) {
-        this.source = fmla
+        const parsetree = math.parse(fmla)
         if (inputs) {
             this.inputs = inputs
-            this.evaluator = math.compile(fmla)
         } else {
             // inputs default to all free variables
-            const parsetree = math.parse(fmla)
             this.inputs = parsetree
                 .filter(
                     (node, path) => math.isSymbolNode(node) && path !== 'fn'
                 )
                 .map(node => (node as SymbolNode).name)
-            this.evaluator = parsetree.compile()
         }
+        this.source = fmla
+        this.canonical = parsetree.toString({parenthesis: 'auto'})
+        this.latex = 'a_n = ' + parsetree.toTex({parenthesis: 'auto'})
+        this.mathml = temml.renderToString(this.latex, {wrap: 'tex'})
+        this.evaluator = parsetree.compile()
     }
+
     compute(a: number | Record<string, number>, ...rst: number[]) {
         if (typeof a === 'object' && this.inputs.every(i => i in a)) {
             return this.evaluator.evaluate(a)

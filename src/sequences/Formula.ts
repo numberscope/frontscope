@@ -105,13 +105,17 @@ const maxWarns = 3
 const formulaMark = 'Formula: '
 
 class Formula extends Cached(paramDesc) {
-    static category = 'Formula'
-    name = `${Formula.category}: ${paramDesc.formula.default}`
+    static category = formulaMark.substr(0, 7)
+    name = `${formulaMark}${paramDesc.formula.default.canonical}`
     static description = 'A sequence defined by a formula in n'
 
     initialize(): void {
         super.initialize()
-        this.name = formulaMark + this.formula.source
+        this.name = `${formulaMark}${this.formula.canonical}`
+    }
+
+    get htmlName() {
+        return this.formula.mathml
     }
 
     calculate(n: bigint) {

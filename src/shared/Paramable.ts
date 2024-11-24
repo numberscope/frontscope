@@ -367,6 +367,13 @@ export interface ParamableInterface {
     not required to be unique among all paramable objects.
 <!-- --> **/
     /** xmd */
+    readonly htmlName: string /* **/
+    /** xmd
+:   Per-instance html code that should be used where possible in
+    the user interface to display the name of the sequence. If you
+    don't define this, the default implementation will simply reuse the name.
+<!-- --> **/
+    /** xmd */
     readonly description: string /* **/
     /** xmd
 :   A description of the "category" of paramable objects to which this
@@ -497,6 +504,7 @@ export interface ParamableInterface {
     (typically you may want to call `validate()` immediately after
     `loadQuery()`).
 <!-- --> **/
+    /** xmd */
 }
 
 /* Helper functions to realize parameters given parameter description(s)
@@ -540,6 +548,9 @@ export class Paramable implements ParamableInterface {
 :   (Instances of) derived classes will surely want to override this
     placeholder value.
 <!-- --> **/
+    get htmlName() {
+        return this.name
+    }
     /** xmd */
     static description = 'An object with dynamically-specifiable parameters'
     /* **/

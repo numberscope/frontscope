@@ -435,6 +435,12 @@ you: return `true` if you have handled any need to reset (and so the framework
 should NOT call `reset()`), and false if you do want the framework to
 `reset()`.
 
+### Draw your visualization
+
+The P5Visualizer provides a utility method `hatchRect(x, y, w, h)` that draws
+a rectangle with corner at (x, y) and width w and height h, filled with
+diagonal hatch lines.
+
 ### Show or stop the visualization; depart from a page element
 
 You shouldn't frequently need to implement `show()`, `stop()`, or `depart()`.

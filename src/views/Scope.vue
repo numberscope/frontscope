@@ -79,12 +79,7 @@ visualizers you can select.
             <ParamEditor
                 title="sequence"
                 :paramable="specimen.sequence"
-                @open-switcher="
-                    () => {
-                        pauseVisualizer()
-                        changeSequenceOpen = true
-                    }
-                "
+                @open-switcher="openSwitcher('sequence')"
                 @changed="
                     async () => {
                         await specimen.updateSequence()
@@ -103,12 +98,7 @@ visualizers you can select.
             <ParamEditor
                 title="visualizer"
                 :paramable="specimen.visualizer"
-                @open-switcher="
-                    () => {
-                        pauseVisualizer()
-                        changeVisualizerOpen = true
-                    }
-                "
+                @open-switcher="openSwitcher('visualizer')"
                 @changed="
                     () => {
                         continueVisualizer()
@@ -370,7 +360,9 @@ visualizers you can select.
     import {onBeforeMount, onMounted, onUnmounted, reactive, ref} from 'vue'
     import {useRoute, useRouter, onBeforeRouteUpdate} from 'vue-router'
 
+    import {addSequence} from '@/shared/browserCaching'
     import {Specimen} from '@/shared/Specimen'
+    import {parseSpecimenQuery} from '@/shared/specimenEncoding'
 
     import ParamEditor from '@/components/ParamEditor.vue'
     import SwitcherModal from '@/components/SwitcherModal.vue'
@@ -392,11 +384,16 @@ visualizers you can select.
 
     const specimen = reactive(new Specimen()) // starts empty
 
-    async function showURL(url: string) {
+    async function showURL(url: string, saveSequence?: string) {
         const urlQuery = extractQueryFromPath(url)
         if (urlQuery) {
             await specimen.loadQuery(urlQuery)
             updateCurrent(specimen)
+            if (saveSequence) {
+                const {sequenceKind, sequenceQuery} =
+                    parseSpecimenQuery(urlQuery)
+                addSequence(sequenceKind, sequenceQuery)
+            }
         } else {
             // This should no longer be possible now that the router
             // redirects `/` to `/?[CURRENT QUERY]` but in case we
@@ -434,13 +431,23 @@ visualizers you can select.
         specimen.visualizer.continue()
     }
 
+    function openSwitcher(category: string) {
+        pauseVisualizer()
+        addSequence(specimen.sequenceKey, specimen.sequence.query)
+        if (category === 'sequence') {
+            changeSequenceOpen.value = true
+        } else {
+            changeVisualizerOpen.value = true
+        }
+    }
+
     let canvasContainer: HTMLElement = document.documentElement
     type IntervalID = ReturnType<typeof setInterval>
     let resizePoll: IntervalID
 
     onBeforeMount(() => {
         // First load up the specimen
-        showURL(route.fullPath)
+        showURL(route.fullPath, 'save sequence')
     })
 
     onMounted(() => {
@@ -466,6 +473,9 @@ visualizers you can select.
     })
 
     onUnmounted(() => {
+        // Save the current sequence for future use
+        addSequence(specimen.sequenceKey, specimen.sequence.query)
+        // Now clean up
         clearInterval(resizePoll)
         specimen.visualizer.depart(canvasContainer)
     })
