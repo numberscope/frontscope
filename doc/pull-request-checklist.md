@@ -30,6 +30,7 @@ The PR submitter should:
 
 ## For PR reviewers
 
+-   The new code is readable, meets our principles, and of good quality.
 -   All new or changed features are appropriately documented.
 -   Tests are appropriately modified for all new or changed features. If it is
     a bugfix PR there must be at least one new test. Most other PRs should
@@ -53,7 +54,11 @@ The PR submitter should:
     reviewer, but a number of possible actions that seem related to the
     changes in the PR must definitely be tried in this fashion before
     approving for merge.
--   At the end of the review process, before merging, add a commit to update
-    the
-    ["Contributors" section of the "About" document](about.md#contributors) to
-    include the submitter's name, if it is not already present.
+-   In particular, if there is a new or significantly altered visualizer or
+    sequence, running it on a sequence with (say) a million entries (but not
+    infinitely many, since that case is more typically caught) does not
+    hang/block the browser.
+
+At the end of the review process, before merging, add a commit to update the
+["Contributors" section of the "About" document](about.md#contributors) to
+include the submitter's name, if it is not already present.

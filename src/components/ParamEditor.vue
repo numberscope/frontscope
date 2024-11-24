@@ -29,9 +29,8 @@
             @click="openSwitcher">
             <div class="visualizer-info" style="flex-grow: 1">
                 <h1>Current {{ title }}</h1>
-                <div class="item-name">
-                    {{ paramable.name
-                    }}<a
+                <div ref="itemName" class="item-name">
+                    <span v-safe-html="paramable.htmlName" /><a
                         v-if="paramable.name.match(/A\d{6}\s*$/)"
                         :href="oeisLinkFor(paramable.name)"
                         target="_blank"

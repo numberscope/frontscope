@@ -33,8 +33,8 @@ test.describe('Gallery', () => {
         await page.locator('.card-body >> nth=2').click()
         await expect(page.url()).not.toContain('gallery')
         await expect(
-            await page.locator('#sequenceTab .item-name').innerText()
-        ).toMatch('Formula: 12')
+            await page.locator('#sequenceTab .item-name')
+        ).toContainText(/12$/)
         await expect(
             await page.locator('#visualiserTab .item-name').innerText()
         ).toMatch('Mod Fill')

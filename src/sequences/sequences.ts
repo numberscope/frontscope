@@ -1,4 +1,3 @@
-import {getIDs, addID, deleteID} from '../shared/browserCaching'
 import {SequenceExportModule} from './SequenceInterface'
 import {OEIS} from './OEIS'
 
@@ -38,7 +37,6 @@ export function enableOEIS(id: string) {
         oeisKey,
         '...sequence loading...'
     )
-    addID(id)
     return patchOEISdescription(oeisKey)
 }
 
@@ -46,23 +44,4 @@ export function produceSequence(key: string) {
     const checkOEIS = key.match(/^OEIS\s(A\d{6})/)
     if (checkOEIS) enableOEIS(checkOEIS[1])
     return seqMODULES[key].factory()
-}
-
-/**
- * Remove the OEIS sequence with the given key or ID from those
- * shown as cards in the Sequence Switcher.
- * @param {string} idOrKey  The OEIS ID or sequenceKey to remove.
- */
-export function disableOEIS(idOrKey: string) {
-    const id = idOrKey.startsWith('OEIS ') ? idOrKey.substring(5) : idOrKey
-    const key = `OEIS ${id}`
-    if (key in seqMODULES) {
-        delete seqMODULES[key]
-        deleteID(id)
-    }
-}
-
-// Reactivate locally-stored OEIS sequences
-export async function reactivateOEIS() {
-    getIDs().map(id => enableOEIS(id))
 }

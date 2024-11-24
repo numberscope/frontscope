@@ -88,7 +88,6 @@ export class Specimen {
 
         // Load the specs into the specimen:
         this.name = specs.name
-
         let sequenceChanged = false
         if (
             specs.sequenceKind !== this._sequenceKey
@@ -101,7 +100,6 @@ export class Specimen {
                 specs.sequenceQuery
             )
         }
-
         if (reload) {
             const displayed = this.isSetup
             if (displayed) this.visualizer?.depart(this.location!)
@@ -278,12 +276,13 @@ export class Specimen {
      * @param {string} query  The URL query string encoding a specimen
      * @return {string} the name of the sequence variety the specimen uses
      */
-    static getSequenceNameFromQuery(query: string): string {
+    static getSequenceNameFromQuery(query: string, html = ''): string {
         const specs = parseSpecimenQuery(query)
         const sequence = Specimen.makeSequence(
             specs.sequenceKind,
             specs.sequenceQuery
         )
+        if (html) return sequence.htmlName
         return sequence.name
     }
 }
