@@ -98,30 +98,6 @@ to apply the highlight color (residue 0) or fill color (residue 1)
         required: false,
     },
     /** md
-- highlightFormula: A formula computed on the index, i.e. on n for term a(n)
-whose output determines whether
-to apply the highlight color (odd integer or true boolean)
-or fill color (even integer or false boolean).  Default:
-**/
-    highlightFormula: {
-        default: new MathFormula(
-            // Note: the markdown comment closed with */ means to include code
-            // into the docs, until mkdocs reaches a comment ending with **/
-            /** md */
-            `isPrime(n)`
-            /* **/
-        ),
-        type: ParamType.FORMULA,
-        inputs: ['n'],
-        displayName: 'Highlight Formula',
-        description:
-            "A function in 'n' (index); when output is odd "
-            + '(number) or true (boolean), draws residue of '
-            + 'a(n) in the highlight color.',
-        visibleValue: true,
-        required: false,
-    },
-    /** md
 - Highlight color: The color used for highlighting.
      **/
     highColor: {
