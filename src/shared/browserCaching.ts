@@ -56,7 +56,8 @@ export function oeisLinkFor(words: string) {
 
 // MEMORY RELATED HELPER FUNCTIONS AND VARIABLES
 
-// Keys of where the SIMs and s are saved (are arbitrary)
+// Keys used to save the different pieces of state in browser localStorage.
+// Each key is arbitrary, but they must all be distinct.
 const cacheKey = 'savedSpecimens'
 const currentKey = 'currentSpecimen'
 const cannedKey = 'sequenceHistory'
@@ -296,7 +297,7 @@ export function addSequence(key: string, query: string): void {
 }
 
 /**
- * Removes an a sequence from the ones stored locally, if it is present.
+ * Removes a sequence from the ones stored locally, if it is present.
  * @param {string} key  The sequence key to potentially delete
  * @param {string} query  The query describing the sequence to delete.
  */
