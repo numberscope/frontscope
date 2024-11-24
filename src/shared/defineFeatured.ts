@@ -17,18 +17,28 @@ const featuredSIMs = [
         'corners=8&walkers=8&alpha=0.7&pixelsPerFrame=2000'
     ),
     specimenQuery(
-        'Twelve',
+        'Dance no. 163',
         'ModFill',
         'Formula',
-        'modDimension=12',
-        'formula=12'
+        'modDimension=600&alpha=50&fillColor=a51d2d'
+            + '&highlightFormula=%28n%25163*2%29%3E163'
+            + '&highColor=ff7800',
+        'formula=163*n'
     ),
     specimenQuery(
-        'Residue Rise',
+        'Prime Residues',
         'ModFill',
-        'Random',
-        'modDimension=10000',
-        'max=90000'
+        'Formula',
+        'alpha=20&fillColor=1a5fb4&highColor=f66151',
+        'formula=n'
+    ),
+    specimenQuery(
+        'Baffling Beatty Bars',
+        'ModFill',
+        'Formula',
+        'modDimension=250&alpha=70&fillColor=26a269&highlightFormula=floor'
+            + '%28sqrt%283%29*n%29&highColor=1a5fb4',
+        'formula=floor%28sqrt%282%29*n%29'
     ),
     specimenQuery(
         'Chaos Game',
