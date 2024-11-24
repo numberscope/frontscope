@@ -74,6 +74,7 @@ export interface P5VizInterface extends VisualizerInterface, WithP5 {
     seq: SequenceInterface
     _initializeSketch(): (sketch: p5) => void
     presketch(size: ViewSize): Promise<void>
+    hatchRect(x: number, y: number, w: number, h: number): void
     reset(): Promise<void>
 }
 
@@ -353,6 +354,36 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * implement this function.
          */
         draw(): void {}
+
+        /**
+         * Utility for drawing a hatched rectangle. Takes the same arguments
+         * as p5 `rect()` in mode CORNER. Does nothing if there is no sketch.
+         * @param {number} x  coordinate of corner
+         * @param {number} y  coordinate of corner
+         * @param {number} w  width of rectangle
+         * @param {number} h  height of rectangle
+         */
+        hatchRect(x: number, y: number, w: number, h: number): void {
+            const sketch = this.sketch
+            if (!sketch) return
+            sketch.push()
+            sketch.rectMode(sketch.CORNER)
+            sketch.rect(x, y, w, h)
+            const xdir = Math.sign(w)
+            w = w * xdir
+            const ydir = Math.sign(h)
+            h = h * ydir
+            const dist = w + h
+            const step = 12
+            for (let place = step; place < dist; place += step) {
+                const sx = x + xdir * Math.min(place, w)
+                const sy = y + ydir * Math.max(0, place - w)
+                const ex = x + xdir * Math.max(0, place - h)
+                const ey = y + ydir * Math.min(place, h)
+                sketch.line(sx, sy, ex, ey)
+            }
+            sketch.pop()
+        }
 
         /**
          * Get rid of the visualization altogether

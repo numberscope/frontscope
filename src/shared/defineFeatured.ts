@@ -28,7 +28,7 @@ const featuredSIMs = [
         'ModFill',
         'Random',
         'modDimension=10000',
-        'min=0&max=90000'
+        'max=90000'
     ),
     specimenQuery(
         'Chaos Game',
@@ -36,7 +36,7 @@ const featuredSIMs = [
         'Random',
         'corners=3&colorStyle=1&dummyDotControl=true'
             + '&circSize=2&alpha=0.4&darkMode=true',
-        'min=0&max=2'
+        'max=2'
     ),
     specimenQuery(
         'Polyfactors',

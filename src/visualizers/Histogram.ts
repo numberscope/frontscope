@@ -1,5 +1,3 @@
-import * as brush from 'p5.brush'
-
 import {VisualizerExportModule} from './VisualizerInterface'
 import {P5GLVisualizer} from './P5GLVisualizer'
 
@@ -172,17 +170,6 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         })
         this.factoring = true
         this.binFactorArraySetup()
-        brush.add('line', {
-            type: 'standard',
-            weight: 1,
-            vibration: 0,
-            definition: 1,
-            quality: 255,
-            opacity: 255,
-            spacing: 1,
-            blend: false,
-            pressure: {type: 'standard', curve: [1, 1], min_max: [1, 1]},
-        })
     }
 
     barLabel(binIndex: number) {
@@ -249,15 +236,6 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
                 boxY + (i + 1) * textVerticalSpacing
             )
         }
-        // Perhaps there is some bug creating an interaction between
-        // p5.brush and sketch.text: Without this final text drawn at
-        // the origin, the hatching is drawn in a different position,
-        // determined exactly by the coordinates of the final call to
-        // sketch.text() in this function. I couldn't track the cause
-        // of this weird linkage, so just left this in as a workaround,
-        // unfortunately:
-        this.write(' ', 0, 0)
-
         sketch.pop()
     }
 
@@ -376,11 +354,8 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
         // hatch the unknown factors
         if (this.numUnknown > 0) {
-            brush.seed('noshimmer') // Make hatching deterministic
-            brush.pick('line')
-            brush.stroke('black')
-            brush.hatch()
-            brush.rect(
+            sketch.fill('white')
+            this.hatchRect(
                 largeOffsetNumber + 1,
                 largeOffsetScalar * sketch.height
                     - height * this.binFactorArray[0],

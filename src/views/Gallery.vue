@@ -26,9 +26,8 @@
         </div>
         <SpecimensGallery
             v-if="showFeatured"
-            id="featured-gallery"
-            :specimens="featured"
-            :can-delete="false" />
+            gallery-i-d="featured-gallery"
+            :specimens="featured" />
 
         <div type="button" class="visualizer-bar">
             <h2>Saved Specimens</h2>
@@ -41,22 +40,31 @@
         </div>
         <SpecimensGallery
             v-if="showSaved"
-            id="saved-gallery"
-            :specimens="saved" />
+            gallery-i-d="saved-gallery"
+            :specimens="saved"
+            @remove-specimen="deleteSaved" />
     </div>
 </template>
 
 <script setup lang="ts">
-    import SpecimensGallery from '../components/SpecimensGallery.vue'
     import {ref, onMounted, computed} from 'vue'
-    import {getSIMs} from '../shared/browserCaching'
-    import {getFeatured} from '../shared/defineFeatured'
-    import type {SIM} from '../shared/browserCaching'
-    import {Specimen} from '@/shared/Specimen'
-    import NavBar from '../views/minor/NavBar.vue'
 
-    const saved = ref<SIM[]>([])
-    const featured = ref<SIM[]>([])
+    import type {CardSpecimen} from '@/components/SpecimenCard.vue'
+    import SpecimensGallery from '@/components/SpecimensGallery.vue'
+    import NavBar from '@/views/minor/NavBar.vue'
+
+    import {
+        deleteSpecimen,
+        getSIMs,
+        nameOfQuery,
+    } from '@/shared/browserCaching'
+    import type {SIM} from '@/shared/browserCaching'
+    import {getFeatured} from '@/shared/defineFeatured'
+    import {Specimen} from '@/shared/Specimen'
+    import {parseSpecimenQuery} from '@/shared/specimenEncoding'
+
+    const saved = ref<CardSpecimen[]>([])
+    const featured = ref<CardSpecimen[]>([])
     const dummy = new Specimen('OEIS A000040', 'Turtle')
 
     const showFeatured = ref(true)
@@ -76,12 +84,31 @@
         showSaved.value = !showSaved.value
     }
 
+    function fillTitles(simList: SIM[]): CardSpecimen[] {
+        return simList.map(sim => {
+            const {visualizerKind} = parseSpecimenQuery(sim.query)
+            return {
+                title: nameOfQuery(sim.query),
+                subtitle:
+                    `${visualizerKind} on `
+                    + Specimen.getSequenceNameFromQuery(sim.query, 'html'),
+                ...sim,
+            }
+        })
+    }
+
     function loadFeatured() {
-        featured.value = getFeatured()
+        featured.value = fillTitles(getFeatured())
     }
 
     function loadSaved() {
-        saved.value = getSIMs()
+        saved.value = fillTitles(getSIMs())
+    }
+
+    function deleteSaved(index: number) {
+        const doomedSpec = saved.value[index]
+        saved.value.splice(index, 1)
+        deleteSpecimen(nameOfQuery(doomedSpec.query))
     }
 
     onMounted(() => {
