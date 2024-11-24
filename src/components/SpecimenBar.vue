@@ -25,15 +25,11 @@
                 @click="refresh">
                 refresh
             </div>
-            <!-- eslint-disable vue/no-v-html -->
-            <!-- Note: as playPause is either 'play' or 'pause', it is
-                 definitely safe. -->
             <div
                 id="pause-button"
+                v-safe-html="playPause"
                 class="button material-icons-sharp"
-                @click="togglePause"
-                v-html="playPause" />
-            <!--eslint-enable-->
+                @click="togglePause" />
             <div
                 id="share-button"
                 class="button material-icons-sharp"

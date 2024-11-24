@@ -73,11 +73,13 @@ test.describe('Scope: on some featured visualization', () => {
     })
 
     test('Changing a sequence', async ({page}) => {
+        const lookFor = 'Random'
+        const andThenFind = 'Random integers 0 to 9'
         await page.locator('#sequenceTab .visualizer-info').click()
-        await page.locator('.results .card-body').first().click()
+        await page.getByText(lookFor, {exact: true}).click()
         await expect(
             await page.locator('#sequenceTab .item-name').innerText()
-        ).toMatch('Formula: n')
+        ).toMatch(andThenFind)
     })
 
     test('minimizing a tab', async ({page}) => {

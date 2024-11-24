@@ -1,4 +1,6 @@
+import DOMPurify from 'dompurify'
 import {createApp} from 'vue'
+
 import App from './App.vue'
 import router from './router'
 import {alertMessage} from './shared/alertMessage'
@@ -11,5 +13,9 @@ if (import.meta.env.VITE_WORKBENCH !== '1') {
 }
 
 app.use(router)
+
+app.directive('safe-html', (el, binding) => {
+    el.innerHTML = DOMPurify.sanitize(binding.value)
+})
 
 app.mount('#app')

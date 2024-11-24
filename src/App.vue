@@ -8,10 +8,6 @@
 
 <script setup lang="ts">
     import {RouterView} from 'vue-router'
-
-    import {reactivateOEIS} from '@/sequences/sequences'
-
-    reactivateOEIS()
 </script>
 
 <!-- Global styles. This style tag is explicitly unscoped. -->
@@ -43,6 +39,12 @@
         margin: 0;
         padding: 0;
     }
+    math {
+        display: inline-flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        row-gap: 6px;
+    }
     :root {
         /* Font sizes */
         --ns-size-body: 12px;
@@ -60,6 +62,7 @@
         /* Colors */
         --ns-color-primary: #809fff;
         --ns-color-white: #ffffff;
+        --ns-color-pale: #e5e5e5;
         --ns-color-light: #b5b5b5;
         --ns-color-grey: #636363;
         --ns-color-black: #2f2f2f;

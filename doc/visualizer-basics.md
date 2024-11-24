@@ -240,6 +240,20 @@ Sequence information is found in `this.seq`. This is a `SequenceInterface`
 object, so it will always have a method `getElement(n)` that returns the `n`th
 entry in the sequence.
 
+It's important to realize that while your `draw()` method is operating, the
+browser can't do anything else. So it's important to limit how much
+computation you do in any one call to `draw()`. That's why you're encouraged
+to do animations that just change things somewhat on each frame. For example,
+if you are doing a visualization that involves summary statistics on the
+values of a sequence (maybe it computes their mean and standard deviation),
+don't try to compute all the entries of a sequence that might conceivably have
+millions of entries in a single call to `draw()`. Instead think about using an
+[incremental algorithm](https://math.stackexchange.com/questions/102978) for
+computing these statistics, and add a hundred or so terms on each frame, and
+progressively display on each frame the summary of what you've processed so
+far. You'll often find that animation tells you more about the sequence than
+the single final summary would have, anyway.
+
 You have to implement the `draw()` method, even if it does nothing. Your
 visualizer can't be loaded into Numberscope without it. The
 `P5VisualizerTemplate` uses `draw()` to write the value of the current entry
