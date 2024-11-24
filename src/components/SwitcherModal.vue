@@ -131,8 +131,8 @@ click on the trash button on its preview card.
                     seqQuery
                 )
                 let title = sequence.htmlName
-                // Special case for permanent Formula card:
-                if (seq === 'Formula' && seqQuery === '') title = seq
+                // Special cases for the permanent Formula card:
+                if (seqQuery === '') title = seq
                 let subtitle = sequence.description
                 if (seq.startsWith('OEIS')) {
                     await (sequence as OEIS).cacheValues(0n)
