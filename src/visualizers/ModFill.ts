@@ -34,36 +34,28 @@ to control color and transparency of the fill.
 
 const paramDesc = {
     /** md
-- modDimension: The number of rows to display, which corresponds to the largest
-modulus to consider.
+- Highest modulus: The number of rows to display, which corresponds
+to the largest modulus to consider.
      **/
     // note will be small enough to fit in a `number` when we need it to.
     modDimension: {
         default: 150n,
         type: ParamType.BIGINT,
-        displayName: 'Highest modulus',
+        displayName: 'Highest modulus shown',
         required: true,
         validate: function (n: number, status: ValidationStatus) {
             if (n <= 0) status.addError('Must be positive.')
         },
     },
     /** md
-- Alpha: The rate at which cells darken with repeated hits.  This
-should be set between 1 (very transparent) and 255 (solid).
+- Background color: The color of the background
      **/
-    alpha: {
-        default: 10,
-        type: ParamType.NUMBER,
-        displayName: 'Transparency',
-        description:
-            'Transparency of each hit'
-            + ' (1 = very transparent; 255 = solid)',
+    backgroundColor: {
+        default: '#FFFFFF',
+        type: ParamType.COLOR,
+        displayName: 'Background color',
         required: true,
         visibleValue: true,
-        validate: function (n: number, status: ValidationStatus) {
-            if (n <= 0 || n > 255)
-                status.addError('Must be between 1 and 255.')
-        },
     },
     /** md
 - Fill color: The color used to fill each cell by default.
@@ -76,24 +68,66 @@ should be set between 1 (very transparent) and 255 (solid).
         visibleValue: true,
     },
     /** md
-- highlightFormula: A formula whose output, modulo 2, determines whether
-to apply the highlight color (residue 0) or fill color (residue 1)
+- Transparency: The rate at which cells darken with repeated drawing.  This
+should be set between 0 (transparent) and 1 (solid), typically as a constant,
+but can be set as a function of _m_, the modulus.
+If the function evaluates below 0, it will behave as 0; if it
+ evaluates above 1, it will behave as 1.  Default:
+     **/
+    alpha: {
+        default: new MathFormula(
+            /** md */
+            `1`
+            /* **/
+        ),
+        type: ParamType.FORMULA,
+        inputs: ['m'],
+        displayName: 'Transparency',
+        description:
+            'The transparency of each new rectangle (rate at which cells'
+            + ' darken with repeated drawing).  Between 0'
+            + '(transparent) and 1 (solid).  '
+            + "Can be a function in 'm' (modulus).",
+        visibleValue: true,
+        required: false,
+    },
+    /** md
+- Aspect ratio: If 0, use full canvas; otherwise this represents width/height.
+     **/
+    aspectRatio: {
+        default: 0,
+        type: ParamType.NUMBER,
+        displayName: 'Aspect ratio',
+        description:
+            'If 0, use full canvas.  Otherwise, this sets width/height.',
+        required: false,
+        visibleValue: true,
+        validate: function (n: number, status: ValidationStatus) {
+            if (n < 0) status.addError('Must be non-negative.')
+        },
+    },
+
+    /** md
+- Highlight formula: A formula whose output, modulo 2, determines whether
+to apply the highlight color (residue 0) or fill color (residue 1).  Default:
 **/
     highlightFormula: {
         default: new MathFormula(
             // Note: he markdown comment closed with */ means to include code
             // into the docs, until mkdocs reaches a comment ending with **/
             /** md */
-            `isPrime(n)`
+            `false`
             /* **/
         ),
         type: ParamType.FORMULA,
         inputs: ['n'],
-        displayName: 'Highlight Formula',
+        displayName: 'Indices to highlight',
         description:
             "A function in 'n' (index); when output is odd "
-            + '(number) or true (boolean), draws residue of'
-            + 'a(n) in the highlight color.',
+            + '(number) or true (boolean), draws residue of '
+            + 'a(n) in the highlight color.  For example, try '
+            + 'isPrime(n) to highlight terms of prime index, or '
+            + 'n to highlight terms of odd index.',
         visibleValue: true,
         required: false,
     },
@@ -107,12 +141,37 @@ to apply the highlight color (residue 0) or fill color (residue 1)
         required: true,
         visibleValue: true,
     },
+    /** md
+- Highlight transparency: The rate at which cells darken with repeated
+drawing.  This should be set between 0 (transparent) and 1 (solid),
+typically as a constant,
+but can be set as a function of _m_, the modulus.
+If the function evaluates below 0, it will behave as 0; if it
+ evaluates above 1, it will behave as 1.  Default:
+     **/
+    alphaHigh: {
+        default: new MathFormula(
+            /** md */
+            `1`
+            /* **/
+        ),
+        type: ParamType.FORMULA,
+        inputs: ['m'],
+        displayName: 'Highlight transparency',
+        description:
+            'The transparency of each new rectangle (rate at which cells'
+            + ' darken with repeated drawing).  Between 0'
+            + '(transparent) and 1 (solid).  '
+            + "Can be a function in 'm' (modulus).",
+        visibleValue: true,
+        required: false,
+    },
 } satisfies GenericParamDescription
 
 class ModFill extends P5Visualizer(paramDesc) {
     static category = 'Mod Fill'
     static description =
-        'A triangular grid showing which residues occur, for each modulus'
+        'An array showing which residues occur, for each modulus'
 
     maxModulus = 0
     rectWidth = 0
@@ -121,22 +180,30 @@ class ModFill extends P5Visualizer(paramDesc) {
     useFillColor = INVALID_COLOR
     useHighColor = INVALID_COLOR
     i = 0n
+    offsetX = 0
+    offsetY = 0
 
     drawNew(num: bigint) {
+        let drawColor = this.useFillColor
+        let alphaFormula = this.alpha
         if (
             Number(
                 math.modulo(this.highlightFormula.compute(Number(num)), 2)
             ) === 1
         ) {
-            this.sketch.fill(this.useHighColor)
-        } else {
-            this.sketch.fill(this.useFillColor)
+            drawColor = this.useHighColor
+            alphaFormula = this.alphaHigh
         }
+
         for (let mod = 1; mod <= this.useMod; mod++) {
+            // determine alpha
+            drawColor.setAlpha(255 * alphaFormula.compute(mod))
+            this.sketch.fill(drawColor)
             const s = this.seq.getElement(num)
-            const x = (mod - 1) * this.rectWidth
+            const x = (mod - 1) * this.rectWidth + this.offsetX
             const y =
-                this.sketch.height
+                -this.offsetY
+                + this.sketch.height
                 - Number(math.modulo(s, mod) + 1n) * this.rectHeight
             this.sketch.rect(x, y, this.rectWidth, this.rectHeight)
         }
@@ -174,17 +241,35 @@ class ModFill extends P5Visualizer(paramDesc) {
             this.useMod = this.maxModulus
         } else this.useMod = Number(this.modDimension)
 
-        // Now we can calculate the cell size and set up to draw:
+        // Now we can calculate the cell size and offset:
         this.rectWidth = this.sketch.width / this.useMod
         this.rectHeight = this.sketch.height / this.useMod
+        if (this.aspectRatio != 0) {
+            const currentRatio = this.sketch.width / this.sketch.height
+            const ratioRatio = currentRatio / this.aspectRatio
+            if (ratioRatio > 1) {
+                this.rectWidth = this.rectWidth / ratioRatio
+                const shortfall =
+                    (this.sketch.width - this.rectWidth * this.useMod)
+                    / this.rectWidth
+                console.log(shortfall)
+                this.offsetX = math.floor(shortfall / 2) * this.rectWidth
+            } else {
+                this.rectHeight = this.rectHeight * ratioRatio
+                const shortfall =
+                    (this.sketch.height - this.rectHeight * this.useMod)
+                    / this.rectHeight
+                console.log(shortfall)
+                this.offsetY = math.floor(shortfall / 2) * this.rectHeight
+            }
+        }
         this.sketch.noStroke()
+        this.sketch.background(this.backgroundColor)
         this.i = this.seq.first
 
         // set fill color info
         this.useFillColor = this.sketch.color(this.fillColor)
         this.useHighColor = this.sketch.color(this.highColor)
-        this.useFillColor.setAlpha(this.alpha)
-        this.useHighColor.setAlpha(this.alpha)
     }
 
     draw() {
@@ -192,7 +277,8 @@ class ModFill extends P5Visualizer(paramDesc) {
             this.stop()
             return
         }
-        this.drawNew(this.i++)
+        this.drawNew(this.i)
+        this.i++
     }
 }
 
