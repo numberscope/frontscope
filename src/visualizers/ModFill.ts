@@ -187,37 +187,37 @@ class ModFill extends P5Visualizer(paramDesc) {
     drawNew(num: bigint) {
         let drawColor = this.useFillColor
         let alphaFormula = this.alpha
-
+        const value = this.seq.getElement(num)
+        // determine alpha
+        const vars = this.highlightFormula.freevars
+        let useNum = 0
+        let useValue = 0
+        // because safeNumber can fail, we conly want to try it
+        // if we need it in the formula
+        if (vars.includes('n')) {
+            useNum = math.safeNumber(num)
+        }
+        if (vars.includes('a')) {
+            useValue = math.safeNumber(value)
+        }
+        // needs to take BigInt when implemented
+        const high = this.highlightFormula.compute(useNum, useValue)
+        if (Number(math.modulo(high, 2)) === 1) {
+            drawColor = this.useHighColor
+            alphaFormula = this.alphaHigh
+        }
+        let x = this.offsetX
         for (let mod = 1; mod <= this.useMod; mod++) {
-            // determine alpha
-            const value = this.seq.getElement(num)
-            const vars = this.highlightFormula.freevars
-            let useNum = 0
-            let useValue = 0
-            // because safeNumber can fail, we conly want to try it
-            // if we need it in the formula
-            if (vars.includes('n')) {
-                useNum = math.safeNumber(num)
-            }
-            if (vars.includes('a')) {
-                useValue = math.safeNumber(value)
-            }
-            // needs to take BigInt when implemented
-            const high = this.highlightFormula.compute(useNum, useValue)
-            if (Number(math.modulo(high, 2)) === 1) {
-                drawColor = this.useHighColor
-                alphaFormula = this.alphaHigh
-            }
             drawColor.setAlpha(255 * alphaFormula.compute(mod))
 
             // draw rectangle
             this.sketch.fill(drawColor)
-            const x = (mod - 1) * this.rectWidth + this.offsetX
             const y =
                 -this.offsetY
                 + this.sketch.height
                 - Number(math.modulo(value, mod) + 1n) * this.rectHeight
             this.sketch.rect(x, y, this.rectWidth, this.rectHeight)
+            x += this.rectWidth
         }
     }
 
@@ -288,7 +288,10 @@ class ModFill extends P5Visualizer(paramDesc) {
             return
         }
         this.drawNew(this.i)
-        this.i++
+        // Important to increment _after_ drawNew completes, because it
+        // won't complete on a cache miss, and in that case we don't want to
+        // increment the index because we didn't actually draw anything.
+        ++this.i
     }
 }
 

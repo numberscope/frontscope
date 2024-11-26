@@ -32,7 +32,7 @@
                             </div>
                             <div class="leftdented">
                                 <a class="nav-link" :href="vizLink()">
-                                    {{ specimen.visualizer.name }}
+                                    {{ specimen.visualizerName() }}
                                     Visualizer </a>┤
                             </div>
                             <div class="leftdented tweakup">
@@ -77,7 +77,7 @@
     }
 
     function seqWord() {
-        return props.specimen.sequence.name.split(/[\s:]/, 2)[0]
+        return props.specimen.sequenceName().split(/[\s:]/, 2)[0] || ''
     }
     function seqLink() {
         return `/doc/src/sequences/${seqWord()}/`

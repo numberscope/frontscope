@@ -202,6 +202,15 @@ export class Specimen {
         return this._visualizer
     }
     /**
+     * Returns the name of the specimen's visualizer, or '' if not yet
+     * initialized
+     * @returns {string} name
+     */
+    visualizerName(): string {
+        if (this._visualizer) return this._visualizer.name
+        return ''
+    }
+    /**
      * Returns the specimen's sequence
      * @returns {SequenceInterface} the sequence shown in this specimen
      */
@@ -210,6 +219,15 @@ export class Specimen {
             throw new Error('Attempt to get sequence of empty specimen')
         }
         return this._sequence
+    }
+
+    /**
+     * Returns the name of the specimen's sequence, or '' if not yet initialized
+     * @returns {string} name
+     */
+    sequenceName(): string {
+        if (this._sequence) return this._sequence.name
+        return ''
     }
 
     /**

@@ -163,7 +163,7 @@ test.describe('Scope: on Random Modfill', () => {
 
         await page.goBack({waitUntil: 'domcontentloaded'})
         await expect(page.url()).toEqual(oldURL)
-        await expect(page.locator('#modDimension')).toHaveValue('10')
+        await expect(page.locator('#modDimension')).toHaveValue('150')
     })
 
     test('refreshing the specimen', async ({page}) => {
