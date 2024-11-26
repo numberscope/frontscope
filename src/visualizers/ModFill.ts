@@ -120,10 +120,11 @@ to apply the highlight color (residue 0) or fill color (residue 1).  Default:
             /* **/
         ),
         type: ParamType.FORMULA,
-        inputs: ['n'],
+        inputs: ['n', 'a'],
         displayName: 'Indices to highlight',
         description:
-            "A function in 'n' (index); when output is odd "
+            "A function in 'n' (index) and 'a' (value); "
+            + 'when output is odd '
             + '(number) or true (boolean), draws residue of '
             + 'a(n) in the highlight color.  For example, try '
             + 'isPrime(n) to highlight terms of prime index, or '
@@ -186,25 +187,35 @@ class ModFill extends P5Visualizer(paramDesc) {
     drawNew(num: bigint) {
         let drawColor = this.useFillColor
         let alphaFormula = this.alpha
-        if (
-            Number(
-                math.modulo(this.highlightFormula.compute(Number(num)), 2)
-            ) === 1
-        ) {
-            drawColor = this.useHighColor
-            alphaFormula = this.alphaHigh
-        }
 
         for (let mod = 1; mod <= this.useMod; mod++) {
             // determine alpha
+            const value = this.seq.getElement(num)
+            // needs to take BigInt when implemented
+            const vars = this.highlightFormula.freevars
+            let useNum = 0
+            let useValue = 0
+            // because safeNumber can fail, we conly want to try it
+            // if we need it in the formula
+            if (vars.includes('n')) {
+                useNum = math.safeNumber(num)
+            }
+            if (vars.includes('a')) {
+                useValue = math.safeNumber(value)
+            }
+            const high = this.highlightFormula.compute(useNum, useValue)
+            if (Number(math.modulo(high, 2)) === 1) {
+                drawColor = this.useHighColor
+                alphaFormula = this.alphaHigh
+            }
+
             drawColor.setAlpha(255 * alphaFormula.compute(mod))
             this.sketch.fill(drawColor)
-            const s = this.seq.getElement(num)
             const x = (mod - 1) * this.rectWidth + this.offsetX
             const y =
                 -this.offsetY
                 + this.sketch.height
-                - Number(math.modulo(s, mod) + 1n) * this.rectHeight
+                - Number(math.modulo(value, mod) + 1n) * this.rectHeight
             this.sketch.rect(x, y, this.rectWidth, this.rectHeight)
         }
     }
@@ -252,15 +263,13 @@ class ModFill extends P5Visualizer(paramDesc) {
                 const shortfall =
                     (this.sketch.width - this.rectWidth * this.useMod)
                     / this.rectWidth
-                console.log(shortfall)
-                this.offsetX = math.floor(shortfall / 2) * this.rectWidth
+                this.offsetX = math.ceil(shortfall / 2) * this.rectWidth
             } else {
                 this.rectHeight = this.rectHeight * ratioRatio
                 const shortfall =
                     (this.sketch.height - this.rectHeight * this.useMod)
                     / this.rectHeight
-                console.log(shortfall)
-                this.offsetY = math.floor(shortfall / 2) * this.rectHeight
+                this.offsetY = math.ceil(shortfall / 2) * this.rectHeight
             }
         }
         this.sketch.noStroke()
