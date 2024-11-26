@@ -137,14 +137,17 @@ export class Specimen {
      * Displays a specimen within an HTML element
      * @param {HTMLElement} location  where in the DOM to insert the specimen
      */
-    async setup(location: HTMLElement) {
+    setup(location: HTMLElement) {
         if (!this._sequence || !this._visualizer) {
             throw new Error('Attempt to display uninitialized Specimen.')
         }
 
         this.location = location
         this.isSetup = true
-        this.reset()
+        this.reset().catch(e => {
+            console.error(`ERROR in Specimen "${this.name}" reset:`, e)
+            window.alert(alertMessage(e))
+        })
     }
 
     /**
@@ -160,12 +163,7 @@ export class Specimen {
             this._visualizer?.requestedAspectRatio()
         )
         await this._visualizer?.inhabit(this.location!, this.size)
-        try {
-            this._visualizer?.show()
-        } catch (e: unknown) {
-            console.error('ERROR in Specimen reset:', e)
-            window.alert(alertMessage(e))
-        }
+        this._visualizer?.show()
     }
 
     /**

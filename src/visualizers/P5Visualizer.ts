@@ -211,6 +211,11 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                             sketch.cursor('progress')
                             return
                         } else {
+                            // TODO: This throw is typically going to go
+                            // uncaught (because there is a try..finally
+                            // block in p5.js with no catch) and so
+                            // just result in a console error message.
+                            // Should we pop up an alert message?
                             throw e
                         }
                     }
