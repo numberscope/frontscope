@@ -101,7 +101,6 @@ type ExtendedMathJs = MathJsInstance & {
     floorSqrt(n: Integer): bigint
     modulo(n: Integer, modulus: Integer): bigint
     divides(a: Integer, b: Integer): boolean
-    biggcd(a: Integer, b: Integer): bigint
     powmod(n: Integer, exponent: Integer, modulus: Integer): bigint
     natlog(n: Integer): number
     bigInt(a: Integer): bigint
@@ -176,24 +175,6 @@ math.divides = (a: Integer, b: Integer): boolean => {
     if (an === 0n) return b >= 0 && b <= 0
     if (an < 0n) an = -an
     return math.modulo(b, a) === 0n
-}
-
-/** md
-#### biggcd(a: number| bigint, b: number | bigint): boolean
-
-Returns the greatest common divisor of _a_ and _b_.
-**/
-math.biggcd = (a: Integer, b: Integer): bigint => {
-    let an = BigInt(a)
-    let bn = BigInt(b)
-    if (an < 0n) an = -an
-    if (bn < 0n) bn = -bn
-    while (bn != 0n) {
-        an = math.modulo(an, bn)
-        if (an === 0n) return bn
-        bn = math.modulo(bn, an)
-    }
-    return an
 }
 
 /** md
