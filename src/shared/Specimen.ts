@@ -1,3 +1,4 @@
+import {alertMessage} from './alertMessage'
 import {math} from './math'
 import {specimenQuery, parseSpecimenQuery} from './specimenEncoding'
 
@@ -159,7 +160,12 @@ export class Specimen {
             this._visualizer?.requestedAspectRatio()
         )
         await this._visualizer?.inhabit(this.location!, this.size)
-        this._visualizer?.show()
+        try {
+            this._visualizer?.show()
+        } catch (e: unknown) {
+            console.error('ERROR in Specimen reset:', e)
+            window.alert(alertMessage(e))
+        }
     }
 
     /**

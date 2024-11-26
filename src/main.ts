@@ -6,17 +6,18 @@ import router from './router'
 import {alertMessage} from './shared/alertMessage'
 
 const app = createApp(App)
-if (import.meta.env.VITE_WORKBENCH === '1') {
-    app.config.errorHandler = (err, vm, info) => {
-        console.error('ERROR HANDLER', err, vm, info)
-    }
-} else {
-    app.config.errorHandler = e => {
-        window.alert(alertMessage(e))
-    }
+
+app.config.errorHandler = (err, vm, info) => {
+    console.error(`ERROR in Vue component ${vm}:`, err)
+    console.warn('    Additional information:', info)
+    window.alert(alertMessage(err))
 }
 
-app.use(router)
+try {
+    app.use(router)
+} catch (e: unknown) {
+    console.error('ERROR while establishing router:', e)
+}
 
 app.directive('safe-html', (el, binding) => {
     el.innerHTML = DOMPurify.sanitize(binding.value)
