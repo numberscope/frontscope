@@ -128,7 +128,7 @@ to apply the highlight color (residue 0) or fill color (residue 1).  Default:
             + '(number) or true (boolean), draws residue of '
             + 'a(n) in the highlight color.  For example, try '
             + 'isPrime(n) to highlight terms of prime index, or '
-            + 'n to highlight terms of odd index.',
+            + 'a to highlight terms of odd value.',
         visibleValue: true,
         required: false,
     },
@@ -191,7 +191,6 @@ class ModFill extends P5Visualizer(paramDesc) {
         for (let mod = 1; mod <= this.useMod; mod++) {
             // determine alpha
             const value = this.seq.getElement(num)
-            // needs to take BigInt when implemented
             const vars = this.highlightFormula.freevars
             let useNum = 0
             let useValue = 0
@@ -203,13 +202,15 @@ class ModFill extends P5Visualizer(paramDesc) {
             if (vars.includes('a')) {
                 useValue = math.safeNumber(value)
             }
+            // needs to take BigInt when implemented
             const high = this.highlightFormula.compute(useNum, useValue)
             if (Number(math.modulo(high, 2)) === 1) {
                 drawColor = this.useHighColor
                 alphaFormula = this.alphaHigh
             }
-
             drawColor.setAlpha(255 * alphaFormula.compute(mod))
+
+            // draw rectangle
             this.sketch.fill(drawColor)
             const x = (mod - 1) * this.rectWidth + this.offsetX
             const y =
