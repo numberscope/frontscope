@@ -47,10 +47,10 @@ const featuredSIMs = [
         'ModFill',
         'Random',
         'modDimension=5000',
-        'max=100000'
+        'min=10000&max=100000'
     ),
     specimenQuery(
-        "Picasso's Periods (Blue, Rose, Cubism)",
+        "Picasso's Periods",
         'ModFill',
         'Formula',
         'modDimension=50&backgroundColor=000000&fillColor=1a5fb4'
