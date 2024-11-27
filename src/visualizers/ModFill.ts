@@ -68,7 +68,7 @@ to the largest modulus to consider.
         visibleValue: true,
     },
     /** md
-- Transparency: The rate at which cells darken with repeated drawing.  This
+- Opacity: The rate at which cells darken with repeated drawing.  This
 should be set between 0 (transparent) and 1 (solid), typically as a constant,
 but can be set as a function of _m_, the modulus.
 If the function evaluates below 0, it will behave as 0; if it
@@ -81,35 +81,36 @@ If the function evaluates below 0, it will behave as 0; if it
             /* **/
         ),
         type: ParamType.FORMULA,
-        inputs: ['m'],
-        displayName: 'Transparency',
+        inputs: ['n', 'a', 'm'],
+        displayName: 'Opacity',
         description:
-            'The transparency of each new rectangle (rate at which cells'
-            + ' darken with repeated drawing).  Between 0'
+            'The opacity of each new rectangle (rate at which cells'
+            + ' darken with repeated drawing).  Between 0 '
             + '(transparent) and 1 (solid).  '
-            + "Can be a function in 'm' (modulus).",
+            + "Can be a function in 'n' (index), 'a' (value) "
+            + "and 'm' (modulus).",
         visibleValue: true,
         required: false,
     },
     /** md
 - Aspect ratio: If 0, use full canvas; otherwise this represents width/height.
+For example, 1 will result in a square canvas, and 2 in a wide short one.
      **/
     aspectRatio: {
         default: 0,
         type: ParamType.NUMBER,
         displayName: 'Aspect ratio',
-        description:
-            'If 0, use full canvas.  Otherwise, this sets width/height.',
+        description: '0 = full canvas; 1 = square; otherwise width/height.',
         required: false,
         visibleValue: true,
         validate: function (n: number, status: ValidationStatus) {
             if (n < 0) status.addError('Must be non-negative.')
         },
     },
-
     /** md
 - Highlight formula: A formula whose output, modulo 2, determines whether
-to apply the highlight color (residue 0) or fill color (residue 1).  Default:
+to apply the highlight color (residue 0) or fill color (residue 1).  Can be
+involve variables 'n' (index), 'a' (value) and 'm' (modulus).  Default:
 **/
     highlightFormula: {
         default: new MathFormula(
@@ -120,15 +121,17 @@ to apply the highlight color (residue 0) or fill color (residue 1).  Default:
             /* **/
         ),
         type: ParamType.FORMULA,
-        inputs: ['n', 'a'],
-        displayName: 'Indices to highlight',
+        inputs: ['n', 'a', 'm'],
+        displayName: 'Highlighting',
         description:
-            "A function in 'n' (index) and 'a' (value); "
+            "A function in 'n' (index), 'a' (value) "
+            + "and 'm' (modulus); "
             + 'when output is odd '
             + '(number) or true (boolean), draws residue of '
-            + 'a(n) in the highlight color.  For example, try '
-            + 'isPrime(n) to highlight terms of prime index, or '
-            + 'a to highlight terms of odd value.',
+            + 'a(n) in the highlight color.  Examples: '
+            + "'isPrime(n)' highlights terms of prime index; "
+            + "'a' to highlight terms of odd value; 'm == 30' "
+            + 'will highlight the modulus 30 column.',
         visibleValue: true,
         required: false,
     },
@@ -140,32 +143,55 @@ to apply the highlight color (residue 0) or fill color (residue 1).  Default:
         type: ParamType.COLOR,
         displayName: 'Highlight color',
         required: true,
-        visibleValue: true,
+        visibleDependency: 'highlightFormula',
+        visiblePredicate: (dependentValue: MathFormula) =>
+            dependentValue.source !== '',
     },
     /** md
-- Highlight transparency: The rate at which cells darken with repeated
-drawing.  This should be set between 0 (transparent) and 1 (solid),
+- Highlight opacity: The rate at which cells darken with repeated
+drawing.  This should be set between 0 (transparent) and 1 (opaque),
 typically as a constant,
 but can be set as a function of _m_, the modulus.
 If the function evaluates below 0, it will behave as 0; if it
  evaluates above 1, it will behave as 1.  Default:
      **/
     alphaHigh: {
+        // I don't know how to make this default to
+        // what another parameter holds
         default: new MathFormula(
             /** md */
             `1`
             /* **/
         ),
         type: ParamType.FORMULA,
-        inputs: ['m'],
-        displayName: 'Highlight transparency',
+        inputs: ['n', 'a', 'm'],
+        displayName: 'Highlight opacity',
         description:
-            'The transparency of each new rectangle (rate at which cells'
+            'The opacity of each new rectangle (rate at which cells'
             + ' darken with repeated drawing).  Between 0'
-            + '(transparent) and 1 (solid).  '
-            + "Can be a function in 'm' (modulus).",
-        visibleValue: true,
+            + '(transparent) and 1 (opaque).  '
+            + "Can be a function in 'n' (index), 'a' (value) "
+            + "and 'm' (modulus).",
         required: false,
+        visibleDependency: 'highlightFormula',
+        visiblePredicate: (dependentValue: MathFormula) =>
+            dependentValue.source !== '',
+    },
+    /** md
+- Sunzi mode: Warning: can create a stroboscopic effect.
+The canvas blanks between each term of the sequence, so
+that you see only the residues of a single term in each frame
+     **/
+    sunzi: {
+        default: false,
+        type: ParamType.BOOLEAN,
+        displayName: 'Sunzi mode (warning: stroboscopic effect)',
+        description:
+            'The canvas blanks between each term of the'
+            + 'sequence, so the residues of a single term are shown'
+            + 'in each frame',
+        required: true,
+        visibleValue: true,
     },
 } satisfies GenericParamDescription
 
@@ -181,44 +207,73 @@ class ModFill extends P5Visualizer(paramDesc) {
     useFillColor = INVALID_COLOR
     useHighColor = INVALID_COLOR
     i = 0n
-    offsetX = 0
-    offsetY = 0
+
+    trySafeNumber(input: bigint) {
+        let use = 0
+        try {
+            use = math.safeNumber(input)
+        } catch {
+            // should we notify the user that we are stopping?
+            this.stop()
+            return 0
+        }
+        return use
+    }
 
     drawNew(num: bigint) {
         let drawColor = this.useFillColor
         let alphaFormula = this.alpha
         const value = this.seq.getElement(num)
+
         // determine alpha
         const vars = this.highlightFormula.freevars
         let useNum = 0
         let useValue = 0
+
         // because safeNumber can fail, we conly want to try it
         // if we need it in the formula
-        if (vars.includes('n')) {
-            useNum = math.safeNumber(num)
-        }
-        if (vars.includes('a')) {
-            useValue = math.safeNumber(value)
-        }
-        // needs to take BigInt when implemented
-        const high = this.highlightFormula.compute(useNum, useValue)
-        if (Number(math.modulo(high, 2)) === 1) {
-            drawColor = this.useHighColor
-            alphaFormula = this.alphaHigh
-        }
-        let x = this.offsetX
+        if (vars.includes('n')) useNum = this.trySafeNumber(num)
+        if (vars.includes('a')) useValue = this.trySafeNumber(value)
+        let x = 0
         for (let mod = 1; mod <= this.useMod; mod++) {
-            drawColor.setAlpha(255 * alphaFormula.compute(mod))
+            // needs to take BigInt when implemented
+            const high = this.highlightFormula.compute(useNum, useValue, mod)
+
+            // set color
+            if (Number(math.modulo(high, 2)) === 1) {
+                drawColor = this.useHighColor
+                alphaFormula = this.alphaHigh
+                const varsAlpha = this.alphaHigh.freevars
+                if (varsAlpha.includes('n')) useNum = this.trySafeNumber(num)
+                if (varsAlpha.includes('a'))
+                    useValue = this.trySafeNumber(value)
+            } else {
+                drawColor = this.useFillColor
+                alphaFormula = this.alpha
+                const varsAlpha = this.alpha.freevars
+                if (varsAlpha.includes('n')) useNum = this.trySafeNumber(num)
+                if (varsAlpha.includes('a'))
+                    useValue = this.trySafeNumber(value)
+            }
+            drawColor.setAlpha(
+                255 * alphaFormula.compute(useNum, useValue, mod)
+            )
 
             // draw rectangle
             this.sketch.fill(drawColor)
             const y =
-                -this.offsetY
-                + this.sketch.height
+                +this.sketch.height
                 - Number(math.modulo(value, mod) + 1n) * this.rectHeight
             this.sketch.rect(x, y, this.rectWidth, this.rectHeight)
             x += this.rectWidth
         }
+    }
+
+    requestedAspectRatio(): number | undefined {
+        if (this.aspectRatio == 0) {
+            return undefined
+        }
+        return this.aspectRatio
     }
 
     async presketch(size: ViewSize) {
@@ -256,33 +311,25 @@ class ModFill extends P5Visualizer(paramDesc) {
         // Now we can calculate the cell size and offset:
         this.rectWidth = this.sketch.width / this.useMod
         this.rectHeight = this.sketch.height / this.useMod
-        if (this.aspectRatio != 0) {
-            const currentRatio = this.sketch.width / this.sketch.height
-            const ratioRatio = currentRatio / this.aspectRatio
-            if (ratioRatio > 1) {
-                this.rectWidth = this.rectWidth / ratioRatio
-                const shortfall =
-                    (this.sketch.width - this.rectWidth * this.useMod)
-                    / this.rectWidth
-                this.offsetX = math.ceil(shortfall / 2) * this.rectWidth
-            } else {
-                this.rectHeight = this.rectHeight * ratioRatio
-                const shortfall =
-                    (this.sketch.height - this.rectHeight * this.useMod)
-                    / this.rectHeight
-                this.offsetY = math.ceil(shortfall / 2) * this.rectHeight
-            }
-        }
+
         this.sketch.noStroke()
+        // bug:
+        // once asynch PR is in, this should work
         this.sketch.background(this.backgroundColor)
         this.i = this.seq.first
 
         // set fill color info
         this.useFillColor = this.sketch.color(this.fillColor)
         this.useHighColor = this.sketch.color(this.highColor)
+
+        if (this.sunzi) this.sketch.frameRate(3)
     }
 
     draw() {
+        // the part '|| this.i < this.seq.first + 2n'
+        // should be removed once the asynch bug is fixed
+        if (this.sunzi || this.i < this.seq.first + 2n)
+            this.sketch.background(this.backgroundColor)
         if (this.i > this.seq.last) {
             this.stop()
             return
