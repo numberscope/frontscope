@@ -20,25 +20,43 @@ const featuredSIMs = [
         'Dance no. 163',
         'ModFill',
         'Formula',
-        'modDimension=600&alpha=50&fillColor=a51d2d'
-            + '&highlightFormula=%28n%25163*2%29%3E163'
-            + '&highColor=ff7800',
-        'formula=163*n'
+        'modDimension=600&fillColor=a51d2d&alpha=0.07*log%28m%29'
+            + '&highlightFormula=n+mod+163+%3E+81&highColor=ff7800'
+            + '&alphaHigh=0.07*log%28m%29',
+        'formula=163n'
     ),
     specimenQuery(
         'Prime Residues',
         'ModFill',
         'Formula',
-        'alpha=20&fillColor=1a5fb4&highColor=f66151',
+        'fillColor=1a5fb4&alpha=0.1&highlightFormula=isPrime%28n%29'
+            + '&highColor=f66151&alphaHigh=0.1',
         'formula=n'
     ),
     specimenQuery(
         'Baffling Beatty Bars',
         'ModFill',
         'Formula',
-        'modDimension=250&alpha=70&fillColor=26a269&highlightFormula=floor'
-            + '%28sqrt%283%29*n%29&highColor=1a5fb4',
+        'modDimension=350&fillColor=26a269&alpha=0.3'
+            + '&highlightFormula=floor%28sqrt%283%29n%29&highColor=1a5fb4'
+            + '&alphaHigh=0.3',
         'formula=floor%28sqrt%282%29*n%29'
+    ),
+    specimenQuery(
+        'Woven Residues',
+        'ModFill',
+        'Random',
+        'modDimension=5000',
+        'max=100000'
+    ),
+    specimenQuery(
+        "Picasso's Periods (Blue, Rose, Cubism)",
+        'ModFill',
+        'Formula',
+        'modDimension=50&backgroundColor=000000&fillColor=1a5fb4'
+            + '&alpha=0.1&highlightFormula=isPrime%28a%29&highColor=bf8383'
+            + '&alphaHigh=0.4',
+        'formula=n%5E3%2B2n%2B1'
     ),
     specimenQuery(
         'Chaos Game',
