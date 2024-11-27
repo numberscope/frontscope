@@ -93,19 +93,14 @@ If the function evaluates below 0, it will behave as 0; if it
         required: false,
     },
     /** md
-- Aspect ratio: If 0, use full canvas; otherwise this represents width/height.
-For example, 1 will result in a square canvas, and 2 in a wide short one.
+- Square canvas:  If true, force canvas to be aspect ratio 1 (square).
      **/
     aspectRatio: {
         default: 0,
-        type: ParamType.NUMBER,
-        displayName: 'Aspect ratio',
-        description: '0 = full canvas; 1 = square; otherwise width/height.',
+        type: ParamType.BOOLEAN,
+        displayName: 'Square canvas',
         required: false,
         visibleValue: true,
-        validate: function (n: number, status: ValidationStatus) {
-            if (n < 0) status.addError('Must be non-negative.')
-        },
     },
     /** md
 - Highlight formula: A formula whose output, modulo 2, determines whether
@@ -270,7 +265,7 @@ class ModFill extends P5Visualizer(paramDesc) {
     }
 
     requestedAspectRatio(): number | undefined {
-        return this.aspectRatio > 0 ? this.aspectRatio : undefined
+        return this.aspectRatio == true ? 1 : undefined
     }
 
     async presketch(size: ViewSize) {
