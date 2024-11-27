@@ -262,7 +262,7 @@ class ModFill extends P5Visualizer(paramDesc) {
             // draw rectangle
             this.sketch.fill(drawColor)
             const y =
-                +this.sketch.height
+                this.sketch.height
                 - Number(math.modulo(value, mod) + 1n) * this.rectHeight
             this.sketch.rect(x, y, this.rectWidth, this.rectHeight)
             x += this.rectWidth
@@ -270,10 +270,7 @@ class ModFill extends P5Visualizer(paramDesc) {
     }
 
     requestedAspectRatio(): number | undefined {
-        if (this.aspectRatio == 0) {
-            return undefined
-        }
-        return this.aspectRatio
+        return this.aspectRatio > 0 ? this.aspectRatio : undefined
     }
 
     async presketch(size: ViewSize) {
@@ -313,8 +310,6 @@ class ModFill extends P5Visualizer(paramDesc) {
         this.rectHeight = this.sketch.height / this.useMod
 
         this.sketch.noStroke()
-        // bug:
-        // once asynch PR is in, this should work
         this.sketch.background(this.backgroundColor)
         this.i = this.seq.first
 
@@ -326,14 +321,11 @@ class ModFill extends P5Visualizer(paramDesc) {
     }
 
     draw() {
-        // the part '|| this.i < this.seq.first + 2n'
-        // should be removed once the asynch bug is fixed
-        if (this.sunzi || this.i < this.seq.first + 2n)
-            this.sketch.background(this.backgroundColor)
         if (this.i > this.seq.last) {
             this.stop()
             return
         }
+        if (this.sunzi) this.sketch.background(this.backgroundColor)
         this.drawNew(this.i)
         // Important to increment _after_ drawNew completes, because it
         // won't complete on a cache miss, and in that case we don't want to
