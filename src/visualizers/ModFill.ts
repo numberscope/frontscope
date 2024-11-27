@@ -174,19 +174,51 @@ If the function evaluates below 0, it will behave as 0; if it
     },
     /** md
 - Sunzi mode: Warning: can create a stroboscopic effect.
-The canvas blanks between each term of the sequence, so
-that you see only the residues of a single term in each frame
+This sets the opacity of the background color
+overlay added at each step.  If 0, there is no effect.
+If 1, then the canvas completely blanks between terms,
+allowing you to see each term of the sequence individually.
+In that case, it helps to turn down the Frame rate (it
+can create quite a stroboscopic effect).  If
+set in the region of 0.05, it has a "history fading effect"
+that the long past terms fade their contribution to the
+background color.
      **/
     sunzi: {
-        default: false,
-        type: ParamType.BOOLEAN,
-        displayName: 'Sunzi mode (warning: stroboscopic effect)',
+        default: 0,
+        type: ParamType.NUMBER,
+        displayName: 'Sunzi effect',
         description:
-            'The canvas blanks between each term of the'
-            + 'sequence, so the residues of a single term are shown'
-            + 'in each frame',
+            'The canvas background colour is painted at this '
+            + 'opacity between '
+            + 'each term of the '
+            + 'sequence.  '
+            + 'If 0, no effect.  If 1, canvas completely '
+            + 'blanks between terms (warning! can be '
+            + 'stroboscopic), so the residues of only a'
+            + 'single term are shown'
+            + 'in each frame.  '
+            + 'Otherwise a history fading effect (try 0.05).',
         required: true,
         visibleValue: true,
+        validate: function (n: number, status: ValidationStatus) {
+            if (n < 0 || n > 1) status.addError('Must be between 0 and 1.')
+        },
+    },
+    /** md
+- Frame rate:  Terms per second.  Can be useful in combination with
+Sunzi mode.
+     **/
+    frameRate: {
+        default: 60,
+        type: ParamType.NUMBER,
+        displayName: 'Frame rate',
+        required: true,
+        visibleValue: true,
+        validate: function (n: number, status: ValidationStatus) {
+            if (n < 0 || n > 100)
+                status.addError('Must be between 0 and 100.')
+        },
     },
 } satisfies GenericParamDescription
 
@@ -201,6 +233,7 @@ class ModFill extends P5Visualizer(paramDesc) {
     useMod = 0
     useFillColor = INVALID_COLOR
     useHighColor = INVALID_COLOR
+    useBackColor = INVALID_COLOR
     i = 0n
 
     trySafeNumber(input: bigint) {
@@ -304,15 +337,17 @@ class ModFill extends P5Visualizer(paramDesc) {
         this.rectWidth = this.sketch.width / this.useMod
         this.rectHeight = this.sketch.height / this.useMod
 
+        this.sketch.frameRate(this.frameRate)
         this.sketch.noStroke()
-        this.sketch.background(this.backgroundColor)
+        this.useBackColor = this.sketch.color(this.backgroundColor)
+        this.sketch.background(this.useBackColor)
         this.i = this.seq.first
 
         // set fill color info
         this.useFillColor = this.sketch.color(this.fillColor)
         this.useHighColor = this.sketch.color(this.highColor)
 
-        if (this.sunzi) this.sketch.frameRate(3)
+        this.useBackColor.setAlpha(255 * this.sunzi)
     }
 
     draw() {
@@ -320,7 +355,11 @@ class ModFill extends P5Visualizer(paramDesc) {
             this.stop()
             return
         }
-        if (this.sunzi) this.sketch.background(this.backgroundColor)
+        // sunzi effect
+        this.sketch.fill(this.useBackColor)
+        this.sketch.rect(0, 0, this.sketch.width, this.sketch.height)
+
+        // draw residues
         this.drawNew(this.i)
         // Important to increment _after_ drawNew completes, because it
         // won't complete on a cache miss, and in that case we don't want to

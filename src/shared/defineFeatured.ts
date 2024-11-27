@@ -53,9 +53,9 @@ const featuredSIMs = [
         "Picasso's Periods",
         'ModFill',
         'Formula',
-        'modDimension=50&backgroundColor=000000&fillColor=1a5fb4'
-            + '&alpha=0.1&highlightFormula=isPrime%28a%29&highColor=bf8383'
-            + '&alphaHigh=0.4',
+        'modDimension=100&backgroundColor=000000&fillColor=1a5fb4'
+            + '&alpha=0.1&aspectRatio=false&highlightFormula=isPrime%28a%29'
+            + '&highColor=bf8383&alphaHigh=0.4&sunzi=0.03',
         'formula=n%5E3%2B2n%2B1'
     ),
     specimenQuery(
