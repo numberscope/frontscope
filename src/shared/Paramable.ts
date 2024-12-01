@@ -189,7 +189,7 @@ export interface ParamInterface<PT extends ParamType> {
 :   If the `type` property is `ParamType.FORMULA`, this property gives the
     list of free variables that are allowed to occur in the formula. The
     entity using the resulting MathFormula will have to supply the values
-    of those variables when it calls `compute()` on the MathFormula.
+    of those variables when it calls `computeWithStatus()` on the MathFormula.
 <!-- -->
     **/
     /** md */

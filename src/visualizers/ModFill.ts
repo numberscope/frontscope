@@ -7,6 +7,11 @@ import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
+/* Helper for parameter specifications: */
+function nontrivialFormula(fmla: string) {
+    return fmla !== '' && fmla !== '0' && fmla !== 'false'
+}
+
 /** md
 # Mod Fill Visualizer
 
@@ -31,7 +36,6 @@ to control color and transparency of the fill.
 
 ## Parameters
 **/
-
 const paramDesc = {
     /** md
 - Highest modulus: The number of rows to display, which corresponds
@@ -55,7 +59,6 @@ to the largest modulus to consider.
         type: ParamType.COLOR,
         displayName: 'Background color',
         required: true,
-        visibleValue: true,
     },
     /** md
 - Fill color: The color used to fill each cell by default.
@@ -65,7 +68,6 @@ to the largest modulus to consider.
         type: ParamType.COLOR,
         displayName: 'Fill color',
         required: true,
-        visibleValue: true,
     },
     /** md
 - Opacity: The rate at which cells darken with repeated drawing.  This
@@ -89,7 +91,6 @@ If the function evaluates below 0, it will behave as 0; if it
             + '(transparent) and 1 (solid).  '
             + "Can be a function in 'n' (index), 'a' (value) "
             + "and 'm' (modulus).",
-        visibleValue: true,
         required: false,
     },
     /** md
@@ -100,7 +101,6 @@ If the function evaluates below 0, it will behave as 0; if it
         type: ParamType.BOOLEAN,
         displayName: 'Square canvas',
         required: false,
-        visibleValue: true,
     },
     /** md
 - Highlight formula: A formula whose output, modulo 2, determines whether
@@ -127,7 +127,6 @@ involve variables 'n' (index), 'a' (value) and 'm' (modulus).  Default:
             + "'isPrime(n)' highlights terms of prime index; "
             + "'a' to highlight terms of odd value; 'm == 30' "
             + 'will highlight the modulus 30 column.',
-        visibleValue: true,
         required: false,
     },
     /** md
@@ -140,24 +139,19 @@ involve variables 'n' (index), 'a' (value) and 'm' (modulus).  Default:
         required: true,
         visibleDependency: 'highlightFormula',
         visiblePredicate: (dependentValue: MathFormula) =>
-            dependentValue.source !== '',
+            nontrivialFormula(dependentValue.source),
     },
     /** md
 - Highlight opacity: The rate at which cells darken with repeated
 drawing.  This should be set between 0 (transparent) and 1 (opaque),
-typically as a constant,
-but can be set as a function of _m_, the modulus.
-If the function evaluates below 0, it will behave as 0; if it
- evaluates above 1, it will behave as 1.  Default:
+typically as a constant, but can be set as a function of _n_, the index of
+the entry, _a_, the value of the entry, and _m_, the modulus.
+If the function evaluates to a value below 0, it will behave as 0; if its
+value is above 1, it will behave as 1.  If this parameter is not specified,
+the same value/formula for opacity as described above will be used.
      **/
     alphaHigh: {
-        // I don't know how to make this default to
-        // what another parameter holds
-        default: new MathFormula(
-            /** md */
-            `1`
-            /* **/
-        ),
+        default: new MathFormula(''),
         type: ParamType.FORMULA,
         inputs: ['n', 'a', 'm'],
         displayName: 'Highlight opacity',
@@ -167,10 +161,11 @@ If the function evaluates below 0, it will behave as 0; if it
             + '(transparent) and 1 (opaque).  '
             + "Can be a function in 'n' (index), 'a' (value) "
             + "and 'm' (modulus).",
+        placeholder: '[same as Opacity]',
         required: false,
         visibleDependency: 'highlightFormula',
         visiblePredicate: (dependentValue: MathFormula) =>
-            dependentValue.source !== '',
+            nontrivialFormula(dependentValue.source),
     },
     /** md
 - Sunzi mode: Warning: can create a stroboscopic effect.
@@ -200,7 +195,6 @@ background color.
             + 'in each frame.  '
             + 'Otherwise a history fading effect (try 0.05).',
         required: true,
-        visibleValue: true,
         validate: function (n: number, status: ValidationStatus) {
             if (n < 0 || n > 1) status.addError('Must be between 0 and 1.')
         },
@@ -214,7 +208,8 @@ Sunzi mode.
         type: ParamType.NUMBER,
         displayName: 'Frame rate',
         required: true,
-        visibleValue: true,
+        visibleDependency: 'sunzi',
+        visiblePredicate: s => s !== 0,
         validate: function (n: number, status: ValidationStatus) {
             if (n < 0 || n > 100)
                 status.addError('Must be between 0 and 100.')
@@ -251,6 +246,8 @@ class ModFill extends P5Visualizer(paramDesc) {
     drawNew(num: bigint) {
         let drawColor = this.useFillColor
         let alphaFormula = this.alpha
+        let alphaStatus = this.statusOf.alpha
+        let alphaVars = this.alpha.freevars
         const value = this.seq.getElement(num)
 
         // determine alpha
@@ -265,27 +262,40 @@ class ModFill extends P5Visualizer(paramDesc) {
         let x = 0
         for (let mod = 1; mod <= this.useMod; mod++) {
             // needs to take BigInt when implemented
-            const high = this.highlightFormula.compute(useNum, useValue, mod)
-
-            // set color
-            if (Number(math.modulo(high, 2)) === 1) {
-                drawColor = this.useHighColor
-                alphaFormula = this.alphaHigh
-                const varsAlpha = this.alphaHigh.freevars
-                if (varsAlpha.includes('n')) useNum = this.trySafeNumber(num)
-                if (varsAlpha.includes('a'))
-                    useValue = this.trySafeNumber(value)
-            } else {
-                drawColor = this.useFillColor
-                alphaFormula = this.alpha
-                const varsAlpha = this.alpha.freevars
-                if (varsAlpha.includes('n')) useNum = this.trySafeNumber(num)
-                if (varsAlpha.includes('a'))
-                    useValue = this.trySafeNumber(value)
-            }
-            drawColor.setAlpha(
-                255 * alphaFormula.compute(useNum, useValue, mod)
+            const highValue = this.highlightFormula.computeWithStatus(
+                this.statusOf.highlightFormula,
+                useNum,
+                useValue,
+                mod
             )
+            let high = false
+            if (typeof highValue === 'boolean') high = highValue
+            else if (
+                typeof highValue === 'number'
+                || typeof highValue === 'bigint'
+            ) {
+                high = math.modulo(highValue, 2) === 1n
+            }
+            // set color
+            if (high) {
+                drawColor = this.useHighColor
+                if (this.alphaHigh.source !== '') {
+                    alphaFormula = this.alphaHigh
+                    alphaStatus = this.statusOf.alphaHigh
+                    alphaVars = this.alphaHigh.freevars
+                }
+            }
+            if (alphaVars.includes('n')) useNum = this.trySafeNumber(num)
+            if (alphaVars.includes('a')) useValue = this.trySafeNumber(value)
+            const alphaValue = alphaFormula.computeWithStatus(
+                alphaStatus,
+                useNum,
+                useValue,
+                mod
+            )
+            if (typeof alphaValue === 'number') {
+                drawColor.setAlpha(255 * alphaValue)
+            }
 
             // draw rectangle
             this.sketch.fill(drawColor)
