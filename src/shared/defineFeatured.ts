@@ -20,10 +20,18 @@ const featuredSIMs = [
         'Dance no. 163',
         'ModFill',
         'Formula',
-        'modDimension=600&fillColor=a51d2d&alpha=0.07*log%28m%29'
-            + '&highlightFormula=n+mod+163+%3E+81&highColor=ff7800'
-            + '&alphaHigh=0.07*log%28m%29',
+        'modDimension=600&fillColor=a51d2d&alpha=min(0.4%2C+0.01*m)'
+            + '&highlightFormula=n+mod+163+%3E+81&highColor=ff7800',
         'formula=163n'
+    ),
+    specimenQuery(
+        "Virahanka's Prime Construct",
+        'ModFill',
+        'OEIS A000045',
+        'modDimension=130&backgroundColor=62a0ea&fillColor=613583'
+            + '&alpha=0.05&aspectRatio=false&highlightFormula=isPrime%28n%29'
+            + '&highColor=e5a50a',
+        ''
     ),
     specimenQuery(
         'Prime Residues',

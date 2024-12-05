@@ -147,8 +147,9 @@ drawing.  This should be set between 0 (transparent) and 1 (opaque),
 typically as a constant, but can be set as a function of _n_, the index of
 the entry, _a_, the value of the entry, and _m_, the modulus.
 If the function evaluates to a value below 0, it will behave as 0; if its
-value is above 1, it will behave as 1.  If this parameter is not specified,
-the same value/formula for opacity as described above will be used.
+value is above 1, it will behave as 1.  Default:  if this parameter
+is not specified, the same value/formula for opacity as described
+above will be used.
      **/
     alphaHigh: {
         default: new MathFormula(''),
@@ -177,7 +178,8 @@ In that case, it helps to turn down the Frame rate (it
 can create quite a stroboscopic effect).  If
 set in the region of 0.05, it has a "history fading effect"
 that the long past terms fade their contribution to the
-background color.
+background color.  This is named for Sunzi's Theorem
+(Chinese Remainder Theorem).
      **/
     sunzi: {
         default: 0,
@@ -190,11 +192,11 @@ background color.
             + 'sequence.  '
             + 'If 0, no effect.  If 1, canvas completely '
             + 'blanks between terms (warning! can be '
-            + 'stroboscopic), so the residues of only a'
-            + 'single term are shown'
+            + 'stroboscopic), so the residues of only a '
+            + 'single term are shown '
             + 'in each frame.  '
             + 'Otherwise a history fading effect (try 0.05).',
-        required: true,
+        required: false,
         validate: function (n: number, status: ValidationStatus) {
             if (n < 0 || n > 1) status.addError('Must be between 0 and 1.')
         },
@@ -207,7 +209,7 @@ Sunzi mode.
         default: 60,
         type: ParamType.NUMBER,
         displayName: 'Frame rate',
-        required: true,
+        required: false,
         visibleDependency: 'sunzi',
         visiblePredicate: s => s !== 0,
         validate: function (n: number, status: ValidationStatus) {
