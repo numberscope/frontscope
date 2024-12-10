@@ -506,7 +506,7 @@ export interface ParamableInterface {
 /* Helper functions to realize parameters given parameter description(s)
  * and (a list of) tentative string value(s)
  */
-function realizeOne<T extends ParamType>(
+export function realizeOne<T extends ParamType>(
     spec: ParamInterface<T>,
     tentative: string
 ): RealizedPropertyType[T] {
