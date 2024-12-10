@@ -354,20 +354,21 @@ class ModFill extends P5Visualizer(paramDesc) {
             this.useMod = this.maxModulus
         } else this.useMod = Number(this.modDimension)
 
-        // Now we can calculate the cell size and offset:
+        // Now we can calculate the cell size:
         this.rectWidth = this.sketch.width / this.useMod
         this.rectHeight = this.sketch.height / this.useMod
 
-        this.sketch.frameRate(this.frameRate)
-        this.sketch.noStroke()
+        // set color info
         this.useBackColor = this.sketch.color(this.backgroundColor)
-        this.sketch.background(this.useBackColor)
-        this.i = this.seq.first
-
-        // set fill color info
         this.useFillColor = this.sketch.color(this.fillColor)
         this.useHighColor = this.sketch.color(this.highColor)
 
+        // Set up to draw:
+        this.sketch
+            .frameRate(this.frameRate)
+            .noStroke()
+            .background(this.useBackColor)
+        this.i = this.seq.first
         this.useBackColor.setAlpha(255 * this.sunzi)
     }
 
