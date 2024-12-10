@@ -25,4 +25,8 @@ router.beforeEach(to => {
     if (to.fullPath === '/') return `/?${getCurrent().query}`
 })
 
+router.onError(error => {
+    console.warn('Error during routing:', error)
+})
+
 export default router

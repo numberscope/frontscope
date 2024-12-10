@@ -78,9 +78,9 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import {oeisLinkFor} from '@/shared/browserCaching'
+    import {realizeOne} from '@/shared/Paramable'
     import type {ParamInterface, ParamableInterface} from '@/shared/Paramable'
-    import typeFunctions, {ParamType} from '@/shared/ParamType'
-    import type {RealizedPropertyType} from '@/shared/ParamType'
+    import {ParamType} from '@/shared/ParamType'
 
     import MageExchangeA from './MageExchangeA.vue'
     import ParamField from './ParamField.vue'
@@ -139,11 +139,7 @@
                 if (!dep) return true
                 if (this.paramable.statusOf[dep].invalid()) return false
                 const parent = this.paramable.params[dep]
-                const realizer = typeFunctions[parent.type].realize as (
-                    this: ParamInterface<typeof parent.type>,
-                    tentative: string
-                ) => RealizedPropertyType[typeof parent.type]
-                const v = realizer.call(
+                const v = realizeOne(
                     parent,
                     this.paramable.tentativeValues[dep]
                 )

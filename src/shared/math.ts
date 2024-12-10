@@ -80,10 +80,12 @@ const anotherNegInf = math.bigmin(5n, math.negInfinity, -3)
 import isqrt from 'bigint-isqrt'
 import {modPow} from 'bigint-mod-arith'
 import {create, all} from 'mathjs'
-import type {MathJsInstance, EvalFunction, SymbolNode} from 'mathjs'
+import type {EvalFunction, MathJsInstance, MathType, SymbolNode} from 'mathjs'
 import temml from 'temml'
-export type {MathNode, SymbolNode} from 'mathjs'
 
+import type {ValidationStatus} from './ValidationStatus'
+
+export type {MathNode, SymbolNode} from 'mathjs'
 type Integer = number | bigint
 
 // eslint-disable-next-line no-loss-of-precision
@@ -267,10 +269,18 @@ math.bigmin = (...args: Integer[]): ExtendedBigint => {
     return ret
 }
 
+/* Helper for outputting scopes: */
+type ScopeType = Record<string, MathType | Record<string, number>>
+function scopeToString(scope: ScopeType) {
+    return Object.entries(scope)
+        .map(([variable, value]) => `${variable}=${math.format(value)}`)
+        .join(', ')
+}
+const maxWarns = 3
+const mathMark = 'mathjs: '
 /**
  * Class to encapsulate a mathjs formula
  */
-
 export class MathFormula {
     evaluator: EvalFunction
     inputs: string[]
@@ -278,17 +288,17 @@ export class MathFormula {
     canonical: string
     latex: string
     mathml: string
+    freevars: string[]
     constructor(fmla: string, inputs?: string[]) {
         const parsetree = math.parse(fmla)
+        this.freevars = parsetree
+            .filter((node, path) => math.isSymbolNode(node) && path !== 'fn')
+            .map(node => (node as SymbolNode).name)
         if (inputs) {
             this.inputs = inputs
         } else {
             // inputs default to all free variables
-            this.inputs = parsetree
-                .filter(
-                    (node, path) => math.isSymbolNode(node) && path !== 'fn'
-                )
-                .map(node => (node as SymbolNode).name)
+            this.inputs = this.freevars
         }
         this.source = fmla
         this.canonical = parsetree.toString({parenthesis: 'auto'})
@@ -296,7 +306,76 @@ export class MathFormula {
         this.mathml = temml.renderToString(this.latex, {wrap: 'tex'})
         this.evaluator = parsetree.compile()
     }
+    /**
+     * The recommended way to obtain the value of a mathjs formula object:
+     * Call it with a ValidationStatus object, and either the values for
+     * the input variables (if any) as additional arguments, or a single
+     * plain object with keys the input variable names and values their
+     * values to be used in computing the formula.
+     * It checks for errors in the computation and if any occur, adds
+     * warnings to the provided status object.
+     * @param {ValidationStatus} status  The object to report warnings to
+     * @param {object | MathType, MathType, ...} the inputs to the formula
+     * @returns {MathType} the result of evaluating the formula
+     */
+    computeWithStatus(
+        status: ValidationStatus,
+        a: number | Record<string, number>,
+        ...rst: number[]
+    ) {
+        let scope: ScopeType = {}
+        if (typeof a === 'object' && this.inputs.every(i => i in a)) {
+            scope = a
+        } else {
+            scope = {[this.inputs[0]]: a}
+            for (let ix = 0; ix < rst.length; ++ix) {
+                scope[this.inputs[ix + 1]] = rst[ix]
+            }
+        }
+        let result: MathType = 0
+        try {
+            result = this.evaluator.evaluate(scope)
+        } catch (err: unknown) {
+            let nWarns = status.warnings.reduce(
+                (k, warning) => k + (warning.startsWith(mathMark) ? 1 : 0),
+                0
+            )
+            nWarns++ // We're about to add one
+            if (nWarns < maxWarns) {
+                status.addWarning(
+                    `${mathMark}value for ${scopeToString(scope)} set to `
+                        + `${result} because of `
+                        + (err instanceof Error
+                            ? err.message
+                            : 'of unknown error.')
+                )
+            } else if (nWarns === maxWarns) {
+                status.addWarning(`${mathMark}1 additional warning discarded`)
+            } else {
+                // replace discarded message
+                const warnIndex = status.warnings.findIndex(
+                    element =>
+                        element.startsWith(mathMark)
+                        && element.endsWith('discarded')
+                )
+                if (warnIndex >= 0) {
+                    const oldWarn = status.warnings[warnIndex]
+                    status.warnings.splice(warnIndex, 1)
+                    nWarns = parseInt(oldWarn.substr(mathMark.length)) + 1
+                }
+                status.addWarning(
+                    `${mathMark}${nWarns} additional warnings discarded`
+                )
+            }
+        }
+        return result
+    }
 
+    /**
+     * The non-recommended way to compute with a mathjs formula object;
+     * operates just like computeWithStatus except takes no status
+     * argument and does no error checking.
+     */
     compute(a: number | Record<string, number>, ...rst: number[]) {
         if (typeof a === 'object' && this.inputs.every(i => i in a)) {
             return this.evaluator.evaluate(a)

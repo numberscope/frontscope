@@ -177,7 +177,7 @@ export interface ParamInterface<PT extends ParamType> {
 :   If the `visibleDependency` property is specified, then this parameter
     will only be visible in the UI if the function given as the
     `visiblePredicate` property of this parameter returns true when called
-    with the value of the parameter nameed by the `visibleDependency`
+    with the value of the parameter named by the `visibleDependency`
     property. Note that the `never` type above simply means that the argument
     to the `visiblePredicate` function may have any type.
 <!-- -->
@@ -189,7 +189,7 @@ export interface ParamInterface<PT extends ParamType> {
 :   If the `type` property is `ParamType.FORMULA`, this property gives the
     list of free variables that are allowed to occur in the formula. The
     entity using the resulting MathFormula will have to supply the values
-    of those variables when it calls `compute()` on the MathFormula.
+    of those variables when it calls `computeWithStatus()` on the MathFormula.
 <!-- -->
     **/
     /** md */
@@ -437,7 +437,7 @@ export interface ParamableInterface {
     produce a valid entity (typically Sequence or Visualizer)?
 <!-- --> **/
     /** xmd */
-    validate(): Promise<ValidationStatus> /* **/
+    validate(): ValidationStatus /* **/
     /** xmd
 :   This method should determine the overall validity of all of the
     `tentativeValues` of this instance of the `ParamableInterface`. It is
@@ -452,7 +452,7 @@ export interface ParamableInterface {
     /** xmd */
     assignParameters(
         realized?: ParamValues<GenericParamDescription>
-    ): Promise<void> /* **/
+    ): void /* **/
     /** xmd
 :   This method must copy the realized value of the proper type of the
     tentative value of each paramaeter to the location where this instance
@@ -469,11 +469,7 @@ export interface ParamableInterface {
 
     This method may optionally be called with a pre-realized parameter
     values object, which it may then assume is correct, in order to avoid
-    the computation of re-realizing the tentative values. Note the method is
-    typically `async` as indicatd by its Promise return value, in case the
-    consequences of the parameter assignment are computationally intensive
-    (the new parameter values could trigger extensive internal recompuations
-    in the instance object).
+    the computation of re-realizing the tentative values.
 <!-- --> **/
     /** xmd */
     refreshParams(): void /* **/
@@ -510,7 +506,7 @@ export interface ParamableInterface {
 /* Helper functions to realize parameters given parameter description(s)
  * and (a list of) tentative string value(s)
  */
-function realizeOne<T extends ParamType>(
+export function realizeOne<T extends ParamType>(
     spec: ParamInterface<T>,
     tentative: string
 ): RealizedPropertyType[T] {
@@ -568,6 +564,7 @@ export class Paramable implements ParamableInterface {
     tentativeValues: GenericStringFields
     statusOf: Record<string, ValidationStatus> = {}
     validationStatus: ValidationStatus
+    parChangePromise: Promise<void> | undefined = undefined
 
     constructor(params: GenericParamDescription) {
         this.params = params
@@ -612,7 +609,7 @@ export class Paramable implements ParamableInterface {
         ).category
     }
 
-    async validate() {
+    validate() {
         // first handle the individual validations
         const parmNames = Object.keys(this.params)
         const realized = Object.fromEntries(
@@ -629,7 +626,7 @@ export class Paramable implements ParamableInterface {
         }
         this.validationStatus = this.checkParameters(realized)
         if (this.validationStatus.isValid()) {
-            await this.assignParameters(realized)
+            this.assignParameters(realized)
         }
         return this.validationStatus
     }
@@ -701,7 +698,7 @@ export class Paramable implements ParamableInterface {
     properties that have been written into the object.
 <!-- --> **/
 
-    async assignParameters(realized?: ParamValues<GenericParamDescription>) {
+    assignParameters(realized?: ParamValues<GenericParamDescription>) {
         if (!realized)
             realized = realizeAll(this.params, this.tentativeValues)
 
@@ -730,7 +727,15 @@ export class Paramable implements ParamableInterface {
                 }
             }
         }
-        if (changed.length > 0) await this.parametersChanged(changed)
+        if (changed.length > 0) {
+            if (this.parChangePromise) {
+                this.parChangePromise.then(() =>
+                    this.parametersChanged(changed)
+                )
+            } else {
+                this.parChangePromise = this.parametersChanged(changed)
+            }
+        }
     }
 
     refreshParams(): void {

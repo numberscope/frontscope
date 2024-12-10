@@ -284,6 +284,8 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
         async cacheValues(n: bigint) {
             // Let any existing value caching complete
             await this.valueCachingPromise
+            // Let any pending parameter changes complete
+            if (this.parChangePromise) await this.parChangePromise
             if (n > this.lastValueCached) {
                 this.valueCachingPromise = this.fillValueCache(n)
                 await this.valueCachingPromise

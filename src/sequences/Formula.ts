@@ -119,12 +119,17 @@ class Formula extends Cached(paramDesc) {
     }
 
     calculate(n: bigint) {
+        const rawResult = this.formula.computeWithStatus(
+            this.statusOf.formula,
+            Number(n)
+        )
+        const resultType = typeof rawResult
         let result = 0
-        let resultType = ''
+        // Conversion and flooring can lead to errors, so use try/catch and
+        // then warn on parameter tab if any errors occur.
         try {
-            const rawResult = this.formula.compute(Number(n))
-            resultType = typeof rawResult
-            result = math.floor(rawResult)
+            //@ts-expect-error numeric missing in .d.ts in v12; update will fix
+            result = math.floor(math.numeric(rawResult))
             if (isNaN(result)) {
                 result = 0
                 throw new Error(

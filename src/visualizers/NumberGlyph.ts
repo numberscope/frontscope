@@ -273,8 +273,13 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         // iterate smaller and smaller circles
         for (let x = 0; x < this.radii; x++) {
             // set brightness based on function value
-            const val = this.growthFormula.compute(numberNow, x)
-            bright = val
+            const val = this.growthFormula.computeWithStatus(
+                this.statusOf.growthFormula,
+                numberNow,
+                x
+            )
+            //@ts-expect-error numeric not in .d.ts, mathjs update will fix
+            bright = math.numeric(val)
             if (bright < 0) {
                 bright = -bright
             }
