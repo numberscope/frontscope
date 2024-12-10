@@ -17,18 +17,53 @@ const featuredSIMs = [
         'corners=8&walkers=8&alpha=0.7&pixelsPerFrame=2000'
     ),
     specimenQuery(
-        'Twelve',
+        'Dance no. 163',
         'ModFill',
         'Formula',
-        'modDimension=12',
-        'formula=12'
+        'modDimension=600&fillColor=a51d2d&alpha=min(0.4%2C+0.01*m)'
+            + '&highlightFormula=n+mod+163+%3E+81&highColor=ff7800',
+        'formula=163n'
     ),
     specimenQuery(
-        'Residue Rise',
+        "Virahanka's Prime Construct",
+        'ModFill',
+        'OEIS A000045',
+        'modDimension=130&backgroundColor=62a0ea&fillColor=613583'
+            + '&alpha=0.05&aspectRatio=false&highlightFormula=isPrime%28n%29'
+            + '&highColor=e5a50a',
+        ''
+    ),
+    specimenQuery(
+        'Prime Residues',
+        'ModFill',
+        'Formula',
+        'fillColor=1a5fb4&alpha=0.1&highlightFormula=isPrime%28n%29'
+            + '&highColor=f66151',
+        'formula=n'
+    ),
+    specimenQuery(
+        'Baffling Beatty Bars',
+        'ModFill',
+        'Formula',
+        'modDimension=350&fillColor=26a269&alpha=0.3'
+            + '&highlightFormula=floor%28sqrt%283%29n%29&highColor=1a5fb4',
+        'formula=floor%28sqrt%282%29*n%29'
+    ),
+    specimenQuery(
+        'Woven Residues',
         'ModFill',
         'Random',
-        'modDimension=10000',
-        'max=90000'
+        'modDimension=5000',
+        'min=10000&max=100000'
+    ),
+    specimenQuery(
+        "Picasso's Periods",
+        'ModFill',
+        'Formula',
+        'modDimension=100&backgroundColor=000000&fillColor=1a5fb4'
+            + '&alpha=0.15&aspectRatio=false&highlightFormula=isPrime%28a%29'
+            + '&highColor=bf8383&alphaHigh=0.4&sunzi=0.03&frameRate=24',
+        'formula=n%5E3%2B2n%2B1'
     ),
     specimenQuery(
         'Chaos Game',

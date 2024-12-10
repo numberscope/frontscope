@@ -1,3 +1,4 @@
+import {alertMessage} from './alertMessage'
 import {math} from './math'
 import {specimenQuery, parseSpecimenQuery} from './specimenEncoding'
 
@@ -136,14 +137,17 @@ export class Specimen {
      * Displays a specimen within an HTML element
      * @param {HTMLElement} location  where in the DOM to insert the specimen
      */
-    async setup(location: HTMLElement) {
+    setup(location: HTMLElement) {
         if (!this._sequence || !this._visualizer) {
             throw new Error('Attempt to display uninitialized Specimen.')
         }
 
         this.location = location
         this.isSetup = true
-        this.reset()
+        this.reset().catch(e => {
+            console.error(`ERROR in Specimen "${this.name}" reset:`, e)
+            window.alert(alertMessage(e))
+        })
     }
 
     /**
@@ -202,6 +206,15 @@ export class Specimen {
         return this._visualizer
     }
     /**
+     * Returns the name of the specimen's visualizer, or '' if not yet
+     * initialized
+     * @returns {string} name
+     */
+    visualizerName(): string {
+        if (this._visualizer) return this._visualizer.name
+        return ''
+    }
+    /**
      * Returns the specimen's sequence
      * @returns {SequenceInterface} the sequence shown in this specimen
      */
@@ -210,6 +223,15 @@ export class Specimen {
             throw new Error('Attempt to get sequence of empty specimen')
         }
         return this._sequence
+    }
+
+    /**
+     * Returns the name of the specimen's sequence, or '' if not yet initialized
+     * @returns {string} name
+     */
+    sequenceName(): string {
+        if (this._sequence) return this._sequence.name
+        return ''
     }
 
     /**
