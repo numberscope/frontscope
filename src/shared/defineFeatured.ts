@@ -38,7 +38,7 @@ const featuredSIMs = [
         'ModFill',
         'Formula',
         'fillColor=1a5fb4&alpha=0.1&highlightFormula=isPrime%28n%29'
-            + '&highColor=f66151&alphaHigh=0.1',
+            + '&highColor=f66151',
         'formula=n'
     ),
     specimenQuery(
@@ -46,8 +46,7 @@ const featuredSIMs = [
         'ModFill',
         'Formula',
         'modDimension=350&fillColor=26a269&alpha=0.3'
-            + '&highlightFormula=floor%28sqrt%283%29n%29&highColor=1a5fb4'
-            + '&alphaHigh=0.3',
+            + '&highlightFormula=floor%28sqrt%283%29n%29&highColor=1a5fb4',
         'formula=floor%28sqrt%282%29*n%29'
     ),
     specimenQuery(
@@ -62,8 +61,8 @@ const featuredSIMs = [
         'ModFill',
         'Formula',
         'modDimension=100&backgroundColor=000000&fillColor=1a5fb4'
-            + '&alpha=0.1&aspectRatio=false&highlightFormula=isPrime%28a%29'
-            + '&highColor=bf8383&alphaHigh=0.4&sunzi=0.03',
+            + '&alpha=0.15&aspectRatio=false&highlightFormula=isPrime%28a%29'
+            + '&highColor=bf8383&alphaHigh=0.4&sunzi=0.03&frameRate=24',
         'formula=n%5E3%2B2n%2B1'
     ),
     specimenQuery(
