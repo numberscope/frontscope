@@ -34,7 +34,7 @@ test.describe('Gallery', () => {
         await expect(page.url()).not.toContain('gallery')
         await expect(
             await page.locator('#sequenceTab .item-name')
-        ).toContainText(/12$/)
+        ).toContainText(/163/)
         await expect(
             await page.locator('#visualiserTab .item-name').innerText()
         ).toMatch('Mod Fill')
