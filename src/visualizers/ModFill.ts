@@ -28,7 +28,7 @@ style="margin-left: 1em; margin-right: 0.5em"
 The _m_-th column of this triangular diagram (reading left to right)
 has _m_ cells (lowest is 0, highest is m-1), which are colored
 each time the corresponding residue modulo _m_ occurs for
-some entry of the sequence. The sequence terms a(n) are considered in
+some entry of the sequence. The sequence terms _a_(_n_) are considered in
 order, filling the corresponding cells in turn, so you can get an
 idea of when various residues occur by watching the order
 the cells are filled in as the diagram is drawn.  There are options
@@ -38,7 +38,7 @@ to control color and transparency of the fill.
 **/
 const paramDesc = {
     /** md
-- Highest modulus: The number of rows to display, which corresponds
+- Highest modulus: The number of columns to display, which corresponds
 to the largest modulus to consider.
      **/
     // note will be small enough to fit in a `number` when we need it to.
@@ -72,9 +72,10 @@ to the largest modulus to consider.
     /** md
 - Opacity: The rate at which cells darken with repeated drawing.  This
 should be set between 0 (transparent) and 1 (solid), typically as a constant,
-but can be set as a function of _m_, the modulus.
-If the function evaluates below 0, it will behave as 0; if it
- evaluates above 1, it will behave as 1.  Default:
+but can be set as a function of _n_, the sequence index, _a_, the sequence
+entry, and/or _m_, the modulus.
+If the function evaluates to a number less than 0, it will behave as 0; if it
+ evaluates to more than 1, it will behave as 1.  Default:
      **/
     alpha: {
         default: new MathFormula(
@@ -89,12 +90,13 @@ If the function evaluates below 0, it will behave as 0; if it
             'The opacity of each new rectangle (rate at which cells'
             + ' darken with repeated drawing).  Between 0 '
             + '(transparent) and 1 (solid).  '
-            + "Can be a function in 'n' (index), 'a' (value) "
+            + "Can be a function in 'n' (index), 'a' (entry) "
             + "and 'm' (modulus).",
         required: false,
     },
     /** md
 - Square canvas:  If true, force canvas to be aspect ratio 1 (square).
+Defaults to false.
      **/
     aspectRatio: {
         default: 0,
@@ -104,8 +106,10 @@ If the function evaluates below 0, it will behave as 0; if it
     },
     /** md
 - Highlight formula: A formula whose output, modulo 2, determines whether
-to apply the highlight color (residue 0) or fill color (residue 1).  Can be
-involve variables 'n' (index), 'a' (value) and 'm' (modulus).  Default:
+to apply the highlight color (residue 0) or fill color (residue 1).
+Note that a boolean `true` value counts as 1 and `false` as 0. As with
+Opacity, the formula can involve variables _n_ (index), _a_ (entry) and/or
+_m_ (modulus).  Default:
 **/
     highlightFormula: {
         default: new MathFormula(
@@ -119,14 +123,22 @@ involve variables 'n' (index), 'a' (value) and 'm' (modulus).  Default:
         inputs: ['n', 'a', 'm'],
         displayName: 'Highlighting',
         description:
-            "A function in 'n' (index), 'a' (value) "
+            "A function in 'n' (index), 'a' (entry) "
             + "and 'm' (modulus); "
             + 'when output is odd '
             + '(number) or true (boolean), draws residue of '
-            + 'a(n) in the highlight color.  Examples: '
-            + "'isPrime(n)' highlights terms of prime index; "
-            + "'a' to highlight terms of odd value; 'm == 30' "
-            + 'will highlight the modulus 30 column.',
+            + 'a(n) in the highlight color.'
+            /** md
+{! ModFill.ts extract:
+    start: '[*] EXAMPLES [*]'
+    stop: 'required[:]'
+    replace: [['^\s*[+]\s"(.*)"[\s,]*$', '       \1']]
+!}
+        **/
+            /* EXAMPLES */
+            + 'Examples: `isPrime(n)` highlights entries with prime index; '
+            + '`a` highlights entries with odd value; and `m == 30` '
+            + 'highlights the modulus 30 column.',
         required: false,
     },
     /** md
@@ -143,13 +155,10 @@ involve variables 'n' (index), 'a' (value) and 'm' (modulus).  Default:
     },
     /** md
 - Highlight opacity: The rate at which cells darken with repeated
-drawing.  This should be set between 0 (transparent) and 1 (opaque),
-typically as a constant, but can be set as a function of _n_, the index of
-the entry, _a_, the value of the entry, and _m_, the modulus.
-If the function evaluates to a value below 0, it will behave as 0; if its
-value is above 1, it will behave as 1.  Default:  if this parameter
-is not specified, the same value/formula for opacity as described
-above will be used.
+highlighting.  This should be set between 0 (transparent) and 1 (opaque),
+and has the analogous meaning and may use the same variables as Opacity.
+Default: if this parameter is not specified, the same value/formula for
+Opacity as described above will be used.
      **/
     alphaHigh: {
         default: new MathFormula(''),
@@ -177,9 +186,9 @@ allowing you to see each term of the sequence individually.
 In that case, it helps to turn down the Frame rate (it
 can create quite a stroboscopic effect).  If
 set in the region of 0.05, it has a "history fading effect"
-that the long past terms fade their contribution to the
-background color.  This is named for Sunzi's Theorem
-(Chinese Remainder Theorem).
+in that the contribution of long past terms fades into the background.
+This parameter is named for Sunzi's Theorem (also known as the
+Chinese Remainder Theorem).
      **/
     sunzi: {
         default: 0,
@@ -202,8 +211,8 @@ background color.  This is named for Sunzi's Theorem
         },
     },
     /** md
-- Frame rate:  Terms per second.  Can be useful in combination with
-Sunzi mode.
+- Frame rate: Entries displayed per second.  Can be useful in combination with
+Sunzi mode. Only visible when Sunzi mode is nonzero.
      **/
     frameRate: {
         default: 60,
