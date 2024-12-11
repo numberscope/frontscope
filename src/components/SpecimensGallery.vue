@@ -137,10 +137,13 @@
     thead {
         text-decoration: underline;
     }
+    tbody tr {
+        cursor: pointer;
+    }
     tr:nth-child(even) {
         background-color: var(--ns-color-pale);
     }
-    tr:hover {
+    tbody tr:hover {
         background-color: color-mix(
             in srgb,
             var(--ns-color-primary),
