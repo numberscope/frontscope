@@ -8,7 +8,8 @@ import {alertMessage} from './shared/alertMessage'
 const app = createApp(App)
 
 app.config.errorHandler = (err, vm, info) => {
-    console.error(`ERROR in Vue component ${vm}:`, err)
+    console.error('Numberscope encountered error:', err)
+    console.warn('    In component:', vm)
     console.warn('    Additional information:', info)
     window.alert(alertMessage(err))
 }
