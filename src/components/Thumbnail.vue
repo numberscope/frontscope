@@ -14,19 +14,32 @@
     let savedContainer: HTMLDivElement | null = null
     let specimen: Specimen | undefined = undefined
     let usingGC = false
+    const thumbnailGCmax = 8
     const props = defineProps<{query: string}>()
 
     onMounted(async () => {
         specimen = await Specimen.fromQuery(props.query)
         if (!(canvasContainer.value instanceof HTMLElement)) return
         savedContainer = canvasContainer.value
+        let setupNow = true
         if (specimen.visualizer.usesGL()) {
-            thumbnailGCcount.value += 1
-            usingGC = true
+            if (thumbnailGCcount.value < thumbnailGCmax) {
+                thumbnailGCcount.value += 1
+                usingGC = true
+            } else {
+                setupNow = false
+            }
         }
         console.log('THUMB setup', thumbnailGCcount.value, savedContainer)
-        specimen.setup(savedContainer)
-        setTimeout(() => specimen?.visualizer.stop(), 4000)
+        if (setupNow) {
+            specimen.setup(savedContainer)
+            setTimeout(() => specimen?.visualizer.stop(), 4000)
+        } else {
+            const limitMsg = document.createTextNode(
+                'All WebGL graphics contexts in use'
+            )
+            savedContainer.appendChild(limitMsg)
+        }
     })
 
     onUnmounted(() => {
