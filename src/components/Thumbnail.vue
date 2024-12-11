@@ -5,6 +5,7 @@
 <script setup lang="ts">
     import {onMounted, onUnmounted, ref} from 'vue'
     import {Specimen} from '@/shared/Specimen'
+    import {DrawingUnmounted} from '@/visualizers/VisualizerInterface'
 
     const canvasContainer = ref<HTMLDivElement | null>(null)
     let savedContainer: HTMLDivElement | null = null
@@ -26,7 +27,8 @@
         if (!specimen || !(savedContainer instanceof HTMLElement)) {
             return
         }
-        specimen.visualizer.depart(savedContainer)
+        const viz = specimen.visualizer
+        if (viz.drawingState !== DrawingUnmounted) viz.depart(savedContainer)
     })
 </script>
 

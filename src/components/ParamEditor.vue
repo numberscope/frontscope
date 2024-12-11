@@ -171,6 +171,7 @@
         font-size: var(--ns-size-heading);
         padding: 6px 8px 6px 8px;
         width: 100%;
+        cursor: pointer;
 
         a {
             color: var(--ns-color-grey);
