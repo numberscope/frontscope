@@ -28,6 +28,10 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
             this.name = this.category
         }
 
+        usesGL() {
+            return true
+        }
+
         // Just like P5Visualizer, but use WebGL renderer, load the brush,
         // and create a camera.
         // However we override rather than extend so there is only one call

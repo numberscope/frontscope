@@ -87,6 +87,15 @@ implementations for all or almost all of them.
 
 export interface VisualizerInterface extends ParamableInterface {
     /** md */
+    usesGL(): boolean
+    /* **/
+    /** md
+:   Should return true if this visualizer requires a WebGL graphics context
+    (of which a limited number are available concurrently in a browser),
+    false otherwise.
+<!-- -->
+    **/
+    /** md */
     view(sequence: SequenceInterface): Promise<void>
     /* **/
     /** md

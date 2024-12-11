@@ -92,6 +92,9 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         drawingState: DrawingState = DrawingUnmounted
 
         within?: HTMLElement
+        usesGL() {
+            return false
+        }
         get sketch(): p5 {
             if (this._sketch === undefined) {
                 throw (

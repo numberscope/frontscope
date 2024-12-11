@@ -83,6 +83,9 @@ test.describe('Scope: on some featured visualization', () => {
     })
 
     test('minimizing a tab', async ({page}) => {
+        await expect(page.locator('#visualiserTab')).not.toHaveClass(
+            /minimized/
+        )
         await page.locator('#visualiserTab .minimize').click()
         await expect(page.locator('#visualiserTab')).toHaveClass(/minimized/)
         await expect(
