@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-    import {onMounted, onUnmounted, ref} from 'vue'
+    import {onMounted, onUnmounted, ref, watch} from 'vue'
 
     import {thumbnailGCcount} from './thumbnails'
 
@@ -14,60 +14,68 @@
     let savedContainer: HTMLDivElement | null = null
     let specimen: Specimen | undefined = undefined
     let usingGC = false
-    const thumbnailGCmax = 8
+    let needsSetup = true
+    const TGClim = 7
     const props = defineProps<{query: string}>()
+
+    function setupSpecimen() {
+        needsSetup = false
+        if (!specimen || !savedContainer) return
+        specimen.setup(savedContainer)
+        setTimeout(() => {
+            if (usingGC) {
+                thumbnailGCcount.value -= 1
+                usingGC = false
+            }
+            if (!specimen || !savedContainer) return
+            const canvas = savedContainer.querySelector('canvas')
+            if (canvas instanceof HTMLCanvasElement) {
+                const {width, height} = canvas.getBoundingClientRect()
+                const vizShot = new Image(width, height)
+                vizShot.src = canvas.toDataURL()
+                specimen.visualizer.depart(savedContainer)
+                savedContainer.appendChild(vizShot)
+            } else {
+                specimen.visualizer.stop()
+            }
+        }, 4000)
+    }
 
     onMounted(async () => {
         specimen = await Specimen.fromQuery(props.query)
         if (!(canvasContainer.value instanceof HTMLElement)) return
         savedContainer = canvasContainer.value
-        let setupNow = true
         if (specimen.visualizer.usesGL()) {
-            if (thumbnailGCcount.value < thumbnailGCmax) {
-                thumbnailGCcount.value += 1
-                usingGC = true
+            usingGC = true
+            if (thumbnailGCcount.value > TGClim) {
+                // defer setup
+                const limitMsg = document.createTextNode(
+                    '[... waiting for WebGL graphics context]'
+                )
+                savedContainer.appendChild(limitMsg)
+                watch(thumbnailGCcount, newCount => {
+                    if (!savedContainer) return
+                    if (newCount <= TGClim && needsSetup) {
+                        if (savedContainer.lastChild) {
+                            savedContainer.removeChild(
+                                savedContainer.lastChild
+                            )
+                        }
+                        setupSpecimen()
+                        thumbnailGCcount.value += 1
+                    }
+                })
             } else {
-                setupNow = false
+                setupSpecimen()
+                thumbnailGCcount.value += 1
             }
-        }
-        console.log('THUMB setup', thumbnailGCcount.value, savedContainer)
-        if (setupNow) {
-            specimen.setup(savedContainer)
-            setTimeout(() => {
-                if (usingGC) {
-                    thumbnailGCcount.value -= 1
-                    usingGC = false
-                    console.log(
-                        'THUMB early',
-                        thumbnailGCcount.value,
-                        specimen
-                    )
-                }
-                if (!specimen || !savedContainer) return
-                const canvas = savedContainer.querySelector('canvas')
-                if (canvas instanceof HTMLCanvasElement) {
-                    const {width, height} = canvas.getBoundingClientRect()
-                    const vizShot = new Image(width, height)
-                    vizShot.src = canvas.toDataURL()
-                    specimen.visualizer.depart(savedContainer)
-                    savedContainer.appendChild(vizShot)
-                } else {
-                    specimen.visualizer.stop()
-                }
-            }, 4000)
-        } else {
-            const limitMsg = document.createTextNode(
-                'All WebGL graphics contexts in use'
-            )
-            savedContainer.appendChild(limitMsg)
-        }
+        } else setupSpecimen()
     })
 
     onUnmounted(() => {
         if (usingGC) {
             thumbnailGCcount.value -= 1
             usingGC = false
-            console.log('THUMB cleanup', thumbnailGCcount.value, specimen)
         }
         // Turns out canvasContainer has already been de-refed
         // by the time we get here, so we can't depart using that.
