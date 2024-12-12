@@ -33,7 +33,28 @@
         console.log('THUMB setup', thumbnailGCcount.value, savedContainer)
         if (setupNow) {
             specimen.setup(savedContainer)
-            setTimeout(() => specimen?.visualizer.stop(), 4000)
+            setTimeout(() => {
+                if (usingGC) {
+                    thumbnailGCcount.value -= 1
+                    usingGC = false
+                    console.log(
+                        'THUMB early',
+                        thumbnailGCcount.value,
+                        specimen
+                    )
+                }
+                if (!specimen || !savedContainer) return
+                const canvas = savedContainer.querySelector('canvas')
+                if (canvas instanceof HTMLCanvasElement) {
+                    const {width, height} = canvas.getBoundingClientRect()
+                    const vizShot = new Image(width, height)
+                    vizShot.src = canvas.toDataURL()
+                    specimen.visualizer.depart(savedContainer)
+                    savedContainer.appendChild(vizShot)
+                } else {
+                    specimen.visualizer.stop()
+                }
+            }, 4000)
         } else {
             const limitMsg = document.createTextNode(
                 'All WebGL graphics contexts in use'
