@@ -3,24 +3,80 @@
 </template>
 
 <script setup lang="ts">
-    import {onMounted, onUnmounted, ref} from 'vue'
+    import {onMounted, onUnmounted, ref, watch} from 'vue'
+
+    import {thumbnailGCcount} from './thumbnails'
+
     import {Specimen} from '@/shared/Specimen'
     import {DrawingUnmounted} from '@/visualizers/VisualizerInterface'
 
     const canvasContainer = ref<HTMLDivElement | null>(null)
     let savedContainer: HTMLDivElement | null = null
     let specimen: Specimen | undefined = undefined
+    let usingGC = false
+    let needsSetup = true
+    const TGClim = 7
     const props = defineProps<{query: string}>()
+
+    function setupSpecimen() {
+        needsSetup = false
+        if (!specimen || !savedContainer) return
+        specimen.setup(savedContainer)
+        setTimeout(() => {
+            if (usingGC) {
+                thumbnailGCcount.value -= 1
+                usingGC = false
+            }
+            if (!specimen || !savedContainer) return
+            const canvas = savedContainer.querySelector('canvas')
+            if (canvas instanceof HTMLCanvasElement) {
+                const {width, height} = canvas.getBoundingClientRect()
+                const vizShot = new Image(width, height)
+                vizShot.src = canvas.toDataURL()
+                specimen.visualizer.depart(savedContainer)
+                savedContainer.appendChild(vizShot)
+            } else {
+                specimen.visualizer.stop()
+            }
+        }, 4000)
+    }
 
     onMounted(async () => {
         specimen = await Specimen.fromQuery(props.query)
         if (!(canvasContainer.value instanceof HTMLElement)) return
         savedContainer = canvasContainer.value
-        specimen.setup(savedContainer)
-        setTimeout(() => specimen?.visualizer.stop(), 4000)
+        if (specimen.visualizer.usesGL()) {
+            usingGC = true
+            if (thumbnailGCcount.value > TGClim) {
+                // defer setup
+                const limitMsg = document.createTextNode(
+                    '[... waiting for WebGL graphics context]'
+                )
+                savedContainer.appendChild(limitMsg)
+                watch(thumbnailGCcount, newCount => {
+                    if (!savedContainer) return
+                    if (newCount <= TGClim && needsSetup) {
+                        if (savedContainer.lastChild) {
+                            savedContainer.removeChild(
+                                savedContainer.lastChild
+                            )
+                        }
+                        setupSpecimen()
+                        thumbnailGCcount.value += 1
+                    }
+                })
+            } else {
+                setupSpecimen()
+                thumbnailGCcount.value += 1
+            }
+        } else setupSpecimen()
     })
 
     onUnmounted(() => {
+        if (usingGC) {
+            thumbnailGCcount.value -= 1
+            usingGC = false
+        }
         // Turns out canvasContainer has already been de-refed
         // by the time we get here, so we can't depart using that.
         // Hence the need for savedContainer, unfortunately.
