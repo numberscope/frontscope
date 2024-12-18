@@ -177,7 +177,7 @@ changes from one frame to the next.
         default: true,
         type: ParamType.BOOLEAN,
         displayName: 'Path speed/styling ↴',
-        required: false,
+        required: true,
     },
     /** md
 

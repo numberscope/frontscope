@@ -1,5 +1,5 @@
 <template>
-    <div style="margin-bottom: 32px">
+    <div>
         <div class="input-container">
             <label>
                 {{ param.displayName }}
@@ -182,8 +182,7 @@
     .param-description {
         font-size: 12px;
         color: var(--ns-color-grey);
-        margin-bottom: 8px;
-        margin-top: 0px;
+        margin: 0px;
     }
 
     .input-container {

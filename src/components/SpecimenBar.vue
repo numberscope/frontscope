@@ -265,12 +265,6 @@
     .help {
         color: var(--ns-color-black);
     }
-    .param-description {
-        font-size: 12px;
-        color: var(--ns-color-grey);
-        margin-bottom: 8px;
-        margin-top: 0px;
-    }
 
     .input-container {
         display: flex;

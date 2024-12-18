@@ -49,28 +49,16 @@
             </div>
         </div>
         <p class="description">{{ paramable.description }}</p>
-        <div v-for="(hierarchy, name) in sortedParams" :key="name">
+        <div
+            v-for="(param, name) in visibleParams"
+            :key="name"
+            :class="paramClass(param)">
             <ParamField
-                :param="hierarchy.param"
+                :param
                 :value="paramable.tentativeValues[name]"
                 :param-name="name as string"
                 :status="paramable.statusOf[name]"
                 @update-param="updateParam(name as string, $event)" />
-            <div class="sub-param-box">
-                <div
-                    v-for="(subParam, subName) in hierarchy.children"
-                    :key="subName">
-                    <ParamField
-                        v-if="checkDependency(subParam)"
-                        :param="subParam"
-                        :value="paramable.tentativeValues[subName]"
-                        :param-name="subName as string"
-                        :status="paramable.statusOf[subName]"
-                        @update-param="
-                            updateParam(subName as string, $event)
-                        " />
-                </div>
-            </div>
         </div>
     </div>
 </template>
@@ -84,11 +72,6 @@
 
     import MageExchangeA from './MageExchangeA.vue'
     import ParamField from './ParamField.vue'
-
-    interface ParamHierarchy {
-        param: ParamInterface<ParamType>
-        children: {[key: string]: ParamInterface<ParamType>}
-    }
 
     type Paramable = () => ParamableInterface
 
@@ -107,20 +90,13 @@
         },
         emits: ['changed', 'openSwitcher'],
         computed: {
-            sortedParams() {
-                const sortedParams: {[key: string]: ParamHierarchy} = {}
+            visibleParams() {
+                const visParams: typeof this.paramable.params = {}
                 Object.keys(this.paramable.params).forEach(key => {
                     const param = this.paramable.params[key]
-                    if (!param.visibleDependency)
-                        sortedParams[key] = {param, children: {}}
+                    if (this.checkDependency(param)) visParams[key] = param
                 })
-                Object.keys(this.paramable.params).forEach(key => {
-                    const param = this.paramable.params[key]
-                    if (param.visibleDependency)
-                        sortedParams[param.visibleDependency].children[key] =
-                            param
-                })
-                return sortedParams
+                return visParams
             },
         },
         methods: {
@@ -146,6 +122,17 @@
                 if (param.visiblePredicate) {
                     return param.visiblePredicate(v as never)
                 } else return param.visibleValue! === v
+            },
+            paramClass(param: ParamInterface<ParamType>): string {
+                let klass = ''
+                if (param.visibleDependency) klass = 'sub-'
+                if (
+                    param.type === ParamType.BOOLEAN
+                    && (param.hideDescription || !param.description)
+                ) {
+                    klass += 'check'
+                } else klass += 'param'
+                return klass + '-box'
             },
             openSwitcher() {
                 this.$emit('openSwitcher')
@@ -203,10 +190,28 @@
         margin-bottom: 24px;
     }
 
+    .param-box {
+        margin-top: 16px;
+        margin-bottom: 20px;
+    }
+
+    .check-box {
+        margin-top: 8px;
+        margin-bottom: 12px;
+    }
+
     .sub-param-box {
         border-left: 1px solid var(--ns-color-black);
         margin-left: 8px;
         padding-left: 8px;
+        padding-bottom: 16px;
+    }
+
+    .sub-check-box {
+        border-left: 1px solid var(--ns-color-black);
+        margin-left: 8px;
+        padding-left: 8px;
+        padding-bottom: 8px;
     }
 
     .error-box {
