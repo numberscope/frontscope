@@ -2,7 +2,7 @@
     <div>
         <div class="input-container">
             <label>
-                {{ param.displayName }}
+                {{ displayName }}
                 <input
                     v-if="param.type === ParamType.BOOLEAN"
                     :id="paramName"
@@ -82,6 +82,7 @@
                 required: true,
             },
             paramName: {type: String, required: true},
+            displayName: {type: String, required: true},
             status: {
                 type: Object as () => ValidationStatus,
                 required: true,
@@ -134,7 +135,6 @@
 <style scoped lang="scss">
     label {
         font-size: 12px;
-        width: 100%;
     }
 
     input {
@@ -149,6 +149,9 @@
                 border-bottom: 1.5px solid var(--ns-color-primary);
                 outline: none;
             }
+        }
+        &[type='color'] {
+            vertical-align: middle;
         }
     }
 
@@ -216,7 +219,7 @@
         }
 
         right: 4px;
-        bottom: 4px;
+        bottom: 0px;
     }
 
     .desc-tooltip .desc-tooltip-text {
