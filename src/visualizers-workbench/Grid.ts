@@ -7,7 +7,10 @@ import type {
 } from '@/sequences/SequenceInterface'
 import simpleFactor from '@/sequences/simpleFactor'
 import {math} from '@/shared/math'
-import type {GenericParamDescription} from '@/shared/Paramable'
+import type {
+    GenericParamDescription,
+    ParamInterface,
+} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
 // NOTE: Grid visualizer is not currently working due to the new Paramable
@@ -80,6 +83,8 @@ const RAINBOW = [
 ]
 
 const MAXIMUM_ALLOWED_PROPERTIES = 12
+// #IHateTypeScriptRedundancy
+type PropertyIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11
 
 enum Preset {
     Custom,
@@ -145,7 +150,7 @@ interface PropertyObject {
     property: Property
     visualization: PropertyVisualization
     color: string // should this be a typedef?
-    aux?: bigint // auxiliary parameter for the property, meaning varies
+    aux: bigint // auxiliary parameter for the property, meaning varies
 }
 
 const presetBackgrounds: {[key in PresetName]: string} = {
@@ -165,6 +170,7 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
             property: Property.Prime,
             visualization: PropertyVisualization.Fill_Cell,
             color: RED,
+            aux: 0n,
         },
     ],
     Abundant_Numbers: [
@@ -172,6 +178,7 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
             property: Property.Abundant,
             visualization: PropertyVisualization.Fill_Cell,
             color: BLACK,
+            aux: 0n,
         },
     ],
     Abundant_Numbers_And_Primes: [
@@ -179,11 +186,13 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
             property: Property.Prime,
             visualization: PropertyVisualization.Fill_Cell,
             color: RED,
+            aux: 0n,
         },
         {
             property: Property.Abundant,
             visualization: PropertyVisualization.Fill_Cell,
             color: BLACK,
+            aux: 0n,
         },
     ],
     Polygonal_Numbers: [
@@ -239,45 +248,6 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
         color: RAINBOW[index],
         aux: BigInt(index),
     })),
-}
-
-function getPropertyParams(index: number, prop: PropertyObject) {
-    return {
-        [`property${index}`]: {
-            value: prop.property,
-            type: ParamType.ENUM,
-            from: Property,
-            displayName: `Property ${index + 1}`,
-            required: false,
-            visibleDependency: index > 0 ? `property${index - 1}` : '',
-            visiblePredicate: (d: Property) => d !== Property.None,
-        },
-        [`prop${index}Vis`]: {
-            value: prop.visualization,
-            type: ParamType.ENUM,
-            from: PropertyVisualization,
-            displayName: 'Display',
-            required: false,
-            visibleDependency: `property${index}`,
-            visiblePredicate: (d: Property) => d !== Property.None,
-        },
-        [`prop${index}Color`]: {
-            value: prop.color,
-            type: ParamType.COLOR,
-            displayName: 'Color',
-            required: false,
-            visibleDependency: `property${index}`,
-            visiblePredicate: (d: Property) => d !== Property.None,
-        },
-        [`prop${index}Aux`]: {
-            value: prop.aux,
-            type: ParamType.BIGINT,
-            displayName: (d: Property) => propertyAuxName[Property[d]] || '',
-            required: false,
-            visibleDependency: `property${index}`,
-            visiblePredicate: (d: Property) => Property[d] in propertyAuxName,
-        },
-    }
 }
 
 /*
@@ -424,6 +394,71 @@ const propertyIndicatorFunction: {
     Semi_Prime: isSemiPrime,
 }
 
+const templatePropertyObjects: PropertyObject[] = []
+
+for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
+    const ithPropertyObject = {
+        property: i === 0 ? Property.Prime : Property.None,
+        visualization:
+            i === 1
+                ? PropertyVisualization.Box_In_Cell
+                : PropertyVisualization.Fill_Cell,
+        color: DEFAULT_COLORS[i],
+        aux: 3n,
+    }
+    templatePropertyObjects.push(ithPropertyObject)
+}
+
+type propParamHelper<N extends number> = {
+    [K in `property${N}`]: ParamInterface<ParamType.ENUM>
+} & {[K in `prop${N}Vis`]: ParamInterface<ParamType.ENUM>} & {
+    [K in `prop${N}Color`]: ParamInterface<ParamType.COLOR>
+} & {[K in `prop${N}Aux`]: ParamInterface<ParamType.BIGINT>}
+
+function getPropertyParams<N extends number>(index: N) {
+    const prop = templatePropertyObjects[index]
+    const propIx: `property${N}` = `property${index}`
+    const propVis: `prop${N}Vis` = `prop${index}Vis`
+    const propColor: `prop${N}Color` = `prop${index}Color`
+    const propAux: `prop${N}Aux` = `prop${index}Aux`
+    return {
+        [propIx]: {
+            default: prop.property,
+            type: ParamType.ENUM,
+            from: Property,
+            displayName: `Property ${index + 1}`,
+            required: true,
+            visibleDependency: index > 0 ? `property${index - 1}` : '',
+            visiblePredicate: (d: Property) => d !== Property.None,
+        },
+        [propVis]: {
+            default: prop.visualization,
+            type: ParamType.ENUM,
+            from: PropertyVisualization,
+            displayName: 'Display',
+            required: true,
+            visibleDependency: `property${index}`,
+            visiblePredicate: (d: Property) => d !== Property.None,
+        },
+        [propColor]: {
+            default: prop.color,
+            type: ParamType.COLOR,
+            displayName: 'Color',
+            required: true,
+            visibleDependency: `property${index}`,
+            visiblePredicate: (d: Property) => d !== Property.None,
+        },
+        [propAux]: {
+            default: prop.aux,
+            type: ParamType.BIGINT,
+            displayName: (d: Property) => propertyAuxName[Property[d]] || '',
+            required: false,
+            visibleDependency: `property${index}`,
+            visiblePredicate: (d: Property) => Property[d] in propertyAuxName,
+        },
+    } as propParamHelper<N>
+}
+
 const paramDesc = {
     /** md
 ### Presets: Which preset to display
@@ -447,11 +482,11 @@ in a rainbow style)
 indicated by smaller boxes
     **/
     preset: {
-        default: Preset.Custom,
+        default: Preset.Primes,
         type: ParamType.ENUM,
         from: Preset,
         displayName: 'Presets',
-        required: false,
+        required: true,
         description:
             'If a preset is selected, properties no longer function.',
     },
@@ -469,7 +504,7 @@ but adds the row number to the sequence _values_.
         type: ParamType.ENUM,
         from: PathType,
         displayName: 'Path in grid',
-        required: false,
+        required: true,
     },
 
     /** md
@@ -497,7 +532,7 @@ checked.
         default: WHITE,
         type: ParamType.COLOR,
         displayName: 'Number color',
-        required: false,
+        required: true,
         visibleDependency: 'showNumbers',
         visiblePredicate: (dependentValue: boolean) =>
             dependentValue === true,
@@ -511,23 +546,23 @@ checked.
         displayName: 'Background color',
         required: false,
     },
+    /* HELP: If anyone can figure out how to avoid listing all 12 of
+       the following while still getting the correct type for paramDesc,
+       please improve this code:
+    */
+    ...getPropertyParams(0),
+    ...getPropertyParams(1),
+    ...getPropertyParams(2),
+    ...getPropertyParams(3),
+    ...getPropertyParams(4),
+    ...getPropertyParams(5),
+    ...getPropertyParams(6),
+    ...getPropertyParams(7),
+    ...getPropertyParams(8),
+    ...getPropertyParams(9),
+    ...getPropertyParams(10),
+    ...getPropertyParams(11),
 } satisfies GenericParamDescription
-
-const templatePropertyObjects: PropertyObject[] = []
-
-for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
-    const ithPropertyObject = {
-        property: i === 0 ? Property.Prime : Property.None,
-        visualization:
-            i === 1
-                ? PropertyVisualization.Box_In_Cell
-                : PropertyVisualization.Fill_Cell,
-        color: DEFAULT_COLORS[i],
-        aux: 3n,
-    }
-    Object.assign(paramDesc, getPropertyParams(i, ithPropertyObject))
-    templatePropertyObjects.push(ithPropertyObject)
-}
 
 class Grid extends P5Visualizer(paramDesc) {
     static category = 'Grid'
@@ -539,12 +574,7 @@ class Grid extends P5Visualizer(paramDesc) {
     sideOfGrid = 64
     currentIndex = 0n
     currentNumber = 0n
-    showNumbers = false
-    preset = Preset.Custom
-    pathType = PathType.Spiral
     resetAndAugmentByOne = false
-    backgroundColor = BLACK
-    numberColor = WHITE
 
     // Path variables
     x = 0
@@ -612,22 +642,16 @@ earlier ones that use the _same_ style.)
     async assignParameters() {
         await super.assignParameters()
 
-        // NOTE: This is commented out because it breaks the new type safety
-        // of the parameters. I wasn't able to figure out exactly what the
-        // intent is, but the strings being accessed are not parameters
-        // according to the parameter description
-        /*
-        for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
+        for (let i: PropertyIndex = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
             this.propertyObjects[i].property =
-                this.tentativeValues[`property${i}`] as Property
+                this[`property${i}` as `property${PropertyIndex}`]
             this.propertyObjects[i].visualization =
-                this.tentativeValues[`prop${i}Vis`] as PropertyVisualization
+                this[`prop${i}Vis` as `prop${PropertyIndex}Vis`]
             this.propertyObjects[i].color =
-                this.tentativeValues[`prop${i}Color`].value as string
+                this[`prop${i}Color` as `prop${PropertyIndex}Color`]
             this.propertyObjects[i].aux =
-                this.tentativeValues[`prop${i}Aux`].value as bigint
+                this[`prop${i}Aux` as `prop${PropertyIndex}Aux`]
         }
-        */
     }
 
     setup(): void {
