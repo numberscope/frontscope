@@ -1,6 +1,7 @@
 import {P5Visualizer} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
 
+import {CachingError} from '@/sequences/Cached'
 import type {
     SequenceInterface,
     Factorization,
@@ -567,6 +568,7 @@ class Grid extends P5Visualizer(paramDesc) {
     // Path variables
     x = 0
     y = 0
+    cacheSettled = true
     cellSize = 0
     currentDirection = Direction.Right
     numberToTurnAtForSpiral = 0
@@ -649,8 +651,6 @@ earlier ones that use the _same_ style.)
     setup(): void {
         super.setup()
         this.setPresets()
-        this.setCellSizeAndLength()
-
         // determine whether to watch for primary or secondary fills
         this.primaryProperties = this.propertiesFilledWith(
             PropertyVisualization.Fill_Cell
@@ -658,6 +658,7 @@ earlier ones that use the _same_ style.)
         this.secondaryProperties = this.propertiesFilledWith(
             PropertyVisualization.Box_In_Cell
         )
+        this.setCellSizeAndLength()
     }
 
     draw(): void {
@@ -681,7 +682,8 @@ earlier ones that use the _same_ style.)
             this.currentIndex++
             this.moveCoordinatesUsingPath(iteration)
         }
-        this.stop()
+        if (this.cacheSettled) this.stop()
+        else this.setCellSizeAndLength()
     }
 
     setPresets() {
@@ -750,14 +752,16 @@ earlier ones that use the _same_ style.)
     widestEntry() {
         const seq = this.seq
         let widest = 0n
+        this.cacheSettled = true
         for (let entry = 0n; entry < this.nEntries; ++entry) {
             let value = 0n
             try {
                 value = seq.getElement(this.seq.first + entry)
-            } catch {
-                // Typically this is a cache miss; FIXME this often leads to
-                // incorrect cell size on initial load
-                value = 999n // guess 3 digits wide ???
+            } catch (e: unknown) {
+                if (e instanceof CachingError) {
+                    this.cacheSettled = false
+                }
+                value = 999n // guess 3 digits wide...
             }
             if (value < 0n) value = -10n * value // allow for minus sign
             if (value > widest) widest = value
