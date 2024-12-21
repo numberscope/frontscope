@@ -660,8 +660,6 @@ earlier ones that use the _same_ style.)
         this.setPresets()
         this.setOverridingSettings()
 
-        this.sketch.background(this.backgroundColor).strokeWeight(0)
-
         // determine whether to watch for primary or secondary fills
         this.primaryProperties = this.propertiesFilledWith(
             PropertyVisualization.Fill_Cell
@@ -680,13 +678,15 @@ earlier ones that use the _same_ style.)
         this.nEntries = side * side
 
         this.scalingFactor = this.sketch.width / this.sideOfGrid
-        this.setPathVariables(this.sideOfGrid)
     }
 
     draw(): void {
+        // We draw the entire diagram in a single frame:
+        this.sketch.background(this.backgroundColor).strokeWeight(0)
+        this.setPathVariables(this.sideOfGrid)
         this.currentIndex = this.seq.first
-        let augmentForRowReset = 0n
 
+        let augmentForRowReset = 0n
         for (let iteration = 0; iteration < this.nEntries; iteration++) {
             // Reset current sequence for row reset and augment by one.
             if (this.currentDirection === Direction.StartNewRow) {

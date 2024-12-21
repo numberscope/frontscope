@@ -204,6 +204,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
 
                 // And draw is special because of the error handling:
                 sketch.draw = () => {
+                    if (this.drawingState !== Drawing) return
                     try {
                         this.draw()
                         if (--this._framesRemaining <= 0) {
@@ -228,6 +229,9 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                         )
                     }
                 }
+
+                this.drawingState = DrawingStopped
+                sketch.noLoop()
             }
         }
 
@@ -305,7 +309,6 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             if (this._canvas) {
                 this.drawingState = Drawing
                 this._sketch.loop()
-                this._sketch.draw()
             } else {
                 // If the rendering context is not yet ready, start an interval
                 // that waits until the canvas is ready and shows when finished
@@ -313,7 +316,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                     if (this._canvas) {
                         clearInterval(interval)
                         this.drawingState = Drawing
-                        this._sketch?.draw()
+                        this._sketch?.loop()
                     }
                 }, displayTimeout)
             }

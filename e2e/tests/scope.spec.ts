@@ -87,7 +87,8 @@ test.describe('Scope: on some featured visualization', () => {
         await expect(page.locator('#visualiserTab')).not.toHaveClass(
             /minimized/
         )
-        await page.locator('#visualiserTab .minimize').click()
+        const minButton = await page.locator('#visualiserTab .minimize')
+        await minButton.click()
         await expect(page.locator('#visualiserTab')).toHaveClass(/minimized/)
         await expect(
             await page.locator('#visualiserTab').evaluate(element => {
