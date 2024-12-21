@@ -241,8 +241,8 @@ in pixels.
 - Stroke color: The color used for drawing the path.
      **/
     strokeColor: {
-        default: '#c98787',
-        type: ParamType.COLOR,
+        default: '#c98787b0',
+        type: ParamType.ACOLOR,
         displayName: 'Stroke color',
         required: true,
         visibleDependency: 'pathLook',

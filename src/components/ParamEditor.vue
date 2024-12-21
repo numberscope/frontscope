@@ -150,9 +150,10 @@
                 if (
                     param.type === ParamType.BOOLEAN
                     || param.type === ParamType.COLOR
-                )
+                    || param.type === ParamType.ACOLOR
+                ) {
                     klass += 'inline'
-                else klass += 'stacked'
+                } else klass += 'stacked'
                 return klass + '-param'
             },
             openSwitcher() {

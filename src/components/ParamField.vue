@@ -15,6 +15,12 @@
                     type="color"
                     :value="value"
                     @input="updateString($event)">
+                <pick-colors
+                    v-else-if="param.type === ParamType.ACOLOR"
+                    :id="paramName"
+                    :value="value"
+                    show-alpha
+                    @change="updateRGBAcolor" />
                 <select
                     v-else-if="param.type === ParamType.ENUM"
                     :id="paramName"
@@ -66,12 +72,14 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
+    import PickColors from 'vue-pick-colors'
     import type {ParamInterface} from '../shared/Paramable'
     import typeFunctions, {ParamType} from '../shared/ParamType'
     import {ValidationStatus} from '../shared/ValidationStatus'
 
     export default defineComponent({
         name: 'ParamField',
+        components: {PickColors},
         props: {
             param: {
                 type: Object as () => ParamInterface<ParamType>,
@@ -110,6 +118,9 @@
                     'updateParam',
                     (e.target as HTMLInputElement).checked + ''
                 )
+            },
+            updateRGBAcolor(value: string, _color: string, _index: number) {
+                this.$emit('updateParam', value)
             },
             updateString(e: Event) {
                 this.$emit(
@@ -153,6 +164,10 @@
         &[type='color'] {
             vertical-align: middle;
         }
+    }
+
+    .color-picker {
+        vertical-align: middle;
     }
 
     ::placeholder {

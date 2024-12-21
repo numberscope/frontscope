@@ -41,7 +41,7 @@ later properties overcolor earlier ones.
 ## Parameters
 **/
 const BLACK = '#000000'
-const WHITE = '#ffffff'
+const OPAQUEWHITE = '#ffffffff'
 
 const RED = '#ff5733'
 const ORANGE = '#ff9d33'
@@ -404,7 +404,7 @@ for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
 type propParamHelper<N extends number> = {
     [K in `property${N}`]: ParamInterface<ParamType.ENUM>
 } & {[K in `prop${N}Vis`]: ParamInterface<ParamType.ENUM>} & {
-    [K in `prop${N}Color`]: ParamInterface<ParamType.COLOR>
+    [K in `prop${N}Color`]: ParamInterface<ParamType.ACOLOR>
 } & {[K in `prop${N}Aux`]: ParamInterface<ParamType.BIGINT>}
 
 function getPropertyParams<N extends number>(index: N) {
@@ -437,7 +437,7 @@ function getPropertyParams<N extends number>(index: N) {
         },
         [propColor]: {
             default: prop.color,
-            type: ParamType.COLOR,
+            type: ParamType.ACOLOR,
             displayName: 'Color',
             required: true,
             visibleDependency: `property${index}`,
@@ -491,8 +491,8 @@ This parameter is only available when the "Show entries" parameter is
 checked.
     **/
     numberColor: {
-        default: WHITE,
-        type: ParamType.COLOR,
+        default: OPAQUEWHITE,
+        type: ParamType.ACOLOR,
         displayName: 'Entry color',
         required: true,
         visibleDependency: 'showEntries',
@@ -810,8 +810,16 @@ earlier ones that use the _same_ style.)
     }
 
     drawSquare(props: number[], size: number, offset = 0) {
-        if (this.colorProperties(props)) {
-            this.sketch.rect(this.x + offset, this.y + offset, size, size)
+        const sketch = this.sketch
+        for (const i of props) {
+            const prop = this.propertyObjects[i]
+            if (
+                this.hasProperty(this.currentIndex, prop.property, prop.aux)
+            ) {
+                sketch
+                    .fill(prop.color)
+                    .rect(this.x + offset, this.y + offset, size, size)
+            }
         }
     }
 
@@ -826,25 +834,6 @@ earlier ones that use the _same_ style.)
             }
         }
         return retVal
-    }
-
-    // returns whether any of the properties held, i.e. whether indicator
-    // needs to be drawn, and by side effect sets the fill color
-    colorProperties(props: number[]): boolean {
-        let retval = false
-        for (const i of props) {
-            if (
-                this.hasProperty(
-                    this.currentIndex,
-                    this.propertyObjects[i].property,
-                    this.propertyObjects[i].aux
-                )
-            ) {
-                this.sketch.fill(this.propertyObjects[i].color)
-                retval = true
-            }
-        }
-        return retval
     }
 
     hasProperty(ind: bigint, property: Property, aux?: bigint) {

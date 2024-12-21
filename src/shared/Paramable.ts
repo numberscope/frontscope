@@ -812,7 +812,11 @@ export class Paramable implements ParamableInterface {
                 if (tv[key] !== defaultString) {
                     // Avoid percent-encoding for colors
                     let qv = tv[key]
-                    if (param.type === ParamType.COLOR && qv[0] === '#') {
+                    if (
+                        (param.type === ParamType.COLOR
+                            || param.type === ParamType.ACOLOR)
+                        && qv[0] === '#'
+                    ) {
                         qv = qv.substring(1)
                     }
                     saveParams[key] = qv
@@ -828,12 +832,16 @@ export class Paramable implements ParamableInterface {
         for (const [key, value] of params) {
             if (key in this.tentativeValues) {
                 const param = this.params[key]
+                const hexMatch = value.match(/^[0-9a-fA-F]+$/)
                 if (
-                    param.type === ParamType.COLOR
-                    && value.match(/^[0-9a-fA-F]{6}$/)
-                )
+                    hexMatch
+                    && ((param.type === ParamType.COLOR
+                        && hexMatch[0].length % 3 === 0)
+                        || (param.type === ParamType.ACOLOR
+                            && hexMatch[0].length % 4 === 0))
+                ) {
                     this.tentativeValues[key] = '#' + value
-                else this.tentativeValues[key] = value
+                } else this.tentativeValues[key] = value
             } else console.warn(`Invalid property ${key} for ${this.name}`)
         }
         return this

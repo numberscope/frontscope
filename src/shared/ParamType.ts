@@ -21,6 +21,7 @@ export enum ParamType { /** table header to extract:
     | --------- | -------------------------- | --------------- | -------- | */
     BOOLEAN, // | boolean | checkbox       | true or false |
     COLOR, //   | string  | color picker   | hex color code |
+    ACOLOR, //  | string  | rgba picker    | rgba hex color code |
     NUMBER, //  | number  | input          | arbitrary floating point value |
     INTEGER, // | number  | input          | must be a whole number |
     BIGINT, //  | bigint  | input          | must be a whole number |
@@ -39,6 +40,7 @@ export enum ParamType { /** table header to extract:
 export type RealizedPropertyType = {
     [ParamType.BOOLEAN]: boolean
     [ParamType.COLOR]: string
+    [ParamType.ACOLOR]: string
     [ParamType.NUMBER]: number
     [ParamType.INTEGER]: number
     [ParamType.BIGINT]: bigint
@@ -133,8 +135,28 @@ const typeFunctions: {
                 value
                     .trim()
                     .match(/^(#[0-9A-Fa-f]{3})|(#[0-9A-Fa-f]{6})$/) === null
-            )
-                status.addError('Input must be a valid color specification')
+            ) {
+                status.addError(
+                    `Code ${value} is not a valid color specification`
+                )
+            }
+        },
+        realize: function (value) {
+            return value
+        },
+        derealize: function (value) {
+            return `${value}`
+        },
+    },
+    [ParamType.ACOLOR]: {
+        validate: function (value, status) {
+            if (
+                value
+                    .trim()
+                    .match(/^(#[0-9A-Fa-f]{4})|(#[0-9A-Fa-f]{8})$/) === null
+            ) {
+                status.addError('Input must be a valid rgba color hex code')
+            }
         },
         realize: function (value) {
             return value
