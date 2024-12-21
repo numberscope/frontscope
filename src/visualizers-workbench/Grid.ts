@@ -154,16 +154,6 @@ interface PropertyObject {
     aux: bigint // auxiliary parameter for the property, meaning varies
 }
 
-const presetBackgrounds: {[key in PresetName]: string} = {
-    Custom: BLACK,
-    Primes: BLACK,
-    Abundant_Numbers: WHITE,
-    Abundant_Numbers_And_Primes: WHITE,
-    Polygonal_Numbers: BLACK,
-    Color_By_Last_Digit_1: BLACK,
-    Color_By_Last_Digit_2: BLACK,
-}
-
 const presetProperties: {[key in PresetName]: PropertyObject[]} = {
     Custom: [],
     Primes: [
@@ -178,7 +168,7 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
         {
             property: Property.Abundant,
             visualization: PropertyVisualization.Fill_Cell,
-            color: BLACK,
+            color: GRAY,
             aux: 0n,
         },
     ],
@@ -192,7 +182,7 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
         {
             property: Property.Abundant,
             visualization: PropertyVisualization.Fill_Cell,
-            color: BLACK,
+            color: GRAY,
             aux: 0n,
         },
     ],
@@ -483,16 +473,14 @@ but adds the row number to the sequence _values_.
     /** md
 ### Show entries: Whether to show values overlaid on cells
 
-When this is selected, the number of cells in the grid will be
-limited to 400
-even if you choose more.
+When this is checked, there will be a limit on the number of cells shown to
+make room for the displayed values of the entries.
     **/
-    showNumbers: {
+    showEntries: {
         default: false,
         type: ParamType.BOOLEAN,
         displayName: 'Show entries',
         required: true,
-        description: 'When true, grid is limited to 400 cells',
     },
 
     /** md
@@ -506,7 +494,7 @@ checked.
         type: ParamType.COLOR,
         displayName: 'Entry color',
         required: true,
-        visibleDependency: 'showNumbers',
+        visibleDependency: 'showEntries',
         visiblePredicate: (dependentValue: boolean) =>
             dependentValue === true,
     },
@@ -571,16 +559,15 @@ class Grid extends P5Visualizer(paramDesc) {
         + 'based on various properties'
 
     // Grid variables
-    nEntries = 4096n
+    nEntries = -1n // dummy, needs to be overridden
     sideOfGrid = 64
     currentIndex = 0n
     currentNumber = 0n
-    resetAndAugmentByOne = false
 
     // Path variables
     x = 0
     y = 0
-    scalingFactor = 0
+    cellSize = 0
     currentDirection = Direction.Right
     numberToTurnAtForSpiral = 0
     incrementForNumberToTurnAt = 1
@@ -640,8 +627,8 @@ earlier ones that use the _same_ style.)
         )
     }
 
-    async assignParameters() {
-        await super.assignParameters()
+    assignParameters() {
+        super.assignParameters()
 
         for (let i: PropertyIndex = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
             this.propertyObjects[i].property =
@@ -655,10 +642,14 @@ earlier ones that use the _same_ style.)
         }
     }
 
+    requestedAspectRatio() {
+        return this.pathType === PathType.Spiral ? 1 : undefined
+    }
+
     setup(): void {
         super.setup()
         this.setPresets()
-        this.setOverridingSettings()
+        this.setCellSizeAndLength()
 
         // determine whether to watch for primary or secondary fills
         this.primaryProperties = this.propertiesFilledWith(
@@ -667,17 +658,6 @@ earlier ones that use the _same_ style.)
         this.secondaryProperties = this.propertiesFilledWith(
             PropertyVisualization.Box_In_Cell
         )
-
-        if (typeof this.seq.length === 'bigint') {
-            this.nEntries = this.seq.length
-        } // else TODO: Post warning about not using all terms
-
-        // Round down amount of numbers so that it is a square number.
-        const side = math.floorSqrt(this.nEntries)
-        this.sideOfGrid = Number(side)
-        this.nEntries = side * side
-
-        this.scalingFactor = this.sketch.width / this.sideOfGrid
     }
 
     draw(): void {
@@ -690,7 +670,7 @@ earlier ones that use the _same_ style.)
         for (let iteration = 0; iteration < this.nEntries; iteration++) {
             // Reset current sequence for row reset and augment by one.
             if (this.currentDirection === Direction.StartNewRow) {
-                if (this.resetAndAugmentByOne) {
+                if (this.pathType === PathType.Rows_Augment) {
                     this.currentIndex = this.seq.first
                     augmentForRowReset++
                 }
@@ -710,7 +690,6 @@ earlier ones that use the _same_ style.)
                 this.propertyObjects[i].property = Property.None
             }
             const preset = Preset[this.preset] as PresetName
-            this.backgroundColor = presetBackgrounds[preset]
             const useProps = presetProperties[preset]
             for (let i = 0; i < useProps.length; ++i) {
                 Object.assign(this.propertyObjects[i], useProps[i])
@@ -718,15 +697,72 @@ earlier ones that use the _same_ style.)
         }
     }
 
-    setOverridingSettings() {
-        if (this.pathType === PathType.Rows_Augment) {
-            this.pathType = PathType.Rows
-            this.resetAndAugmentByOne = true
+    setCellSizeAndLength() {
+        const seq = this.seq
+        const sketch = this.sketch
+        const pixels = sketch.width * sketch.height
+        // Default cell size for infinitely many entries
+        this.cellSize = 4
+        this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
+        this.nEntries = BigInt(
+            this.sideOfGrid * Math.floor(sketch.height / this.cellSize)
+        )
+
+        // Try the available number of entries if that is set
+        if (typeof seq.length === 'bigint') this.nEntries = seq.length
+
+        // Determine cell size
+        this.cellSize = Math.sqrt(pixels / Number(this.nEntries))
+        this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
+        this.cellSize = sketch.width / this.sideOfGrid
+
+        if (this.showEntries) {
+            // Increase the cell size so that it can fit all the entries
+            let lastSize = sketch.width
+            while (true) {
+                this.cellSize = this.widestEntry()
+                this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
+                this.nEntries = BigInt(
+                    this.sideOfGrid
+                        * Math.floor(sketch.height / this.cellSize)
+                )
+                if (this.nEntries > seq.length) {
+                    this.nEntries = BigInt(seq.length)
+                }
+                this.cellSize = Math.sqrt(pixels / Number(this.nEntries))
+                this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
+                this.cellSize = sketch.width / this.sideOfGrid
+                if (this.cellSize >= lastSize) break
+                lastSize = this.cellSize
+            }
         }
 
-        if (this.showNumbers && this.nEntries > 400n) {
-            this.nEntries = 400n
+        if (this.nEntries < seq.length) {
+            this.statusOf.showEntries.warnings[0] =
+                `There is only room to show ${this.nEntries} cells, but `
+                + `sequence has ${seq.length} entries.`
+        } else {
+            this.statusOf.showEntries.warnings.length = 0
         }
+    }
+
+    // Returns the pixel width of the entry with longest written representation
+    widestEntry() {
+        const seq = this.seq
+        let widest = 0n
+        for (let entry = 0n; entry < this.nEntries; ++entry) {
+            let value = 0n
+            try {
+                value = seq.getElement(this.seq.first + entry)
+            } catch {
+                // Typically this is a cache miss; FIXME this often leads to
+                // incorrect cell size on initial load
+                value = 999n // guess 3 digits wide ???
+            }
+            if (value < 0n) value = -10n * value // allow for minus sign
+            if (value > widest) widest = value
+        }
+        return this.sketch.textWidth(widest.toString()) + 4
     }
 
     setCurrentNumber(currentIndex: bigint, augmentForRow: bigint) {
@@ -745,11 +781,11 @@ earlier ones that use the _same_ style.)
         if (this.pathType === PathType.Spiral) {
             // The starting point placed so that the whole spiral is centered
             if (gridSize % 2 === 1) {
-                this.x = (gridSize / 2 - 1 / 2) * this.scalingFactor
-                this.y = (gridSize / 2 - 1 / 2) * this.scalingFactor
+                this.x = (gridSize / 2 - 1 / 2) * this.cellSize
+                this.y = (gridSize / 2 - 1 / 2) * this.cellSize
             } else {
-                this.x = (gridSize / 2 - 1) * this.scalingFactor
-                this.y = (gridSize / 2) * this.scalingFactor
+                this.x = (gridSize / 2 - 1) * this.cellSize
+                this.y = (gridSize / 2) * this.cellSize
             }
 
             // The amount of numbers to the next turn increases every other turn
@@ -760,15 +796,13 @@ earlier ones that use the _same_ style.)
     }
 
     fillGridCell() {
-        this.drawSquare(this.primaryProperties, this.scalingFactor)
+        this.drawSquare(this.primaryProperties, this.cellSize)
         this.drawSquare(
             this.secondaryProperties,
-            this.scalingFactor / 2,
-            this.scalingFactor / 4
+            this.cellSize / 2,
+            this.cellSize / 4
         )
-        if (this.showNumbers) {
-            this.showNumber()
-        }
+        if (this.showEntries) this.drawEntry()
     }
 
     drawSquare(props: number[], size: number, offset = 0) {
@@ -835,18 +869,16 @@ earlier ones that use the _same_ style.)
         )
     }
 
-    showNumber() {
-        const currentNumberAsString = this.currentNumber.toString()
-
-        if (this.showNumbers) {
-            this.sketch
-                .fill(this.numberColor)
-                .text(
-                    currentNumberAsString,
-                    this.x + 0 * this.scalingFactor,
-                    this.y + (15 * this.scalingFactor) / 20
-                )
-        }
+    drawEntry() {
+        const sketch = this.sketch
+        const txt = this.currentNumber.toString()
+        sketch
+            .fill(this.numberColor)
+            .text(
+                txt,
+                this.x + (this.cellSize - sketch.textWidth(txt)) / 2,
+                this.y + this.cellSize / 2 + 4
+            )
     }
 
     moveCoordinatesUsingPath(iteration: number) {
@@ -870,7 +902,7 @@ earlier ones that use the _same_ style.)
                 this.currentDirection =
                     leftTurn[Direction[this.currentDirection]]
             }
-        } else if (this.pathType === PathType.Rows) {
+        } else {
             // Go to new row when the row is complete
             if ((iteration + 1) % this.sideOfGrid === 0) {
                 this.currentDirection = Direction.StartNewRow
@@ -885,19 +917,19 @@ earlier ones that use the _same_ style.)
     moveCoordinatesUsingCurrentDirection() {
         switch (this.currentDirection) {
             case Direction.Right:
-                this.x += this.scalingFactor
+                this.x += this.cellSize
                 break
             case Direction.Up:
-                this.y -= this.scalingFactor
+                this.y -= this.cellSize
                 break
             case Direction.Left:
-                this.x -= this.scalingFactor
+                this.x -= this.cellSize
                 break
             case Direction.StartNewRow:
                 this.x = 0
             // FALL THROUGH
             case Direction.Down:
-                this.y += this.scalingFactor
+                this.y += this.cellSize
         }
     }
 }
