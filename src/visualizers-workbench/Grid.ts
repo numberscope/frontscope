@@ -41,7 +41,7 @@ later properties overcolor earlier ones.
 ## Parameters
 **/
 const BLACK = '#000000'
-const OPAQUEWHITE = '#ffffffff'
+const HALFWHITE = '#ffffff80'
 
 const RED = '#ff5733'
 const ORANGE = '#ff9d33'
@@ -491,7 +491,7 @@ This parameter is only available when the "Show entries" parameter is
 checked.
     **/
     numberColor: {
-        default: OPAQUEWHITE,
+        default: HALFWHITE,
         type: ParamType.ACOLOR,
         displayName: 'Entry color',
         required: true,
@@ -720,7 +720,11 @@ earlier ones that use the _same_ style.)
 
         if (this.showEntries) {
             // Increase the cell size so that it can fit all the entries
-            let lastSize = sketch.width
+            // Strategy: binary search to find the smallest cell size
+            // that fits all the labels that occur with that cell size
+            let smallestOK = sketch.width
+            let biggestBad = 0
+            let lastSize = this.cellSize
             while (true) {
                 this.cellSize = this.widestEntry()
                 this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
@@ -734,7 +738,44 @@ earlier ones that use the _same_ style.)
                 this.cellSize = Math.sqrt(pixels / Number(this.nEntries))
                 this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
                 this.cellSize = sketch.width / this.sideOfGrid
-                if (this.cellSize >= lastSize) break
+                // if we settled, just quit:
+                if (Math.abs(lastSize - this.cellSize) < 1.01) break
+                // Otherwise, see where we should go:
+                if (this.cellSize < lastSize) {
+                    // got smaller, that's good
+                    if (lastSize < smallestOK) {
+                        smallestOK = lastSize
+                        lastSize = this.cellSize
+                        continue
+                    }
+                } else {
+                    // got larger, that's bad
+                    if (lastSize > biggestBad) {
+                        biggestBad = lastSize
+                        lastSize = this.cellSize
+                        continue
+                    }
+                }
+                // But here, we just re-verified something we already knew
+                // Have we shrunk the interval small enough?
+                if (Math.abs(smallestOK - biggestBad) < 1.01) {
+                    this.cellSize = smallestOK
+                    this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
+                    this.nEntries = BigInt(
+                        this.sideOfGrid
+                            * Math.floor(sketch.height / this.cellSize)
+                    )
+                    this.cellSize = sketch.width / this.sideOfGrid
+                    break
+                }
+                // Still room to explore; move to midpoint of current
+                // interval and try again
+                this.cellSize = (biggestBad + smallestOK) / 2
+                this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
+                this.nEntries = BigInt(
+                    this.sideOfGrid
+                        * Math.floor(sketch.height / this.cellSize)
+                )
                 lastSize = this.cellSize
             }
         }
