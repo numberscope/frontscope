@@ -14,10 +14,6 @@ import type {
 } from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
-// NOTE: Grid visualizer is not currently working due to the new Paramable
-// system, which is why it has been moved to `visualizers-workbench`
-// Perhaps an issue should be opened to fix this
-
 /** md
 # Grid Visualizer
 
@@ -585,8 +581,14 @@ class Grid extends P5Visualizer(paramDesc) {
         /** md
 ### Property 1, 2, etc.:  Properties to display by coloring cells
 
-You can add multiple properties.  For each, there are some parameters
-to set.
+These parameters are only visible when "Highlight properties" is set to
+"Custom," although selecting any other value for "Highlight properties" will
+set these parameters accordingly.
+
+You can add multiple properties.  For each, there are some parameters to set.
+Whenever you set a property, its parameters show up and the slot for the next
+property is created. Similarly, removing a property hides its parameters and
+all subsequent properties.
 
 ##### Property:  the property to highlight
 
@@ -629,18 +631,46 @@ earlier ones that use the _same_ style.)
         )
     }
 
+    async parametersChanged(name: string[]) {
+        if (name.includes('preset') && this.preset !== Preset.Custom) {
+            for (let i = 0; i < this.propertyObjects.length; i++) {
+                this.propertyObjects[i].property = Property.None
+            }
+            const preset = Preset[this.preset] as PresetName
+            const useProps = presetProperties[preset]
+            for (let i = 0; i < useProps.length; ++i) {
+                Object.assign(this.propertyObjects[i], useProps[i])
+            }
+            // reverse assign property objects to property parameters:
+            for (
+                let i: PropertyIndex = 0;
+                i < MAXIMUM_ALLOWED_PROPERTIES;
+                i++
+            ) {
+                const prop = this.propertyObjects[i]
+                this[`property${i}` as `property${PropertyIndex}`] =
+                    prop.property
+                this[`prop${i}Vis` as `prop${PropertyIndex}Vis`] =
+                    prop.visualization
+                this[`prop${i}Color` as `prop${PropertyIndex}Color`] =
+                    prop.color
+                this[`prop${i}Aux` as `prop${PropertyIndex}Aux`] = prop.aux
+            }
+        }
+        this.refreshParams()
+        await super.parametersChanged(name)
+    }
+
     assignParameters() {
         super.assignParameters()
 
         for (let i: PropertyIndex = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
-            this.propertyObjects[i].property =
-                this[`property${i}` as `property${PropertyIndex}`]
-            this.propertyObjects[i].visualization =
+            const prop = this.propertyObjects[i]
+            prop.property = this[`property${i}` as `property${PropertyIndex}`]
+            prop.visualization =
                 this[`prop${i}Vis` as `prop${PropertyIndex}Vis`]
-            this.propertyObjects[i].color =
-                this[`prop${i}Color` as `prop${PropertyIndex}Color`]
-            this.propertyObjects[i].aux =
-                this[`prop${i}Aux` as `prop${PropertyIndex}Aux`]
+            prop.color = this[`prop${i}Color` as `prop${PropertyIndex}Color`]
+            prop.aux = this[`prop${i}Aux` as `prop${PropertyIndex}Aux`]
         }
     }
 
@@ -650,7 +680,6 @@ earlier ones that use the _same_ style.)
 
     setup(): void {
         super.setup()
-        this.setPresets()
         // determine whether to watch for primary or secondary fills
         this.primaryProperties = this.propertiesFilledWith(
             PropertyVisualization.Fill_Cell
@@ -684,19 +713,6 @@ earlier ones that use the _same_ style.)
         }
         if (this.cacheSettled) this.stop()
         else this.setCellSizeAndLength()
-    }
-
-    setPresets() {
-        if (this.preset != Preset.Custom) {
-            for (let i = 0; i < this.propertyObjects.length; i++) {
-                this.propertyObjects[i].property = Property.None
-            }
-            const preset = Preset[this.preset] as PresetName
-            const useProps = presetProperties[preset]
-            for (let i = 0; i < useProps.length; ++i) {
-                Object.assign(this.propertyObjects[i], useProps[i])
-            }
-        }
     }
 
     setCellSizeAndLength() {

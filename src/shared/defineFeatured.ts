@@ -85,7 +85,7 @@ const featuredSIMs = [
         'Turtle',
         'Formula',
         'domain=-1+1&turns=30+120&steps=30+30&pathLook=true&strokeWeight=2'
-            + '&bgColor=5d509f&strokeColor=7a9f6fff',
+            + '&bgColor=5d509f&strokeColor=7a9f6f20',
         'formula=sign%28sin%28n%2B1%29%29'
     ),
     specimenQuery(
