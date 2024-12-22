@@ -76,7 +76,8 @@ test.describe('Scope: on some featured visualization', () => {
         const lookFor = 'Random'
         const andThenFind = 'Random integers 0 to 9'
         await page.locator('#sequenceTab .visualizer-info').click()
-        await page.getByText(lookFor, {exact: true}).click()
+        const itemToClick = await page.getByText(lookFor, {exact: true})
+        await itemToClick.click()
         await expect(
             await page.locator('#sequenceTab .item-name').innerText()
         ).toMatch(andThenFind)
@@ -86,7 +87,8 @@ test.describe('Scope: on some featured visualization', () => {
         await expect(page.locator('#visualiserTab')).not.toHaveClass(
             /minimized/
         )
-        await page.locator('#visualiserTab .minimize').click()
+        const minButton = await page.locator('#visualiserTab .minimize')
+        await minButton.click()
         await expect(page.locator('#visualiserTab')).toHaveClass(/minimized/)
         await expect(
             await page.locator('#visualiserTab').evaluate(element => {

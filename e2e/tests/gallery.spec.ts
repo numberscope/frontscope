@@ -15,7 +15,8 @@ test.describe('Gallery', () => {
             /arrow-down/
         )
 
-        await page.locator('#featured-arrow').first().click()
+        const arrowButton = await page.locator('#featured-arrow').first()
+        await arrowButton.click()
         await expect(page.locator('#featured-arrow')).not.toHaveClass(
             /arrow-up/
         )
@@ -30,6 +31,8 @@ test.describe('Gallery', () => {
         )
     })
     test('clicking on a featured item', async ({page}) => {
+        const danceCard = await page.locator('.card-body >> nth=2')
+        await expect(danceCard.locator('.titlespan')).toContainText(/Dance/)
         await page.locator('.card-body >> nth=2').click()
         await expect(page.url()).not.toContain('gallery')
         await expect(
@@ -58,7 +61,8 @@ test.describe('Gallery', () => {
             await savedCard.locator('.card-text').innerText()
         ).toMatch('Random integers 0 to 9')
 
-        await savedCard.locator('.delete-button').click()
+        const delButton = await savedCard.locator('.delete-button')
+        await delButton.click()
         await expect(page.locator('#saved-specimens >> *')).toHaveCount(0)
     })
 })

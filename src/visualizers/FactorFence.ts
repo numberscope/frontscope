@@ -105,7 +105,7 @@ const paramDesc = {
         type: ParamType.BOOLEAN,
         displayName: 'Show text info',
         required: true,
-        description: 'If true, some text info appears onscreen',
+        description: 'If checked, some text info appears onscreen',
         hideDescription: true,
     },
 
@@ -118,7 +118,7 @@ const paramDesc = {
         type: ParamType.BOOLEAN,
         displayName: 'Take into account signs',
         required: true,
-        description: 'If true, negative terms display below axis',
+        description: 'If checked, negative terms display below axis',
         hideDescription: true,
     },
 } satisfies GenericParamDescription

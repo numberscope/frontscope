@@ -48,6 +48,7 @@ a question mark after the property name means that it is optional whether
 or not to specify that property; all other properties are required.
 
 **/
+type ParamLevel = 0 | 1
 export interface ParamInterface<PT extends ParamType> {
     /** md */
     default: RealizedPropertyType[PT]
@@ -180,6 +181,18 @@ export interface ParamInterface<PT extends ParamType> {
     with the value of the parameter named by the `visibleDependency`
     property. Note that the `never` type above simply means that the argument
     to the `visiblePredicate` function may have any type.
+<!-- -->
+    **/
+    /** md */
+    level?: ParamLevel
+    /* **/
+    /** md
+:   An integer giving the hierarchical level of the parameter; this value
+    is used to determine aspects of the layout of the parameter entry area
+    in the UI such as its indentation, spacing, and/or border. Currently
+    only parameter levels 0 ("top-level") and 1 ("subordinate") are defined.
+    If this property is not specified, a level of 1 is used if the parameter
+    has a visibleDependency, and level 0 is used otherwise.
 <!-- -->
     **/
     /** md */
@@ -799,7 +812,11 @@ export class Paramable implements ParamableInterface {
                 if (tv[key] !== defaultString) {
                     // Avoid percent-encoding for colors
                     let qv = tv[key]
-                    if (param.type === ParamType.COLOR && qv[0] === '#') {
+                    if (
+                        (param.type === ParamType.COLOR
+                            || param.type === ParamType.ACOLOR)
+                        && qv[0] === '#'
+                    ) {
                         qv = qv.substring(1)
                     }
                     saveParams[key] = qv
@@ -815,12 +832,16 @@ export class Paramable implements ParamableInterface {
         for (const [key, value] of params) {
             if (key in this.tentativeValues) {
                 const param = this.params[key]
+                const hexMatch = value.match(/^[0-9a-fA-F]+$/)
                 if (
-                    param.type === ParamType.COLOR
-                    && value.match(/^[0-9a-fA-F]{6}$/)
-                )
+                    hexMatch
+                    && ((param.type === ParamType.COLOR
+                        && hexMatch[0].length % 3 === 0)
+                        || (param.type === ParamType.ACOLOR
+                            && hexMatch[0].length % 4 === 0))
+                ) {
                     this.tentativeValues[key] = '#' + value
-                else this.tentativeValues[key] = value
+                } else this.tentativeValues[key] = value
             } else console.warn(`Invalid property ${key} for ${this.name}`)
         }
         return this

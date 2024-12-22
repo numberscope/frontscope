@@ -1,18 +1,18 @@
 import {P5Visualizer} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
 
+import {CachingError} from '@/sequences/Cached'
 import type {
     SequenceInterface,
     Factorization,
 } from '@/sequences/SequenceInterface'
 import simpleFactor from '@/sequences/simpleFactor'
 import {math} from '@/shared/math'
-import type {GenericParamDescription} from '@/shared/Paramable'
+import type {
+    GenericParamDescription,
+    ParamInterface,
+} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
-
-// NOTE: Grid visualizer is not currently working due to the new Paramable
-// system, which is why it has been moved to `visualizers-workbench`
-// Perhaps an issue should be opened to fix this
 
 /** md
 # Grid Visualizer
@@ -21,9 +21,10 @@ import {ParamType} from '@/shared/ParamType'
 style="margin-left: 1em; margin-right: 1em"
 />](../assets/img/Grid/example-grid.png)
 
-This visualizer puts a sequence in a square spiral or in
-rows and allows you to highlight its values based on various
-properties.
+This visualizer places the entries of a sequence into a square grid along
+a specified path (a spiral or along rows, etc.) and allows you to highlight
+the cells of the grid based on various properties of the number placed into
+each cell.
 
 The inspiration for this visualizer is [Ulam's
 spiral](https://en.wikipedia.org/wiki/Ulam_spiral), which puts the
@@ -36,7 +37,7 @@ later properties overcolor earlier ones.
 ## Parameters
 **/
 const BLACK = '#000000'
-const WHITE = '#ffffff'
+const HALFWHITE = '#ffffff80'
 
 const RED = '#ff5733'
 const ORANGE = '#ff9d33'
@@ -80,15 +81,17 @@ const RAINBOW = [
 ]
 
 const MAXIMUM_ALLOWED_PROPERTIES = 12
+// #IHateTypeScriptRedundancy
+type PropertyIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11
 
 enum Preset {
-    Custom,
     Primes,
     Abundant_Numbers,
     Abundant_Numbers_And_Primes,
     Polygonal_Numbers,
     Color_By_Last_Digit_1,
     Color_By_Last_Digit_2,
+    Custom,
 }
 type PresetName = Exclude<keyof typeof Preset, number>
 
@@ -127,7 +130,7 @@ enum Property {
     Abundant,
     Perfect,
     Deficient,
-    Semi_Prime,
+    Semiprime,
 }
 
 enum PropertyVisualization {
@@ -145,17 +148,7 @@ interface PropertyObject {
     property: Property
     visualization: PropertyVisualization
     color: string // should this be a typedef?
-    aux?: bigint // auxiliary parameter for the property, meaning varies
-}
-
-const presetBackgrounds: {[key in PresetName]: string} = {
-    Custom: BLACK,
-    Primes: BLACK,
-    Abundant_Numbers: WHITE,
-    Abundant_Numbers_And_Primes: WHITE,
-    Polygonal_Numbers: BLACK,
-    Color_By_Last_Digit_1: BLACK,
-    Color_By_Last_Digit_2: BLACK,
+    aux: bigint // auxiliary parameter for the property, meaning varies
 }
 
 const presetProperties: {[key in PresetName]: PropertyObject[]} = {
@@ -165,13 +158,15 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
             property: Property.Prime,
             visualization: PropertyVisualization.Fill_Cell,
             color: RED,
+            aux: 0n,
         },
     ],
     Abundant_Numbers: [
         {
             property: Property.Abundant,
             visualization: PropertyVisualization.Fill_Cell,
-            color: BLACK,
+            color: GRAY,
+            aux: 0n,
         },
     ],
     Abundant_Numbers_And_Primes: [
@@ -179,11 +174,13 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
             property: Property.Prime,
             visualization: PropertyVisualization.Fill_Cell,
             color: RED,
+            aux: 0n,
         },
         {
             property: Property.Abundant,
             visualization: PropertyVisualization.Fill_Cell,
-            color: BLACK,
+            color: GRAY,
+            aux: 0n,
         },
     ],
     Polygonal_Numbers: [
@@ -239,45 +236,6 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
         color: RAINBOW[index],
         aux: BigInt(index),
     })),
-}
-
-function getPropertyParams(index: number, prop: PropertyObject) {
-    return {
-        [`property${index}`]: {
-            value: prop.property,
-            type: ParamType.ENUM,
-            from: Property,
-            displayName: `Property ${index + 1}`,
-            required: false,
-            visibleDependency: index > 0 ? `property${index - 1}` : '',
-            visiblePredicate: (d: Property) => d !== Property.None,
-        },
-        [`prop${index}Vis`]: {
-            value: prop.visualization,
-            type: ParamType.ENUM,
-            from: PropertyVisualization,
-            displayName: 'Display',
-            required: false,
-            visibleDependency: `property${index}`,
-            visiblePredicate: (d: Property) => d !== Property.None,
-        },
-        [`prop${index}Color`]: {
-            value: prop.color,
-            type: ParamType.COLOR,
-            displayName: 'Color',
-            required: false,
-            visibleDependency: `property${index}`,
-            visiblePredicate: (d: Property) => d !== Property.None,
-        },
-        [`prop${index}Aux`]: {
-            value: prop.aux,
-            type: ParamType.BIGINT,
-            displayName: (d: Property) => propertyAuxName[Property[d]] || '',
-            required: false,
-            visibleDependency: `property${index}`,
-            visiblePredicate: (d: Property) => Property[d] in propertyAuxName,
-        },
-    }
 }
 
 /*
@@ -396,7 +354,7 @@ type PropertyName = Exclude<keyof typeof Property, number>
 const propertyOfFactorization = {
     Prime: true,
     Sum_Of_Two_Squares: true,
-    Semi_Prime: true,
+    Semiprime: true,
 } as const
 
 type FactorPropertyName = keyof typeof propertyOfFactorization
@@ -421,41 +379,78 @@ const propertyIndicatorFunction: {
     Abundant: isAbundant,
     Perfect: isPerfect,
     Deficient: isDeficient,
-    Semi_Prime: isSemiPrime,
+    Semiprime: isSemiPrime,
+}
+
+const templatePropertyObjects: PropertyObject[] = []
+
+for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
+    const ithPropertyObject = {
+        property: i === 0 ? Property.Prime : Property.None,
+        visualization:
+            i === 1
+                ? PropertyVisualization.Box_In_Cell
+                : PropertyVisualization.Fill_Cell,
+        color: DEFAULT_COLORS[i],
+        aux: 3n,
+    }
+    templatePropertyObjects.push(ithPropertyObject)
+}
+
+type propParamHelper<N extends number> = {
+    [K in `property${N}`]: ParamInterface<ParamType.ENUM>
+} & {[K in `prop${N}Vis`]: ParamInterface<ParamType.ENUM>} & {
+    [K in `prop${N}Color`]: ParamInterface<ParamType.ACOLOR>
+} & {[K in `prop${N}Aux`]: ParamInterface<ParamType.BIGINT>}
+
+function getPropertyParams<N extends number>(index: N) {
+    const prop = templatePropertyObjects[index]
+    const propIx: `property${N}` = `property${index}`
+    const propVis: `prop${N}Vis` = `prop${index}Vis`
+    const propColor: `prop${N}Color` = `prop${index}Color`
+    const propAux: `prop${N}Aux` = `prop${index}Aux`
+    return {
+        [propIx]: {
+            default: prop.property,
+            type: ParamType.ENUM,
+            from: Property,
+            displayName: `Property ${index + 1}`,
+            required: true,
+            visibleDependency: index > 0 ? `property${index - 1}` : 'preset',
+            visibleValue: index === 0 ? Preset.Custom : undefined,
+            visiblePredicate:
+                index > 0 ? (d: Property) => d !== Property.None : undefined,
+            level: 0,
+        },
+        [propVis]: {
+            default: prop.visualization,
+            type: ParamType.ENUM,
+            from: PropertyVisualization,
+            displayName: 'Display',
+            required: true,
+            visibleDependency: `property${index}`,
+            visiblePredicate: (d: Property) => d !== Property.None,
+        },
+        [propColor]: {
+            default: prop.color,
+            type: ParamType.ACOLOR,
+            displayName: 'Color',
+            required: true,
+            visibleDependency: `property${index}`,
+            visiblePredicate: (d: Property) => d !== Property.None,
+        },
+        [propAux]: {
+            default: prop.aux,
+            type: ParamType.BIGINT,
+            displayName: (d: Property) => propertyAuxName[Property[d]] || '',
+            required: false,
+            visibleDependency: `property${index}`,
+            visiblePredicate: (d: Property) => Property[d] in propertyAuxName,
+        },
+    } as propParamHelper<N>
 }
 
 const paramDesc = {
-    /** md
-### Presets: Which preset to display
-
-If a preset other than `Custom` is selected, then the `Properties`
-portion of the dialog is overriden.  For details on the meanings of the
-terms below, see the
-[Properties](#property-1-2-etc-properties-to-display-by-coloring-cells)
-section of the documentation.
-
-- Custom:  the remaining properties can be set by you
-- Primes:  primes are shown in red
-- Abundant_Numbers:  the abundant numbers are shown in black
-- Abundant_Numbers_And_Primes:  the primes are shown in red and the abundant
-numbers in black
-- Polygonal_Numbers:  the polygonal numbers are shown in a variety of
-different colors (one for each type of polygon)
-- Color_By_Last_Digit_1:  the last digit is shown (one color for each digit
-in a rainbow style)
-- Color_By_Last_Digit_2:  a variation on the last, where odd digits are
-indicated by smaller boxes
-    **/
-    preset: {
-        default: Preset.Custom,
-        type: ParamType.ENUM,
-        from: Preset,
-        displayName: 'Presets',
-        required: false,
-        description:
-            'If a preset is selected, properties no longer function.',
-    },
-
     /** md
 ### Path in grid: The path to follow while filling numbers into the grid.
 
@@ -469,36 +464,34 @@ but adds the row number to the sequence _values_.
         type: ParamType.ENUM,
         from: PathType,
         displayName: 'Path in grid',
-        required: false,
+        required: true,
     },
 
     /** md
-### Show numbers: Whether to show values overlaid on cells
+### Show entries: Whether to show values overlaid on cells
 
-When this is selected, the number of cells in the grid will be
-limited to 400
-even if you choose more.
+When this is checked, there will be a limit on the number of cells shown to
+make room for the displayed values of the entries.
     **/
-    showNumbers: {
+    showEntries: {
         default: false,
         type: ParamType.BOOLEAN,
-        displayName: 'Show numbers',
-        required: false,
-        description: 'When true, grid is limited to 400 cells',
+        displayName: 'Show entries',
+        required: true,
     },
 
     /** md
-### Number color: The font color of displayed numbers
+### Entry color: The font color of displayed entries
 
-This parameter is only available when the "Show Numbers" parameter is
+This parameter is only available when the "Show entries" parameter is
 checked.
     **/
     numberColor: {
-        default: WHITE,
-        type: ParamType.COLOR,
-        displayName: 'Number color',
-        required: false,
-        visibleDependency: 'showNumbers',
+        default: HALFWHITE,
+        type: ParamType.ACOLOR,
+        displayName: 'Entry color',
+        required: true,
+        visibleDependency: 'showEntries',
         visiblePredicate: (dependentValue: boolean) =>
             dependentValue === true,
     },
@@ -511,29 +504,68 @@ checked.
         displayName: 'Background color',
         required: false,
     },
+    /** md
+### Highlight properties: What attribute(s) of the entries to display
+
+For details on the meanings of the
+terms below, see the
+[Properties](#property-1-2-etc-properties-to-display-by-coloring-cells)
+section of the documentation.
+
+- Primes:  primes are shown in red
+- Abundant_Numbers:  the abundant numbers are shown in black
+- Abundant_Numbers_And_Primes:  the primes are shown in red and the abundant
+numbers in black
+- Polygonal_Numbers:  the polygonal numbers are shown in a variety of
+different colors (one for each type of polygon)
+- Color_By_Last_Digit_1:  the last digit is shown (one color for each digit
+in a rainbow style)
+- Color_By_Last_Digit_2:  a variation on the last, where odd digits are
+indicated by smaller boxes
+- Custom:  choose whatever specific properties you would like to highlight
+    **/
+    preset: {
+        default: Preset.Primes,
+        type: ParamType.ENUM,
+        from: Preset,
+        displayName: 'Highlight properties',
+        required: true,
+    },
+    /* HELP: If anyone can figure out how to avoid listing all 12 of
+       the following while still getting the correct type for paramDesc,
+       please improve this code:
+    */
+    ...getPropertyParams(0),
+    ...getPropertyParams(1),
+    ...getPropertyParams(2),
+    ...getPropertyParams(3),
+    ...getPropertyParams(4),
+    ...getPropertyParams(5),
+    ...getPropertyParams(6),
+    ...getPropertyParams(7),
+    ...getPropertyParams(8),
+    ...getPropertyParams(9),
+    ...getPropertyParams(10),
+    ...getPropertyParams(11),
 } satisfies GenericParamDescription
 
 class Grid extends P5Visualizer(paramDesc) {
     static category = 'Grid'
     static description =
-        'Puts numbers in a grid, highlighting cells based on various properties'
+        'Puts sequence entries in grid cells, highlighting them '
+        + 'based on various properties'
 
     // Grid variables
-    nEntries = 4096n
+    nEntries = -1n // dummy, needs to be overridden
     sideOfGrid = 64
     currentIndex = 0n
     currentNumber = 0n
-    showNumbers = false
-    preset = Preset.Custom
-    pathType = PathType.Spiral
-    resetAndAugmentByOne = false
-    backgroundColor = BLACK
-    numberColor = WHITE
 
     // Path variables
     x = 0
     y = 0
-    scalingFactor = 0
+    cacheSettled = true
+    cellSize = 0
     currentDirection = Direction.Right
     numberToTurnAtForSpiral = 0
     incrementForNumberToTurnAt = 1
@@ -549,8 +581,14 @@ class Grid extends P5Visualizer(paramDesc) {
         /** md
 ### Property 1, 2, etc.:  Properties to display by coloring cells
 
-You can add multiple properties.  For each, there are some parameters
-to set.
+These parameters are only visible when "Highlight properties" is set to
+"Custom," although selecting any other value for "Highlight properties" will
+set these parameters accordingly.
+
+You can add multiple properties.  For each, there are some parameters to set.
+Whenever you set a property, its parameters show up and the slot for the next
+property is created. Similarly, removing a property hides its parameters and
+all subsequent properties.
 
 ##### Property:  the property to highlight
 
@@ -572,8 +610,8 @@ and reveal parameters for it.
 - Abundant:  Its absolute value exceeds the sum of its proper divisors
 - Perfect:  Equal to the sum of its proper divisors
 - Deficient:  Its absolute value is less than the sum of its proper divisors
-- Semi_Prime:  Its absolute value is a
-  [semi-prime](https://en.wikipedia.org/wiki/Semiprime), that is, a product of
+- Semiprime:  Its absolute value is a
+  [semiprime](https://en.wikipedia.org/wiki/Semiprime), that is, a product of
   exactly two primes (possibly equal)
 
 ##### Display:  Highlight style for cells with the property
@@ -587,53 +625,61 @@ earlier ones that use the _same_ style.)
 - Box_In_Cell:  Fill only a smaller central box in the cell
 
 ##### Color:  Highlight color for cells with the property
-         **/
-        for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
-            const ithPropertyObject = {
-                property: i === 0 ? Property.Prime : Property.None,
-                visualization:
-                    i === 1
-                        ? PropertyVisualization.Box_In_Cell
-                        : PropertyVisualization.Fill_Cell,
-                color: DEFAULT_COLORS[i],
-                aux: 3n,
+        **/
+        this.propertyObjects = templatePropertyObjects.map(pobj =>
+            Object.assign({}, pobj)
+        )
+    }
+
+    async parametersChanged(name: string[]) {
+        if (name.includes('preset') && this.preset !== Preset.Custom) {
+            for (let i = 0; i < this.propertyObjects.length; i++) {
+                this.propertyObjects[i].property = Property.None
             }
-            this.propertyObjects.push(ithPropertyObject)
-            Object.assign(
-                this.params,
-                getPropertyParams(i, ithPropertyObject)
-            )
+            const preset = Preset[this.preset] as PresetName
+            const useProps = presetProperties[preset]
+            for (let i = 0; i < useProps.length; ++i) {
+                Object.assign(this.propertyObjects[i], useProps[i])
+            }
+            // reverse assign property objects to property parameters:
+            for (
+                let i: PropertyIndex = 0;
+                i < MAXIMUM_ALLOWED_PROPERTIES;
+                i++
+            ) {
+                const prop = this.propertyObjects[i]
+                this[`property${i}` as `property${PropertyIndex}`] =
+                    prop.property
+                this[`prop${i}Vis` as `prop${PropertyIndex}Vis`] =
+                    prop.visualization
+                this[`prop${i}Color` as `prop${PropertyIndex}Color`] =
+                    prop.color
+                this[`prop${i}Aux` as `prop${PropertyIndex}Aux`] = prop.aux
+            }
+        }
+        this.refreshParams()
+        await super.parametersChanged(name)
+    }
+
+    assignParameters() {
+        super.assignParameters()
+
+        for (let i: PropertyIndex = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
+            const prop = this.propertyObjects[i]
+            prop.property = this[`property${i}` as `property${PropertyIndex}`]
+            prop.visualization =
+                this[`prop${i}Vis` as `prop${PropertyIndex}Vis`]
+            prop.color = this[`prop${i}Color` as `prop${PropertyIndex}Color`]
+            prop.aux = this[`prop${i}Aux` as `prop${PropertyIndex}Aux`]
         }
     }
 
-    async assignParameters() {
-        await super.assignParameters()
-
-        // NOTE: This is commented out because it breaks the new type safety
-        // of the parameters. I wasn't able to figure out exactly what the
-        // intent is, but the strings being accessed are not parameters
-        // according to the parameter description
-        /*
-        for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
-            this.propertyObjects[i].property =
-                this.tentativeValues[`property${i}`] as Property
-            this.propertyObjects[i].visualization =
-                this.tentativeValues[`prop${i}Vis`] as PropertyVisualization
-            this.propertyObjects[i].color =
-                this.tentativeValues[`prop${i}Color`].value as string
-            this.propertyObjects[i].aux =
-                this.tentativeValues[`prop${i}Aux`].value as bigint
-        }
-        */
+    requestedAspectRatio() {
+        return this.pathType === PathType.Spiral ? 1 : undefined
     }
 
     setup(): void {
         super.setup()
-        this.setPresets()
-        this.setOverridingSettings()
-
-        this.sketch.background(this.backgroundColor).strokeWeight(0)
-
         // determine whether to watch for primary or secondary fills
         this.primaryProperties = this.propertiesFilledWith(
             PropertyVisualization.Fill_Cell
@@ -641,28 +687,20 @@ earlier ones that use the _same_ style.)
         this.secondaryProperties = this.propertiesFilledWith(
             PropertyVisualization.Box_In_Cell
         )
-
-        if (typeof this.seq.length === 'bigint') {
-            this.nEntries = this.seq.length
-        } // else TODO: Post warning about not using all terms
-
-        // Round down amount of numbers so that it is a square number.
-        const side = math.floorSqrt(this.nEntries)
-        this.sideOfGrid = Number(side)
-        this.nEntries = side * side
-
-        this.scalingFactor = this.sketch.width / this.sideOfGrid
-        this.setPathVariables(this.sideOfGrid)
+        this.setCellSizeAndLength()
     }
 
     draw(): void {
+        // We draw the entire diagram in a single frame:
+        this.sketch.background(this.backgroundColor).strokeWeight(0)
+        this.setPathVariables(this.sideOfGrid)
         this.currentIndex = this.seq.first
-        let augmentForRowReset = 0n
 
+        let augmentForRowReset = 0n
         for (let iteration = 0; iteration < this.nEntries; iteration++) {
             // Reset current sequence for row reset and augment by one.
             if (this.currentDirection === Direction.StartNewRow) {
-                if (this.resetAndAugmentByOne) {
+                if (this.pathType === PathType.Rows_Augment) {
                     this.currentIndex = this.seq.first
                     augmentForRowReset++
                 }
@@ -673,32 +711,119 @@ earlier ones that use the _same_ style.)
             this.currentIndex++
             this.moveCoordinatesUsingPath(iteration)
         }
-        this.stop()
+        if (this.cacheSettled) this.stop()
+        else this.setCellSizeAndLength()
     }
 
-    setPresets() {
-        if (this.preset != Preset.Custom) {
-            for (let i = 0; i < this.propertyObjects.length; i++) {
-                this.propertyObjects[i].property = Property.None
+    setCellSizeAndLength() {
+        const seq = this.seq
+        const sketch = this.sketch
+        const pixels = sketch.width * sketch.height
+        // Default cell size for infinitely many entries
+        this.cellSize = 4
+        this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
+        this.nEntries = BigInt(
+            this.sideOfGrid * Math.floor(sketch.height / this.cellSize)
+        )
+
+        // Try the available number of entries if that is set
+        if (typeof seq.length === 'bigint') this.nEntries = seq.length
+
+        // Determine cell size
+        this.cellSize = Math.sqrt(pixels / Number(this.nEntries))
+        this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
+        this.cellSize = sketch.width / this.sideOfGrid
+
+        if (this.showEntries) {
+            // Increase the cell size so that it can fit all the entries
+            // Strategy: binary search to find the smallest cell size
+            // that fits all the labels that occur with that cell size
+            let smallestOK = sketch.width
+            let biggestBad = 0
+            let lastSize = this.cellSize
+            while (true) {
+                this.cellSize = this.widestEntry()
+                this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
+                this.nEntries = BigInt(
+                    this.sideOfGrid
+                        * Math.floor(sketch.height / this.cellSize)
+                )
+                if (this.nEntries > seq.length) {
+                    this.nEntries = BigInt(seq.length)
+                }
+                this.cellSize = Math.sqrt(pixels / Number(this.nEntries))
+                this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
+                this.cellSize = sketch.width / this.sideOfGrid
+                // if we settled, just quit:
+                if (Math.abs(lastSize - this.cellSize) < 1.01) break
+                // Otherwise, see where we should go:
+                if (this.cellSize < lastSize) {
+                    // got smaller, that's good
+                    if (lastSize < smallestOK) {
+                        smallestOK = lastSize
+                        lastSize = this.cellSize
+                        continue
+                    }
+                } else {
+                    // got larger, that's bad
+                    if (lastSize > biggestBad) {
+                        biggestBad = lastSize
+                        lastSize = this.cellSize
+                        continue
+                    }
+                }
+                // But here, we just re-verified something we already knew
+                // Have we shrunk the interval small enough?
+                if (Math.abs(smallestOK - biggestBad) < 1.01) {
+                    this.cellSize = smallestOK
+                    this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
+                    this.nEntries = BigInt(
+                        this.sideOfGrid
+                            * Math.floor(sketch.height / this.cellSize)
+                    )
+                    this.cellSize = sketch.width / this.sideOfGrid
+                    break
+                }
+                // Still room to explore; move to midpoint of current
+                // interval and try again
+                this.cellSize = (biggestBad + smallestOK) / 2
+                this.sideOfGrid = Math.floor(sketch.width / this.cellSize)
+                this.nEntries = BigInt(
+                    this.sideOfGrid
+                        * Math.floor(sketch.height / this.cellSize)
+                )
+                lastSize = this.cellSize
             }
-            const preset = Preset[this.preset] as PresetName
-            this.backgroundColor = presetBackgrounds[preset]
-            const useProps = presetProperties[preset]
-            for (let i = 0; i < useProps.length; ++i) {
-                Object.assign(this.propertyObjects[i], useProps[i])
-            }
+        }
+
+        if (this.nEntries < seq.length) {
+            this.statusOf.showEntries.warnings[0] =
+                `There is only room to show ${this.nEntries} cells, but `
+                + `sequence has ${seq.length} entries.`
+        } else {
+            this.statusOf.showEntries.warnings.length = 0
         }
     }
 
-    setOverridingSettings() {
-        if (this.pathType === PathType.Rows_Augment) {
-            this.pathType = PathType.Rows
-            this.resetAndAugmentByOne = true
+    // Returns the pixel width of the entry with longest written representation
+    widestEntry() {
+        const seq = this.seq
+        let widest = 0n
+        this.cacheSettled = true
+        for (let entry = 0n; entry < this.nEntries; ++entry) {
+            let value = 0n
+            try {
+                value = seq.getElement(this.seq.first + entry)
+            } catch (e: unknown) {
+                if (e instanceof CachingError) {
+                    this.cacheSettled = false
+                }
+                value = 999n // guess 3 digits wide...
+            }
+            if (value < 0n) value = -10n * value // allow for minus sign
+            if (value > widest) widest = value
         }
-
-        if (this.showNumbers && this.nEntries > 400n) {
-            this.nEntries = 400n
-        }
+        return this.sketch.textWidth(widest.toString()) + 4
     }
 
     setCurrentNumber(currentIndex: bigint, augmentForRow: bigint) {
@@ -717,11 +842,11 @@ earlier ones that use the _same_ style.)
         if (this.pathType === PathType.Spiral) {
             // The starting point placed so that the whole spiral is centered
             if (gridSize % 2 === 1) {
-                this.x = (gridSize / 2 - 1 / 2) * this.scalingFactor
-                this.y = (gridSize / 2 - 1 / 2) * this.scalingFactor
+                this.x = (gridSize / 2 - 1 / 2) * this.cellSize
+                this.y = (gridSize / 2 - 1 / 2) * this.cellSize
             } else {
-                this.x = (gridSize / 2 - 1) * this.scalingFactor
-                this.y = (gridSize / 2) * this.scalingFactor
+                this.x = (gridSize / 2 - 1) * this.cellSize
+                this.y = (gridSize / 2) * this.cellSize
             }
 
             // The amount of numbers to the next turn increases every other turn
@@ -732,20 +857,26 @@ earlier ones that use the _same_ style.)
     }
 
     fillGridCell() {
-        this.drawSquare(this.primaryProperties, this.scalingFactor)
+        this.drawSquare(this.primaryProperties, this.cellSize)
         this.drawSquare(
             this.secondaryProperties,
-            this.scalingFactor / 2,
-            this.scalingFactor / 4
+            this.cellSize / 2,
+            this.cellSize / 4
         )
-        if (this.showNumbers) {
-            this.showNumber()
-        }
+        if (this.showEntries) this.drawEntry()
     }
 
     drawSquare(props: number[], size: number, offset = 0) {
-        if (this.colorProperties(props)) {
-            this.sketch.rect(this.x + offset, this.y + offset, size, size)
+        const sketch = this.sketch
+        for (const i of props) {
+            const prop = this.propertyObjects[i]
+            if (
+                this.hasProperty(this.currentIndex, prop.property, prop.aux)
+            ) {
+                sketch
+                    .fill(prop.color)
+                    .rect(this.x + offset, this.y + offset, size, size)
+            }
         }
     }
 
@@ -760,25 +891,6 @@ earlier ones that use the _same_ style.)
             }
         }
         return retVal
-    }
-
-    // returns whether any of the properties held, i.e. whether indicator
-    // needs to be drawn, and by side effect sets the fill color
-    colorProperties(props: number[]): boolean {
-        let retval = false
-        for (const i of props) {
-            if (
-                this.hasProperty(
-                    this.currentIndex,
-                    this.propertyObjects[i].property,
-                    this.propertyObjects[i].aux
-                )
-            ) {
-                this.sketch.fill(this.propertyObjects[i].color)
-                retval = true
-            }
-        }
-        return retval
     }
 
     hasProperty(ind: bigint, property: Property, aux?: bigint) {
@@ -807,18 +919,16 @@ earlier ones that use the _same_ style.)
         )
     }
 
-    showNumber() {
-        const currentNumberAsString = this.currentNumber.toString()
-
-        if (this.showNumbers) {
-            this.sketch
-                .fill(this.numberColor)
-                .text(
-                    currentNumberAsString,
-                    this.x + 0 * this.scalingFactor,
-                    this.y + (15 * this.scalingFactor) / 20
-                )
-        }
+    drawEntry() {
+        const sketch = this.sketch
+        const txt = this.currentNumber.toString()
+        sketch
+            .fill(this.numberColor)
+            .text(
+                txt,
+                this.x + (this.cellSize - sketch.textWidth(txt)) / 2,
+                this.y + this.cellSize / 2 + 4
+            )
     }
 
     moveCoordinatesUsingPath(iteration: number) {
@@ -842,7 +952,7 @@ earlier ones that use the _same_ style.)
                 this.currentDirection =
                     leftTurn[Direction[this.currentDirection]]
             }
-        } else if (this.pathType === PathType.Rows) {
+        } else {
             // Go to new row when the row is complete
             if ((iteration + 1) % this.sideOfGrid === 0) {
                 this.currentDirection = Direction.StartNewRow
@@ -857,19 +967,19 @@ earlier ones that use the _same_ style.)
     moveCoordinatesUsingCurrentDirection() {
         switch (this.currentDirection) {
             case Direction.Right:
-                this.x += this.scalingFactor
+                this.x += this.cellSize
                 break
             case Direction.Up:
-                this.y -= this.scalingFactor
+                this.y -= this.cellSize
                 break
             case Direction.Left:
-                this.x -= this.scalingFactor
+                this.x -= this.cellSize
                 break
             case Direction.StartNewRow:
                 this.x = 0
             // FALL THROUGH
             case Direction.Down:
-                this.y += this.scalingFactor
+                this.y += this.cellSize
         }
     }
 }

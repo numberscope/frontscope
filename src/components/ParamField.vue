@@ -1,8 +1,8 @@
 <template>
-    <div style="margin-bottom: 32px">
+    <div>
         <div class="input-container">
             <label>
-                {{ param.displayName }}
+                {{ displayName }}
                 <input
                     v-if="param.type === ParamType.BOOLEAN"
                     :id="paramName"
@@ -15,6 +15,12 @@
                     type="color"
                     :value="value"
                     @input="updateString($event)">
+                <pick-colors
+                    v-else-if="param.type === ParamType.ACOLOR"
+                    :id="paramName"
+                    :value="value"
+                    show-alpha
+                    @change="updateRGBAcolor" />
                 <select
                     v-else-if="param.type === ParamType.ENUM"
                     :id="paramName"
@@ -66,12 +72,14 @@
 
 <script lang="ts">
     import {defineComponent} from 'vue'
+    import PickColors from 'vue-pick-colors'
     import type {ParamInterface} from '../shared/Paramable'
     import typeFunctions, {ParamType} from '../shared/ParamType'
     import {ValidationStatus} from '../shared/ValidationStatus'
 
     export default defineComponent({
         name: 'ParamField',
+        components: {PickColors},
         props: {
             param: {
                 type: Object as () => ParamInterface<ParamType>,
@@ -82,6 +90,7 @@
                 required: true,
             },
             paramName: {type: String, required: true},
+            displayName: {type: String, required: true},
             status: {
                 type: Object as () => ValidationStatus,
                 required: true,
@@ -110,6 +119,9 @@
                     (e.target as HTMLInputElement).checked + ''
                 )
             },
+            updateRGBAcolor(value: string, _color: string, _index: number) {
+                this.$emit('updateParam', value)
+            },
             updateString(e: Event) {
                 this.$emit(
                     'updateParam',
@@ -134,7 +146,6 @@
 <style scoped lang="scss">
     label {
         font-size: 12px;
-        width: 100%;
     }
 
     input {
@@ -150,6 +161,13 @@
                 outline: none;
             }
         }
+        &[type='color'] {
+            vertical-align: middle;
+        }
+    }
+
+    .color-picker {
+        vertical-align: middle;
     }
 
     ::placeholder {
@@ -182,8 +200,7 @@
     .param-description {
         font-size: 12px;
         color: var(--ns-color-grey);
-        margin-bottom: 8px;
-        margin-top: 0px;
+        margin: 0px;
     }
 
     .input-container {
@@ -217,7 +234,7 @@
         }
 
         right: 4px;
-        bottom: 4px;
+        bottom: 0px;
     }
 
     .desc-tooltip .desc-tooltip-text {
