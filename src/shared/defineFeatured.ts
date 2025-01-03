@@ -111,6 +111,45 @@ const featuredSIMs = [
             + '&pathLook=true&speed=10&bgColor=6c162b&strokeColor=be9b9b',
         '&modulus=3'
     ),
+    specimenQuery(
+        'IntegerStellar',
+        'SelfSimilarity',
+        'Formula',
+        '&width=400&height=400&shiftFormula=n%2B4m&distance=2'
+    ),
+    specimenQuery(
+        'SquareSwirl',
+        'SelfSimilarity',
+        'Formula',
+        '&width=200&height=200&shiftFormula=1m&modulus=80'
+            + '&backgroundColor=202946&fillColor=9bb0ee',
+        '&formula=n%5E2'
+    ),
+    specimenQuery(
+        'Coprimality',
+        'SelfSimilarity',
+        'Formula',
+        '&width=100&shiftFormula=1m&distance=2&modulus=80'
+            + '&backgroundColor=52156a&fillColor=c18fa7&opacityControl=true'
+            + '&opacityFormula=d%3D%3D1'
+    ),
+    specimenQuery(
+        'Gaussian Split Prime Soup',
+        'SelfSimilarity',
+        'Formula',
+        '&shiftFormula=m*1&modulus=80&backgroundColor=45344c'
+            + '&fillColor=95c18f&opacityControl=true'
+            + '&opacityFormula=isPrime%28s%5E2%2Bt%5E2%29&height=150'
+    ),
+    specimenQuery(
+        'Modular Multiplication Table',
+        'SelfSimilarity',
+        'Formula',
+        '&width=200&shiftFormula=1*m&modulus=80&fillColor=e66100'
+            + '&opacityControl=true'
+            + '&opacityFormula=%28%28s*t%29+mod+200%29%2F200'
+            + '&star=1&height=200'
+    ),
 ]
 
 // Is there any reason for us to associate dates with featured specimens? Do
