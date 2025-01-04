@@ -115,7 +115,7 @@ const featuredSIMs = [
         'IntegerStellar',
         'SelfSimilarity',
         'Formula',
-        '&width=400&height=400&shiftFormula=n%2B4m&distance=2'
+        '&width=400&height=400&shiftFormula=m&distance=2'
     ),
     specimenQuery(
         'SquareSwirl',
