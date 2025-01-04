@@ -21,12 +21,14 @@ style="margin-left: 1em; margin-right: 0.5em"
 />](../assets/img/ModFill/OEISA070826.png)
 
 The n-th position in the m-th row of the diagram represents
-d(a(n),a(f(n,m))), where f is a function of the user's choice, and
-d is a suitable measure of distance.
+the distance between a(n) and a(f(n,m))),
+where f is a function of the user's choice, and
+the notion of distance can be specified from amongst options.
 
-The default example is d(x,y) = gcd(x,y) and f(n,m) = n+m.  This
-shows the gcd between a(n) and a(n+m), i.e. gcd with shifted
-copies of the same sequence.
+The default example of distance is d(x,y) = gcd(x,y),
+and the default comparison function f is f(n,m) = m.  This
+shows the gcd between a(n) and a(m), i.e. a grid showing
+pairwise gcd's between terms of the sequence.
 
 ## Parameters
 **/
@@ -262,7 +264,7 @@ class SelfSimilarity extends P5Visualizer(paramDesc) {
         return use
     }
 
-    drawNew(position: number) {
+    drawNew(position: number): boolean {
         // we draw from left to right, top to bottom
         const X = math.safeNumber(math.modulo(position, this.useWidth))
         const Y = (position - X) / this.useWidth
@@ -276,9 +278,8 @@ class SelfSimilarity extends P5Visualizer(paramDesc) {
             t = this.seq.getElement(BigInt(compareIndex))
         } catch {
             // don't draw if can't retrieve elements
-            return
+            return false
         }
-        if (Y < 3) console.log('got terms', s, t)
 
         // difference and alpha computation
         let alpha = 0
@@ -386,6 +387,8 @@ class SelfSimilarity extends P5Visualizer(paramDesc) {
                 this.rectHeight
             )
         }
+
+        return true
     }
 
     async presketch(size: ViewSize) {
@@ -470,8 +473,7 @@ class SelfSimilarity extends P5Visualizer(paramDesc) {
             return
         }
         for (let j = 0; j < 500; j++) {
-            this.drawNew(this.i)
-            this.i++
+            if (this.drawNew(this.i)) this.i++
         }
     }
 }
