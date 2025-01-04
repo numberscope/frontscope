@@ -109,7 +109,6 @@ type ExtendedMathJs = MathJsInstance & {
     bigabs(a: Integer): bigint
     bigmax(...args: Integer[]): ExtendedBigint
     bigmin(...args: Integer[]): ExtendedBigint
-    divides(a: Integer, b: Integer): boolean
     valuation(a: Integer, b: Integer): number
     biggcd(a: Integer, b: Integer): ExtendedBigint
 }
@@ -177,7 +176,7 @@ _b_.
 **/
 math.divides = (a: Integer, b: Integer): boolean => {
     let an = BigInt(a)
-    if (an === 0n) return b >= 0 && b <= 0
+    if (an === 0n) return b >= 0 && b <= 0 // b==0 that works with more types
     if (an < 0n) an = -an
     return math.modulo(b, a) === 0n
 }
@@ -270,20 +269,6 @@ math.bigmin = (...args: Integer[]): ExtendedBigint => {
         }
     }
     return ret
-}
-
-/** md
-#### divides(a: number | bigint, b: number | bigint): boolean
-
-Returns true if and only if the integer _a_ divides (evenly into) the integer
-_b_.
-**/
-math.divides = (a: Integer, b: Integer): boolean => {
-    let an = BigInt(a)
-    if (an < 0n) an = -an
-    const bn = BigInt(b)
-    if (an == 0n) return bn >= 0 && bn <= 0 // why not b == 0?
-    return math.modulo(bn, an) === 0n
 }
 
 /** md
