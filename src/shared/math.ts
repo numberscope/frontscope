@@ -109,6 +109,8 @@ type ExtendedMathJs = MathJsInstance & {
     bigabs(a: Integer): bigint
     bigmax(...args: Integer[]): ExtendedBigint
     bigmin(...args: Integer[]): ExtendedBigint
+    valuation(a: Integer, b: Integer): number
+    biggcd(a: Integer, b: Integer): ExtendedBigint
 }
 
 export const math = create(all) as ExtendedMathJs
@@ -174,7 +176,7 @@ _b_.
 **/
 math.divides = (a: Integer, b: Integer): boolean => {
     let an = BigInt(a)
-    if (an === 0n) return b >= 0 && b <= 0
+    if (an === 0n) return b >= 0 && b <= 0 // b==0 that works with more types
     if (an < 0n) an = -an
     return math.modulo(b, a) === 0n
 }
@@ -267,6 +269,56 @@ math.bigmin = (...args: Integer[]): ExtendedBigint => {
         }
     }
     return ret
+}
+
+/** md
+#### valuation(a: number | bigint, b: number | bigint): number
+
+Returns the number of times the integer _b_ divides the integer _a_.
+The integer _b_ must exceed 1.
+If _b_ is prime, this is also known as the _b_-adic valuation of _a_.
+The returned number will be less than MAX_SAFE_INTEGER simply
+because to exceed that answer, the input _a_ would need to be at
+least 2^53 binary digits -- which would take over a thousand
+terabytes to store.
+**/
+math.valuation = (a: Integer, b: Integer): number => {
+    const bn = BigInt(b)
+    if (bn < 2n) {
+        throw new RangeError(
+            `Attempt to use valuation with '
+		+ 'respect to too-small divisor ${bn}`
+        )
+    }
+    let an = BigInt(a)
+    if (an == 0n) {
+        return +Infinity
+    }
+    let v = 0
+    while (math.divides(bn, an)) {
+        an = an / bn
+        v++
+    }
+    return v
+}
+
+/** md
+#### biggcd(a: number| bigint, b: number | bigint): boolean
+
+Returns the greatest common divisor of _a_ and _b_.
+**/
+math.biggcd = (a: Integer, b: Integer): bigint => {
+    let an = BigInt(a)
+    let bn = BigInt(b)
+    if (an < 0n) an = -an
+    if (bn < 0n) bn = -bn
+    if (an <= 0n) return bn
+    while (bn > 0n) {
+        an = math.modulo(an, bn)
+        if (an <= 0n) return bn
+        bn = math.modulo(bn, an)
+    }
+    return an
 }
 
 /* Helper for outputting scopes: */
