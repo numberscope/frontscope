@@ -134,8 +134,9 @@ be committed and made part of a pull request.
 
 If you modify an existing visualizer with an existing end-to-end test, you may
 find yourself in the situation of having to update the end-to-end snapshots
-(screenshots) to reflect the new expected behavior. To do so, you can run the
-command `npm run test:e2e -- --update-snapshots`. This will produce new
+(screenshots) to reflect the new expected behavior. To do so, first verify
+that the only tests currently failing are those you expect. Then you can run
+the command `npm run test:e2e -- --update-snapshots`. This will produce new
 expected snapshots in the directory /e2e/tests, which you will need to add as
 part of your commit.
 
