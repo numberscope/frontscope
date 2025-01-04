@@ -69,8 +69,9 @@ words, that position will compare a(f(n,m)) with a(n).  Default:
             // Note: The markdown comment closed with */ means to include code
             // into the docs, until mkdocs reaches a comment ending with **/
             /** md */
-            `m`
+            'm',
             /* **/
+            ['n', 'm']
         ),
         type: ParamType.FORMULA,
         inputs: ['n', 'm'],
@@ -277,7 +278,7 @@ class SelfSimilarity extends P5Visualizer(paramDesc) {
             // don't draw if can't retrieve elements
             return
         }
-        console.log('got terms', s, t)
+        if (Y < 3) console.log('got terms', s, t)
 
         // difference and alpha computation
         let alpha = 0
@@ -308,7 +309,6 @@ class SelfSimilarity extends P5Visualizer(paramDesc) {
         if (this.distance == DistanceType.GCD) {
             diff = BigInt(math.biggcd(s, t))
             if (!this.opacityControl) {
-                console.log('situation', diff, termSize)
                 const tryalpha = (255n * diff) / termSize
                 if (tryalpha < BigInt(Number.MAX_SAFE_INTEGER)) {
                     alpha = math.safeNumber(tryalpha)
@@ -316,7 +316,6 @@ class SelfSimilarity extends P5Visualizer(paramDesc) {
                     alpha = 255
                 }
             }
-            console.log('got gcd', diff)
         }
         if (this.distance == DistanceType.Difference_of_Valuation) {
             const diffs = math.valuation(s, this.divisor)
