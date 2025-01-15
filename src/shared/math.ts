@@ -79,11 +79,13 @@ const anotherNegInf = math.bigmin(5n, math.negInfinity, -3)
 
 import isqrt from 'bigint-isqrt'
 import {modPow} from 'bigint-mod-arith'
-import {create, all} from 'mathjs'
+import {all, create, factory} from 'mathjs'
 import type {EvalFunction, MathJsInstance, MathType, SymbolNode} from 'mathjs'
 import temml from 'temml'
 
 import type {ValidationStatus} from './ValidationStatus'
+import {chroma, overlay} from './Chroma'
+import type {Chroma} from './Chroma'
 
 export type {MathNode, SymbolNode} from 'mathjs'
 type Integer = number | bigint
@@ -109,9 +111,38 @@ type ExtendedMathJs = MathJsInstance & {
     bigabs(a: Integer): bigint
     bigmax(...args: Integer[]): ExtendedBigint
     bigmin(...args: Integer[]): ExtendedBigint
+    chroma: typeof chroma
+    add: MathJsInstance['add'] & ((c: Chroma, d: Chroma) => Chroma)
+    multiply: MathJsInstance['multiply'] &
+        ((s: number, c: Chroma) => Chroma) &
+        ((c: Chroma, s: number) => Chroma)
 }
 
 export const math = create(all) as ExtendedMathJs
+
+/** Add colors to mathjs **/
+// @ts-expect-error: not in mathjs type declarations
+math.typed.addType({
+    name: 'Chroma',
+    test: (c: unknown) =>
+        typeof c === 'object' && c && c.constructor.name === 'Color',
+})
+
+const colorStuff: Record<string, unknown> = {
+    chroma,
+    add: math.typed('add', {'Chroma, Chroma': (c, d) => overlay(c, d)}),
+    multiply: math.typed('multiply', {
+        'number, Chroma': (s, c) => chroma(c).alpha(s * c.alpha()),
+        'Chroma, number': (c, s) => chroma(c).alpha(s * c.alpha()),
+    }),
+}
+// work around omission of `colors` property in @types/chroma-js
+for (const name in (chroma as unknown as {colors: Record<string, string>})
+    .colors) {
+    colorStuff[name] = factory(name, [], () => chroma(name))
+}
+
+math.import(colorStuff)
 
 math.negInfinity = -Infinity as TnegInfinity
 math.posInfinity = Infinity as TposInfinity
