@@ -93,3 +93,67 @@ describe('natlog', () => {
         ).toBeCloseTo(204.93007327647007, 15)
     })
 })
+
+describe('colors', () => {
+    const chroma = math.chroma
+    it('constructs a color from a string', () => {
+        expect(chroma('green').gl()).toStrictEqual([0, 128 / 255, 0, 1])
+    })
+    it('constructs a color from a string with alpha', () => {
+        expect(chroma('blue', 0.6).gl()).toStrictEqual([0, 0, 1, 0.6])
+    })
+    it('constructs a color with no arguments', () => {
+        expect(chroma().gl()).toStrictEqual([0, 0, 0, 1])
+    })
+    it('constructs a color from a quad', () => {
+        const quad: [number, number, number, number] = [0.5, 0.2, 0.7, 0.8]
+        expect(chroma(quad).gl()).toStrictEqual(quad)
+    })
+    it('constructs a color from a grey level', () => {
+        expect(chroma(0.7).gl()).toStrictEqual([0.7, 0.7, 0.7, 1])
+    })
+    it('constructs a color from three numbers', () => {
+        expect(chroma(0.5, 0.2, 0.7).gl()).toStrictEqual([0.5, 0.2, 0.7, 1])
+    })
+    it('constructs a color from four numbers', () => {
+        expect(chroma(0.4, 0.8, 0.6, 0.9).gl()).toStrictEqual([
+            0.4, 0.8, 0.6, 0.9,
+        ])
+    })
+    it('allows chroma construction in expressions', () => {
+        expect(math.evaluate('chroma("magenta")').gl()).toStrictEqual([
+            1, 0, 1, 1,
+        ])
+    })
+    it('adds colors as overlay', () => {
+        expect(
+            math.add(chroma('blue'), chroma('yellow', 0.5)).gl()
+        ).toStrictEqual(chroma(0.5).gl())
+    })
+    it('adds colors in expressions', () => {
+        expect(
+            math.evaluate('chroma("blue") + chroma("yellow", 0.5)')
+        ).toStrictEqual(chroma(0.5))
+    })
+    it('scalar multiplies a color via alpha', () => {
+        const g = chroma('lime')
+        expect(math.multiply(g, 0.5)).toStrictEqual(
+            chroma(0, 1, 0, 0.5, 'gl')
+        )
+        // make sure g is not modified
+        expect(g.gl()).toStrictEqual([0, 1, 0, 1])
+    })
+    it('takes linear combinations in expressions', () => {
+        expect(
+            math.evaluate('chroma("blue") + 0.5*chroma("yellow")')
+        ).toStrictEqual(chroma(0.5))
+        expect(
+            math.evaluate('0.5*chroma("blue") + 0.5*chroma("yellow")').gl()
+        ).toStrictEqual([0.5, 0.5, 0.25, 0.75])
+    })
+    it('allows direct use of color names in expressions', () => {
+        expect(math.evaluate('0.5*blue + 0.5*yellow').gl()).toStrictEqual([
+            0.5, 0.5, 0.25, 0.75,
+        ])
+    })
+})
