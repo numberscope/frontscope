@@ -156,4 +156,19 @@ describe('colors', () => {
             0.5, 0.5, 0.25, 0.75,
         ])
     })
+    it('allows chroma.js operations', () => {
+        // examples from https://gka.github.io/chroma.js/
+        expect(math.evaluate('hotpink.darken(2).hex()')).toBe('#930058')
+        expect(math.evaluate('hotpink.brighten(2).hex()')).toBe('#ffd1ff')
+        expect(math.evaluate('slategray.saturate(2).hex()')).toBe('#0087cd')
+        expect(math.evaluate('hotpink.desaturate(2).hex()')).toBe('#cd8ca8')
+        expect(math.evaluate('hotpink.shade(0.25).hex()')).toBe('#dd5b9c')
+        expect(math.evaluate('hotpink.tint(0.25).hex()')).toBe('#ff9dc9')
+        expect(math.evaluate('hotpink.mix(blue, 0.75, "lab").hex()')).toBe(
+            '#811ced'
+        )
+        expect(math.evaluate('red.mix(blue, 0.5, "oklch").hex()')).toBe(
+            '#ba00c2'
+        )
+    })
 })

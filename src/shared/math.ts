@@ -321,6 +321,12 @@ export class MathFormula {
     mathml: string
     freevars: string[]
     constructor(fmla: string, inputs?: string[]) {
+        // Preprocess formula to interpret "bare" color constants #hhhhhh
+        const prepfmla = fmla.replaceAll(
+            /(?<!["'])(#[0-9a-fA-f]{3,8})/g,
+            'chroma("\\1")'
+        )
+        if (prepfmla !== fmla) console.log('PREPPED', fmla, prepfmla)
         const parsetree = math.parse(fmla)
         this.freevars = parsetree
             .filter((node, path) => math.isSymbolNode(node) && path !== 'fn')

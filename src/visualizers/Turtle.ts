@@ -1,6 +1,7 @@
 import p5 from 'p5'
 import {markRaw} from 'vue'
 
+import {INVALID_COLOR} from './P5Visualizer'
 import {P5GLVisualizer} from './P5GLVisualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
@@ -40,6 +41,11 @@ of the path are re-drawn in every frame.
 ## Parameters
 **/
 
+enum RuleMode {
+    List,
+    Formula,
+}
+
 const paramDesc = {
     /** md
 - Domain: a list of numbers.  These are the values that
@@ -76,17 +82,18 @@ have a small domain.)
     },
     /** md
 
-The next four parameters give the instructions for the turtle's path (and how
-it changes from frame to frame). Each one can be a single number, in which
-case it is used for every element of the domain. Or it can be a list of
+The following set of parameters give the instructions for the turtle's path
+(and how it changes from frame to frame). Each one can be a single number, in
+which case it is used for every element of the domain. Or it can be a list of
 numbers the same length as the domain, in which case the numbers correspond in
 order: the first number is used when an entry is equal to the first value in
 the domain, the second number is used for entries equal to the second value,
-and so on. For example, if the "Steps" parameter below is "10", then a segment
-10 pixels long will be drawn for every sequence entry in the domain, whereas if
-the domain is "0 1 2" and "Steps" is "20 10 0", then the turtle will move 20
-pixels each time it sees a sequence entry of 0, 10 pixels for each 1, and it
-won't draw anything when the entry is equal to 2 (but it might turn).
+and so on. For example, if the "Step length(s)" parameter below is "10",
+then a segment 10 pixels long will be drawn for every sequence entry in the
+domain, whereas if the domain is "0 1 2" and "Step length(s)" is "20 10 0",
+then the turtle will move 20 pixels each time it sees a sequence entry of 0,
+10 pixels for each 1, and it won't draw anything when an entry is equal to 2
+(but it might turn).
 
 - Turn angle(s): Specifies (in degrees) how much the turtle should turn for
 each sequence entry in the domain. Positive values turn counterclockwise,
@@ -170,26 +177,61 @@ changes from one frame to the next.
         visibleDependency: 'animationControls',
         visibleValue: true,
     },
-    /**
-- pathLook: boolean. If true, show path style controls
+    /** md
+- Stroke width(s): Gives the width of the segment drawn for each entry,
+  in pixels.
     **/
-    pathLook: {
-        default: true,
-        type: ParamType.BOOLEAN,
-        displayName: 'Path speed/styling ↴',
+    widths: {
+        default: [1],
+        type: ParamType.NUMBER_ARRAY,
+        displayName: 'Stroke width(s)',
         required: false,
+        validate: function (widths: number[], status: ValidationStatus) {
+            if (widths.some(n => n <= 0)) status.addError('must be positive')
+        },
+    },
+    /** md
+- Stroke color(s): One or more strings specifying colors, separated by
+  spaces or commas. These colors correspond to the elements in the domain
+  just as all of the above parameters do. Each one may either be a CSS color
+  name (e.g., 'teal' or 'khaki'), or a standard hex color string (e.g.
+  '#88aa3c').
+    **/
+    strokeColor: {
+        default: '#c98787',
+        type: ParamType.STRING,
+        displayName: 'Stroke color(s)',
+        required: true,
     },
     /** md
 
 (Note that as an advanced convenience feature, useful mainly when the domain is
-large, you may specify fewer entries in one of these lists than there are
+large, you may specify fewer entries in any of the above lists than there are
 elements in the domain, and the last one will be re-used as many times as
 necessary. Using this feature will display a warning, in case you inadvertently
 left out a value.)
 
-The remaining parameters control the speed and style of the turtle path
-display.
-
+- Color chooser: This color picker does not directly control the display.
+  Instead, whenever you select a color with it, the corresponding color
+  string is inserted in the Stroke color parameter box.
+    **/
+    colorChooser: {
+        default: '#00d0d0',
+        type: ParamType.COLOR,
+        displayName: 'Color chooser:',
+        required: true,
+        description: 'Inserts choice into the stroke color.',
+    },
+    /** md
+- Background color: The color of the visualizer canvas.
+     **/
+    bgColor: {
+        default: '#6b1a1a',
+        type: ParamType.COLOR,
+        displayName: 'Background color',
+        required: true,
+    },
+    /** md
 - Turtle speed: a number.  If zero (or if any of the fold or stretch rates
 are nonzero), the full path is drawn all at once. Otherwise, the path drawing
 will be animated, and the Turtle speed specifies the number of steps of the
@@ -204,53 +246,61 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         required: false,
         description: 'Steps added per frame.',
         hideDescription: false,
-        visibleDependency: 'pathLook',
-        visibleValue: true,
         validate: function (n: number, status: ValidationStatus) {
             if (n < 0) status.addError('must non-negative')
             if (n > 1000) status.addError('the speed is capped at 1000')
         },
     },
     /** md
-- Stroke width: a number. Gives the width of the segment drawn for each entry,
-in pixels.
+- Rule mode: You may select "List" or "Formula". Generally speaking, the
+  parameters above are used to control the Turtle visualization when this
+  Rule mode parameter has its default value of "List". The parameters below
+  are used when the Rule mode is "Formula". (Note that Background color
+  and Turtle speed are used in either case.) Broadly, in Formula mode,
+  you can enter expressions that calculate the different aspects of each
+  segment of the turtle's path (turn angle, length, color, etc.) directly
+  from the sequence entries. In each of these formulas, you may use the
+  following variables, the values of which will be filled in for you:
+
+  `i` The index of the entry in the sequence being visualized.
+
+  `a` The value of the entry.
+
+  `f` The frame number of this drawing pass. If you use this variable, the
+  visualization will be redrawn from the beginning on every frame,
+  animating the shape of the path.
+
+  `h` The current heading of the turtle, in degrees counterclockwise from its
+  initial heading.
+
+  `x` The current x-coordinate of the turtle.
+
+  `y` The current y-coordinate of the turtle.
      **/
-    strokeWeight: {
-        default: 1,
-        type: ParamType.INTEGER,
-        displayName: 'Stroke width',
-        required: false,
-        validate: function (n: number, status: ValidationStatus) {
-            if (n <= 0) status.addError('must be positive')
-        },
-        visibleDependency: 'pathLook',
-        visibleValue: true,
-    },
-    /** md
-- Background color: The color of the visualizer canvas.
-     **/
-    bgColor: {
-        default: '#6b1a1a',
-        type: ParamType.COLOR,
-        displayName: 'Background color',
+    ruleMode: {
+        default: RuleMode.List,
+        type: ParamType.ENUM,
+        from: RuleMode,
+        displayName: 'Rule mode',
         required: true,
-        visibleDependency: 'pathLook',
-        visibleValue: true,
-    },
-    /** md
-- Stroke color: The color used for drawing the path.
-     **/
-    strokeColor: {
-        default: '#c98787',
-        type: ParamType.COLOR,
-        displayName: 'Stroke color',
-        required: true,
-        visibleDependency: 'pathLook',
-        visibleValue: true,
     },
 } satisfies GenericParamDescription
 
-const ruleParams = ['turns', 'steps', 'folds', 'stretches'] as const
+const ruleParamNames = [
+    'turns',
+    'steps',
+    'folds',
+    'stretches',
+    'widths',
+    'strokeColor',
+] as const
+
+type RuleParam = (typeof ruleParamNames)[number]
+type RuleParamInternal = `${RuleParam}Internal`
+
+const ruleParamInternal = Object.fromEntries(
+    ruleParamNames.map(name => [name, `${name}Internal`])
+) as Record<RuleParam, RuleParamInternal>
 
 // How many segments to gather into a reusable Geometry object
 // Might need tuning
@@ -261,19 +311,29 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     static description =
         'Use a sequence to steer a virtual turtle that leaves a visible trail'
 
-    // maps from domain to rotations and steps
+    // maps from domain to rotations and steps etc
     private rotMap = markRaw(new Map<string, number>())
     private stepMap = markRaw(new Map<string, number>())
     private foldMap = markRaw(new Map<string, number>())
     private stretchMap = markRaw(new Map<string, number>())
+    private widthMap = markRaw(new Map<string, number>())
+    private colorMap = markRaw(new Map<string, p5.Color>())
+
     // private copies of rule arrays
     private turnsInternal: number[] = []
     private stepsInternal: number[] = []
     private foldsInternal: number[] = []
     private stretchesInternal: number[] = []
+    private widthsInternal: number[] = []
+    private strokeColorInternal: string[] = []
 
     // variables recording the path
     private vertices = markRaw([new p5.Vector()]) // nodes of path
+    private pathWidths = markRaw([1])
+    private pathLengths = markRaw([0])
+    private pathTurns = markRaw([0])
+    private pathBearings = markRaw([0])
+    private pathColors = markRaw([INVALID_COLOR])
     private chunks: p5.Geometry[] = markRaw([]) // "frozen" chunks of path
     private bearing = 0 // heading at tip of path
     private cursor = 0 // vertices up to this one have already been drawn
@@ -302,8 +362,12 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         const status = super.checkParameters(params)
 
         // lengths of rulesets should match length of domain
-        for (const rule of ruleParams) {
-            const entries = params[rule].length
+        for (const rule of ruleParamNames) {
+            let ruleList: string | (string | number)[] = params[rule]
+            if (rule === 'strokeColor' && typeof ruleList === 'string') {
+                ruleList = ruleList.split(/[\s,]+/)
+            }
+            const entries = ruleList.length
             if (entries > 1 && entries < params.domain.length) {
                 this.statusOf[rule].addWarning(
                     `fewer entries than the ${params.domain.length}-element `
@@ -369,80 +433,59 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         return status
     }
 
+    /**
+     * Here, we implement selecting a color with the chooser inserting it into
+     * the strokeColor:
+     */
+    async parametersChanged(nameList: string[]) {
+        if (nameList.includes('colorChooser')) {
+            this.strokeColor += this.colorChooser
+            this.refreshParams()
+            nameList.splice(nameList.indexOf('colorChooser'), 1)
+            nameList.push('strokeColor')
+        }
+        super.parametersChanged(nameList)
+    }
+
     storeRules() {
-        // this function creates the internal rule maps from user input
-
-        // create an adjusted internal copy of the rules
-        const ruleParams = [
-            {
-                param: this.turns,
-                local: [0],
-            },
-            {
-                param: this.steps,
-                local: [0],
-            },
-            {
-                param: this.folds,
-                local: [0],
-            },
-            {
-                param: this.stretches,
-                local: [0],
-            },
-        ]
-        ruleParams.forEach(rule => {
-            rule.local = [...rule.param]
-        })
-        // ignore (remove) or add extra rules for excess/missing
-        // terms compared to domain length
-        ruleParams.forEach(rule => {
-            while (rule.local.length < this.domain.length) {
-                rule.local.push(rule.local[rule.local.length - 1])
+        const dLength = this.domain.length
+        // Copy each rule parameter into the internal property, fixing its
+        // length:
+        for (const name of ruleParamNames) {
+            let specd: string | (string | number)[] = this[name]
+            if (name === 'strokeColor' && typeof specd === 'string') {
+                specd = specd.split(/[\s,]+/)
             }
-            while (rule.local.length > this.domain.length) {
-                rule.local.pop()
+            const fixed: (string | number)[] = []
+            for (let i = 0; i < dLength; ++i) {
+                const useix = Math.min(specd.length - 1, i)
+                fixed.push(specd[useix])
             }
-        })
-        this.turnsInternal = ruleParams[0].local
-        this.stepsInternal = ruleParams[1].local
-        this.foldsInternal = ruleParams[2].local
-        this.stretchesInternal = ruleParams[3].local
-
-        // create a map from sequence values to rotations
-        for (let i = 0; i < this.domain.length; i++) {
-            this.rotMap.set(
-                this.domain[i].toString(),
-                (Math.PI / 180) * this.turnsInternal[i]
-            )
+            this[ruleParamInternal[name]] = fixed as string[] & number[]
         }
 
-        // create a map from sequence values to step lengths
-        for (let i = 0; i < this.domain.length; i++) {
-            this.stepMap.set(this.domain[i].toString(), this.stepsInternal[i])
-        }
-
-        // create a map from sequence values to turn increments
-        // notice if path is static or we are folding
+        // create map from sequence values to rotations, step lengths,
+        // folds, stretches, and weights
         this.animating = false
-        for (let i = 0; i < this.domain.length; i++) {
-            // cumulative effect of two ways to turn on folding
+        for (let i = 0; i < dLength; i++) {
+            const key = this.domain[i].toString()
+            this.rotMap.set(key, (Math.PI / 180) * this.turnsInternal[i])
+            this.stepMap.set(key, this.stepsInternal[i])
             const thisFold = this.foldsInternal[i]
             if (thisFold != 0) this.animating = true
             this.foldMap.set(
-                this.domain[i].toString(),
+                key,
                 (Math.PI / 180) * (thisFold / this.foldDenom)
             )
-        }
-
-        // create a map from sequence values to stretch increments
-        // notice if path is static or we are animating
-        // rename folding to animating?
-        for (let i = 0; i < this.domain.length; i++) {
             if (this.stretchesInternal[i] != 0) this.animating = true
             this.stretchMap.set(
-                this.domain[i].toString(),
+                key,
                 this.stretchesInternal[i] / this.stretchDenom
+            )
+            this.widthMap.set(key, this.widthsInternal[i])
+            this.colorMap.set(
+                key,
+                this.sketch.color(this.strokeColorInternal[i])
             )
         }
     }
@@ -471,6 +514,11 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     refresh() {
         // eliminates the path so it will be recomputed, and redraws
         this.vertices = markRaw([new p5.Vector()]) // nodes of path
+        this.pathWidths = markRaw([1])
+        this.pathLengths = markRaw([0])
+        this.pathTurns = markRaw([0])
+        this.pathBearings = markRaw([0])
+        this.pathColors = markRaw([INVALID_COLOR])
         this.chunks = markRaw([])
         this.bearing = 0
         this.redraw()
@@ -480,21 +528,29 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         // blanks the screen and sets up to redraw the path
         this.cursor = 0
         // prepare sketch
-        this.sketch
-            .background(this.bgColor)
-            .noFill()
-            .stroke(this.strokeColor)
-            .strokeWeight(this.strokeWeight)
-            .frameRate(30)
+        this.sketch.background(this.bgColor).noStroke().frameRate(30)
     }
 
-    // Adds the vertices between start and end INCLUSIVE to the current shape
-    addVertices(start: number, end: number) {
-        let lastPos: undefined | p5.Vector = undefined
-        for (let i = start; i <= end; ++i) {
+    // Draws the vertices between start and end INCLUSIVE
+    drawVertices(start: number, end: number) {
+        const sketch = this.sketch
+        let lastPos = this.vertices[start]
+        for (let i = start + 1; i <= end; ++i) {
             const pos = this.vertices[i]
-            if (pos.x !== lastPos?.x || pos.y !== lastPos?.y) {
-                this.sketch.vertex(pos.x, pos.y)
+            const width = this.pathWidths[i]
+            const length = this.pathLengths[i]
+            if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
+                sketch.fill(this.pathColors[i])
+                sketch.push()
+                sketch
+                    .translate(lastPos.x, lastPos.y)
+                    .rotateZ(this.pathBearings[i])
+                if (length > width / 3) {
+                    sketch.rect(0, -width / 2, length - width / 3, width)
+                    sketch.circle(length - width / 3, 0, width)
+                }
+                sketch.circle(0, 0, width)
+                sketch.pop()
             }
             lastPos = pos
         }
@@ -524,9 +580,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         }
         if (drewSome) this.cursor = this.chunks.length * CHUNK_SIZE
         if (this.cursor < newCursor) {
-            sketch.beginShape()
-            this.addVertices(this.cursor, newCursor)
-            sketch.endShape()
+            this.drawVertices(this.cursor, newCursor)
             this.cursor = newCursor
         }
 
@@ -535,12 +589,10 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         if (!this.animating && fullChunks > this.chunks.length) {
             // @ts-expect-error  The @types/p5 package omitted this function
             sketch.beginGeometry()
-            sketch.beginShape()
-            this.addVertices(
+            this.drawVertices(
                 (fullChunks - 1) * CHUNK_SIZE,
                 fullChunks * CHUNK_SIZE
             )
-            sketch.endShape()
             // @ts-expect-error  Ditto :-(
             this.chunks.push(sketch.endGeometry())
         }
@@ -603,12 +655,20 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             }
             const currElementString = currElement.toString()
             const turnAngle = rotMap.get(currElementString)
+            let stepLength = 0
             if (turnAngle !== undefined) {
-                const stepLength = stepMap.get(currElementString) ?? 0
+                stepLength = stepMap.get(currElementString) ?? 0
                 this.bearing += turnAngle
                 position.x += Math.cos(this.bearing) * stepLength
                 position.y += Math.sin(this.bearing) * stepLength
             }
+            this.pathWidths.push(this.widthMap.get(currElementString) ?? 1)
+            this.pathLengths.push(stepLength)
+            this.pathTurns.push(turnAngle ?? 0)
+            this.pathBearings.push(this.bearing)
+            this.pathColors.push(
+                this.colorMap.get(currElementString) ?? INVALID_COLOR
+            )
             this.vertices.push(position.copy())
         }
     }
