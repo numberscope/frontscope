@@ -57,6 +57,7 @@
                 :param
                 :value="paramable.tentativeValues[name]"
                 :param-name="name as string"
+                :display-name="displayNameOf(name)"
                 :status="paramable.statusOf[name]"
                 @update-param="updateParam(name as string, $event)" />
         </div>
@@ -115,6 +116,7 @@
                 if (!dep) return true
                 if (this.paramable.statusOf[dep].invalid()) return false
                 const parent = this.paramable.params[dep]
+                if (!this.checkDependency(parent)) return false
                 const v = realizeOne(
                     parent,
                     this.paramable.tentativeValues[dep]
@@ -123,16 +125,35 @@
                     return param.visiblePredicate(v as never)
                 } else return param.visibleValue! === v
             },
+            displayNameOf(paramName: string | number) {
+                const paramable = this.paramable
+                const param = paramable.params[paramName]
+                if (typeof param.displayName === 'string') {
+                    return param.displayName
+                }
+                // Otherwise, it should be a function of the visibleDependency
+                const dep = param.visibleDependency
+                if (!dep) return ''
+                if (paramable.statusOf[dep].invalid()) return ''
+                const parent = paramable.params[dep]
+                const v = realizeOne(parent, paramable.tentativeValues[dep])
+                return param.displayName(v as never)
+            },
             paramClass(param: ParamInterface<ParamType>): string {
                 let klass = ''
-                if (param.visibleDependency) klass = 'sub-'
+                if (
+                    param.level === 1
+                    || (param.level !== 0 && param.visibleDependency)
+                ) {
+                    klass = 'sub-'
+                }
                 if (
                     param.type === ParamType.BOOLEAN
-                    && (param.hideDescription || !param.description)
-                ) {
-                    klass += 'check'
-                } else klass += 'param'
-                return klass + '-box'
+                    || param.type === ParamType.COLOR
+                )
+                    klass += 'inline'
+                else klass += 'stacked'
+                return klass + '-param'
             },
             openSwitcher() {
                 this.$emit('openSwitcher')
@@ -190,28 +211,30 @@
         margin-bottom: 24px;
     }
 
-    .param-box {
+    .stacked-param {
+        margin-top: 24px;
+        margin-bottom: 0px;
+    }
+
+    .inline-param {
         margin-top: 16px;
-        margin-bottom: 20px;
+        margin-bottom: 0px;
     }
 
-    .check-box {
-        margin-top: 8px;
-        margin-bottom: 12px;
-    }
-
-    .sub-param-box {
+    .sub-stacked-param {
         border-left: 1px solid var(--ns-color-black);
         margin-left: 8px;
         padding-left: 8px;
-        padding-bottom: 16px;
-    }
-
-    .sub-check-box {
-        border-left: 1px solid var(--ns-color-black);
-        margin-left: 8px;
-        padding-left: 8px;
+        padding-top: 8px;
         padding-bottom: 8px;
+    }
+
+    .sub-inline-param {
+        border-left: 1px solid var(--ns-color-black);
+        margin-left: 8px;
+        padding-left: 8px;
+        padding-top: 6px;
+        padding-bottom: 6px;
     }
 
     .error-box {

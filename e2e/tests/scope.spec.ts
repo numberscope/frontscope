@@ -76,7 +76,8 @@ test.describe('Scope: on some featured visualization', () => {
         const lookFor = 'Random'
         const andThenFind = 'Random integers 0 to 9'
         await page.locator('#sequenceTab .visualizer-info').click()
-        await page.getByText(lookFor, {exact: true}).click()
+        const itemToClick = await page.getByText(lookFor, {exact: true})
+        await itemToClick.click()
         await expect(
             await page.locator('#sequenceTab .item-name').innerText()
         ).toMatch(andThenFind)
