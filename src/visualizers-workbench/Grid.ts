@@ -513,6 +513,22 @@ checked.
     },
 } satisfies GenericParamDescription
 
+const templatePropertyObjects: PropertyObject[] = []
+
+for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
+    const ithPropertyObject = {
+        property: i === 0 ? Property.Prime : Property.None,
+        visualization:
+            i === 1
+                ? PropertyVisualization.Box_In_Cell
+                : PropertyVisualization.Fill_Cell,
+        color: DEFAULT_COLORS[i],
+        aux: 3n,
+    }
+    Object.assign(paramDesc, getPropertyParams(i, ithPropertyObject))
+    templatePropertyObjects.push(ithPropertyObject)
+}
+
 class Grid extends P5Visualizer(paramDesc) {
     static category = 'Grid'
     static description =
@@ -587,23 +603,10 @@ earlier ones that use the _same_ style.)
 - Box_In_Cell:  Fill only a smaller central box in the cell
 
 ##### Color:  Highlight color for cells with the property
-         **/
-        for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
-            const ithPropertyObject = {
-                property: i === 0 ? Property.Prime : Property.None,
-                visualization:
-                    i === 1
-                        ? PropertyVisualization.Box_In_Cell
-                        : PropertyVisualization.Fill_Cell,
-                color: DEFAULT_COLORS[i],
-                aux: 3n,
-            }
-            this.propertyObjects.push(ithPropertyObject)
-            Object.assign(
-                this.params,
-                getPropertyParams(i, ithPropertyObject)
-            )
-        }
+        **/
+        this.propertyObjects = templatePropertyObjects.map(pobj =>
+            Object.assign({}, pobj)
+        )
     }
 
     async assignParameters() {
