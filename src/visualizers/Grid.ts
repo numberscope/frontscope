@@ -1024,7 +1024,7 @@ see they are clearly not random.
 
 ## Credit
 
-The original version of this visualizer was created by Olivia Brobin, as part
+The original version of this visualizer was created by James Brobin, as part
 of the [Experimental Mathematics
 Lab](https://www.colorado.edu/math/content/experimental-mathematics-lab) at
 [CU Boulder](https://www.colorado.edu/math/).
