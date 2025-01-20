@@ -69,6 +69,7 @@ have a small domain.)
         hideDescription: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.List,
+        level: 0,
         validate: function (dom: bigint[], status: ValidationStatus) {
             const seen = new Set()
             for (const element of dom) {
@@ -113,6 +114,7 @@ and negative values clockwise.
         hideDescription: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.List,
+        level: 0,
     },
     /** md
 - Step length(s): Specifies (in pixels) how far the turtle should move (and
@@ -130,6 +132,7 @@ negative values (for moving backward) are allowed.
         hideDescription: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.List,
+        level: 0,
     },
     /**
 - animationControls: boolean. If true, show folding controls
@@ -141,6 +144,7 @@ negative values (for moving backward) are allowed.
         required: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.List,
+        level: 0,
     },
     /** md
 - Fold rate(s): Specifies (in units of 0.00001 degree) how each turn angle
@@ -200,6 +204,7 @@ changes from one frame to the next.
         validate: function (widths: number[], status: ValidationStatus) {
             if (widths.some(n => n <= 0)) status.addError('must be positive')
         },
+        level: 0,
     },
     /** md
 - Stroke color(s): One or more strings specifying colors, separated by
@@ -215,6 +220,7 @@ changes from one frame to the next.
         required: true,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.List,
+        level: 0,
     },
     /** md
 
@@ -312,6 +318,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         required: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.Formula,
+        level: 0
     },
     /** md
 - Step formula: an expression to compute the pixel length of each step of the
@@ -326,6 +333,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         required: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.Formula,
+        level: 0,
     },
     /** md
 - Width formula: an expression to compute the pixel width of each step of the
@@ -340,6 +348,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         required: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.Formula,
+        level: 0,
     },
     /** md
 - Color formula: an expression to compute the color of each step of the
@@ -354,6 +363,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         required: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.Formula,
+        level: 0,
     },
 } satisfies GenericParamDescription
 
