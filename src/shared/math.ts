@@ -324,7 +324,7 @@ export class MathFormula {
         // Preprocess formula to interpret "bare" color constants #hhhhhh
         const prepfmla = fmla.replaceAll(
             /(?<!["'])(#[0-9a-fA-f]{3,8})/g,
-            'chroma("\\1")'
+            'chroma("$1")'
         )
         if (prepfmla !== fmla) console.log('PREPPED', fmla, prepfmla)
         const parsetree = math.parse(fmla)
