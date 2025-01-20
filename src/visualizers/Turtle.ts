@@ -7,6 +7,7 @@ import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
 
 import {CachingError} from '@/sequences/Cached'
+import {MathFormula} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
@@ -66,6 +67,8 @@ have a small domain.)
             'Sequence values to interpret as rules; entries not '
             + 'matching any value here are skipped.',
         hideDescription: false,
+        visibleDependency: 'ruleMode',
+        visibleValue: RuleMode.List,
         validate: function (dom: bigint[], status: ValidationStatus) {
             const seen = new Set()
             for (const element of dom) {
@@ -108,6 +111,8 @@ and negative values clockwise.
             'An angle (in degrees) or a list of angles, in order '
             + 'corresponding to the sequence values listed in Domain.',
         hideDescription: false,
+        visibleDependency: 'ruleMode',
+        visibleValue: RuleMode.List,
     },
     /** md
 - Step length(s): Specifies (in pixels) how far the turtle should move (and
@@ -123,6 +128,8 @@ negative values (for moving backward) are allowed.
             'A length (in pixels), or a list of lengths, in order '
             + 'corresponding to the sequence values listed in Domain.',
         hideDescription: false,
+        visibleDependency: 'ruleMode',
+        visibleValue: RuleMode.List,
     },
     /**
 - animationControls: boolean. If true, show folding controls
@@ -132,6 +139,8 @@ negative values (for moving backward) are allowed.
         type: ParamType.BOOLEAN,
         displayName: 'Animation ↴',
         required: false,
+        visibleDependency: 'ruleMode',
+        visibleValue: RuleMode.List,
     },
     /** md
 - Fold rate(s): Specifies (in units of 0.00001 degree) how each turn angle
@@ -186,6 +195,8 @@ changes from one frame to the next.
         type: ParamType.NUMBER_ARRAY,
         displayName: 'Stroke width(s)',
         required: false,
+        visibleDependency: 'ruleMode',
+        visibleValue: RuleMode.List,
         validate: function (widths: number[], status: ValidationStatus) {
             if (widths.some(n => n <= 0)) status.addError('must be positive')
         },
@@ -202,6 +213,8 @@ changes from one frame to the next.
         type: ParamType.STRING,
         displayName: 'Stroke color(s)',
         required: true,
+        visibleDependency: 'ruleMode',
+        visibleValue: RuleMode.List,
     },
     /** md
 
@@ -262,7 +275,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
   from the sequence entries. In each of these formulas, you may use the
   following variables, the values of which will be filled in for you:
 
-  `i` The index of the entry in the sequence being visualized.
+  `n` The index of the entry in the sequence being visualized.
 
   `a` The value of the entry.
 
@@ -283,6 +296,64 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         from: RuleMode,
         displayName: 'Rule mode',
         required: true,
+    },
+    /** md
+- Turn formula: an expression to compute the turn angle in degrees for a
+  given step of the turtle's path.
+    **/
+    turnFormula: {
+        default: new MathFormula('30+15a', ['n', 'a']),
+        type: ParamType.FORMULA,
+        inputs: ['n', 'a', 'f', 'h', 'x', 'y'],
+        displayName: 'Turn formula',
+        description:
+            'Computes how many degrees to turn counterclockwise '
+            + 'before each turtle step.',
+        required: false,
+        visibleDependency: 'ruleMode',
+        visibleValue: RuleMode.Formula,
+    },
+    /** md
+- Step formula: an expression to compute the pixel length of each step of the
+  turtle's path.
+    **/
+    stepFormula: {
+        default: new MathFormula('20'),
+        type: ParamType.FORMULA,
+        inputs: ['n', 'a', 'f', 'h', 'x', 'y'],
+        displayName: 'Step formula',
+        description: 'Computes the pixel length of each turtle step',
+        required: false,
+        visibleDependency: 'ruleMode',
+        visibleValue: RuleMode.Formula,
+    },
+    /** md
+- Width formula: an expression to compute the pixel width of each step of the
+  turtle's path.
+    **/
+    widthFormula: {
+        default: new MathFormula('1'),
+        type: ParamType.FORMULA,
+        inputs: ['n', 'a', 'f', 'h', 'x', 'y'],
+        displayName: 'Width formula',
+        description: 'Computes the pixel width of each turtle step',
+        required: false,
+        visibleDependency: 'ruleMode',
+        visibleValue: RuleMode.Formula,
+    },
+    /** md
+- Color formula: an expression to compute the color of each step of the
+  turtle's path.
+    **/
+    colorFormula: {
+        default: new MathFormula('#c98787'),
+        type: ParamType.FORMULA,
+        inputs: ['n', 'a', 'f', 'h', 'x', 'y'],
+        displayName: 'Color formula',
+        description: 'Computes the color of each turtle step',
+        required: false,
+        visibleDependency: 'ruleMode',
+        visibleValue: RuleMode.Formula,
     },
 } satisfies GenericParamDescription
 
