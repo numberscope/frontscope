@@ -318,7 +318,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         required: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.Formula,
-        level: 0
+        level: 0,
     },
     /** md
 - Step formula: an expression to compute the pixel length of each step of the
