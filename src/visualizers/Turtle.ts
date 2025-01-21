@@ -377,20 +377,36 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
     },
 } satisfies GenericParamDescription
 
-const ruleParamNames = [
-    'turns',
-    'steps',
-    'folds',
-    'stretches',
-    'widths',
-    'strokeColor',
+const formulaParamNames = [
+    'turnFormula',
+    'stepFormula',
+    'widthFormula',
+    'colorFormula',
 ] as const
+const ruleParams = {
+    turns: 'turnFormula',
+    steps: 'stepFormula',
+    folds: 'turnFormula',
+    stretches: 'stepFormula',
+    widths: 'widthFormula',
+    strokeColor: 'colorFormula',
+} as const
 
-type RuleParam = (typeof ruleParamNames)[number]
+type FormulaParam = (typeof formulaParamNames)[number]
+type RuleParam = keyof typeof ruleParams
 type RuleParamInternal = `${RuleParam}Internal`
 
+const formulaRules = Object.fromEntries(
+    formulaParamNames.map(
+        (fmla: FormulaParam): [FormulaParam, RuleParam[]] => [fmla, []]
+    )
+) as Record<FormulaParam, RuleParam[]>
+for (const [rule, fmla] of Object.entries(ruleParams)) {
+    formulaRules[fmla].push(rule as RuleParam)
+}
+
 const ruleParamInternal = Object.fromEntries(
-    ruleParamNames.map(name => [name, `${name}Internal`])
+    Object.keys(ruleParams).map(name => [name, `${name}Internal`])
 ) as Record<RuleParam, RuleParamInternal>
 
 // How many segments to gather into a reusable Geometry object
@@ -453,7 +469,8 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         const status = super.checkParameters(params)
 
         // lengths of rulesets should match length of domain
-        for (const rule of ruleParamNames) {
+        let rule: RuleParam = 'turns'
+        for (rule in ruleParams) {
             let ruleList: string | (string | number)[] = params[rule]
             if (rule === 'strokeColor' && typeof ruleList === 'string') {
                 ruleList = ruleList.split(/[\s,]+/)
@@ -474,9 +491,14 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             }
         }
 
-        const animating =
+        let animating =
             params.folds.some(value => value !== 0)
             || params.stretches.some(value => value !== 0)
+        if (params.ruleMode === RuleMode.Formula) {
+            animating = formulaParamNames.some(name =>
+                params[name].freevars.includes('f')
+            )
+        }
         // warn when animation is turned on for long paths
         // BUG:  when sequence params change this isn't re-run
         // so the warning may be out of date
@@ -524,11 +546,64 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         return status
     }
 
+    convertTable(fmlaName: FormulaParam) {
+        const primaryRule = formulaRules[fmlaName][0]
+        const frameRule = formulaRules[fmlaName][1]
+        let primaryArray: string | (string | number)[] = this[primaryRule]
+        if (primaryRule === 'strokeColor') {
+            primaryArray = (primaryArray as string).split(/[\s,]+/)
+        }
+        const primaryLast = primaryArray.length - 1
+        const dLength = this.domain.length
+        let fmlaSource = ''
+        for (let ix = 0; ix < dLength; ix++) {
+            const key = `"${this.domain[ix]}"`
+            let value = `${primaryArray[Math.min(ix, primaryLast)]}`
+            if (frameRule) {
+                const frameArray = this[frameRule]
+                const frameLast = frameArray.length - 1
+                const frameValue = frameArray[Math.min(ix, frameLast)]
+                if (frameValue) {
+                    const mult =
+                        frameRule === 'stretches' ? '0.01' : '0.00001'
+                    value += ` + ${mult}*f*${frameValue}`
+                }
+            }
+            if (fmlaSource) fmlaSource += ', '
+            else fmlaSource = '{'
+            fmlaSource += `${key}: ${value}`
+        }
+        fmlaSource += '}[string(a)]'
+        return new MathFormula(fmlaSource, formulaInputs)
+    }
+
+    async parametersChanged(nameList: string[]) {
+        if (this.ruleMode === RuleMode.List) {
+            let recomputed = false
+            for (const name of nameList.slice()) {
+                if (!(name in ruleParams)) continue
+                recomputed = true
+                const fmlaName = ruleParams[name as RuleParam]
+                const oldFormula = this[fmlaName].source
+                this[fmlaName] = this.convertTable(fmlaName)
+                if (
+                    this[fmlaName].source !== oldFormula
+                    && !nameList.includes(fmlaName)
+                ) {
+                    nameList.push(fmlaName)
+                }
+            }
+            if (recomputed) this.refreshParams()
+        }
+        super.parametersChanged(nameList)
+    }
+
     storeRules() {
         const dLength = this.domain.length
         // Copy each rule parameter into the internal property, fixing its
         // length:
-        for (const name of ruleParamNames) {
+        let name: RuleParam = 'turns'
+        for (name in ruleParams) {
             let specd: string | (string | number)[] = this[name]
             if (name === 'strokeColor' && typeof specd === 'string') {
                 specd = specd.split(/[\s,]+/)
