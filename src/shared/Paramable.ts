@@ -196,7 +196,7 @@ export interface ParamInterface<PT extends ParamType> {
 <!-- -->
     **/
     /** md */
-    inputs?: string[]
+    inputs?: readonly string[]
     /* **/
     /** md
 :   If the `type` property is `ParamType.FORMULA`, this property gives the
@@ -240,6 +240,19 @@ export interface ParamInterface<PT extends ParamType> {
     on which this parameter resides, so that the `validate` method may use
     other data (but **not** other parameter values) of the entity in its
     checks.
+    **/
+    /** md */
+    updateAction?(newValue: string, oldValue: string): void
+    /* **/
+    /** md
+:   This method, if it is defined, will be executed whenever the parameter
+    takes on a new valid value, although it is called with the previous and
+    newly-updated _string_ forms of the parameter, not the realized values,
+    since this method is called before all of the parameters of the entity
+    have been fully validated (although this one parameter is guaranteed to
+    be valid. Like the `validate` method, is is called with
+    its `this`-context set to the entity (usually Sequence or Visualizer)
+    on which this parameter resides.
     **/
 }
 

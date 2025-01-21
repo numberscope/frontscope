@@ -47,6 +47,8 @@ enum RuleMode {
     Formula,
 }
 
+const formulaInputs = ['n', 'a', 'f', 'h', 'x', 'y'] as const
+
 const paramDesc = {
     /** md
 - Domain: a list of numbers.  These are the values that
@@ -240,6 +242,14 @@ left out a value.)
         displayName: 'Color chooser:',
         required: true,
         description: 'Inserts choice into the stroke color.',
+        updateAction: function (newColor: string) {
+            const turtle = this as unknown as Turtle
+            const colorParam =
+                turtle.ruleMode === RuleMode.List
+                    ? 'strokeColor'
+                    : 'colorFormula'
+            turtle.tentativeValues[colorParam] += newColor
+        },
     },
     /** md
 - Background color: The color of the visualizer canvas.
@@ -308,9 +318,9 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
   given step of the turtle's path.
     **/
     turnFormula: {
-        default: new MathFormula('30+15a', ['n', 'a']),
+        default: new MathFormula('30+15a', formulaInputs),
         type: ParamType.FORMULA,
-        inputs: ['n', 'a', 'f', 'h', 'x', 'y'],
+        inputs: formulaInputs,
         displayName: 'Turn formula',
         description:
             'Computes how many degrees to turn counterclockwise '
@@ -327,7 +337,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
     stepFormula: {
         default: new MathFormula('20'),
         type: ParamType.FORMULA,
-        inputs: ['n', 'a', 'f', 'h', 'x', 'y'],
+        inputs: formulaInputs,
         displayName: 'Step formula',
         description: 'Computes the pixel length of each turtle step',
         required: false,
@@ -342,7 +352,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
     widthFormula: {
         default: new MathFormula('1'),
         type: ParamType.FORMULA,
-        inputs: ['n', 'a', 'f', 'h', 'x', 'y'],
+        inputs: formulaInputs,
         displayName: 'Width formula',
         description: 'Computes the pixel width of each turtle step',
         required: false,
@@ -357,7 +367,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
     colorFormula: {
         default: new MathFormula('#c98787'),
         type: ParamType.FORMULA,
-        inputs: ['n', 'a', 'f', 'h', 'x', 'y'],
+        inputs: formulaInputs,
         displayName: 'Color formula',
         description: 'Computes the color of each turtle step',
         required: false,
@@ -512,20 +522,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         }
 
         return status
-    }
-
-    /**
-     * Here, we implement selecting a color with the chooser inserting it into
-     * the strokeColor:
-     */
-    async parametersChanged(nameList: string[]) {
-        if (nameList.includes('colorChooser')) {
-            this.strokeColor += this.colorChooser
-            this.refreshParams()
-            nameList.splice(nameList.indexOf('colorChooser'), 1)
-            nameList.push('strokeColor')
-        }
-        super.parametersChanged(nameList)
     }
 
     storeRules() {

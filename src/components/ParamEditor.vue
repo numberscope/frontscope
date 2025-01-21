@@ -103,9 +103,14 @@
         methods: {
             async updateParam(paramName: string, value: string) {
                 const paramable = this.paramable
+                const param = paramable.params[paramName]
+                const oldValue = paramable.tentativeValues[paramName]
                 paramable.tentativeValues[paramName] = value
                 paramable.validateIndividual(paramName)
                 if (paramable.statusOf[paramName].invalid()) return
+                if (param.updateAction) {
+                    param.updateAction.call(paramable, value, oldValue)
+                }
                 await paramable.validate()
                 if (paramable.validationStatus.isValid()) {
                     this.$emit('changed')

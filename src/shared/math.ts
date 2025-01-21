@@ -314,20 +314,24 @@ const mathMark = 'mathjs: '
  */
 export class MathFormula {
     evaluator: EvalFunction
-    inputs: string[]
+    inputs: readonly string[]
     source: string
     canonical: string
     latex: string
     mathml: string
     freevars: string[]
-    constructor(fmla: string, inputs?: string[]) {
-        // Preprocess formula to interpret "bare" color constants #hhhhhh
-        const prepfmla = fmla.replaceAll(
+    static preprocess(fmla: string) {
+        // Interpret "bare" color constants #hhhhhh
+        return fmla.replaceAll(
             /(?<!["'])(#[0-9a-fA-f]{3,8})/g,
             'chroma("$1")'
         )
+    }
+    constructor(fmla: string, inputs?: readonly string[]) {
+        // Preprocess formula to interpret "bare" color constants #hhhhhh
+        const prepfmla = MathFormula.preprocess(fmla)
         if (prepfmla !== fmla) console.log('PREPPED', fmla, prepfmla)
-        const parsetree = math.parse(fmla)
+        const parsetree = math.parse(prepfmla)
         this.freevars = parsetree
             .filter((node, path) => math.isSymbolNode(node) && path !== 'fn')
             .map(node => (node as SymbolNode).name)

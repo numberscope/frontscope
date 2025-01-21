@@ -201,7 +201,7 @@ const typeFunctions: {
             }
             let parsetree: MathNode | undefined = undefined
             try {
-                parsetree = math.parse(value)
+                parsetree = math.parse(MathFormula.preprocess(value))
             } catch (err: unknown) {
                 status.addError(
                     `could not parse formula: ${value}`,
@@ -214,10 +214,9 @@ const typeFunctions: {
             let unknownFunction = ''
             const othersymbs = parsetree.filter((node, path) => {
                 if (math.isSymbolNode(node)) {
+                    if (node.name in math) return false
                     if (path === 'fn') {
-                        if (!(node.name in math)) {
-                            unknownFunction = node.name
-                        }
+                        unknownFunction = node.name
                         return false
                     }
                     return !inputSymbols.includes(node.name)
