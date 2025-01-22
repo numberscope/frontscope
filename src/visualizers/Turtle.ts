@@ -7,7 +7,7 @@ import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
 
 import {CachingError} from '@/sequences/Cached'
-import {MathFormula} from '@/shared/math'
+import {math, MathFormula} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
@@ -47,7 +47,7 @@ enum RuleMode {
     Formula,
 }
 
-const formulaInputs = ['n', 'a', 'f', 'h', 'x', 'y'] as const
+const formulaInputs = ['n', 'a', 'f', 'b', 'x', 'y'] as const
 
 const paramDesc = {
     /** md
@@ -299,8 +299,8 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
   visualization will be redrawn from the beginning on every frame,
   animating the shape of the path.
 
-  `h` The current heading of the turtle, in degrees counterclockwise from its
-  initial heading.
+  `b` The current bearing of the turtle, in degrees counterclockwise from its
+  initial bearing.
 
   `x` The current x-coordinate of the turtle.
 
@@ -394,7 +394,6 @@ const ruleParams = {
 
 type FormulaParam = (typeof formulaParamNames)[number]
 type RuleParam = keyof typeof ruleParams
-type RuleParamInternal = `${RuleParam}Internal`
 
 const formulaRules = Object.fromEntries(
     formulaParamNames.map(
@@ -405,10 +404,6 @@ for (const [rule, fmla] of Object.entries(ruleParams)) {
     formulaRules[fmla].push(rule as RuleParam)
 }
 
-const ruleParamInternal = Object.fromEntries(
-    Object.keys(ruleParams).map(name => [name, `${name}Internal`])
-) as Record<RuleParam, RuleParamInternal>
-
 // How many segments to gather into a reusable Geometry object
 // Might need tuning
 const CHUNK_SIZE = 1000
@@ -418,22 +413,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     static description =
         'Use a sequence to steer a virtual turtle that leaves a visible trail'
 
-    // maps from domain to rotations and steps etc
-    private rotMap = markRaw(new Map<string, number>())
-    private stepMap = markRaw(new Map<string, number>())
-    private foldMap = markRaw(new Map<string, number>())
-    private stretchMap = markRaw(new Map<string, number>())
-    private widthMap = markRaw(new Map<string, number>())
-    private colorMap = markRaw(new Map<string, p5.Color>())
-
-    // private copies of rule arrays
-    private turnsInternal: number[] = []
-    private stepsInternal: number[] = []
-    private foldsInternal: number[] = []
-    private stretchesInternal: number[] = []
-    private widthsInternal: number[] = []
-    private strokeColorInternal: string[] = []
-
     // variables recording the path
     private vertices = markRaw([new p5.Vector()]) // nodes of path
     private pathWidths = markRaw([1])
@@ -442,7 +421,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     private pathBearings = markRaw([0])
     private pathColors = markRaw([INVALID_COLOR])
     private chunks: p5.Geometry[] = markRaw([]) // "frozen" chunks of path
-    private bearing = 0 // heading at tip of path
+    private bearing = 0 // bearing at tip of path
     private cursor = 0 // vertices up to this one have already been drawn
 
     // variables holding the parameter values
@@ -582,15 +561,22 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             let recomputed = false
             for (const name of nameList.slice()) {
                 if (!(name in ruleParams)) continue
-                recomputed = true
                 const fmlaName = ruleParams[name as RuleParam]
                 const oldFormula = this[fmlaName].source
-                this[fmlaName] = this.convertTable(fmlaName)
+                const newFormula = this.convertTable(fmlaName)
                 if (
-                    this[fmlaName].source !== oldFormula
-                    && !nameList.includes(fmlaName)
+                    newFormula.freevars.every(v =>
+                        (formulaInputs as readonly string[]).includes(v)
+                    )
                 ) {
-                    nameList.push(fmlaName)
+                    recomputed = true
+                    this[fmlaName] = newFormula
+                    if (
+                        newFormula.source !== oldFormula
+                        && !nameList.includes(fmlaName)
+                    ) {
+                        nameList.push(fmlaName)
+                    }
                 }
             }
             if (recomputed) this.refreshParams()
@@ -598,57 +584,13 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         super.parametersChanged(nameList)
     }
 
-    storeRules() {
-        const dLength = this.domain.length
-        // Copy each rule parameter into the internal property, fixing its
-        // length:
-        let name: RuleParam = 'turns'
-        for (name in ruleParams) {
-            let specd: string | (string | number)[] = this[name]
-            if (name === 'strokeColor' && typeof specd === 'string') {
-                specd = specd.split(/[\s,]+/)
-            }
-            const fixed: (string | number)[] = []
-            for (let i = 0; i < dLength; ++i) {
-                const useix = Math.min(specd.length - 1, i)
-                fixed.push(specd[useix])
-            }
-            this[ruleParamInternal[name]] = fixed as string[] & number[]
-        }
-
-        // create map from sequence values to rotations, step lengths,
-        // folds, stretches, and weights
-        this.animating = false
-        for (let i = 0; i < dLength; i++) {
-            const key = this.domain[i].toString()
-            this.rotMap.set(key, (Math.PI / 180) * this.turnsInternal[i])
-            this.stepMap.set(key, this.stepsInternal[i])
-            const thisFold = this.foldsInternal[i]
-            if (thisFold != 0) this.animating = true
-            this.foldMap.set(
-                key,
-                (Math.PI / 180) * (thisFold / this.foldDenom)
-            )
-            if (this.stretchesInternal[i] != 0) this.animating = true
-            this.stretchMap.set(
-                key,
-                this.stretchesInternal[i] / this.stretchDenom
-            )
-            this.widthMap.set(key, this.widthsInternal[i])
-            this.colorMap.set(
-                key,
-                this.sketch.color(this.strokeColorInternal[i])
-            )
-        }
-    }
-
     setup() {
         super.setup()
 
-        // create internal rule maps
-        this.storeRules()
-
         // reset variables
+        this.animating = formulaParamNames.some(fmla =>
+            this[fmla].freevars.includes('f')
+        )
         this.firstIndex = this.seq.first
         this.maxLength = this.animating
             ? this.throttleLimit
@@ -765,25 +707,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     // Resulting path should be targetLength steps
     // meaning that vertices.length = that + 1
     extendPath(currentFrames: number, targetLength: number) {
-        // First compute the rotMap and stepMap to use:
-        let rotMap = this.rotMap
-        if (this.animating) {
-            rotMap = new Map<string, number>()
-            for (const [entry, rot] of this.rotMap) {
-                const extra = currentFrames * (this.foldMap.get(entry) ?? 0)
-                rotMap.set(entry, rot + extra)
-            }
-        }
-        let stepMap = this.stepMap
-        if (this.animating) {
-            stepMap = new Map<string, number>()
-            for (const [entry, step] of this.stepMap) {
-                const extra =
-                    currentFrames * (this.stretchMap.get(entry) ?? 0)
-                stepMap.set(entry, step + extra)
-            }
-        }
-
         // Now compute the new vertices in the path:
         this.pathFailure = false
         const len = this.vertices.length - 1
@@ -805,22 +728,58 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                     throw e
                 }
             }
-            const currElementString = currElement.toString()
-            const turnAngle = rotMap.get(currElementString)
+            const input = {
+                n: Number(i),
+                a: Number(currElement),
+                f: currentFrames,
+                b: (this.bearing * 180) / Math.PI,
+                x: position.x,
+                y: position.y,
+            }
+            const rawTurnAngle = this.turnFormula.computeWithStatus(
+                this.statusOf.turnFormula,
+                input
+            )
+            if (this.statusOf.turnFormula.invalid()) return
+            let turnAngle = 0
             let stepLength = 0
-            if (turnAngle !== undefined) {
-                stepLength = stepMap.get(currElementString) ?? 0
+            if (rawTurnAngle !== undefined) {
+                turnAngle = (math.safeNumber(rawTurnAngle) * Math.PI) / 180
+                stepLength = math.safeNumber(
+                    this.stepFormula.computeWithStatus(
+                        this.statusOf.stepFormula,
+                        input
+                    ) ?? 0
+                )
+                if (this.statusOf.stepFormula.invalid()) return
                 this.bearing += turnAngle
                 position.x += Math.cos(this.bearing) * stepLength
                 position.y += Math.sin(this.bearing) * stepLength
             }
-            this.pathWidths.push(this.widthMap.get(currElementString) ?? 1)
-            this.pathLengths.push(stepLength)
-            this.pathTurns.push(turnAngle ?? 0)
-            this.pathBearings.push(this.bearing)
-            this.pathColors.push(
-                this.colorMap.get(currElementString) ?? INVALID_COLOR
+            this.pathWidths.push(
+                math.safeNumber(
+                    this.widthFormula.computeWithStatus(
+                        this.statusOf.widthFormula,
+                        input
+                    ) ?? 1
+                )
             )
+            if (this.statusOf.widthFormula.invalid()) return
+            const clr =
+                this.colorFormula.computeWithStatus(
+                    this.statusOf.colorFormula,
+                    input
+                ) ?? 0
+            if (this.statusOf.colorFormula.invalid()) return
+            console.log('CHECK', this.colorFormula.source, input, clr)
+            if (typeof clr === 'string') {
+                this.pathColors.push(this.sketch.color(clr))
+            } else if (math.isChroma(clr)) {
+                this.pathColors.push(this.sketch.color(clr.hex()))
+            } else this.pathColors.push(this.sketch.color('white'))
+            this.pathLengths.push(stepLength)
+            this.pathTurns.push(turnAngle)
+            this.pathBearings.push(this.bearing)
             this.vertices.push(position.copy())
         }
     }

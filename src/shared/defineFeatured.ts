@@ -8,7 +8,7 @@ const featuredSIMs = [
         'Turtle',
         'OEIS A010060',
         'domain=0+1&turns=15+-165&steps=2+3'
-            + '&pathLook=true&speed=10&bgColor=e0def7&strokeColor=%235e8d85'
+            + '&speed=10&bgColor=e0def7&strokeColor=%235e8d85'
     ),
     specimenQuery(
         'Divisor Square',
@@ -84,7 +84,7 @@ const featuredSIMs = [
         'Wait For It',
         'Turtle',
         'Formula',
-        'domain=-1+1&turns=30+120&steps=30+30&pathLook=true&strokeWeight=2'
+        'domain=-1+1&turns=30+120&steps=30+30&widths=2'
             + '&bgColor=5d509f&strokeColor=%237a9f6f',
         'formula=sign%28sin%28n%2B1%29%29'
     ),
@@ -108,7 +108,7 @@ const featuredSIMs = [
         'Turtle',
         'OEIS A001951',
         '&domain=0+1+2&turns=79+0+45&steps=2.5+1.5+3'
-            + '&pathLook=true&speed=10&bgColor=6c162b&strokeColor=%23be9b9b',
+            + '&speed=10&bgColor=6c162b&strokeColor=%23be9b9b',
         '&modulus=3'
     ),
 ]

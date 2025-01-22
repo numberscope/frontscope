@@ -87,8 +87,9 @@ import type {ValidationStatus} from './ValidationStatus'
 import {chroma, overlay} from './Chroma'
 import type {Chroma} from './Chroma'
 
-export type {MathNode, SymbolNode} from 'mathjs'
+export type {MathType, MathNode, SymbolNode} from 'mathjs'
 type Integer = number | bigint
+type MathTypeTemp = MathType | bigint // REMOVE after mathjs update
 
 // eslint-disable-next-line no-loss-of-precision
 export type TposInfinity = 1e999 // since that's above range for number,
@@ -101,7 +102,7 @@ export type ExtendedBigint = bigint | TposInfinity | TnegInfinity
 type ExtendedMathJs = MathJsInstance & {
     negInfinity: TnegInfinity
     posInfinity: TposInfinity
-    safeNumber(n: Integer): number
+    safeNumber(n: MathTypeTemp): number
     floorSqrt(n: Integer): bigint
     modulo(n: Integer, modulus: Integer): bigint
     divides(a: Integer, b: Integer): boolean
@@ -112,6 +113,7 @@ type ExtendedMathJs = MathJsInstance & {
     bigmax(...args: Integer[]): ExtendedBigint
     bigmin(...args: Integer[]): ExtendedBigint
     chroma: typeof chroma
+    isChroma(a: MathType | Chroma): a is Chroma
     add: MathJsInstance['add'] & ((c: Chroma, d: Chroma) => Chroma)
     multiply: MathJsInstance['multiply'] &
         ((s: number, c: Chroma) => Chroma) &
@@ -120,17 +122,22 @@ type ExtendedMathJs = MathJsInstance & {
 
 export const math = create(all) as ExtendedMathJs
 
+const dummy = chroma('white')
+const chromaConstructor = dummy.constructor
+
 /** Add colors to mathjs **/
 // @ts-expect-error: not in mathjs type declarations
 math.typed.addType({
     name: 'Chroma',
     test: (c: unknown) =>
-        typeof c === 'object' && c && c.constructor.name === 'Color',
+        typeof c === 'object' && c && c.constructor === chromaConstructor,
 })
 
 const colorStuff: Record<string, unknown> = {
     chroma,
     add: math.typed('add', {'Chroma, Chroma': (c, d) => overlay(c, d)}),
+    isChroma: (c: unknown) =>
+        typeof c === 'object' && c && c.constructor === chromaConstructor,
     multiply: math.typed('multiply', {
         'number, Chroma': (s, c) => chroma(c).alpha(s * c.alpha()),
         'Chroma, number': (c, s) => chroma(c).alpha(s * c.alpha()),
@@ -151,17 +158,33 @@ const maxSafeNumber = BigInt(Number.MAX_SAFE_INTEGER)
 const minSafeNumber = BigInt(Number.MIN_SAFE_INTEGER)
 
 /** md
-#### safeNumber(n: number | bigint): number
+#### safeNumber(n: MathType): number
 
 Returns the `number` mathematically equal to _n_ if there is one, or
 throws an error otherwise.
 **/
-math.safeNumber = (n: Integer): number => {
-    const bn = BigInt(n)
-    if (bn < minSafeNumber || bn > maxSafeNumber) {
-        throw new RangeError(`Attempt to use ${bn} as a number`)
+math.safeNumber = (n: MathTypeTemp): number => {
+    if (typeof n === 'bigint' || typeof n === 'number') {
+        if (n < minSafeNumber || n > maxSafeNumber) {
+            throw new RangeError(
+                `Attempt to use ${typeof n} ${n} as a number`
+            )
+        }
+        return Number(n)
     }
-    return Number(bn)
+    const mathjsType = math.typeOf(n)
+    if (mathjsType === 'Fraction' || mathjsType === 'BigNumber') {
+        if (
+            math.smaller(n, Number.MIN_SAFE_INTEGER)
+            || math.larger(n, Number.MAX_SAFE_INTEGER)
+        ) {
+            throw new RangeError(
+                `Attempt to use ${mathjsType} ${n} as a number`
+            )
+        }
+    }
+    //@ts-expect-error numeric not in .d.ts, mathjs update will fix
+    return math.numeric(n, 'number')
 }
 
 /** md
@@ -329,11 +352,14 @@ export class MathFormula {
     }
     constructor(fmla: string, inputs?: readonly string[]) {
         // Preprocess formula to interpret "bare" color constants #hhhhhh
-        const prepfmla = MathFormula.preprocess(fmla)
-        if (prepfmla !== fmla) console.log('PREPPED', fmla, prepfmla)
-        const parsetree = math.parse(prepfmla)
+        const parsetree = math.parse(MathFormula.preprocess(fmla))
         this.freevars = parsetree
-            .filter((node, path) => math.isSymbolNode(node) && path !== 'fn')
+            .filter(
+                (node, path) =>
+                    math.isSymbolNode(node)
+                    && !(node.name in math)
+                    && path !== 'fn'
+            )
             .map(node => (node as SymbolNode).name)
         if (inputs) {
             this.inputs = inputs
