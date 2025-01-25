@@ -120,7 +120,7 @@ type ExtendedMathJs = MathJsInstance & {
         ((c: Chroma, s: number) => Chroma)
 }
 
-export const math = create(all) as ExtendedMathJs
+export const math = create(all, {matrix: 'Array'}) as ExtendedMathJs
 
 const dummy = chroma('white')
 const chromaConstructor = dummy.constructor

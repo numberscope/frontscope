@@ -201,6 +201,11 @@ changes from one frame to the next.
         type: ParamType.NUMBER_ARRAY,
         displayName: 'Stroke width(s)',
         required: false,
+        description:
+            'A width (in pixels), or list of widths corresponding '
+            + 'in order to the sequence values listed in Domain. '
+            + 'The segments of the path are drawn with the corresponding '
+            + 'widths.',
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.List,
         validate: function (widths: number[], status: ValidationStatus) {
@@ -220,6 +225,9 @@ changes from one frame to the next.
         type: ParamType.STRING,
         displayName: 'Stroke color(s)',
         required: true,
+        description:
+            'A color or list of colors '
+            + 'corresponding to the sequence values listed in Domain.',
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.List,
         level: 0,
@@ -244,10 +252,13 @@ left out a value.)
         description: 'Inserts choice into the stroke color.',
         updateAction: function (newColor: string) {
             const turtle = this as unknown as Turtle
-            const colorParam =
-                turtle.ruleMode === RuleMode.List
-                    ? 'strokeColor'
-                    : 'colorFormula'
+            let colorParam = 'colorFormula'
+            if (turtle.ruleMode === RuleMode.List) {
+                colorParam = 'strokeColor'
+                if (turtle.tentativeValues[colorParam]) {
+                    newColor = ' ' + newColor
+                }
+            }
             turtle.tentativeValues[colorParam] += newColor
         },
     },
@@ -771,7 +782,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                     input
                 ) ?? 0
             if (this.statusOf.colorFormula.invalid()) return
-            console.log('CHECK', this.colorFormula.source, input, clr)
             if (typeof clr === 'string') {
                 this.pathColors.push(this.sketch.color(clr))
             } else if (math.isChroma(clr)) {
