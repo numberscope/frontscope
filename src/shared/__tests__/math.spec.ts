@@ -120,10 +120,100 @@ describe('colors', () => {
             0.4, 0.8, 0.6, 0.9,
         ])
     })
+    it.skip('semicolon is ok in expressions', () => {
+        // semicolon -- maybe we don't want this to pass anyway
+        expect(
+            math.evaluate('chroma.mix("red", "blue", 0.25);').hex()
+        ).toStrictEqual('#dd0080')
+    })
+    it.skip('using brewer in expressions', () => {
+        // calling on RdBu, and array value
+        expect(math.evaluate('chroma.brewer.OrRd[1]').hex()).toStrictEqual(
+            '#ffa500'
+        ) // double check hex value; right now it produces none
+        expect(
+            math.evaluate('chroma.scale("RdBu").colors(5)[2]').hex()
+        ).toStrictEqual('#f4a582')
+    })
+    it.skip('parsing arrays in expressions', () => {
+        expect(
+            math
+                .evaluate(
+                    'chroma.scale(["#fafa6e", "#2A4858"])'
+                        + '.mode("lch").colors(6)[1]'
+                )
+                .hex()
+        ).toStrictEqual('#fafa6e') // double check hex value
+    })
+    it.skip('evaluate on a scale', () => {
+        // calling at 0.5 in a scale
+        expect(
+            math
+                .evaluate(
+                    'chroma.scale('
+                        + '["#ca0020", "#f4a582",'
+                        + '"#f7f7f7", "#92c5de", "#0571b0"])(0.5,)'
+                )
+                .hex()
+        ).toStrictEqual('#f7f7f7')
+        expect(math.evaluate('chroma.scale()(0.5,)').hex()).toStrictEqual(
+            '#808080'
+        )
+    })
     it('allows chroma construction in expressions', () => {
+        // examples from https://gka.github.io/chroma.js/
         expect(math.evaluate('chroma("magenta")').gl()).toStrictEqual([
             1, 0, 1, 1,
         ])
+        expect(math.evaluate('chroma("#ff3399")').hex()).toStrictEqual(
+            '#ff3399'
+        )
+        expect(math.evaluate('chroma(0xff3399)').hex()).toStrictEqual(
+            '#ff3399'
+        )
+        expect(math.evaluate('chroma(0xff,0x33,0x99)').hex()).toStrictEqual(
+            '#ff3399'
+        )
+        expect(math.evaluate('chroma(255,51,153)').hex()).toStrictEqual(
+            '#ff3399'
+        )
+        expect(math.evaluate('chroma([255,51,153])').hex()).toStrictEqual(
+            '#ff3399'
+        )
+        expect(
+            math.evaluate('chroma(330, 1, 0.6, "hsl")').hex()
+        ).toStrictEqual('#ff3399')
+        expect(
+            math.evaluate('chroma({ h:330, s:1, l:0.6})').hex()
+        ).toStrictEqual('#ff3399')
+        expect(math.evaluate('chroma.hsl(330, 1, 0.6)').hex()).toStrictEqual(
+            '#ff3399'
+        )
+        expect(math.evaluate('chroma.temperature(2000)').hex()).toStrictEqual(
+            '#ff8b14'
+        )
+        expect(math.evaluate('chroma.temperature(2000)').hex()).toStrictEqual(
+            '#ff8b14'
+        )
+        expect(
+            math.evaluate('chroma.mix("red", "blue", 0.25)').hex()
+        ).toStrictEqual('#dd0080')
+        expect(
+            math.evaluate('chroma.mix("red", "blue", 0.5, "lab")').hex()
+        ).toStrictEqual('#ca0088')
+        expect(
+            math
+                .evaluate('chroma.average(["#ddd", "yellow", "red", "teal"])')
+                .hex()
+        ).toStrictEqual('#d3b480')
+        expect(
+            math
+                .evaluate('chroma.blend("4CBBFC", "EEEE22", "multiply")')
+                .hex()
+        ).toStrictEqual('#47af22')
+        expect(
+            math.evaluate('chroma.mix("red", "blue", 0.5, "lab")').hex()
+        ).toStrictEqual('#ca0088')
     })
     it('adds colors as overlay', () => {
         expect(
@@ -156,12 +246,15 @@ describe('colors', () => {
             0.5, 0.5, 0.25, 0.75,
         ])
     })
-    it('allows chroma.js operations', () => {
+    it('allows chroma.js operations in expressions', () => {
         // examples from https://gka.github.io/chroma.js/
         expect(math.evaluate('hotpink.darken(2).hex()')).toBe('#930058')
         expect(math.evaluate('hotpink.brighten(2).hex()')).toBe('#ffd1ff')
         expect(math.evaluate('slategray.saturate(2).hex()')).toBe('#0087cd')
         expect(math.evaluate('hotpink.desaturate(2).hex()')).toBe('#cd8ca8')
+        expect(math.evaluate('chroma("skyblue").set("hsl.h", 0).hex()')).toBe(
+            '#eb8787'
+        )
         expect(math.evaluate('hotpink.shade(0.25).hex()')).toBe('#dd5b9c')
         expect(math.evaluate('hotpink.tint(0.25).hex()')).toBe('#ff9dc9')
         expect(math.evaluate('hotpink.mix(blue, 0.75, "lab").hex()')).toBe(
