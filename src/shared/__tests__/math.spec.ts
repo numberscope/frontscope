@@ -120,31 +120,22 @@ describe('colors', () => {
             0.4, 0.8, 0.6, 0.9,
         ])
     })
-    it.skip('semicolon is ok in expressions', () => {
-        // semicolon -- maybe we don't want this to pass anyway
-        expect(
-            math.evaluate('chroma.mix("red", "blue", 0.25);').hex()
-        ).toStrictEqual('#dd0080')
-    })
-    it.skip('using brewer in expressions', () => {
+    it('using brewer palettes in expressions', () => {
+        expect(math.evaluate('typeOf(OrRd[2])')).toStrictEqual('Chroma')
         // calling on RdBu, and array value
-        expect(math.evaluate('chroma.brewer.OrRd[1]').hex()).toStrictEqual(
-            '#ffa500'
-        ) // double check hex value; right now it produces none
+        expect(math.evaluate('OrRd[1]').hex()).toStrictEqual('#fff7ec')
         expect(
-            math.evaluate('chroma.scale("RdBu").colors(5)[2]').hex()
-        ).toStrictEqual('#f4a582')
+            math.evaluate('chroma.scale(RdBu).colors(5)[2]')
+        ).toStrictEqual('#e58368')
     })
-    it.skip('parsing arrays in expressions', () => {
+    it('parsing arrays in expressions', () => {
         expect(
-            math
-                .evaluate(
-                    'chroma.scale(["#fafa6e", "#2A4858"])'
-                        + '.mode("lch").colors(6)[1]'
-                )
-                .hex()
+            math.evaluate(
+                'chroma.scale(["#fafa6e", "#2A4858"]).mode("lch").colors(6)[1]'
+            )
         ).toStrictEqual('#fafa6e') // double check hex value
     })
+    // Need to implement forcing function call syntax with , in arg list
     it.skip('evaluate on a scale', () => {
         // calling at 0.5 in a scale
         expect(
@@ -154,9 +145,8 @@ describe('colors', () => {
                         + '["#ca0020", "#f4a582",'
                         + '"#f7f7f7", "#92c5de", "#0571b0"])(0.5,)'
                 )
-                .hex()
         ).toStrictEqual('#f7f7f7')
-        expect(math.evaluate('chroma.scale()(0.5,)').hex()).toStrictEqual(
+        expect(math.evaluate('chroma.scale()(0.5,)')).toStrictEqual(
             '#808080'
         )
     })

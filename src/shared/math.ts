@@ -21,9 +21,12 @@ of the other facilities available. We also have some additional tips for
 [working with bigint numbers](../../doc/working-with-bigints.md) in
 Numberscope.
 
-Note that currently every one of the extension functions described
-below accepts either `number` or `bigint` inputs for all arguments and
-simply converts them to bigints as needed.
+Note that currently all of the numerical extension functions described below
+accept either `number` or `bigint` inputs for all arguments and convert them
+to bigints as needed.
+
+[TODO: Either document color extensions here, or link to where they are
+documented!!]
 
 ### Example usage
 ```ts
@@ -142,11 +145,17 @@ const colorStuff: Record<string, unknown> = {
         'number, Chroma': (s, c) => chroma(c).alpha(s * c.alpha()),
         'Chroma, number': (c, s) => chroma(c).alpha(s * c.alpha()),
     }),
+    typeOf: math.typed('typeOf', {Chroma: () => 'Chroma'}),
 }
 // work around omission of `colors` property in @types/chroma-js
 for (const name in (chroma as unknown as {colors: Record<string, string>})
     .colors) {
     colorStuff[name] = factory(name, [], () => chroma(name))
+}
+let palette: keyof typeof chroma.brewer = 'RdBu'
+for (palette in chroma.brewer) {
+    const clrs = chroma.brewer[palette].map(hx => chroma(hx))
+    colorStuff[palette] = factory(palette, [], () => clrs)
 }
 
 math.import(colorStuff)
