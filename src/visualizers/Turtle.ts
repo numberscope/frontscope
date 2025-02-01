@@ -329,7 +329,8 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
   given step of the turtle's path.
     **/
     turnFormula: {
-        default: new MathFormula('30+15a', formulaInputs),
+        default:
+            new MathFormula('0 <= a < 3 ? 30+15a : undefined', formulaInputs),
         type: ParamType.FORMULA,
         inputs: formulaInputs,
         displayName: 'Turn formula',

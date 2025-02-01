@@ -26,11 +26,15 @@ type Quad = [number, number, number, number]
 export const chroma = function (...args: unknown[]) {
     if (args.length === 0) return chromaRaw('black')
     if (args.length === 1) {
-        if (args[0] instanceof Array && args[0].length === 4) {
-            return chromaRaw(...(args[0] as Quad), 'gl')
+        const arg = args[0]
+        if (arg instanceof Array && arg.length === 4) {
+            return chromaRaw(...(arg as Quad), 'gl')
         }
-        if (typeof args[0] === 'number' && args[0] <= 1.0) {
-            return chromaRaw(args[0], args[0], args[0], 1, 'gl')
+        if (typeof arg === 'number') {
+            if (arg <= 1.0) {
+                return chromaRaw(arg, arg, arg, 1, 'gl')
+            }
+            return chromaRaw(arg, arg, arg)
         }
     }
     if (
