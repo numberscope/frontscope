@@ -650,7 +650,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 sketch
                     .translate(lastPos.x, lastPos.y)
                     .rotateZ(this.pathBearings[i])
-                if (length > width / 3) {
+                if (Math.abs(length) > width / 3) {
                     sketch.rect(0, -width / 2, length - width / 3, width)
                     sketch.circle(length - width / 3, 0, width)
                 }
