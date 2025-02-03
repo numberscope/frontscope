@@ -1,6 +1,6 @@
 import {hasField, makeStringFields} from './fields'
 import type {StringFields, GenericStringFields} from './fields'
-import typeFunctions, {ParamType} from './ParamType'
+import {typeFunctions, ParamType} from './ParamType'
 import type {RealizedPropertyType} from './ParamType'
 import {seqKey} from './specimenEncoding'
 import {ValidationStatus} from './ValidationStatus'

@@ -112,7 +112,7 @@ function validateExtInt(value: string, status: ValidationStatus) {
         status.addError('Input must be an integer or ±Infinity')
 }
 
-const typeFunctions: {
+export const typeFunctions: {
     [K in ParamType]: ParamTypeFunctions<RealizedPropertyType[K]>
 } = {
     [ParamType.BOOLEAN]: {
@@ -307,5 +307,3 @@ const typeFunctions: {
         },
     },
 }
-
-export default typeFunctions

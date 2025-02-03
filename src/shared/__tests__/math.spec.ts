@@ -139,16 +139,13 @@ describe('colors', () => {
     it.skip('evaluate on a scale', () => {
         // calling at 0.5 in a scale
         expect(
-            math
-                .evaluate(
-                    'chroma.scale('
-                        + '["#ca0020", "#f4a582",'
-                        + '"#f7f7f7", "#92c5de", "#0571b0"])(0.5,)'
-                )
+            math.evaluate(
+                'chroma.scale('
+                    + '["#ca0020", "#f4a582",'
+                    + '"#f7f7f7", "#92c5de", "#0571b0"])(0.5,)'
+            )
         ).toStrictEqual('#f7f7f7')
-        expect(math.evaluate('chroma.scale()(0.5,)')).toStrictEqual(
-            '#808080'
-        )
+        expect(math.evaluate('chroma.scale()(0.5,)')).toStrictEqual('#808080')
     })
     it('allows chroma construction in expressions', () => {
         // examples from https://gka.github.io/chroma.js/

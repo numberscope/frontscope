@@ -67,7 +67,7 @@
 <script lang="ts">
     import {defineComponent} from 'vue'
     import type {ParamInterface} from '../shared/Paramable'
-    import typeFunctions, {ParamType} from '../shared/ParamType'
+    import {typeFunctions, ParamType} from '../shared/ParamType'
     import {ValidationStatus} from '../shared/ValidationStatus'
 
     export default defineComponent({

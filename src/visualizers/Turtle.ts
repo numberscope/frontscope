@@ -9,7 +9,7 @@ import type {ViewSize} from './VisualizerInterface'
 import {CachingError} from '@/sequences/Cached'
 import {math, MathFormula} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
-import {ParamType} from '@/shared/ParamType'
+import {typeFunctions, ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
@@ -329,8 +329,10 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
   given step of the turtle's path.
     **/
     turnFormula: {
-        default:
-            new MathFormula('0 <= a < 3 ? 30+15a : undefined', formulaInputs),
+        default: new MathFormula(
+            '0 <= a < 3 ? 30+15a : undefined',
+            formulaInputs
+        ),
         type: ParamType.FORMULA,
         inputs: formulaInputs,
         displayName: 'Turn formula',
@@ -456,6 +458,25 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     private pathFailure = false
     private mouseCount = 0
 
+    splitColorList(colors: string): string[] {
+        // The following regexp splits by whitespace or comma, but keeps
+        // the delimeters, per
+        // https://medium.com/@shemar.gordon32/how-to-split-and-keep-
+        // the-delimiter-s-d433fd697c65
+        const pieceArray = colors.split(/(?=[\s,])|(?<=[\s,])/)
+        let openCount = 0
+        const result: string[] = []
+        for (const piece of pieceArray) {
+            if (openCount === 0) {
+                if (!/[\s,]/.test(piece)) result.push(piece)
+            } else result[result.length - 1] += piece
+            openCount
+                += (piece.match(/[(]/g) ?? []).length
+                - (piece.match(/[)]/g) ?? []).length
+        }
+        return result
+    }
+
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
@@ -464,7 +485,18 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         for (rule in ruleParams) {
             let ruleList: string | (string | number)[] = params[rule]
             if (rule === 'strokeColor' && typeof ruleList === 'string') {
-                ruleList = ruleList.split(/[\s,]+/)
+                ruleList = this.splitColorList(ruleList)
+                for (const rule of ruleList) {
+                    if (this.statusOf.strokeColor.invalid()) break
+                    typeFunctions[ParamType.FORMULA].validate.call(
+                        this.params.colorFormula,
+                        rule as string,
+                        this.statusOf.strokeColor
+                    )
+                }
+                if (this.statusOf.strokeColor.invalid()) {
+                    status.addError('problem with Stroke color(s)')
+                }
             }
             const entries = ruleList.length
             if (entries > 1 && entries < params.domain.length) {
@@ -542,7 +574,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         const frameRule = formulaRules[fmlaName][1]
         let primaryArray: string | (string | number)[] = this[primaryRule]
         if (primaryRule === 'strokeColor') {
-            primaryArray = (primaryArray as string).split(/[\s,]+/)
+            primaryArray = this.splitColorList(primaryArray as string)
         }
         const primaryLast = primaryArray.length - 1
         const dLength = this.domain.length
