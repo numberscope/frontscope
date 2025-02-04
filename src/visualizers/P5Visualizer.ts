@@ -426,8 +426,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             a div that it's already inhabiting, nothing will happen.
         */
 
-        async parametersChanged(name: string[]) {
-            await super.parametersChanged(name)
+        async parametersChanged(names: Set<string>) {
+            await super.parametersChanged(names)
             await this.reset()
         }
 

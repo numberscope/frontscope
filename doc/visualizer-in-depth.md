@@ -344,7 +344,7 @@ Make sure you do fill them all in -- if you attempt to draw with an
 
 Any time a parameter value is assigned into its corresponding property in your
 Visualizer object, the `parametersChanged()` method of your Visualizer is
-called with a list of the parameter name(s) that changed. The default
+called with a Set of the parameter name(s) that changed. The default
 implementation of this method in the P5Visualizer base class resets the
 display of the visualizer so that it re-runs from the beginning. So you likely
 do not need to modify that behavior. However, there could be a specialized

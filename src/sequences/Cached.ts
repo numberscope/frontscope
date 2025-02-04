@@ -379,10 +379,10 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
          * cache and reinitialize the sequence so that every element is
          * recomputed when queried.
          */
-        async parametersChanged(nameList: string[]) {
-            await super.parametersChanged(nameList)
+        async parametersChanged(names: Set<string>) {
+            await super.parametersChanged(names)
             let needsReset = false
-            for (const name of nameList) {
+            for (const name of names) {
                 if (!(name in standardSequenceParameters)) {
                     needsReset = true
                     continue

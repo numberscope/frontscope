@@ -729,7 +729,7 @@ export class Paramable implements ParamableInterface {
             realized = realizeAll(this.params, this.tentativeValues)
 
         const props: string[] = []
-        const changed: string[] = []
+        const changed = new Set<string>()
         for (const prop in realized) {
             if (!hasField(realized, prop)) continue
 
@@ -749,11 +749,11 @@ export class Paramable implements ParamableInterface {
                 if (newVersion !== myVersion) {
                     // OK, really have to change
                     me[prop] = realized[prop]
-                    changed.push(prop)
+                    changed.add(prop)
                 }
             }
         }
-        if (changed.length > 0) {
+        if (changed.size > 0) {
             if (this.parChangePromise) {
                 this.parChangePromise.then(() =>
                     this.parametersChanged(changed)
@@ -799,13 +799,13 @@ export class Paramable implements ParamableInterface {
         }
     }
     /** xmd */
-    async parametersChanged(_name: string[]): Promise<void> /* **/ {
+    async parametersChanged(_name: Set<string>): Promise<void> /* **/ {
         return
     }
     /** xmd
 :   This method will be called (by the base class implementation) whenever
     the values of one or more parameters have changed.  The _name_ argument
-    is a list of the names of parameters that have changed. Note there can
+    is a Set of the names of parameters that have changed. Note there can
     be more than one, since sometimes multiple parameters change
     simultaneously, as in a call to `loadQuery()`. In the base class itself,
     this method does nothing, but it may be overridden in derived classes to

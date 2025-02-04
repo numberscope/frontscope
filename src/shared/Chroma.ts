@@ -34,7 +34,7 @@ export const chroma = function (...args: unknown[]) {
             if (arg <= 1.0) {
                 return chromaRaw(arg, arg, arg, 1, 'gl')
             }
-            return chromaRaw(arg, arg, arg)
+            return chromaRaw(arg)
         }
     }
     if (

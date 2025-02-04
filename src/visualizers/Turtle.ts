@@ -299,6 +299,14 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
   `x` The current x-coordinate of the turtle.
 
   `y` The current y-coordinate of the turtle.
+
+  Note that as you change parameters in List mode, the formulas will be
+  updated in the background to match for you, but not vice versa: If you
+  switch to List mode, the visualization will change to reflect the last
+  List mode values you set. That's because most changes you might make
+  in Formula mode can't possibly be captured in the simpler List mode. Hence,
+  the Turtle visualizer simply doesn't try to keep the List values in
+  sync with Formula changes.
      **/
     ruleMode: {
         default: RuleMode.List,
@@ -591,10 +599,14 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         return new MathFormula(fmlaSource, formulaInputs)
     }
 
-    async parametersChanged(nameList: string[]) {
+    async parametersChanged(names: Set<string>) {
         if (this.ruleMode === RuleMode.List) {
+            if (names.has('ruleMode') || names.has('domain')) {
+                // pretend every rule changed
+                for (const rule in ruleParams) names.add(rule)
+            }
             let recomputed = false
-            for (const name of nameList.slice()) {
+            for (const name of names) {
                 if (!checkRule(name)) continue
                 const fmlaName = ruleParams[name]
                 const oldFmla = this[fmlaName].source
@@ -602,17 +614,12 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 if (newFmla.freevars.every(v => formulaVars.includes(v))) {
                     recomputed = true
                     this[fmlaName] = newFmla
-                    if (
-                        newFmla.source !== oldFmla
-                        && !nameList.includes(fmlaName)
-                    ) {
-                        nameList.push(fmlaName)
-                    }
+                    if (newFmla.source !== oldFmla) names.add(fmlaName)
                 }
             }
             if (recomputed) this.refreshParams()
         }
-        super.parametersChanged(nameList)
+        super.parametersChanged(names)
     }
 
     setup() {
