@@ -145,7 +145,8 @@
                 colorValue.value = ['#FFFFFF']
             } else {
                 let selection = colorItems.findIndex(
-                   item => item instanceof HTMLElement && item.style.boxShadow
+                    item =>
+                        item instanceof HTMLElement && item.style.boxShadow
                 )
                 if (selection < 0) selection += colorItems.length
                 // Can't directly splice a ref()d list, goes haywire, so
