@@ -139,13 +139,21 @@
             const colorItems = Array.from(
                 document.querySelectorAll(`#${props.paramName} .color-item`)
             )
-            let selection = colorItems.findIndex(
-                item => item instanceof HTMLElement && item.style.boxShadow
-            )
-            if (selection < 0) selection += colorItems.length
-            const colorCopy = [...colorValue.value]
-            colorCopy.splice(selection, 1)
-            colorValue.value = colorCopy
+            if (colorItems.length < 2) {
+                // Attempt to delete last remaining color, but there must
+                // be at least one, so turn it white
+                colorValue.value = ['#FFFFFF']
+            } else {
+                let selection = colorItems.findIndex(
+                   item => item instanceof HTMLElement && item.style.boxShadow
+                )
+                if (selection < 0) selection += colorItems.length
+                // Can't directly splice a ref()d list, goes haywire, so
+                // instead copy and assign
+                const colorCopy = [...colorValue.value]
+                colorCopy.splice(selection, 1)
+                colorValue.value = colorCopy
+            }
             togglePicker()
         }
     }
