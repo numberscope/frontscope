@@ -9,7 +9,7 @@ import type {ViewSize} from './VisualizerInterface'
 import {CachingError} from '@/sequences/Cached'
 import {math, MathFormula} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
-import {typeFunctions, ParamType} from '@/shared/ParamType'
+import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
@@ -48,6 +48,9 @@ enum RuleMode {
 }
 
 const formulaInputs = ['n', 'a', 'f', 'b', 'x', 'y'] as const
+// make version with widened type for the sake of TypeScript's weird typing
+// of Array.includes() used way below:
+const formulaVars: readonly string[] = formulaInputs
 
 const paramDesc = {
     /** md
@@ -209,25 +212,28 @@ changes from one frame to the next.
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.List,
         validate: function (widths: number[], status: ValidationStatus) {
-            if (widths.some(n => n <= 0)) status.addError('must be positive')
+            status.mandate(
+                widths.every(n => n > 0),
+                'must be positive'
+            )
         },
         level: 0,
     },
     /** md
-- Stroke color(s): One or more strings specifying colors, separated by
-  spaces or commas. These colors correspond to the elements in the domain
-  just as all of the above parameters do. Each one may either be a CSS color
-  name (e.g., 'teal' or 'khaki'), or a standard hex color string (e.g.
-  '#88aa3c').
+- Stroke color(s): One or more colors, corresponding to the elements in the
+  domain just as all of the above parameters do. You can add a color by
+  clicking the `+` button, and delete a color by selecting it and pressing
+  the `Delete` key.
     **/
     strokeColor: {
-        default: '#c98787',
-        type: ParamType.STRING,
+        default: ['#c98787'],
+        type: ParamType.COLOR_ARRAY,
         displayName: 'Stroke color(s)',
         required: true,
         description:
-            'A color or list of colors '
-            + 'corresponding to the sequence values listed in Domain.',
+            'A color or list of colors corresponding to the sequence values '
+            + 'listed in Domain. To remove a color, click it and press '
+            + 'the Delete key.',
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.List,
         level: 0,
@@ -240,29 +246,6 @@ elements in the domain, and the last one will be re-used as many times as
 necessary. Using this feature will display a warning, in case you inadvertently
 left out a value.)
 
-- Color chooser: This color picker does not directly control the display.
-  Instead, whenever you select a color with it, the corresponding color
-  string is inserted in the Stroke color parameter box.
-    **/
-    colorChooser: {
-        default: '#00d0d0',
-        type: ParamType.COLOR,
-        displayName: 'Color chooser:',
-        required: true,
-        description: 'Inserts choice into the stroke color.',
-        updateAction: function (newColor: string) {
-            const turtle = this as unknown as Turtle
-            let colorParam = 'colorFormula'
-            if (turtle.ruleMode === RuleMode.List) {
-                colorParam = 'strokeColor'
-                if (turtle.tentativeValues[colorParam]) {
-                    newColor = ' ' + newColor
-                }
-            }
-            turtle.tentativeValues[colorParam] += newColor
-        },
-    },
-    /** md
 - Background color: The color of the visualizer canvas.
      **/
     bgColor: {
@@ -287,8 +270,8 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         description: 'Steps added per frame.',
         hideDescription: false,
         validate: function (n: number, status: ValidationStatus) {
-            if (n < 0) status.addError('must non-negative')
-            if (n > 1000) status.addError('the speed is capped at 1000')
+            status.forbid(n < 0, 'must non-negative')
+            status.forbid(n > 1000, 'the speed is capped at 1000')
         },
     },
     /** md
@@ -323,6 +306,19 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         from: RuleMode,
         displayName: 'Rule mode',
         required: true,
+        updateAction: function (newRule: string) {
+            const turtle = this instanceof Turtle ? this : null
+            if (turtle === null) return
+            const rule: RuleMode = parseInt(newRule)
+            if (rule === RuleMode.List)
+                turtle.params.ruleMode.description = ''
+            else
+                turtle.params.ruleMode.description =
+                    'The formulas below may use pre-set variables: '
+                    + '`a` - sequence entry, `n` - sequence index, '
+                    + '`b` - current bearing, `x`,`y` - current position, '
+                    + '`f` - frame number (triggers animation).'
+        },
     },
     /** md
 - Turn formula: an expression to compute the turn angle in degrees for a
@@ -338,7 +334,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         displayName: 'Turn formula',
         description:
             'Computes how many degrees to turn counterclockwise '
-            + 'before each turtle step.',
+            + 'before each turtle step',
         required: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.Formula,
@@ -389,6 +385,33 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         visibleValue: RuleMode.Formula,
         level: 0,
     },
+    /** md
+- Color chooser: This color picker does not directly control the display.
+  Instead, whenever you select a color with it, the corresponding color
+  string is inserted in the Color formula box.
+    **/
+    colorChooser: {
+        default: '#00d0d0',
+        type: ParamType.COLOR,
+        displayName: 'Color chooser:',
+        required: true,
+        description:
+            'Inserts choice into the Color formula, replacing current '
+            + 'selection therein, if any.',
+        visibleDependency: 'ruleMode',
+        visibleValue: RuleMode.Formula,
+        updateAction: function (newColor: string) {
+            const turtle = this instanceof Turtle ? this : null
+            if (turtle === null) return
+            const cfIn = document.querySelector('.param-field #colorFormula')
+            if (!(cfIn instanceof HTMLInputElement)) return
+            const cf = turtle.tentativeValues.colorFormula
+            const start = cfIn.selectionStart ?? cf.length
+            const end = cfIn.selectionEnd ?? start
+            turtle.tentativeValues.colorFormula =
+                cf.substr(0, start) + newColor + cf.substr(end)
+        },
+    },
 } satisfies GenericParamDescription
 
 const formulaParamNames = [
@@ -408,14 +431,18 @@ const ruleParams = {
 
 type FormulaParam = (typeof formulaParamNames)[number]
 type RuleParam = keyof typeof ruleParams
-
+function checkRule(r: string): r is RuleParam {
+    return r in ruleParams
+}
+// the cast below is necessary b/c TypeScript doesn't type Object.fromEntries
+// tightly (#?!@!)
 const formulaRules = Object.fromEntries(
     formulaParamNames.map(
         (fmla: FormulaParam): [FormulaParam, RuleParam[]] => [fmla, []]
     )
 ) as Record<FormulaParam, RuleParam[]>
 for (const [rule, fmla] of Object.entries(ruleParams)) {
-    formulaRules[fmla].push(rule as RuleParam)
+    if (checkRule(rule)) formulaRules[fmla].push(rule)
 }
 
 // How many segments to gather into a reusable Geometry object
@@ -458,46 +485,13 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     private pathFailure = false
     private mouseCount = 0
 
-    splitColorList(colors: string): string[] {
-        // The following regexp splits by whitespace or comma, but keeps
-        // the delimeters, per
-        // https://medium.com/@shemar.gordon32/how-to-split-and-keep-
-        // the-delimiter-s-d433fd697c65
-        const pieceArray = colors.split(/(?=[\s,])|(?<=[\s,])/)
-        let openCount = 0
-        const result: string[] = []
-        for (const piece of pieceArray) {
-            if (openCount === 0) {
-                if (!/[\s,]/.test(piece)) result.push(piece)
-            } else result[result.length - 1] += piece
-            openCount
-                += (piece.match(/[(]/g) ?? []).length
-                - (piece.match(/[)]/g) ?? []).length
-        }
-        return result
-    }
-
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
         // lengths of rulesets should match length of domain
         let rule: RuleParam = 'turns'
         for (rule in ruleParams) {
-            let ruleList: string | (string | number)[] = params[rule]
-            if (rule === 'strokeColor' && typeof ruleList === 'string') {
-                ruleList = this.splitColorList(ruleList)
-                for (const rule of ruleList) {
-                    if (this.statusOf.strokeColor.invalid()) break
-                    typeFunctions[ParamType.FORMULA].validate.call(
-                        this.params.colorFormula,
-                        rule as string,
-                        this.statusOf.strokeColor
-                    )
-                }
-                if (this.statusOf.strokeColor.invalid()) {
-                    status.addError('problem with Stroke color(s)')
-                }
-            }
+            const ruleList: (string | number)[] = params[rule]
             const entries = ruleList.length
             if (entries > 1 && entries < params.domain.length) {
                 this.statusOf[rule].addWarning(
@@ -572,10 +566,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     convertTable(fmlaName: FormulaParam) {
         const primaryRule = formulaRules[fmlaName][0]
         const frameRule = formulaRules[fmlaName][1]
-        let primaryArray: string | (string | number)[] = this[primaryRule]
-        if (primaryRule === 'strokeColor') {
-            primaryArray = this.splitColorList(primaryArray as string)
-        }
+        const primaryArray: (string | number)[] = this[primaryRule]
         const primaryLast = primaryArray.length - 1
         const dLength = this.domain.length
         let fmlaSource = ''
@@ -604,19 +595,15 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         if (this.ruleMode === RuleMode.List) {
             let recomputed = false
             for (const name of nameList.slice()) {
-                if (!(name in ruleParams)) continue
-                const fmlaName = ruleParams[name as RuleParam]
-                const oldFormula = this[fmlaName].source
-                const newFormula = this.convertTable(fmlaName)
-                if (
-                    newFormula.freevars.every(v =>
-                        (formulaInputs as readonly string[]).includes(v)
-                    )
-                ) {
+                if (!checkRule(name)) continue
+                const fmlaName = ruleParams[name]
+                const oldFmla = this[fmlaName].source
+                const newFmla = this.convertTable(fmlaName)
+                if (newFmla.freevars.every(v => formulaVars.includes(v))) {
                     recomputed = true
-                    this[fmlaName] = newFormula
+                    this[fmlaName] = newFmla
                     if (
-                        newFormula.source !== oldFormula
+                        newFmla.source !== oldFmla
                         && !nameList.includes(fmlaName)
                     ) {
                         nameList.push(fmlaName)

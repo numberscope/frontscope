@@ -355,13 +355,14 @@ export class MathFormula {
     static preprocess(fmla: string) {
         // Interpret "bare" color constants #hhhhhh
         return fmla.replaceAll(
-            /(?<!["'])(#[0-9a-fA-f]{3,8})/g,
+            /(?<!["'])(#[0123456789abcdefABCDEF]{3,8})/g,
             'chroma("$1")'
         )
     }
     constructor(fmla: string, inputs?: readonly string[]) {
         // Preprocess formula to interpret "bare" color constants #hhhhhh
-        const parsetree = math.parse(MathFormula.preprocess(fmla))
+        const prefmla = MathFormula.preprocess(fmla)
+        const parsetree = math.parse(prefmla)
         this.freevars = parsetree
             .filter(
                 (node, path) =>

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="input-container">
+        <div class="param-field">
             <label>
                 {{ displayName }}
                 <input
@@ -9,12 +9,14 @@
                     type="checkbox"
                     :checked="value === 'true'"
                     @input="updateBoolean($event)">
-                <input
-                    v-else-if="param.type === ParamType.COLOR"
+                <pick-colors
+                    v-else-if="isColorful"
                     :id="paramName"
-                    type="color"
-                    :value="value"
-                    @input="updateString($event)">
+                    v-model:value="colorValue"
+                    v-model:show-picker="showPicker"
+                    :add-color="param.type === ParamType.COLOR_ARRAY"
+                    @click="maybeTogglePicker"
+                    @update:show-picker="reconcilePicker" />
                 <select
                     v-else-if="param.type === ParamType.ENUM"
                     :id="paramName"
@@ -64,72 +66,126 @@
     </div>
 </template>
 
-<script lang="ts">
-    import {defineComponent} from 'vue'
+<script setup lang="ts">
+    import {ref, watch} from 'vue'
+    import PickColors from 'vue-pick-colors'
+
     import type {ParamInterface} from '../shared/Paramable'
     import {typeFunctions, ParamType} from '../shared/ParamType'
     import {ValidationStatus} from '../shared/ValidationStatus'
 
-    export default defineComponent({
-        name: 'ParamField',
-        props: {
-            param: {
-                type: Object as () => ParamInterface<ParamType>,
-                required: true,
-            },
-            value: {
-                type: String,
-                required: true,
-            },
-            paramName: {type: String, required: true},
-            displayName: {type: String, required: true},
-            status: {
-                type: Object as () => ValidationStatus,
-                required: true,
-            },
-        },
-        emits: ['updateParam'],
-        data() {
-            return {ParamType}
-        },
-        methods: {
-            getEnumeration(
-                type: {[key: string]: number | string} | undefined
-            ): {[key: string]: number} {
-                if (!type) return {}
+    const props = defineProps<{
+        param: ParamInterface<ParamType>
+        value: string
+        paramName: string
+        displayName: string
+        status: ValidationStatus
+    }>()
 
-                const map: {[key: string]: number} = {}
-                for (const prop in type)
-                    if (typeof type[prop] === 'number')
-                        map[prop] = type[prop] as number
-                return map
-            },
-            updateBoolean(e: Event) {
-                window.document.getElementById(this.paramName)?.blur()
-                this.$emit(
-                    'updateParam',
-                    (e.target as HTMLInputElement).checked + ''
-                )
-            },
-            updateString(e: Event) {
-                this.$emit(
-                    'updateParam',
-                    (e.target as HTMLInputElement).value
-                )
-            },
-            blurField(id: string) {
-                window.document.getElementById(id)?.blur()
-            },
-            placehold(par: ParamInterface<ParamType>) {
-                if (typeof par.placeholder === 'string')
-                    return par.placeholder
-                return typeFunctions[par.type].derealize.call(
-                    par,
-                    par.default as never
-                )
-            },
-        },
-    })
+    const emit = defineEmits(['updateParam'])
+    const isColorful =
+        props.param.type === ParamType.COLOR
+        || props.param.type === ParamType.COLOR_ARRAY
+
+    function getEnumeration(
+        type: {[key: string]: number | string} | undefined
+    ): {[key: string]: number} {
+        if (!type) return {}
+
+        const map: {[key: string]: number} = {}
+        for (const prop in type) {
+            if (typeof type[prop] === 'number') map[prop] = +type[prop]
+        }
+        return map
+    }
+
+    function blurField(id: string) {
+        window.document.getElementById(id)?.blur()
+    }
+
+    function updateBoolean(e: Event) {
+        blurField(props.paramName)
+        const inp = e.target as HTMLInputElement
+        emit('updateParam', inp.checked + '')
+    }
+
+    function updateString(e: Event) {
+        const t = e.target
+        if (t instanceof HTMLSelectElement || t instanceof HTMLInputElement) {
+            emit('updateParam', t.value)
+        }
+    }
+
+    function rectifyColors(inVal: string) {
+        return props.param.type === ParamType.COLOR_ARRAY
+            ? inVal.split(/\s*[\s,]\s*/)
+            : inVal
+    }
+
+    const colorValue = ref(rectifyColors(props.value))
+    watch(
+        () => props.value,
+        () => {
+            colorValue.value = rectifyColors(props.value)
+        }
+    )
+    const showPicker = ref(false)
+    function pickerKeys(e: KeyboardEvent) {
+        if (e.key === 'Enter') togglePicker()
+        else if (
+            props.param.type === ParamType.COLOR_ARRAY
+            && e.key === 'Delete'
+        ) {
+            const colorItems = Array.from(
+                document.querySelectorAll(`#${props.paramName} .color-item`)
+            )
+            let selection = colorItems.findIndex(
+                item => item instanceof HTMLElement && item.style.boxShadow
+            )
+            if (selection < 0) selection += colorItems.length
+            const colorCopy = [...colorValue.value]
+            colorCopy.splice(selection, 1)
+            colorValue.value = colorCopy
+            togglePicker()
+        }
+    }
+    let firstClick = true
+    function maybeTogglePicker(e: Event) {
+        if (!isColorful) return
+        const target = e.target as HTMLElement
+        const index = target.dataset?.index
+        if (
+            index != null
+            && index !== ''
+            && ((props.param.type === ParamType.COLOR && !firstClick)
+                || target.style.boxShadow)
+        ) {
+            togglePicker()
+        }
+        firstClick = false
+    }
+    function togglePicker() {
+        showPicker.value = !showPicker.value
+        reconcilePicker(showPicker.value)
+    }
+    function reconcilePicker(newShow: boolean) {
+        if (newShow) {
+            document.addEventListener('keyup', pickerKeys)
+        } else {
+            document.removeEventListener('keyup', pickerKeys)
+            const newVal =
+                typeof colorValue.value === 'string'
+                    ? colorValue.value
+                    : colorValue.value.join(' ')
+            emit('updateParam', newVal)
+        }
+    }
+
+    function placehold(par: ParamInterface<ParamType>) {
+        if (typeof par.placeholder === 'string') return par.placeholder
+        const stringifier = typeFunctions[par.type].derealize
+        return stringifier.call(par, par.default as never)
+    }
 </script>
 
 <style scoped lang="scss">
@@ -188,10 +244,14 @@
         margin: 0px;
     }
 
-    .input-container {
+    .param-field {
         display: flex;
         flex-direction: row;
         position: relative;
+
+        .color-picker {
+            vertical-align: middle;
+        }
     }
 
     .error-field {

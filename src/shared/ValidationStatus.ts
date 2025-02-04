@@ -47,7 +47,25 @@ export class ValidationStatus {
         this.errors.push(...errors)
     }
     /**
-     * Adds one or more warning messages to this `ValidationStatus`. Note
+     * If the predicate is falsy, add the given errorMessage, invalidating
+     * this instance.
+     * @param {unknown} predicate
+     * @param {string} errorMessage
+     */
+    mandate(predicate: unknown, errorMessage: string) {
+        if (!predicate) this.addError(errorMessage)
+    }
+    /**
+     * If the predicate is truthy, add the given errorMessage, invalidating
+     * this instance.
+     * @param {unknown} predicate
+     * @param {string} errorMessage
+     */
+    forbid(predicate: unknown, errorMessage: string) {
+        if (predicate) this.addError(errorMessage)
+    }
+    /**
+     * Adds one or more warning messages to this instance. Note
      * that this does not affect the validity state.
      * @param {string, string, ...} warn1, warn2, ...
      *     the error messages to add
