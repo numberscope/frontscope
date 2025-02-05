@@ -6,8 +6,7 @@ import {P5GLVisualizer} from './P5GLVisualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
 
-import {CachingError} from '@/sequences/Cached'
-import {math, MathFormula} from '@/shared/math'
+import {math, MathFormula, CachingError} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
@@ -47,10 +46,21 @@ enum RuleMode {
     Formula,
 }
 
-const formulaInputs = ['n', 'a', 'f', 'b', 'x', 'y'] as const
+const formulaSymbols = [
+    'n',
+    'a',
+    'A',
+    's',
+    'm',
+    'M',
+    'f',
+    'b',
+    'x',
+    'y',
+] as const
 // make version with widened type for the sake of TypeScript's weird typing
 // of Array.includes() used way below:
-const formulaVars: readonly string[] = formulaInputs
+const formulaVars: readonly string[] = formulaSymbols
 
 const paramDesc = {
     /** md
@@ -289,6 +299,16 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
 
   `a` The value of the entry.
 
+  `s` The serial number of the step starting from one for the first step
+  that the turtle takes.
+
+  `m` The minimum index of the sequence being visualized. Note that the
+  above definitions mean that `n`, `s`, and `m` are related by `n = m + s - 1`.
+
+  `M` The Maximum index of the sequence being visualized. Note this value
+  may be Infinity for sequences that are defined and can be calculated in
+  principle for any index.
+
   `f` The frame number of this drawing pass. If you use this variable, the
   visualization will be redrawn from the beginning on every frame,
   animating the shape of the path.
@@ -299,6 +319,11 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
   `x` The current x-coordinate of the turtle.
 
   `y` The current y-coordinate of the turtle.
+
+  You may also use the symbol `A` as a function symbol in your code, and it
+  will provide access to the value of the sequence being visualized for any
+  index. For example, the formula `A(n+1) - A(n)` or equivalently `A(n+1) - a`
+  would produce the so-called "first differences" of the sequence.
 
   Note that as you change parameters in List mode, the formulas will be
   updated in the background to match for you, but not vice versa: If you
@@ -322,8 +347,11 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
                 turtle.params.ruleMode.description = ''
             else
                 turtle.params.ruleMode.description =
-                    'The formulas below may use pre-set variables: '
+                    'The formulas below may use the following symbols: '
                     + '`a` - sequence entry, `n` - sequence index, '
+                    + '`s` - step number, `m` - minimum index, '
+                    + '`M` - Maximum index, '
+                    + '`A(...)` -- sequence entry at any index, '
                     + '`b` - current bearing, `x`,`y` - current position, '
                     + '`f` - frame number (triggers animation).'
         },
@@ -335,10 +363,10 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
     turnFormula: {
         default: new MathFormula(
             '0 <= a < 3 ? 30+15a : undefined',
-            formulaInputs
+            formulaSymbols
         ),
         type: ParamType.FORMULA,
-        inputs: formulaInputs,
+        symbols: formulaSymbols,
         displayName: 'Turn formula',
         description:
             'Computes how many degrees to turn counterclockwise '
@@ -355,7 +383,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
     stepFormula: {
         default: new MathFormula('20'),
         type: ParamType.FORMULA,
-        inputs: formulaInputs,
+        symbols: formulaSymbols,
         displayName: 'Step formula',
         description: 'Computes the pixel length of each turtle step',
         required: false,
@@ -370,7 +398,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
     widthFormula: {
         default: new MathFormula('1'),
         type: ParamType.FORMULA,
-        inputs: formulaInputs,
+        symbols: formulaSymbols,
         displayName: 'Width formula',
         description: 'Computes the pixel width of each turtle step',
         required: false,
@@ -385,7 +413,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
     colorFormula: {
         default: new MathFormula('#c98787'),
         type: ParamType.FORMULA,
-        inputs: formulaInputs,
+        symbols: formulaSymbols,
         displayName: 'Color formula',
         description: 'Computes the color of each turtle step',
         required: false,
@@ -596,7 +624,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             fmlaSource += `${key}: ${value}`
         }
         fmlaSource += '}[string(a)]'
-        return new MathFormula(fmlaSource, formulaInputs)
+        return new MathFormula(fmlaSource, formulaSymbols)
     }
 
     async parametersChanged(names: Set<string>) {
@@ -769,46 +797,63 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             const input = {
                 n: Number(i),
                 a: Number(currElement),
+                s: Number(i - this.seq.first + 1n),
+                m: Number(this.seq.first),
+                M: Number(this.seq.last),
                 f: currentFrames,
                 b: (this.bearing * 180) / Math.PI,
                 x: position.x,
                 y: position.y,
+                A: (n: number | bigint) =>
+                    Number(this.seq.getElement(BigInt(n))),
             }
-            const rawTurnAngle = this.turnFormula.computeWithStatus(
-                this.statusOf.turnFormula,
-                input
-            )
-            if (this.statusOf.turnFormula.invalid()) return
             let turnAngle = 0
             let stepLength = 0
-            if (rawTurnAngle !== undefined) {
-                turnAngle = (math.safeNumber(rawTurnAngle) * Math.PI) / 180
-                stepLength = math.safeNumber(
-                    this.stepFormula.computeWithStatus(
-                        this.statusOf.stepFormula,
+            let clr: unknown = null
+            try {
+                const rawTurnAngle = this.turnFormula.computeWithStatus(
+                    this.statusOf.turnFormula,
+                    input
+                )
+                if (this.statusOf.turnFormula.invalid()) return
+                if (rawTurnAngle !== undefined) {
+                    turnAngle =
+                        (math.safeNumber(rawTurnAngle) * Math.PI) / 180
+                    stepLength = math.safeNumber(
+                        this.stepFormula.computeWithStatus(
+                            this.statusOf.stepFormula,
+                            input
+                        ) ?? 0
+                    )
+                    if (this.statusOf.stepFormula.invalid()) return
+                }
+                this.pathWidths.push(
+                    math.safeNumber(
+                        this.widthFormula.computeWithStatus(
+                            this.statusOf.widthFormula,
+                            input
+                        ) ?? 1
+                    )
+                )
+                if (this.statusOf.widthFormula.invalid()) return
+                clr =
+                    this.colorFormula.computeWithStatus(
+                        this.statusOf.colorFormula,
                         input
                     ) ?? 0
-                )
-                if (this.statusOf.stepFormula.invalid()) return
-                this.bearing += turnAngle
-                position.x += Math.cos(this.bearing) * stepLength
-                position.y += Math.sin(this.bearing) * stepLength
+                if (this.statusOf.colorFormula.invalid()) return
+            } catch (e) {
+                this.pathFailure = true
+                if (e instanceof CachingError) {
+                    return // need to wait for more elements
+                } else {
+                    // don't know what to do with this
+                    throw e
+                }
             }
-            this.pathWidths.push(
-                math.safeNumber(
-                    this.widthFormula.computeWithStatus(
-                        this.statusOf.widthFormula,
-                        input
-                    ) ?? 1
-                )
-            )
-            if (this.statusOf.widthFormula.invalid()) return
-            const clr =
-                this.colorFormula.computeWithStatus(
-                    this.statusOf.colorFormula,
-                    input
-                ) ?? 0
-            if (this.statusOf.colorFormula.invalid()) return
+            this.bearing += turnAngle
+            position.x += Math.cos(this.bearing) * stepLength
+            position.y += Math.sin(this.bearing) * stepLength
             if (typeof clr === 'string') {
                 this.pathColors.push(this.sketch.color(clr))
             } else if (math.isChroma(clr)) {

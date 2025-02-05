@@ -13,8 +13,8 @@ import type {
     VisualizerInterface,
 } from './VisualizerInterface'
 
-import {CachingError} from '@/sequences/Cached'
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import {CachingError} from '@/shared/math'
 import {Paramable} from '@/shared/Paramable'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 

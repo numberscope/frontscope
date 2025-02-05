@@ -100,6 +100,19 @@ export type {MathType, MathNode, SymbolNode} from 'mathjs'
 type Integer = number | bigint
 type MathTypeTemp = MathType | bigint // REMOVE after mathjs update
 
+/**
+ *
+ * @class CachingError
+ * extends the built-in Error class to indicate that a cache is trying
+ * to be accessed while it is being filled, or other caching impropriety.
+ */
+export class CachingError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'CachingError' // (2)
+    }
+}
+
 // eslint-disable-next-line no-loss-of-precision
 export type TposInfinity = 1e999 // since that's above range for number,
 // it becomes the type for IEEE Infinity ("official" hack to make this type,
@@ -123,7 +136,7 @@ type ExtendedMathJs = MathJsInstance & {
     bigmin(...args: Integer[]): ExtendedBigint
     chroma: typeof chroma
     rainbow(a: Integer): Chroma
-    isChroma(a: MathType | Chroma): a is Chroma
+    isChroma(a: unknown): a is Chroma
     add: MathJsInstance['add'] & ((c: Chroma, d: Chroma) => Chroma)
     multiply: MathJsInstance['multiply'] &
         ((s: number, c: Chroma) => Chroma) &
@@ -345,7 +358,8 @@ math.bigmin = (...args: Integer[]): ExtendedBigint => {
 }
 
 /* Helper for outputting scopes: */
-type ScopeType = Record<string, MathType | Record<string, number>>
+type ScopeValue = MathType | Record<string, number> | ((x: never) => MathType)
+type ScopeType = Record<string, ScopeValue>
 function scopeToString(scope: ScopeType) {
     return Object.entries(scope)
         .map(([variable, value]) => `${variable}=${math.format(value)}`)
@@ -358,7 +372,7 @@ const mathMark = 'mathjs: '
  */
 export class MathFormula {
     evaluator: EvalFunction
-    inputs: readonly string[]
+    symbols: readonly string[]
     source: string
     canonical: string
     latex: string
@@ -371,7 +385,7 @@ export class MathFormula {
             'chroma("$1")'
         )
     }
-    constructor(fmla: string, inputs?: readonly string[]) {
+    constructor(fmla: string, symbols?: readonly string[]) {
         // Preprocess formula to interpret "bare" color constants #hhhhhh
         const prefmla = MathFormula.preprocess(fmla)
         const parsetree = math.parse(prefmla)
@@ -383,11 +397,10 @@ export class MathFormula {
                     && path !== 'fn'
             )
             .map(node => (node as SymbolNode).name)
-        if (inputs) {
-            this.inputs = inputs
-        } else {
-            // inputs default to all free variables
-            this.inputs = this.freevars
+        if (symbols) this.symbols = symbols
+        else {
+            // symbols default to all free variables
+            this.symbols = this.freevars
         }
         this.source = fmla
         this.canonical = parsetree.toString({parenthesis: 'auto'})
@@ -398,33 +411,41 @@ export class MathFormula {
     /**
      * The recommended way to obtain the value of a mathjs formula object:
      * Call it with a ValidationStatus object, and either the values for
-     * the input variables (if any) as additional arguments, or a single
-     * plain object with keys the input variable names and values their
-     * values to be used in computing the formula.
+     * the allowed symbols (if any) as additional arguments, or a single
+     * plain object with keys the symbol names and values their values to
+     * be used in computing the formula.
      * It checks for errors in the computation and if any occur, adds
      * warnings to the provided status object.
      * @param {ValidationStatus} status  The object to report warnings to
-     * @param {object | MathType, MathType, ...} the inputs to the formula
+     * @param {object | MathType, MathType, ...}
+     *     the symbol meanings for computing the formula
      * @returns {MathType} the result of evaluating the formula
      */
     computeWithStatus(
         status: ValidationStatus,
-        a: number | Record<string, number>,
+        a: number | ScopeType,
         ...rst: number[]
     ) {
         let scope: ScopeType = {}
-        if (typeof a === 'object' && this.inputs.every(i => i in a)) {
-            scope = a
+        if (typeof a === 'object') {
+            if (this.symbols.every(i => i in a)) scope = a
+            else
+                throw new TypeError(
+                    `symbol definitions missing to compute '${this.source}'`
+                )
         } else {
-            scope = {[this.inputs[0]]: a}
+            scope = {[this.symbols[0]]: a}
             for (let ix = 0; ix < rst.length; ++ix) {
-                scope[this.inputs[ix + 1]] = rst[ix]
+                scope[this.symbols[ix + 1]] = rst[ix]
             }
         }
         let result: MathType = 0
         try {
             result = this.evaluator.evaluate(scope)
         } catch (err: unknown) {
+            // re-throw caching errors so the infrastructure can deal with
+            // them
+            if (err instanceof CachingError) throw err
             let nWarns = status.warnings.reduce(
                 (k, warning) => k + (warning.startsWith(mathMark) ? 1 : 0),
                 0
@@ -466,12 +487,12 @@ export class MathFormula {
      * argument and does no error checking.
      */
     compute(a: number | Record<string, number>, ...rst: number[]) {
-        if (typeof a === 'object' && this.inputs.every(i => i in a)) {
+        if (typeof a === 'object' && this.symbols.every(i => i in a)) {
             return this.evaluator.evaluate(a)
         }
-        const scope = {[this.inputs[0]]: a}
+        const scope = {[this.symbols[0]]: a}
         for (let ix = 0; ix < rst.length; ++ix) {
-            scope[this.inputs[ix + 1]] = rst[ix]
+            scope[this.symbols[ix + 1]] = rst[ix]
         }
         return this.evaluator.evaluate(scope)
     }

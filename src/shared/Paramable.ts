@@ -196,13 +196,14 @@ export interface ParamInterface<PT extends ParamType> {
 <!-- -->
     **/
     /** md */
-    inputs?: readonly string[]
+    symbols?: readonly string[]
     /* **/
     /** md
 :   If the `type` property is `ParamType.FORMULA`, this property gives the
-    list of free variables that are allowed to occur in the formula. The
-    entity using the resulting MathFormula will have to supply the values
-    of those variables when it calls `computeWithStatus()` on the MathFormula.
+    list of predefined symbols (variables and function symbols) that are
+    allowed to occur in the formula. The entity using the resulting
+    MathFormula will have to supply the values of those symbols when it
+    calls `computeWithStatus()` on the MathFormula.
 <!-- -->
     **/
     /** md */

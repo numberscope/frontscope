@@ -228,16 +228,17 @@ export const typeFunctions: {
                 return
             }
 
-            const inputSymbols = this.inputs || ['n']
+            const knownSymbols = this.symbols || ['n']
             let unknownFunction = ''
             const othersymbs = parsetree.filter((node, path) => {
                 if (math.isSymbolNode(node)) {
                     if (node.name in math) return false
+                    if (knownSymbols.includes(node.name)) return false
                     if (path === 'fn') {
                         unknownFunction = node.name
                         return false
                     }
-                    return !inputSymbols.includes(node.name)
+                    return true
                 }
                 return false
             })
@@ -245,7 +246,7 @@ export const typeFunctions: {
                 const firstNode = othersymbs[0]
                 const symb = math.isSymbolNode(firstNode) && firstNode.name
                 status.addError(
-                    `free variables limited to ${inputSymbols}; `
+                    `free variables limited to ${knownSymbols}; `
                         + `please remove '${symb}'`
                 )
             }
@@ -255,7 +256,7 @@ export const typeFunctions: {
             )
         },
         realize: function (value) {
-            return new MathFormula(value, this.inputs || ['n'])
+            return new MathFormula(value, this.symbols || ['n'])
         },
         derealize: function (value) {
             return value.source

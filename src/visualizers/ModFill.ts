@@ -84,7 +84,7 @@ If the function evaluates to a number less than 0, it will behave as 0; if it
             /* **/
         ),
         type: ParamType.FORMULA,
-        inputs: ['n', 'a', 'm'],
+        symbols: ['n', 'a', 'm'],
         displayName: 'Opacity',
         description:
             'The opacity of each new rectangle (rate at which cells'
@@ -120,7 +120,7 @@ _m_ (modulus).  Default:
             /* **/
         ),
         type: ParamType.FORMULA,
-        inputs: ['n', 'a', 'm'],
+        symbols: ['n', 'a', 'm'],
         displayName: 'Highlighting',
         description:
             "A function in 'n' (index), 'a' (entry) "
@@ -163,7 +163,7 @@ Opacity as described above will be used.
     alphaHigh: {
         default: new MathFormula(''),
         type: ParamType.FORMULA,
-        inputs: ['n', 'a', 'm'],
+        symbols: ['n', 'a', 'm'],
         displayName: 'Highlight opacity',
         description:
             'The opacity of each new rectangle (rate at which cells'
