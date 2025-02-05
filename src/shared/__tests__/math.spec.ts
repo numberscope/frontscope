@@ -220,6 +220,9 @@ describe('colors', () => {
         // make sure g is not modified
         expect(g.gl()).toStrictEqual([0, 1, 0, 1])
     })
+    it('provides a rainbow function', () => {
+        expect(math.rainbow(45).hex()).toStrictEqual('#ed2400')
+    })
     it('takes linear combinations in expressions', () => {
         expect(
             math.evaluate('chroma("blue") + 0.5*chroma("yellow")')

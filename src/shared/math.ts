@@ -83,7 +83,13 @@ const anotherNegInf = math.bigmin(5n, math.negInfinity, -3)
 import isqrt from 'bigint-isqrt'
 import {modPow} from 'bigint-mod-arith'
 import {all, create, factory} from 'mathjs'
-import type {EvalFunction, MathJsInstance, MathType, SymbolNode} from 'mathjs'
+import type {
+    EvalFunction,
+    MathJsInstance,
+    MathType,
+    MathScalarType,
+    SymbolNode,
+} from 'mathjs'
 import temml from 'temml'
 
 import type {ValidationStatus} from './ValidationStatus'
@@ -116,6 +122,7 @@ type ExtendedMathJs = MathJsInstance & {
     bigmax(...args: Integer[]): ExtendedBigint
     bigmin(...args: Integer[]): ExtendedBigint
     chroma: typeof chroma
+    rainbow(a: Integer): Chroma
     isChroma(a: MathType | Chroma): a is Chroma
     add: MathJsInstance['add'] & ((c: Chroma, d: Chroma) => Chroma)
     multiply: MathJsInstance['multiply'] &
@@ -138,6 +145,11 @@ math.typed.addType({
 
 const colorStuff: Record<string, unknown> = {
     chroma,
+    rainbow: (h: MathScalarType | bigint) => {
+        if (typeof h === 'bigint') h = Number(h % 360n)
+        else if (math.isComplex(h)) h = (math.arg(h) * 180) / math.pi
+        return chroma.oklch(0.6, 0.25, math.number(h) % 360)
+    },
     add: math.typed('add', {'Chroma, Chroma': (c, d) => overlay(c, d)}),
     isChroma: (c: unknown) =>
         typeof c === 'object' && c && c.constructor === chromaConstructor,
