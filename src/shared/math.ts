@@ -25,8 +25,8 @@ Note that currently all of the numerical extension functions described below
 accept either `number` or `bigint` inputs for all arguments and convert them
 to bigints as needed.
 
-[TODO: Either document color extensions here, or link to where they are
-documented!!]
+In addition, math formulas may create and manipulate colors using
+[Chroma](./Chroma.md) objects and functions.
 
 ### Example usage
 ```ts
@@ -93,7 +93,7 @@ import type {
 import temml from 'temml'
 
 import type {ValidationStatus} from './ValidationStatus'
-import {chroma, overlay} from './Chroma'
+import {chroma, isChroma, dilute, overlay, rainbow} from './Chroma'
 import type {Chroma} from './Chroma'
 
 export type {MathType, MathNode, SymbolNode} from 'mathjs'
@@ -121,7 +121,7 @@ export type TposInfinity = 1e999 // since that's above range for number,
 export type TnegInfinity = -1e999 // similarly
 export type ExtendedBigint = bigint | TposInfinity | TnegInfinity
 
-type ExtendedMathJs = MathJsInstance & {
+type ExtendedMathJs = Omit<MathJsInstance, 'hasNumericValue'> & {
     negInfinity: TnegInfinity
     posInfinity: TposInfinity
     safeNumber(n: MathTypeTemp): number
@@ -138,6 +138,7 @@ type ExtendedMathJs = MathJsInstance & {
     rainbow(a: Integer): Chroma
     isChroma(a: unknown): a is Chroma
     add: MathJsInstance['add'] & ((c: Chroma, d: Chroma) => Chroma)
+    hasNumericValue(x: unknown): x is MathScalarType
     multiply: MathJsInstance['multiply'] &
         ((s: number, c: Chroma) => Chroma) &
         ((c: Chroma, s: number) => Chroma)
@@ -145,30 +146,27 @@ type ExtendedMathJs = MathJsInstance & {
 
 export const math = create(all, {matrix: 'Array'}) as ExtendedMathJs
 
-const dummy = chroma('white')
-const chromaConstructor = dummy.constructor
-
 /** Add colors to mathjs **/
 // @ts-expect-error: not in mathjs type declarations
 math.typed.addType({
     name: 'Chroma',
-    test: (c: unknown) =>
-        typeof c === 'object' && c && c.constructor === chromaConstructor,
+    test: isChroma,
 })
 
 const colorStuff: Record<string, unknown> = {
     chroma,
     rainbow: (h: MathScalarType | bigint) => {
-        if (typeof h === 'bigint') h = Number(h % 360n)
-        else if (math.isComplex(h)) h = (math.arg(h) * 180) / math.pi
-        return chroma.oklch(0.6, 0.25, math.number(h) % 360)
+        if (math.isComplex(h)) h = (math.arg(h) * 180) / math.pi
+        else if (typeof h !== 'number' && typeof h !== 'bigint') {
+            h = math.number(h)
+        }
+        return rainbow(h)
     },
     add: math.typed('add', {'Chroma, Chroma': (c, d) => overlay(c, d)}),
-    isChroma: (c: unknown) =>
-        typeof c === 'object' && c && c.constructor === chromaConstructor,
+    isChroma,
     multiply: math.typed('multiply', {
-        'number, Chroma': (s, c) => chroma(c).alpha(s * c.alpha()),
-        'Chroma, number': (c, s) => chroma(c).alpha(s * c.alpha()),
+        'number, Chroma': (s, c) => dilute(c, s),
+        'Chroma, number': dilute,
     }),
     typeOf: math.typed('typeOf', {Chroma: () => 'Chroma'}),
 }
@@ -197,7 +195,7 @@ const minSafeNumber = BigInt(Number.MIN_SAFE_INTEGER)
 Returns the `number` mathematically equal to _n_ if there is one, or
 throws an error otherwise.
 **/
-math.safeNumber = (n: MathTypeTemp): number => {
+math.safeNumber = (n: MathTypeTemp): number  => {
     if (typeof n === 'bigint' || typeof n === 'number') {
         if (n < minSafeNumber || n > maxSafeNumber) {
             throw new RangeError(
@@ -206,19 +204,21 @@ math.safeNumber = (n: MathTypeTemp): number => {
         }
         return Number(n)
     }
-    const mathjsType = math.typeOf(n)
-    if (mathjsType === 'Fraction' || mathjsType === 'BigNumber') {
+    if (math.isFraction(n) || math.isBigNumber(n)) {
         if (
             math.smaller(n, Number.MIN_SAFE_INTEGER)
             || math.larger(n, Number.MAX_SAFE_INTEGER)
         ) {
             throw new RangeError(
-                `Attempt to use ${mathjsType} ${n} as a number`
+                `Attempt to use ${math.typeOf(n)} ${n} as a number`
             )
         }
     }
-    //@ts-expect-error numeric not in .d.ts, mathjs update will fix
-    return math.numeric(n, 'number')
+    if (math.isComplex(n)) {
+        throw new RangeError(`Attempt to use Complex ${n} as a number`)
+    }
+    if (math.hasNumericValue(n)) return math.number(n)
+    throw new RangeError(`Attempt to use non-numeric ${n} as a number`)
 }
 
 /** md

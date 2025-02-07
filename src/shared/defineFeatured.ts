@@ -107,9 +107,33 @@ const featuredSIMs = [
         'Beatty DNA',
         'Turtle',
         'OEIS A001951',
-        '&domain=0+1+2&turns=79+0+45&steps=2.5+1.5+3'
+        'domain=0+1+2&turns=79+0+45&steps=2.5+1.5+3'
             + '&speed=10&bgColor=6c162b&strokeColor=%23be9b9b',
-        '&modulus=3'
+        'modulus=3'
+    ),
+    specimenQuery(
+        'Vertigo of Divergence',
+        'Turtle',
+        'Formula',
+        'speed=10&ruleMode=1&turnFormula=a^1.0012&stepFormula=10'
+            + '&colorFormula=rainbow(a)',
+        'last=9999&length=10000'
+    ),
+    specimenQuery(
+        'Convergence of First Riemann Zero',
+        'Turtle',
+        'Formula',
+        'speed=10&ruleMode=1&turnFormula=log(n)*14.13472514173469*360%2Ftau'
+            + '&stepFormula=200%2Fsqrt(n)&colorFormula=rainbow(a)',
+        'first=10'
+    ),
+    specimenQuery(
+        'PEMDASymmetry',
+        'Turtle',
+        'Formula',
+        'bgColor=22274e&speed=10&ruleMode=1&turnFormula=30%2B15a'
+            + '&stepFormula=4&colorFormula=rainbow(abs(y-160))',
+        'formula=(n%2F10)^2+-+n%2F10^2&last=8191&length=8192'
     ),
 ]
 
