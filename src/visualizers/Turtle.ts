@@ -23,7 +23,7 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
 This visualizer interprets a sequence as instructions for a drawing machine,
 often known as a "turtle" after a simple drawing robot built in the 1960s.
 For some domain of possible values, each entry in the sequence determines
-a turn angle and step length.  The visualizer displays the resulting polygonal
+an angle and step length.  The visualizer displays the resulting polygonal
 path.
 
 There are two ways to animate the resulting path:
@@ -33,10 +33,10 @@ being drawn some number of steps per frame, as long as more terms of the
 sequence are available.
 
 2.  By setting non-zero values for the fold and stretch parameters in the
-animation section, the user can set the turn angles and/or step lengths to
-gradually increase or decrease over time, resulting in a visual effect
-reminiscent of protein folding. In this mode, the same fixed number of steps
-of the path are re-drawn in every frame.
+animation section, the user can set the angles and/or step lengths to
+gradually change over time, resulting in a visual effect reminiscent of
+protein folding. In this mode, the same fixed number of stepsvof the path
+are re-drawn in every frame.
 
 ## Parameters
 **/
@@ -44,6 +44,16 @@ of the path are re-drawn in every frame.
 enum RuleMode {
     List,
     Formula,
+}
+
+enum AngleMeaning {
+    Turn,
+    Bearing,
+}
+
+enum AngleUnit {
+    Degrees,
+    Radians,
 }
 
 const formulaSymbols = [
@@ -58,9 +68,8 @@ const formulaSymbols = [
     'x',
     'y',
 ] as const
-// make version with widened type for the sake of TypeScript's weird typing
-// of Array.includes() used way below:
-const formulaVars: readonly string[] = formulaSymbols
+// set version
+const formulaSymSet = new Set(formulaSymbols)
 
 const paramDesc = {
     /** md
@@ -114,14 +123,14 @@ then the turtle will move 20 pixels each time it sees a sequence entry of 0,
 10 pixels for each 1, and it won't draw anything when an entry is equal to 2
 (but it might turn).
 
-- Turn angle(s): Specifies (in degrees) how much the turtle should turn for
-each sequence entry in the domain. Positive values turn counterclockwise,
-and negative values clockwise.
+- Angle(s): Determines the bearing angle (in degrees) for the turtle before
+each step (corresponding to one sequence entry in the domain). Angles are
+measured so that positive angles run counterclockwise, and negative clockwise.
      **/
-    turns: {
+    angles: {
         default: [30, 45, 60],
         type: ParamType.NUMBER_ARRAY,
-        displayName: 'Turn angle(s)',
+        displayName: 'Angle(s)',
         required: true,
         description:
             'An angle (in degrees) or a list of angles, in order '
@@ -130,6 +139,24 @@ and negative values clockwise.
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.List,
         level: 0,
+    },
+    /** md
+- Angle is...: specifies whether the angle for each step is taken directly as
+  the new bearing of the turtle (counterclockwise from moving horizontally
+  to the right), or as a turn (counterclockwise change in bearing) from its
+  previous bearing. In either case, the turtle takes on its new bearing
+  _before_ taking its next step.
+    **/
+    angleMeaning: {
+        default: AngleMeaning.Turn,
+        type: ParamType.ENUM,
+        from: AngleMeaning,
+        displayName: 'Angle is...',
+        description:
+            "'Bearing' means that the angle directly gives the turtle's "
+            + "new direction; 'Turn' means the turtle turns that amount ccw.",
+        required: true,
+        level: 1,
     },
     /** md
 - Step length(s): Specifies (in pixels) how far the turtle should move (and
@@ -162,14 +189,14 @@ negative values (for moving backward) are allowed.
         level: 0,
     },
     /** md
-- Fold rate(s): Specifies (in units of 0.00001 degree) how each turn angle
+- Fold rate(s): Specifies (in units of 0.00001 degree) how each angle
 changes from one frame to the next. For example, if there is just one entry
-of "5" here, then in each frame of the animation, the turn angle for every
+of "5" here, then in each frame of the animation, the angle for every
 element of the domain will increase by 0.00005 degree. Similarly, if the
-domain is "0 1" and this list is "200 -100" then in each frame the turn angle
-for 0 entries will increase by 0.002 degrees, and the turn angle for 1 entries
+domain is "0 1" and this list is "200 -100" then in each frame the angle
+for 0 entries will increase by 0.002 degrees, and the angle for 1 entries
 will decrease by 0.001 degree. These increments might seem small, but with
-so many turns in a turtle path, a little goes a long way.
+so many steps in a turtle path, a little goes a long way.
      **/
     folds: {
         default: [0],
@@ -180,8 +207,9 @@ so many turns in a turtle path, a little goes a long way.
             'An angle increment (in units of 0.00001 degree), or list of '
             + 'angle increments in order corresponding to the sequence '
             + 'values listed in Domain. If any are nonzero, the path will '
-            + 'animate, adding the increment(s) to the turn angle(s) before '
-            + 'each frame; these additions accumulate from frame to frame. '
+            + 'animate, adding the increment(s) to the angle(s) in the list '
+            + 'above before each frame; these additions accumulate from '
+            + 'frame to frame. '
             + 'Produces a visual effect akin to protein folding.',
         hideDescription: false,
         visibleDependency: 'animationControls',
@@ -291,7 +319,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
   are used when the Rule mode is "Formula". (Note that Background color
   and Turtle speed are used in either case.) Broadly, in Formula mode,
   you can enter expressions that calculate the different aspects of each
-  segment of the turtle's path (turn angle, length, color, etc.) directly
+  segment of the turtle's path (angle, step length, color, etc.) directly
   from the sequence entries. In each of these formulas, you may use the
   following variables, the values of which will be filled in for you:
 
@@ -314,9 +342,14 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
   animating the shape of the path.
 
   `b` The current bearing of the turtle, in degrees counterclockwise from its
-  initial bearing.
+  initial bearing. Note this value represents the bearing _before_ the
+  new one when the angle formula is being computed, and the resulting new
+  bearing when all of the other formulas are being computed. For example,
+  if you compute the color of the stroke using the `b` variable, it will
+  correctly base the color on the bearing of that stroke (not on the previous
+  one).
 
-  `x` The current x-coordinate of the turtle.
+  `x` The current x-coordinate of the turtle (before the upcoming step).
 
   `y` The current y-coordinate of the turtle.
 
@@ -357,24 +390,40 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         },
     },
     /** md
-- Turn formula: an expression to compute the turn angle in degrees for a
-  given step of the turtle's path.
+- Angle formula: an expression to compute the angle for a given step of the
+  turtle's path. Just as in list mode, the Angle is... parameter
+  above specifies whether the value of this expression is taken directly as
+  the new Bearing of the turtle, or whether the turtle makes a
+  (counterclockwise) Turn by this angle before taking its next step.
     **/
-    turnFormula: {
+    angleFormula: {
         default: new MathFormula(
             '0 <= a < 3 ? 30+15a : undefined',
             formulaSymbols
         ),
         type: ParamType.FORMULA,
         symbols: formulaSymbols,
-        displayName: 'Turn formula',
-        description:
-            'Computes how many degrees to turn counterclockwise '
-            + 'before each turtle step',
+        displayName: 'Angle formula',
+        description: 'Computes the angle for the turtle at each step',
         required: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.Formula,
         level: 0,
+    },
+    /** md
+- Angle measure: whether the result of the Angle formula should be interpreted
+  in degrees or radians. Note that the selection also gives the units in
+  which the value of the `b` (bearing) variable  that can be used in formulas
+  will be determined.
+    **/
+    angleMeasure: {
+        default: AngleUnit.Degrees,
+        type: ParamType.ENUM,
+        from: AngleUnit,
+        displayName: 'Angle measure',
+        required: true,
+        visibleDependency: 'ruleMode',
+        visibleValue: RuleMode.Formula,
     },
     /** md
 - Step formula: an expression to compute the pixel length of each step of the
@@ -451,15 +500,15 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
 } satisfies GenericParamDescription
 
 const formulaParamNames = [
-    'turnFormula',
+    'angleFormula',
     'stepFormula',
     'widthFormula',
     'colorFormula',
 ] as const
 const ruleParams = {
-    turns: 'turnFormula',
+    angles: 'angleFormula',
     steps: 'stepFormula',
-    folds: 'turnFormula',
+    folds: 'angleFormula',
     stretches: 'stepFormula',
     widths: 'widthFormula',
     strokeColor: 'colorFormula',
@@ -494,11 +543,10 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     private vertices = markRaw([new p5.Vector()]) // nodes of path
     private pathWidths = markRaw([1])
     private pathLengths = markRaw([0])
-    private pathTurns = markRaw([0])
-    private pathBearings = markRaw([0])
+    private pathBearings = markRaw([math.evaluate('0')])
     private pathColors = markRaw([INVALID_COLOR])
     private chunks: p5.Geometry[] = markRaw([]) // "frozen" chunks of path
-    private bearing = 0 // bearing at tip of path
+    private bearing = this.pathBearings[0] // bearing at tip of path
     private cursor = 0 // vertices up to this one have already been drawn
 
     // variables holding the parameter values
@@ -525,7 +573,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         const status = super.checkParameters(params)
 
         // lengths of rulesets should match length of domain
-        let rule: RuleParam = 'turns'
+        let rule: RuleParam = 'angles'
         for (rule in ruleParams) {
             const ruleList: (string | number)[] = params[rule]
             const entries = ruleList.length
@@ -549,7 +597,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             || params.stretches.some(value => value !== 0)
         if (params.ruleMode === RuleMode.Formula) {
             animating = formulaParamNames.some(name =>
-                params[name].freevars.includes('f')
+                params[name].freevars.has('f')
             )
         }
         // warn when animation is turned on for long paths
@@ -639,10 +687,17 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 const fmlaName = ruleParams[name]
                 const oldFmla = this[fmlaName].source
                 const newFmla = this.convertTable(fmlaName)
-                if (newFmla.freevars.every(v => formulaVars.includes(v))) {
+                if (newFmla.freevars.isSubsetOf(formulaSymSet)) {
                     recomputed = true
                     this[fmlaName] = newFmla
                     if (newFmla.source !== oldFmla) names.add(fmlaName)
+                    if (
+                        fmlaName === 'angleFormula'
+                        && this.angleMeasure !== AngleUnit.Degrees
+                    ) {
+                        this.angleMeasure = AngleUnit.Degrees
+                        names.add('angleMeasure')
+                    }
                 }
             }
             if (recomputed) this.refreshParams()
@@ -655,7 +710,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
         // reset variables
         this.animating = formulaParamNames.some(fmla =>
-            this[fmla].freevars.includes('f')
+            this[fmla].freevars.has('f')
         )
         this.firstIndex = this.seq.first
         this.maxLength = this.animating
@@ -676,11 +731,10 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         this.vertices = markRaw([new p5.Vector()]) // nodes of path
         this.pathWidths = markRaw([1])
         this.pathLengths = markRaw([0])
-        this.pathTurns = markRaw([0])
-        this.pathBearings = markRaw([0])
+        this.pathBearings = markRaw([math.evaluate('0')])
         this.pathColors = markRaw([INVALID_COLOR])
         this.chunks = markRaw([])
-        this.bearing = 0
+        this.bearing = this.pathBearings[0]
         this.redraw()
     }
 
@@ -699,12 +753,15 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             const pos = this.vertices[i]
             const width = this.pathWidths[i]
             const length = this.pathLengths[i]
+            let radBearing = math.safeNumber(this.pathBearings[i])
+            if (this.angleMeasure === AngleUnit.Degrees) {
+                radBearing *= Math.PI
+                radBearing /= 180
+            }
             if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
                 sketch.fill(this.pathColors[i])
                 sketch.push()
-                sketch
-                    .translate(lastPos.x, lastPos.y)
-                    .rotateZ(this.pathBearings[i])
+                sketch.translate(lastPos.x, lastPos.y).rotateZ(radBearing)
                 if (Math.abs(length) > width / 3) {
                     sketch.rect(0, -width / 2, length - width / 3, width)
                     sketch.circle(length - width / 3, 0, width)
@@ -801,24 +858,25 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 m: Number(this.seq.first),
                 M: Number(this.seq.last),
                 f: currentFrames,
-                b: (this.bearing * 180) / Math.PI,
+                b: this.bearing,
                 x: position.x,
                 y: position.y,
                 A: (n: number | bigint) =>
                     Number(this.seq.getElement(BigInt(n))),
             }
-            let turnAngle = 0
             let stepLength = 0
             let clr: unknown = null
             try {
-                const rawTurnAngle = this.turnFormula.computeWithStatus(
-                    this.statusOf.turnFormula,
+                const angle = this.angleFormula.computeWithStatus(
+                    this.statusOf.angleFormula,
                     input
                 )
-                if (this.statusOf.turnFormula.invalid()) return
-                if (rawTurnAngle !== undefined) {
-                    turnAngle =
-                        (math.safeNumber(rawTurnAngle) * Math.PI) / 180
+                if (this.statusOf.angleFormula.invalid()) return
+                if (angle !== undefined) {
+                    if (this.angleMeaning === AngleMeaning.Bearing)
+                        this.bearing = angle
+                    else this.bearing = math.add(this.bearing, angle)
+                    input.b = this.bearing
                     stepLength = math.safeNumber(
                         this.stepFormula.computeWithStatus(
                             this.statusOf.stepFormula,
@@ -851,16 +909,19 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                     throw e
                 }
             }
-            this.bearing += turnAngle
-            position.x += Math.cos(this.bearing) * stepLength
-            position.y += Math.sin(this.bearing) * stepLength
+            let radBearing = math.safeNumber(this.bearing)
+            if (this.angleMeasure === AngleUnit.Degrees) {
+                radBearing *= Math.PI
+                radBearing /= 180
+            }
+            position.x += Math.cos(radBearing) * stepLength
+            position.y += Math.sin(radBearing) * stepLength
             if (typeof clr === 'string') {
                 this.pathColors.push(this.sketch.color(clr))
             } else if (math.isChroma(clr)) {
                 this.pathColors.push(this.sketch.color(clr.hex()))
             } else this.pathColors.push(this.sketch.color('white'))
             this.pathLengths.push(stepLength)
-            this.pathTurns.push(turnAngle)
             this.pathBearings.push(this.bearing)
             this.vertices.push(position.copy())
         }

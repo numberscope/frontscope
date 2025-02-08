@@ -268,8 +268,8 @@ class ModFill extends P5Visualizer(paramDesc) {
 
         // because safeNumber can fail, we conly want to try it
         // if we need it in the formula
-        if (vars.includes('n')) useNum = this.trySafeNumber(num)
-        if (vars.includes('a')) useValue = this.trySafeNumber(value)
+        if (vars.has('n')) useNum = this.trySafeNumber(num)
+        if (vars.has('a')) useValue = this.trySafeNumber(value)
         let x = 0
         for (let mod = 1; mod <= this.useMod; mod++) {
             // needs to take BigInt when implemented
@@ -296,8 +296,8 @@ class ModFill extends P5Visualizer(paramDesc) {
                     alphaVars = this.alphaHigh.freevars
                 }
             }
-            if (alphaVars.includes('n')) useNum = this.trySafeNumber(num)
-            if (alphaVars.includes('a')) useValue = this.trySafeNumber(value)
+            if (alphaVars.has('n')) useNum = this.trySafeNumber(num)
+            if (alphaVars.has('a')) useValue = this.trySafeNumber(value)
             const alphaValue = alphaFormula.computeWithStatus(
                 alphaStatus,
                 useNum,

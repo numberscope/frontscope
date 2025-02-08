@@ -88,7 +88,7 @@ import type {
     MathJsInstance,
     MathType,
     MathScalarType,
-    SymbolNode,
+    Unit,
 } from 'mathjs'
 import temml from 'temml'
 
@@ -142,6 +142,7 @@ type ExtendedMathJs = Omit<MathJsInstance, 'hasNumericValue'> & {
     multiply: MathJsInstance['multiply'] &
         ((s: number, c: Chroma) => Chroma) &
         ((c: Chroma, s: number) => Chroma)
+    Unit: Unit & {BASE_UNITS: {ANGLE: Unit}; UNITS: Record<string, Unit>}
 }
 
 export const math = create(all, {matrix: 'Array'}) as ExtendedMathJs
@@ -195,7 +196,7 @@ const minSafeNumber = BigInt(Number.MIN_SAFE_INTEGER)
 Returns the `number` mathematically equal to _n_ if there is one, or
 throws an error otherwise.
 **/
-math.safeNumber = (n: MathTypeTemp): number  => {
+math.safeNumber = (n: MathTypeTemp): number => {
     if (typeof n === 'bigint' || typeof n === 'number') {
         if (n < minSafeNumber || n > maxSafeNumber) {
             throw new RangeError(
@@ -365,6 +366,12 @@ function scopeToString(scope: ScopeType) {
         .map(([variable, value]) => `${variable}=${math.format(value)}`)
         .join(', ')
 }
+const angleDimension = math.Unit.BASE_UNITS.ANGLE.dimensions.findIndex(d => d)
+const angleUnits = new Set(
+    Object.keys(math.Unit.UNITS).filter(
+        u => math.Unit.UNITS[u].dimensions[angleDimension]
+    )
+)
 const maxWarns = 3
 const mathMark = 'mathjs: '
 /**
@@ -377,7 +384,8 @@ export class MathFormula {
     canonical: string
     latex: string
     mathml: string
-    freevars: string[]
+    freevars = new Set<string>()
+    freefuncs = new Set<string>()
     static preprocess(fmla: string) {
         // Interpret "bare" color constants #hhhhhh
         return fmla.replaceAll(
@@ -389,18 +397,19 @@ export class MathFormula {
         // Preprocess formula to interpret "bare" color constants #hhhhhh
         const prefmla = MathFormula.preprocess(fmla)
         const parsetree = math.parse(prefmla)
-        this.freevars = parsetree
-            .filter(
-                (node, path) =>
-                    math.isSymbolNode(node)
-                    && !(node.name in math)
-                    && path !== 'fn'
-            )
-            .map(node => (node as SymbolNode).name)
+        parsetree.traverse((node, path) => {
+            if (
+                math.isSymbolNode(node)
+                && !(node.name in math || angleUnits.has(node.name))
+            ) {
+                if (path === 'fn') this.freefuncs.add(node.name)
+                else this.freevars.add(node.name)
+            }
+        })
         if (symbols) this.symbols = symbols
         else {
             // symbols default to all free variables
-            this.symbols = this.freevars
+            this.symbols = Array.from(this.freevars)
         }
         this.source = fmla
         this.canonical = parsetree.toString({parenthesis: 'auto'})

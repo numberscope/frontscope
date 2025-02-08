@@ -1,7 +1,7 @@
 import p5 from 'p5'
 
 import {math, MathFormula} from './math'
-import type {ExtendedBigint, MathNode} from './math'
+import type {ExtendedBigint} from './math'
 import type {ParamInterface} from './Paramable'
 import {ValidationStatus} from './ValidationStatus'
 
@@ -217,9 +217,10 @@ export const typeFunctions: {
                 status.addError(`empty formula not allowed`)
                 return
             }
-            let parsetree: MathNode | undefined = undefined
+            const inputSymbols = this.symbols || ['n']
+            let fmla: MathFormula | undefined = undefined
             try {
-                parsetree = math.parse(MathFormula.preprocess(value))
+                fmla = new MathFormula(value, inputSymbols)
             } catch (err: unknown) {
                 status.addError(
                     `could not parse formula: ${value}`,
@@ -227,32 +228,15 @@ export const typeFunctions: {
                 )
                 return
             }
-
-            const knownSymbols = this.symbols || ['n']
-            let unknownFunction = ''
-            const othersymbs = parsetree.filter((node, path) => {
-                if (math.isSymbolNode(node)) {
-                    if (node.name in math) return false
-                    if (knownSymbols.includes(node.name)) return false
-                    if (path === 'fn') {
-                        unknownFunction = node.name
-                        return false
-                    }
-                    return true
-                }
-                return false
-            })
-            if (othersymbs.length > 0) {
-                const firstNode = othersymbs[0]
-                const symb = math.isSymbolNode(firstNode) && firstNode.name
-                status.addError(
-                    `free variables limited to ${knownSymbols}; `
-                        + `please remove '${symb}'`
-                )
-            }
+            const freeVars = fmla.freevars.difference(new Set(inputSymbols))
             status.forbid(
-                unknownFunction,
-                `unknown function '${unknownFunction}'`
+                freeVars.size,
+                `free variables limited to ${inputSymbols}; `
+                    + `please remove '${freeVars}'`
+            )
+            status.forbid(
+                fmla.freefuncs.size,
+                `unknown functions '${fmla.freefuncs}'`
             )
         },
         realize: function (value) {

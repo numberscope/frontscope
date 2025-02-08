@@ -7,7 +7,7 @@ const featuredSIMs = [
         'Thue Trellis',
         'Turtle',
         'OEIS A010060',
-        'domain=0+1&turns=15+-165&steps=2+3'
+        'domain=0+1&angles=15+-165&steps=2+3'
             + '&speed=10&bgColor=e0def7&strokeColor=%235e8d85'
     ),
     specimenQuery(
@@ -84,7 +84,7 @@ const featuredSIMs = [
         'Wait For It',
         'Turtle',
         'Formula',
-        'domain=-1+1&turns=30+120&steps=30+30&widths=2'
+        'domain=-1+1&angles=30+120&steps=30+30&widths=2'
             + '&bgColor=5d509f&strokeColor=%237a9f6f',
         'formula=sign%28sin%28n%2B1%29%29'
     ),
@@ -98,7 +98,7 @@ const featuredSIMs = [
         'VFib Snowflake',
         'Turtle',
         'OEIS A000045',
-        'domain=0+1&turns=8+120&steps=40+400'
+        'domain=0+1&angles=8+120&steps=40+400'
             + '&animationControls=true&folds=200+0'
             + '&bgColor=4f4875&strokeColor=%23cec0c0',
         'modulus=9&last=999&length=1000'
@@ -107,7 +107,7 @@ const featuredSIMs = [
         'Beatty DNA',
         'Turtle',
         'OEIS A001951',
-        'domain=0+1+2&turns=79+0+45&steps=2.5+1.5+3'
+        'domain=0+1+2&angles=79+0+45&steps=2.5+1.5+3'
             + '&speed=10&bgColor=6c162b&strokeColor=%23be9b9b',
         'modulus=3'
     ),
@@ -115,23 +115,24 @@ const featuredSIMs = [
         'Vertigo of Divergence',
         'Turtle',
         'Formula',
-        'speed=10&ruleMode=1&turnFormula=a^1.0012&stepFormula=10'
-            + '&colorFormula=rainbow(a)',
+        'speed=10&ruleMode=1&angleFormula=a^1.0012%2F128&angleMeasure=1'
+            + '&stepFormula=10&colorFormula=rainbow(a)',
         'last=9999&length=10000'
     ),
     specimenQuery(
-        'Convergence of First Riemann Zero',
+        'Zeta Zero #10143',
         'Turtle',
         'Formula',
-        'speed=10&ruleMode=1&turnFormula=log(n)*14.13472514173469*360%2Ftau'
-            + '&stepFormula=200%2Fsqrt(n)&colorFormula=rainbow(a)',
-        'first=10'
+        'angleMeaning=1&speed=10&ruleMode=1&angleFormula=log(n)*10000.06534'
+            + '&angleMeasure=1&stepFormula=200%2Fsqrt(n)'
+            + '&colorFormula=rainbow(number(2b rad, deg))',
+        'first=1&last=3183&length=3183'
     ),
     specimenQuery(
         'PEMDASymmetry',
         'Turtle',
         'Formula',
-        'bgColor=22274e&speed=10&ruleMode=1&turnFormula=30%2B15a'
+        'bgColor=22274e&speed=10&ruleMode=1&angleFormula=30%2B15a'
             + '&stepFormula=4&colorFormula=rainbow(abs(y-160))',
         'formula=(n%2F10)^2+-+n%2F10^2&last=8191&length=8192'
     ),
