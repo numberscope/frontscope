@@ -86,7 +86,7 @@ have a small domain.)
         default: [0n, 1n, 2n],
         type: ParamType.BIGINT_ARRAY,
         displayName: 'Domain',
-        required: true,
+        required: false,
         description:
             'Sequence values to interpret as rules; entries not '
             + 'matching any value here are skipped.',
@@ -131,7 +131,7 @@ measured so that positive angles run counterclockwise, and negative clockwise.
         default: [30, 45, 60],
         type: ParamType.NUMBER_ARRAY,
         displayName: 'Angle(s)',
-        required: true,
+        required: false,
         description:
             'An angle (in degrees) or a list of angles, in order '
             + 'corresponding to the sequence values listed in Domain.',
@@ -167,7 +167,7 @@ negative values (for moving backward) are allowed.
         default: [20],
         type: ParamType.NUMBER_ARRAY,
         displayName: 'Step length(s)',
-        required: true,
+        required: false,
         description:
             'A length (in pixels), or a list of lengths, in order '
             + 'corresponding to the sequence values listed in Domain.',
