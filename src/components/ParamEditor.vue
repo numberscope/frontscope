@@ -95,7 +95,12 @@
                 const visParams: typeof this.paramable.params = {}
                 Object.keys(this.paramable.params).forEach(key => {
                     const param = this.paramable.params[key]
-                    if (this.checkDependency(param)) visParams[key] = param
+                    if (
+                        this.paramable.statusOf[key].invalid()
+                        || this.checkDependency(param)
+                    ) {
+                        visParams[key] = param
+                    }
                 })
                 return visParams
             },
