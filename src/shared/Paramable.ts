@@ -499,15 +499,18 @@ export interface ParamableInterface {
     the computation of re-realizing the tentative values.
 <!-- --> **/
     /** xmd */
-    refreshParams(): void /* **/
+    refreshParams(which?: Set<string>): void /* **/
     /** xmd
 :   This method is the reverse of `assignParameters()`; it should copy the
-    string representations of all of the current internal values of the
-    parameters back into the `tentativeValues` property. The idea is that
+    string representations of the current internal values of the parameters
+    listed in _which_ back into the `tentativeValues` property. If _which_
+    is not specified, it copies all parameters back. The idea is that
     in its operation, the instance may need to modify one or more of its
     parameter values. If so, it should call the `refreshParams()` method
     afterwards so that the new authoritative values of the parameters can
-    have their representations in the UI updated accordingly.
+    have their representations in the UI updated accordingly. It will disrupt
+    the user interface the least if _which_ is supplied to include only
+    the parameters that were actually changed.
 <!-- --> **/
     /** xmd */
     readonly query: string /* **/
@@ -765,9 +768,10 @@ export class Paramable implements ParamableInterface {
         }
     }
 
-    refreshParams(): void {
+    refreshParams(which?: Set<string>): void {
+        if (!which) which = new Set(Object.keys(this.params))
         const me = this as unknown as ParamValues<GenericParamDescription>
-        for (const prop in this.params) {
+        for (const prop of which) {
             if (!hasField(this, prop)) continue
             const param = this.params[prop]
 

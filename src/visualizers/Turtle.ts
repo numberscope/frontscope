@@ -681,26 +681,29 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 // pretend every rule changed
                 for (const rule in ruleParams) names.add(rule)
             }
-            let recomputed = false
+            const freshFmlas = new Set<string>()
             for (const name of names) {
                 if (!checkRule(name)) continue
                 const fmlaName = ruleParams[name]
                 const oldFmla = this[fmlaName].source
                 const newFmla = this.convertTable(fmlaName)
                 if (newFmla.freevars.isSubsetOf(formulaSymSet)) {
-                    recomputed = true
                     this[fmlaName] = newFmla
-                    if (newFmla.source !== oldFmla) names.add(fmlaName)
+                    if (newFmla.source !== oldFmla) {
+                        names.add(fmlaName)
+                        freshFmlas.add(fmlaName)
+                    }
                     if (
                         fmlaName === 'angleFormula'
                         && this.angleMeasure !== AngleUnit.Degrees
                     ) {
                         this.angleMeasure = AngleUnit.Degrees
                         names.add('angleMeasure')
+                        freshFmlas.add('angleMeasure')
                     }
                 }
             }
-            if (recomputed) this.refreshParams()
+            if (freshFmlas.size) this.refreshParams(freshFmlas)
         }
         super.parametersChanged(names)
     }
