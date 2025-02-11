@@ -158,30 +158,38 @@
             togglePicker()
         }
     }
-    let firstClick = true
+    let pickerJustPopped = false
     function maybeTogglePicker(e: Event) {
         if (!isColorful) return
         const target = e.target as HTMLElement
         const index = target.dataset?.index
-        if (
-            index != null
-            && index !== ''
-            && ((props.param.type === ParamType.COLOR && !firstClick)
-                || target.style.boxShadow)
+        if ((props.param.type === ParamType.COLOR)) {
+            if (pickerJustPopped) pickerJustPopped = false
+            else togglePicker()
+        } else if (
+            index != null && index !== '' && target.style.boxShadow
         ) {
             togglePicker()
         }
-        firstClick = false
     }
     function togglePicker() {
         showPicker.value = !showPicker.value
         reconcilePicker(showPicker.value)
     }
+    let lastShowed = false
     function reconcilePicker(newShow: boolean) {
         if (newShow) {
-            document.addEventListener('keyup', pickerKeys)
+            if (!lastShowed) {
+                document.addEventListener('keyup', pickerKeys)
+                pickerJustPopped = true
+                lastShowed = true
+            } else if (pickerJustPopped) {
+                pickerJustPopped = false
+            }
         } else {
             document.removeEventListener('keyup', pickerKeys)
+            pickerJustPopped = false
+            lastShowed = false
             const newVal =
                 typeof colorValue.value === 'string'
                     ? colorValue.value
