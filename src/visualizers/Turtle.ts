@@ -376,9 +376,9 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
             const turtle = this instanceof Turtle ? this : null
             if (turtle === null) return
             const rule: RuleMode = parseInt(newRule)
-            if (rule === RuleMode.List)
+            if (rule === RuleMode.List) {
                 turtle.params.ruleMode.description = ''
-            else
+            } else {
                 turtle.params.ruleMode.description =
                     'The formulas below may use the following symbols: '
                     + '`a` - sequence entry, `n` - sequence index, '
@@ -387,6 +387,18 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
                     + '`A(...)` -- sequence entry at any index, '
                     + '`b` - current bearing, `x`,`y` - current position, '
                     + '`f` - frame number (triggers animation).'
+                // If there are any invalid rules, reset them to their
+                // default values:
+                const freshRules = new Set<string>()
+                let name: RuleParam = 'angles'
+                for (name in ruleParams) {
+                    if (turtle.statusOf[name].invalid()) {
+                        turtle.resetParam(name)
+                        freshRules.add(name)
+                    }
+                }
+                if (freshRules.size) turtle.refreshParams(freshRules)
+            }
         },
     },
     /** md

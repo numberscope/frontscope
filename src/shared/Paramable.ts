@@ -611,17 +611,27 @@ export class Paramable implements ParamableInterface {
             // Be a little paranoid: only include "own" properties:
             if (!hasField(params, prop)) continue
             const param = params[prop]
-            // Because of how function types are unioned, we have to circumvent
-            // typescript a little bit
-            if (param.required)
-                this.tentativeValues[prop] = typeFunctions[
-                    param.type
-                ].derealize.call(param, param.default as never)
-            // We assume the default value is valid
+            // We assume the initial state is valid
             this.statusOf[prop] = ValidationStatus.ok()
+            if (param.required) this.resetParam(prop)
+            // if not required, OK to leave this[prop] undefined initially
         }
         // We assume that the default values together make a valid object:
         this.validationStatus = ValidationStatus.ok()
+    }
+
+    // Set a parameter back to its default value
+    resetParam(prop: string) {
+        const param = this.params[prop]
+        const me = this as Record<string, unknown>
+        me[prop] = param.default
+        // Because of how function types are unioned, we have to circumvent
+        // typescript a little bit
+        this.tentativeValues[prop] = typeFunctions[param.type].derealize.call(
+            param,
+            param.default as never
+        )
+        this.statusOf[prop].reset()
     }
 
     get description() {
