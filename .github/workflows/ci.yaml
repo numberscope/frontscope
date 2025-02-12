@@ -17,7 +17,7 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: '22.13.1'
+                  node-version: '22.x'
             - name: Install dependencies
               run: npm install
             - name: Lint
@@ -27,15 +27,15 @@ jobs:
     test:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - name: Set up Python
               uses: actions/setup-python@v4
               with:
                   python-version: '3.x'
             - name: Set up Node.js
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
-                  node-version: '20.x'
+                  node-version: '22.x'
             - name: Install d2 document generator
               run: curl -fsSL https://d2lang.com/install.sh | sh -s --
             - name: Install dependencies
