@@ -17,7 +17,7 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v3
               with:
-                  node-version: '20.x'
+                  node-version: '22.x'
             - name: Install dependencies
               run: npm install
             - name: Lint
@@ -49,9 +49,9 @@ jobs:
             - name: End-to-end test
               run: npx playwright test -c e2e/playci.config.ts
 ### Uncomment when you need to re-extract snapshots
-#            - name: Extract snapshots
-#              if: always()
-#              uses: actions/upload-artifact@v4
-#              with:
-#                  name: ci_actual_snapshots
-#                  path: e2e/results/manual/output
+            - name: Extract snapshots
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ci_actual_snapshots
+                  path: e2e/results/manual/output

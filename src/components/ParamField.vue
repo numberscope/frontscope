@@ -163,12 +163,10 @@
         if (!isColorful) return
         const target = e.target as HTMLElement
         const index = target.dataset?.index
-        if ((props.param.type === ParamType.COLOR)) {
+        if (props.param.type === ParamType.COLOR) {
             if (pickerJustPopped) pickerJustPopped = false
             else togglePicker()
-        } else if (
-            index != null && index !== '' && target.style.boxShadow
-        ) {
+        } else if (index != null && index !== '' && target.style.boxShadow) {
             togglePicker()
         }
     }
