@@ -4,7 +4,7 @@ import {specimenQuery} from './specimenEncoding'
 
 const featuredSIMs = [
     specimenQuery(
-        'The Raucous Recaman',
+        'The Raucous Recama&#769;n',
         'Turtle',
         'OEIS A005132',
         'domain=0+1&steps=2+3&strokeColor=%235e8d85&bgColor=E5E0F6'
@@ -149,13 +149,14 @@ const featuredSIMs = [
         'Zeta Zero #10143',
         'Turtle',
         'Formula',
-        'angleMeaning=1&speed=10&ruleMode=1&angleFormula=log(n)*10000.06534'
+        'angleMeaning=1&speed=5&ruleMode=1&angleFormula=log(n)*10000.06534'
             + '&angleMeasure=1&stepFormula=200%2Fsqrt(n)'
             + '&bgColor=201E2D'
-            + '&colorFormula=chroma%28%28chroma.scale%28%5B%27%23fafa6e%27'
-            + '%2C+%27%232A4858%27%2C+%27%23fafa6e%27%5D%29.mode%28%27lch%27'
-            + '%29.colors%28360%29%29%5Bfloor%28number%282b+rad%2C+deg%29+'
-            + '%25+360%29%2B1%5D%29.alpha%280.2%2Bn%2F100%29',
+            + '&widthFormula=3'
+            + '&colorFormula=chroma%28%28chroma.scale%28%5B%27%23fafa6e'
+            + '%27%2C+%27%232A4858%27%2C+%27%23fafa6e%27%5D%29.mode%28%27lch%27'
+            + '%29.colors%28360%29%29%5Bfloor%28number%28b+rad%2C+deg%29+%25'
+            + '+360%29%2B1%5D%29.alpha%280.2%2Bn%2F1000%29',
         'first=1&last=3183&length=3183'
     ),
     specimenQuery(
@@ -192,11 +193,12 @@ const featuredSIMs = [
         'Turtle',
         'Formula',
         'bgColor=3A3A45&speed=10&ruleMode=1&angleFormula=a%5E1.0012%2F128'
-            + '&angleMeasure=1&stepFormula=13&colorFormula=%28chroma.scale%28'
-            + '%5B+%27%2301204e%27%2C%27%23f85525%27%5D%29.mode%28%27lch%27%29'
-            + '.colors%2860%29%29.concat%28chroma.scale%28%5B%27%23f85525%27'
-            + '%2C+%27%2301204e%27%5D%29.mode%28%27lch%27%29.colors%2860%29'
-            + '%29%5Bn%25120%2B1%5D',
+            + '&angleMeasure=1&stepFormula=13'
+            + '&widthFormula=3'
+            + '&colorFormula=%28chroma.scale%28%5B+%27%2301204e%27%2C%27'
+            + '%23f85525'
+            + '%27%2C+%27%2301204e%27%5D%29.mode%28%27lch%27%29.colors'
+            + '%28120%29%29%5Bn%25120%2B1%5D',
         'first=100&last=5099&length=5000'
     ),
     specimenQuery(
