@@ -7,7 +7,10 @@ import type {
 } from '@/sequences/SequenceInterface'
 import simpleFactor from '@/sequences/simpleFactor'
 import {math} from '@/shared/math'
-import type {GenericParamDescription} from '@/shared/Paramable'
+import type {
+    GenericParamDescription,
+    ParamInterface,
+} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 
 // NOTE: Grid visualizer is not currently working due to the new Paramable
@@ -21,9 +24,10 @@ import {ParamType} from '@/shared/ParamType'
 style="margin-left: 1em; margin-right: 1em"
 />](../assets/img/Grid/example-grid.png)
 
-This visualizer puts a sequence in a square spiral or in
-rows and allows you to highlight its values based on various
-properties.
+This visualizer places the entries of a sequence into a square grid along
+a specified path (a spiral or along rows, etc.) and allows you to highlight
+the cells of the grid based on various properties of the number placed into
+each cell.
 
 The inspiration for this visualizer is [Ulam's
 spiral](https://en.wikipedia.org/wiki/Ulam_spiral), which puts the
@@ -80,15 +84,17 @@ const RAINBOW = [
 ]
 
 const MAXIMUM_ALLOWED_PROPERTIES = 12
+// #IHateTypeScriptRedundancy
+type PropertyIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11
 
 enum Preset {
-    Custom,
     Primes,
     Abundant_Numbers,
     Abundant_Numbers_And_Primes,
     Polygonal_Numbers,
     Color_By_Last_Digit_1,
     Color_By_Last_Digit_2,
+    Custom,
 }
 type PresetName = Exclude<keyof typeof Preset, number>
 
@@ -127,7 +133,7 @@ enum Property {
     Abundant,
     Perfect,
     Deficient,
-    Semi_Prime,
+    Semiprime,
 }
 
 enum PropertyVisualization {
@@ -145,7 +151,7 @@ interface PropertyObject {
     property: Property
     visualization: PropertyVisualization
     color: string // should this be a typedef?
-    aux?: bigint // auxiliary parameter for the property, meaning varies
+    aux: bigint // auxiliary parameter for the property, meaning varies
 }
 
 const presetBackgrounds: {[key in PresetName]: string} = {
@@ -165,6 +171,7 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
             property: Property.Prime,
             visualization: PropertyVisualization.Fill_Cell,
             color: RED,
+            aux: 0n,
         },
     ],
     Abundant_Numbers: [
@@ -172,6 +179,7 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
             property: Property.Abundant,
             visualization: PropertyVisualization.Fill_Cell,
             color: BLACK,
+            aux: 0n,
         },
     ],
     Abundant_Numbers_And_Primes: [
@@ -179,11 +187,13 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
             property: Property.Prime,
             visualization: PropertyVisualization.Fill_Cell,
             color: RED,
+            aux: 0n,
         },
         {
             property: Property.Abundant,
             visualization: PropertyVisualization.Fill_Cell,
             color: BLACK,
+            aux: 0n,
         },
     ],
     Polygonal_Numbers: [
@@ -239,45 +249,6 @@ const presetProperties: {[key in PresetName]: PropertyObject[]} = {
         color: RAINBOW[index],
         aux: BigInt(index),
     })),
-}
-
-function getPropertyParams(index: number, prop: PropertyObject) {
-    return {
-        [`property${index}`]: {
-            value: prop.property,
-            type: ParamType.ENUM,
-            from: Property,
-            displayName: `Property ${index + 1}`,
-            required: false,
-            visibleDependency: index > 0 ? `property${index - 1}` : '',
-            visiblePredicate: (d: Property) => d !== Property.None,
-        },
-        [`prop${index}Vis`]: {
-            value: prop.visualization,
-            type: ParamType.ENUM,
-            from: PropertyVisualization,
-            displayName: 'Display',
-            required: false,
-            visibleDependency: `property${index}`,
-            visiblePredicate: (d: Property) => d !== Property.None,
-        },
-        [`prop${index}Color`]: {
-            value: prop.color,
-            type: ParamType.COLOR,
-            displayName: 'Color',
-            required: false,
-            visibleDependency: `property${index}`,
-            visiblePredicate: (d: Property) => d !== Property.None,
-        },
-        [`prop${index}Aux`]: {
-            value: prop.aux,
-            type: ParamType.BIGINT,
-            displayName: (d: Property) => propertyAuxName[Property[d]] || '',
-            required: false,
-            visibleDependency: `property${index}`,
-            visiblePredicate: (d: Property) => Property[d] in propertyAuxName,
-        },
-    }
 }
 
 /*
@@ -396,7 +367,7 @@ type PropertyName = Exclude<keyof typeof Property, number>
 const propertyOfFactorization = {
     Prime: true,
     Sum_Of_Two_Squares: true,
-    Semi_Prime: true,
+    Semiprime: true,
 } as const
 
 type FactorPropertyName = keyof typeof propertyOfFactorization
@@ -421,41 +392,78 @@ const propertyIndicatorFunction: {
     Abundant: isAbundant,
     Perfect: isPerfect,
     Deficient: isDeficient,
-    Semi_Prime: isSemiPrime,
+    Semiprime: isSemiPrime,
+}
+
+const templatePropertyObjects: PropertyObject[] = []
+
+for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
+    const ithPropertyObject = {
+        property: i === 0 ? Property.Prime : Property.None,
+        visualization:
+            i === 1
+                ? PropertyVisualization.Box_In_Cell
+                : PropertyVisualization.Fill_Cell,
+        color: DEFAULT_COLORS[i],
+        aux: 3n,
+    }
+    templatePropertyObjects.push(ithPropertyObject)
+}
+
+type propParamHelper<N extends number> = {
+    [K in `property${N}`]: ParamInterface<ParamType.ENUM>
+} & {[K in `prop${N}Vis`]: ParamInterface<ParamType.ENUM>} & {
+    [K in `prop${N}Color`]: ParamInterface<ParamType.COLOR>
+} & {[K in `prop${N}Aux`]: ParamInterface<ParamType.BIGINT>}
+
+function getPropertyParams<N extends number>(index: N) {
+    const prop = templatePropertyObjects[index]
+    const propIx: `property${N}` = `property${index}`
+    const propVis: `prop${N}Vis` = `prop${index}Vis`
+    const propColor: `prop${N}Color` = `prop${index}Color`
+    const propAux: `prop${N}Aux` = `prop${index}Aux`
+    return {
+        [propIx]: {
+            default: prop.property,
+            type: ParamType.ENUM,
+            from: Property,
+            displayName: `Property ${index + 1}`,
+            required: true,
+            visibleDependency: index > 0 ? `property${index - 1}` : 'preset',
+            visibleValue: index === 0 ? Preset.Custom : undefined,
+            visiblePredicate:
+                index > 0 ? (d: Property) => d !== Property.None : undefined,
+            level: 0,
+        },
+        [propVis]: {
+            default: prop.visualization,
+            type: ParamType.ENUM,
+            from: PropertyVisualization,
+            displayName: 'Display',
+            required: true,
+            visibleDependency: `property${index}`,
+            visiblePredicate: (d: Property) => d !== Property.None,
+        },
+        [propColor]: {
+            default: prop.color,
+            type: ParamType.COLOR,
+            displayName: 'Color',
+            required: true,
+            visibleDependency: `property${index}`,
+            visiblePredicate: (d: Property) => d !== Property.None,
+        },
+        [propAux]: {
+            default: prop.aux,
+            type: ParamType.BIGINT,
+            displayName: (d: Property) => propertyAuxName[Property[d]] || '',
+            required: false,
+            visibleDependency: `property${index}`,
+            visiblePredicate: (d: Property) => Property[d] in propertyAuxName,
+        },
+    } as propParamHelper<N>
 }
 
 const paramDesc = {
-    /** md
-### Presets: Which preset to display
-
-If a preset other than `Custom` is selected, then the `Properties`
-portion of the dialog is overriden.  For details on the meanings of the
-terms below, see the
-[Properties](#property-1-2-etc-properties-to-display-by-coloring-cells)
-section of the documentation.
-
-- Custom:  the remaining properties can be set by you
-- Primes:  primes are shown in red
-- Abundant_Numbers:  the abundant numbers are shown in black
-- Abundant_Numbers_And_Primes:  the primes are shown in red and the abundant
-numbers in black
-- Polygonal_Numbers:  the polygonal numbers are shown in a variety of
-different colors (one for each type of polygon)
-- Color_By_Last_Digit_1:  the last digit is shown (one color for each digit
-in a rainbow style)
-- Color_By_Last_Digit_2:  a variation on the last, where odd digits are
-indicated by smaller boxes
-    **/
-    preset: {
-        default: Preset.Custom,
-        type: ParamType.ENUM,
-        from: Preset,
-        displayName: 'Presets',
-        required: false,
-        description:
-            'If a preset is selected, properties no longer function.',
-    },
-
     /** md
 ### Path in grid: The path to follow while filling numbers into the grid.
 
@@ -469,11 +477,11 @@ but adds the row number to the sequence _values_.
         type: ParamType.ENUM,
         from: PathType,
         displayName: 'Path in grid',
-        required: false,
+        required: true,
     },
 
     /** md
-### Show numbers: Whether to show values overlaid on cells
+### Show entries: Whether to show values overlaid on cells
 
 When this is selected, the number of cells in the grid will be
 limited to 400
@@ -482,22 +490,22 @@ even if you choose more.
     showNumbers: {
         default: false,
         type: ParamType.BOOLEAN,
-        displayName: 'Show numbers',
-        required: false,
+        displayName: 'Show entries',
+        required: true,
         description: 'When true, grid is limited to 400 cells',
     },
 
     /** md
-### Number color: The font color of displayed numbers
+### Entry color: The font color of displayed entries
 
-This parameter is only available when the "Show Numbers" parameter is
+This parameter is only available when the "Show entries" parameter is
 checked.
     **/
     numberColor: {
         default: WHITE,
         type: ParamType.COLOR,
-        displayName: 'Number color',
-        required: false,
+        displayName: 'Entry color',
+        required: true,
         visibleDependency: 'showNumbers',
         visiblePredicate: (dependentValue: boolean) =>
             dependentValue === true,
@@ -511,24 +519,63 @@ checked.
         displayName: 'Background color',
         required: false,
     },
+    /** md
+### Highlight properties: What attribute(s) of the entries to display
+
+For details on the meanings of the
+terms below, see the
+[Properties](#property-1-2-etc-properties-to-display-by-coloring-cells)
+section of the documentation.
+
+- Primes:  primes are shown in red
+- Abundant_Numbers:  the abundant numbers are shown in black
+- Abundant_Numbers_And_Primes:  the primes are shown in red and the abundant
+numbers in black
+- Polygonal_Numbers:  the polygonal numbers are shown in a variety of
+different colors (one for each type of polygon)
+- Color_By_Last_Digit_1:  the last digit is shown (one color for each digit
+in a rainbow style)
+- Color_By_Last_Digit_2:  a variation on the last, where odd digits are
+indicated by smaller boxes
+- Custom:  choose whatever specific properties you would like to highlight
+    **/
+    preset: {
+        default: Preset.Primes,
+        type: ParamType.ENUM,
+        from: Preset,
+        displayName: 'Highlight properties',
+        required: true,
+    },
+    /* HELP: If anyone can figure out how to avoid listing all 12 of
+       the following while still getting the correct type for paramDesc,
+       please improve this code:
+    */
+    ...getPropertyParams(0),
+    ...getPropertyParams(1),
+    ...getPropertyParams(2),
+    ...getPropertyParams(3),
+    ...getPropertyParams(4),
+    ...getPropertyParams(5),
+    ...getPropertyParams(6),
+    ...getPropertyParams(7),
+    ...getPropertyParams(8),
+    ...getPropertyParams(9),
+    ...getPropertyParams(10),
+    ...getPropertyParams(11),
 } satisfies GenericParamDescription
 
 class Grid extends P5Visualizer(paramDesc) {
     static category = 'Grid'
     static description =
-        'Puts numbers in a grid, highlighting cells based on various properties'
+        'Puts sequence entries in grid cells, highlighting them '
+        + 'based on various properties'
 
     // Grid variables
     nEntries = 4096n
     sideOfGrid = 64
     currentIndex = 0n
     currentNumber = 0n
-    showNumbers = false
-    preset = Preset.Custom
-    pathType = PathType.Spiral
     resetAndAugmentByOne = false
-    backgroundColor = BLACK
-    numberColor = WHITE
 
     // Path variables
     x = 0
@@ -572,8 +619,8 @@ and reveal parameters for it.
 - Abundant:  Its absolute value exceeds the sum of its proper divisors
 - Perfect:  Equal to the sum of its proper divisors
 - Deficient:  Its absolute value is less than the sum of its proper divisors
-- Semi_Prime:  Its absolute value is a
-  [semi-prime](https://en.wikipedia.org/wiki/Semiprime), that is, a product of
+- Semiprime:  Its absolute value is a
+  [semiprime](https://en.wikipedia.org/wiki/Semiprime), that is, a product of
   exactly two primes (possibly equal)
 
 ##### Display:  Highlight style for cells with the property
@@ -587,44 +634,25 @@ earlier ones that use the _same_ style.)
 - Box_In_Cell:  Fill only a smaller central box in the cell
 
 ##### Color:  Highlight color for cells with the property
-         **/
-        for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
-            const ithPropertyObject = {
-                property: i === 0 ? Property.Prime : Property.None,
-                visualization:
-                    i === 1
-                        ? PropertyVisualization.Box_In_Cell
-                        : PropertyVisualization.Fill_Cell,
-                color: DEFAULT_COLORS[i],
-                aux: 3n,
-            }
-            this.propertyObjects.push(ithPropertyObject)
-            Object.assign(
-                this.params,
-                getPropertyParams(i, ithPropertyObject)
-            )
-        }
+        **/
+        this.propertyObjects = templatePropertyObjects.map(pobj =>
+            Object.assign({}, pobj)
+        )
     }
 
     async assignParameters() {
         await super.assignParameters()
 
-        // NOTE: This is commented out because it breaks the new type safety
-        // of the parameters. I wasn't able to figure out exactly what the
-        // intent is, but the strings being accessed are not parameters
-        // according to the parameter description
-        /*
-        for (let i = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
+        for (let i: PropertyIndex = 0; i < MAXIMUM_ALLOWED_PROPERTIES; i++) {
             this.propertyObjects[i].property =
-                this.tentativeValues[`property${i}`] as Property
+                this[`property${i}` as `property${PropertyIndex}`]
             this.propertyObjects[i].visualization =
-                this.tentativeValues[`prop${i}Vis`] as PropertyVisualization
+                this[`prop${i}Vis` as `prop${PropertyIndex}Vis`]
             this.propertyObjects[i].color =
-                this.tentativeValues[`prop${i}Color`].value as string
+                this[`prop${i}Color` as `prop${PropertyIndex}Color`]
             this.propertyObjects[i].aux =
-                this.tentativeValues[`prop${i}Aux`].value as bigint
+                this[`prop${i}Aux` as `prop${PropertyIndex}Aux`]
         }
-        */
     }
 
     setup(): void {

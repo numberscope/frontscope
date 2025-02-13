@@ -30,6 +30,8 @@ test.describe('Gallery', () => {
         )
     })
     test('clicking on a featured item', async ({page}) => {
+        const danceCard = await page.locator('.card-body >> nth=2')
+        await expect(danceCard.locator('.titlespan')).toContainText(/Dance/)
         await page.locator('.card-body >> nth=2').click()
         await expect(page.url()).not.toContain('gallery')
         await expect(

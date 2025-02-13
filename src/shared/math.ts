@@ -21,9 +21,12 @@ of the other facilities available. We also have some additional tips for
 [working with bigint numbers](../../doc/working-with-bigints.md) in
 Numberscope.
 
-Note that currently every one of the extension functions described
-below accepts either `number` or `bigint` inputs for all arguments and
-simply converts them to bigints as needed.
+Note that currently all of the numerical extension functions described below
+accept either `number` or `bigint` inputs for all arguments and convert them
+to bigints as needed.
+
+In addition, math formulas may create and manipulate colors using
+[Chroma](./Chroma.md) objects and functions.
 
 ### Example usage
 ```ts
@@ -79,14 +82,36 @@ const anotherNegInf = math.bigmin(5n, math.negInfinity, -3)
 
 import isqrt from 'bigint-isqrt'
 import {modPow} from 'bigint-mod-arith'
-import {create, all} from 'mathjs'
-import type {EvalFunction, MathJsInstance, MathType, SymbolNode} from 'mathjs'
+import {all, create, factory} from 'mathjs'
+import type {
+    EvalFunction,
+    MathJsInstance,
+    MathType,
+    MathScalarType,
+    Unit,
+} from 'mathjs'
 import temml from 'temml'
 
 import type {ValidationStatus} from './ValidationStatus'
+import {chroma, isChroma, dilute, overlay, rainbow} from './Chroma'
+import type {Chroma} from './Chroma'
 
-export type {MathNode, SymbolNode} from 'mathjs'
+export type {MathType, MathNode, SymbolNode} from 'mathjs'
 type Integer = number | bigint
+type MathTypeTemp = MathType | bigint // REMOVE after mathjs update
+
+/**
+ *
+ * @class CachingError
+ * extends the built-in Error class to indicate that a cache is trying
+ * to be accessed while it is being filled, or other caching impropriety.
+ */
+export class CachingError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'CachingError' // (2)
+    }
+}
 
 // eslint-disable-next-line no-loss-of-precision
 export type TposInfinity = 1e999 // since that's above range for number,
@@ -96,10 +121,10 @@ export type TposInfinity = 1e999 // since that's above range for number,
 export type TnegInfinity = -1e999 // similarly
 export type ExtendedBigint = bigint | TposInfinity | TnegInfinity
 
-type ExtendedMathJs = MathJsInstance & {
+type ExtendedMathJs = Omit<MathJsInstance, 'hasNumericValue'> & {
     negInfinity: TnegInfinity
     posInfinity: TposInfinity
-    safeNumber(n: Integer): number
+    safeNumber(n: MathTypeTemp): number
     floorSqrt(n: Integer): bigint
     modulo(n: Integer, modulus: Integer): bigint
     divides(a: Integer, b: Integer): boolean
@@ -109,9 +134,55 @@ type ExtendedMathJs = MathJsInstance & {
     bigabs(a: Integer): bigint
     bigmax(...args: Integer[]): ExtendedBigint
     bigmin(...args: Integer[]): ExtendedBigint
+    chroma: typeof chroma
+    rainbow(a: Integer): Chroma
+    isChroma(a: unknown): a is Chroma
+    add: MathJsInstance['add'] & ((c: Chroma, d: Chroma) => Chroma)
+    hasNumericValue(x: unknown): x is MathScalarType
+    multiply: MathJsInstance['multiply'] &
+        ((s: number, c: Chroma) => Chroma) &
+        ((c: Chroma, s: number) => Chroma)
+    Unit: Unit & {BASE_UNITS: {ANGLE: Unit}; UNITS: Record<string, Unit>}
 }
 
-export const math = create(all) as ExtendedMathJs
+export const math = create(all, {matrix: 'Array'}) as ExtendedMathJs
+
+/** Add colors to mathjs **/
+// @ts-expect-error: not in mathjs type declarations
+math.typed.addType({
+    name: 'Chroma',
+    test: isChroma,
+})
+
+const colorStuff: Record<string, unknown> = {
+    chroma,
+    rainbow: (h: MathScalarType | bigint) => {
+        if (math.isComplex(h)) h = (math.arg(h) * 180) / math.pi
+        else if (typeof h !== 'number' && typeof h !== 'bigint') {
+            h = math.number(h)
+        }
+        return rainbow(h)
+    },
+    add: math.typed('add', {'Chroma, Chroma': (c, d) => overlay(c, d)}),
+    isChroma,
+    multiply: math.typed('multiply', {
+        'number, Chroma': (s, c) => dilute(c, s),
+        'Chroma, number': dilute,
+    }),
+    typeOf: math.typed('typeOf', {Chroma: () => 'Chroma'}),
+}
+// work around omission of `colors` property in @types/chroma-js
+for (const name in (chroma as unknown as {colors: Record<string, string>})
+    .colors) {
+    colorStuff[name] = factory(name, [], () => chroma(name))
+}
+let palette: keyof typeof chroma.brewer = 'RdBu'
+for (palette in chroma.brewer) {
+    const clrs = chroma.brewer[palette].map(hx => chroma(hx))
+    colorStuff[palette] = factory(palette, [], () => clrs)
+}
+
+math.import(colorStuff)
 
 math.negInfinity = -Infinity as TnegInfinity
 math.posInfinity = Infinity as TposInfinity
@@ -120,17 +191,35 @@ const maxSafeNumber = BigInt(Number.MAX_SAFE_INTEGER)
 const minSafeNumber = BigInt(Number.MIN_SAFE_INTEGER)
 
 /** md
-#### safeNumber(n: number | bigint): number
+#### safeNumber(n: MathType): number
 
 Returns the `number` mathematically equal to _n_ if there is one, or
 throws an error otherwise.
 **/
-math.safeNumber = (n: Integer): number => {
-    const bn = BigInt(n)
-    if (bn < minSafeNumber || bn > maxSafeNumber) {
-        throw new RangeError(`Attempt to use ${bn} as a number`)
+math.safeNumber = (n: MathTypeTemp): number => {
+    if (typeof n === 'bigint' || typeof n === 'number') {
+        if (n < minSafeNumber || n > maxSafeNumber) {
+            throw new RangeError(
+                `Attempt to use ${typeof n} ${n} as a number`
+            )
+        }
+        return Number(n)
     }
-    return Number(bn)
+    if (math.isFraction(n) || math.isBigNumber(n)) {
+        if (
+            math.smaller(n, Number.MIN_SAFE_INTEGER)
+            || math.larger(n, Number.MAX_SAFE_INTEGER)
+        ) {
+            throw new RangeError(
+                `Attempt to use ${math.typeOf(n)} ${n} as a number`
+            )
+        }
+    }
+    if (math.isComplex(n)) {
+        throw new RangeError(`Attempt to use Complex ${n} as a number`)
+    }
+    if (math.hasNumericValue(n)) return math.number(n)
+    throw new RangeError(`Attempt to use non-numeric ${n} as a number`)
 }
 
 /** md
@@ -270,12 +359,19 @@ math.bigmin = (...args: Integer[]): ExtendedBigint => {
 }
 
 /* Helper for outputting scopes: */
-type ScopeType = Record<string, MathType | Record<string, number>>
+type ScopeValue = MathType | Record<string, number> | ((x: never) => MathType)
+type ScopeType = Record<string, ScopeValue>
 function scopeToString(scope: ScopeType) {
     return Object.entries(scope)
         .map(([variable, value]) => `${variable}=${math.format(value)}`)
         .join(', ')
 }
+const angleDimension = math.Unit.BASE_UNITS.ANGLE.dimensions.findIndex(d => d)
+const angleUnits = new Set(
+    Object.keys(math.Unit.UNITS).filter(
+        u => math.Unit.UNITS[u].dimensions[angleDimension]
+    )
+)
 const maxWarns = 3
 const mathMark = 'mathjs: '
 /**
@@ -283,22 +379,37 @@ const mathMark = 'mathjs: '
  */
 export class MathFormula {
     evaluator: EvalFunction
-    inputs: string[]
+    symbols: readonly string[]
     source: string
     canonical: string
     latex: string
     mathml: string
-    freevars: string[]
-    constructor(fmla: string, inputs?: string[]) {
-        const parsetree = math.parse(fmla)
-        this.freevars = parsetree
-            .filter((node, path) => math.isSymbolNode(node) && path !== 'fn')
-            .map(node => (node as SymbolNode).name)
-        if (inputs) {
-            this.inputs = inputs
-        } else {
-            // inputs default to all free variables
-            this.inputs = this.freevars
+    freevars = new Set<string>()
+    freefuncs = new Set<string>()
+    static preprocess(fmla: string) {
+        // Interpret "bare" color constants #hhhhhh
+        return fmla.replaceAll(
+            /(?<!["'])(#[0123456789abcdefABCDEF]{3,8})/g,
+            'chroma("$1")'
+        )
+    }
+    constructor(fmla: string, symbols?: readonly string[]) {
+        // Preprocess formula to interpret "bare" color constants #hhhhhh
+        const prefmla = MathFormula.preprocess(fmla)
+        const parsetree = math.parse(prefmla)
+        parsetree.traverse((node, path) => {
+            if (
+                math.isSymbolNode(node)
+                && !(node.name in math || angleUnits.has(node.name))
+            ) {
+                if (path === 'fn') this.freefuncs.add(node.name)
+                else this.freevars.add(node.name)
+            }
+        })
+        if (symbols) this.symbols = symbols
+        else {
+            // symbols default to all free variables
+            this.symbols = Array.from(this.freevars)
         }
         this.source = fmla
         this.canonical = parsetree.toString({parenthesis: 'auto'})
@@ -309,33 +420,41 @@ export class MathFormula {
     /**
      * The recommended way to obtain the value of a mathjs formula object:
      * Call it with a ValidationStatus object, and either the values for
-     * the input variables (if any) as additional arguments, or a single
-     * plain object with keys the input variable names and values their
-     * values to be used in computing the formula.
+     * the allowed symbols (if any) as additional arguments, or a single
+     * plain object with keys the symbol names and values their values to
+     * be used in computing the formula.
      * It checks for errors in the computation and if any occur, adds
      * warnings to the provided status object.
      * @param {ValidationStatus} status  The object to report warnings to
-     * @param {object | MathType, MathType, ...} the inputs to the formula
+     * @param {object | MathType, MathType, ...}
+     *     the symbol meanings for computing the formula
      * @returns {MathType} the result of evaluating the formula
      */
     computeWithStatus(
         status: ValidationStatus,
-        a: number | Record<string, number>,
+        a: number | ScopeType,
         ...rst: number[]
     ) {
         let scope: ScopeType = {}
-        if (typeof a === 'object' && this.inputs.every(i => i in a)) {
-            scope = a
+        if (typeof a === 'object') {
+            if (this.symbols.every(i => i in a)) scope = a
+            else
+                throw new TypeError(
+                    `symbol definitions missing to compute '${this.source}'`
+                )
         } else {
-            scope = {[this.inputs[0]]: a}
+            scope = {[this.symbols[0]]: a}
             for (let ix = 0; ix < rst.length; ++ix) {
-                scope[this.inputs[ix + 1]] = rst[ix]
+                scope[this.symbols[ix + 1]] = rst[ix]
             }
         }
         let result: MathType = 0
         try {
             result = this.evaluator.evaluate(scope)
         } catch (err: unknown) {
+            // re-throw caching errors so the infrastructure can deal with
+            // them
+            if (err instanceof CachingError) throw err
             let nWarns = status.warnings.reduce(
                 (k, warning) => k + (warning.startsWith(mathMark) ? 1 : 0),
                 0
@@ -377,12 +496,12 @@ export class MathFormula {
      * argument and does no error checking.
      */
     compute(a: number | Record<string, number>, ...rst: number[]) {
-        if (typeof a === 'object' && this.inputs.every(i => i in a)) {
+        if (typeof a === 'object' && this.symbols.every(i => i in a)) {
             return this.evaluator.evaluate(a)
         }
-        const scope = {[this.inputs[0]]: a}
+        const scope = {[this.symbols[0]]: a}
         for (let ix = 0; ix < rst.length; ++ix) {
-            scope[this.inputs[ix + 1]] = rst[ix]
+            scope[this.symbols[ix + 1]] = rst[ix]
         }
         return this.evaluator.evaluate(scope)
     }

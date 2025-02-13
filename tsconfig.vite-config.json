@@ -6,8 +6,8 @@
     "include": ["etc/vite.config.*"],
     "compilerOptions": {
         "composite": true,
-        "lib": ["ES2023"],
-        "target": "ES2023",
+        "lib": ["ESNext"],
+        "target": "ESNext",
         "types": ["node", "vitest"]
     }
 }

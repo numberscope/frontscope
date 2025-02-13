@@ -89,7 +89,7 @@ The default value is
             /* **/
         ),
         type: ParamType.FORMULA,
-        inputs: ['n', 'x'],
+        symbols: ['n', 'x'],
         displayName: 'Growth Function',
         description: "A function in 'n' (term) and 'x' (growth variable)",
         visibleDependency: 'customize',

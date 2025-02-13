@@ -1,20 +1,22 @@
 <template>
-    <div style="margin-bottom: 32px">
-        <div class="input-container">
+    <div>
+        <div class="param-field">
             <label>
-                {{ param.displayName }}
+                {{ displayName }}
                 <input
                     v-if="param.type === ParamType.BOOLEAN"
                     :id="paramName"
                     type="checkbox"
                     :checked="value === 'true'"
                     @input="updateBoolean($event)">
-                <input
-                    v-else-if="param.type === ParamType.COLOR"
+                <pick-colors
+                    v-else-if="isColorful"
                     :id="paramName"
-                    type="color"
-                    :value="value"
-                    @input="updateString($event)">
+                    v-model:value="colorValue"
+                    v-model:show-picker="showPicker"
+                    :add-color="param.type === ParamType.COLOR_ARRAY"
+                    @click="maybeTogglePicker"
+                    @update:show-picker="reconcilePicker" />
                 <select
                     v-else-if="param.type === ParamType.ENUM"
                     :id="paramName"
@@ -64,77 +66,146 @@
     </div>
 </template>
 
-<script lang="ts">
-    import {defineComponent} from 'vue'
+<script setup lang="ts">
+    import {ref, watch} from 'vue'
+    import PickColors from 'vue-pick-colors'
+
     import type {ParamInterface} from '../shared/Paramable'
-    import typeFunctions, {ParamType} from '../shared/ParamType'
+    import {typeFunctions, ParamType} from '../shared/ParamType'
     import {ValidationStatus} from '../shared/ValidationStatus'
 
-    export default defineComponent({
-        name: 'ParamField',
-        props: {
-            param: {
-                type: Object as () => ParamInterface<ParamType>,
-                required: true,
-            },
-            value: {
-                type: String,
-                required: true,
-            },
-            paramName: {type: String, required: true},
-            status: {
-                type: Object as () => ValidationStatus,
-                required: true,
-            },
-        },
-        emits: ['updateParam'],
-        data() {
-            return {ParamType}
-        },
-        methods: {
-            getEnumeration(
-                type: {[key: string]: number | string} | undefined
-            ): {[key: string]: number} {
-                if (!type) return {}
+    const props = defineProps<{
+        param: ParamInterface<ParamType>
+        value: string
+        paramName: string
+        displayName: string
+        status: ValidationStatus
+    }>()
 
-                const map: {[key: string]: number} = {}
-                for (const prop in type)
-                    if (typeof type[prop] === 'number')
-                        map[prop] = type[prop] as number
-                return map
-            },
-            updateBoolean(e: Event) {
-                window.document.getElementById(this.paramName)?.blur()
-                this.$emit(
-                    'updateParam',
-                    (e.target as HTMLInputElement).checked + ''
+    const emit = defineEmits(['updateParam'])
+    const isColorful =
+        props.param.type === ParamType.COLOR
+        || props.param.type === ParamType.COLOR_ARRAY
+
+    function getEnumeration(
+        type: {[key: string]: number | string} | undefined
+    ): {[key: string]: number} {
+        if (!type) return {}
+
+        const map: {[key: string]: number} = {}
+        for (const prop in type) {
+            if (typeof type[prop] === 'number') map[prop] = +type[prop]
+        }
+        return map
+    }
+
+    function blurField(id: string) {
+        window.document.getElementById(id)?.blur()
+    }
+
+    function updateBoolean(e: Event) {
+        blurField(props.paramName)
+        const inp = e.target as HTMLInputElement
+        emit('updateParam', inp.checked + '')
+    }
+
+    function updateString(e: Event) {
+        const t = e.target
+        if (t instanceof HTMLSelectElement || t instanceof HTMLInputElement) {
+            emit('updateParam', t.value)
+        }
+    }
+
+    function rectifyColors(inVal: string) {
+        return props.param.type === ParamType.COLOR_ARRAY
+            ? inVal.split(/\s*[\s,]\s*/)
+            : inVal
+    }
+
+    const colorValue = ref(rectifyColors(props.value))
+    watch(
+        () => props.value,
+        () => {
+            colorValue.value = rectifyColors(props.value)
+        }
+    )
+    const showPicker = ref(false)
+    function pickerKeys(e: KeyboardEvent) {
+        if (e.key === 'Enter') togglePicker()
+        else if (
+            props.param.type === ParamType.COLOR_ARRAY
+            && e.key === 'Delete'
+        ) {
+            const colorItems = Array.from(
+                document.querySelectorAll(`#${props.paramName} .color-item`)
+            )
+            if (colorItems.length < 2) {
+                // Attempt to delete last remaining color, but there must
+                // be at least one, so turn it white
+                colorValue.value = ['#FFFFFF']
+            } else {
+                let selection = colorItems.findIndex(
+                    item =>
+                        item instanceof HTMLElement && item.style.boxShadow
                 )
-            },
-            updateString(e: Event) {
-                this.$emit(
-                    'updateParam',
-                    (e.target as HTMLInputElement).value
-                )
-            },
-            blurField(id: string) {
-                window.document.getElementById(id)?.blur()
-            },
-            placehold(par: ParamInterface<ParamType>) {
-                if (typeof par.placeholder === 'string')
-                    return par.placeholder
-                return typeFunctions[par.type].derealize.call(
-                    par,
-                    par.default as never
-                )
-            },
-        },
-    })
+                if (selection < 0) selection += colorItems.length
+                // Can't directly splice a ref()d list, goes haywire, so
+                // instead copy and assign
+                const colorCopy = [...colorValue.value]
+                colorCopy.splice(selection, 1)
+                colorValue.value = colorCopy
+            }
+            togglePicker()
+        }
+    }
+    let pickerJustPopped = false
+    function maybeTogglePicker(e: Event) {
+        if (!isColorful) return
+        const target = e.target as HTMLElement
+        const index = target.dataset?.index
+        if (props.param.type === ParamType.COLOR) {
+            if (pickerJustPopped) pickerJustPopped = false
+            else togglePicker()
+        } else if (index != null && index !== '' && target.style.boxShadow) {
+            togglePicker()
+        }
+    }
+    function togglePicker() {
+        showPicker.value = !showPicker.value
+        reconcilePicker(showPicker.value)
+    }
+    let lastShowed = false
+    function reconcilePicker(newShow: boolean) {
+        if (newShow) {
+            if (!lastShowed) {
+                document.addEventListener('keyup', pickerKeys)
+                pickerJustPopped = true
+                lastShowed = true
+            } else if (pickerJustPopped) {
+                pickerJustPopped = false
+            }
+        } else {
+            document.removeEventListener('keyup', pickerKeys)
+            pickerJustPopped = false
+            lastShowed = false
+            const newVal =
+                typeof colorValue.value === 'string'
+                    ? colorValue.value
+                    : colorValue.value.join(' ')
+            emit('updateParam', newVal)
+        }
+    }
+
+    function placehold(par: ParamInterface<ParamType>) {
+        if (typeof par.placeholder === 'string') return par.placeholder
+        const stringifier = typeFunctions[par.type].derealize
+        return stringifier.call(par, par.default as never)
+    }
 </script>
 
 <style scoped lang="scss">
     label {
         font-size: 12px;
-        width: 100%;
     }
 
     input {
@@ -149,6 +220,9 @@
                 border-bottom: 1.5px solid var(--ns-color-primary);
                 outline: none;
             }
+        }
+        &[type='color'] {
+            vertical-align: middle;
         }
     }
 
@@ -182,14 +256,17 @@
     .param-description {
         font-size: 12px;
         color: var(--ns-color-grey);
-        margin-bottom: 8px;
-        margin-top: 0px;
+        margin: 0px;
     }
 
-    .input-container {
+    .param-field {
         display: flex;
         flex-direction: row;
         position: relative;
+
+        .color-picker {
+            vertical-align: middle;
+        }
     }
 
     .error-field {
@@ -217,7 +294,7 @@
         }
 
         right: 4px;
-        bottom: 4px;
+        bottom: 0px;
     }
 
     .desc-tooltip .desc-tooltip-text {

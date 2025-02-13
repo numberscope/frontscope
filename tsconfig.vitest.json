@@ -4,11 +4,11 @@
     "compilerOptions": {
         "baseUrl": ".",
         "composite": true,
-        "lib": ["ES2023"],
+        "lib": ["ESNext"],
         "paths": {
             "@/*": ["./src/*"]
         },
-        "target": "ES2023",
+        "target": "ESNext",
         "types": ["node", "jsdom", "vite/client"]
     }
 }

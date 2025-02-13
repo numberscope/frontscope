@@ -49,28 +49,17 @@
             </div>
         </div>
         <p class="description">{{ paramable.description }}</p>
-        <div v-for="(hierarchy, name) in sortedParams" :key="name">
+        <div
+            v-for="(param, name) in visibleParams"
+            :key="name"
+            :class="paramClass(param)">
             <ParamField
-                :param="hierarchy.param"
+                :param
                 :value="paramable.tentativeValues[name]"
                 :param-name="name as string"
+                :display-name="displayNameOf(name)"
                 :status="paramable.statusOf[name]"
                 @update-param="updateParam(name as string, $event)" />
-            <div class="sub-param-box">
-                <div
-                    v-for="(subParam, subName) in hierarchy.children"
-                    :key="subName">
-                    <ParamField
-                        v-if="checkDependency(subParam)"
-                        :param="subParam"
-                        :value="paramable.tentativeValues[subName]"
-                        :param-name="subName as string"
-                        :status="paramable.statusOf[subName]"
-                        @update-param="
-                            updateParam(subName as string, $event)
-                        " />
-                </div>
-            </div>
         </div>
     </div>
 </template>
@@ -84,11 +73,6 @@
 
     import MageExchangeA from './MageExchangeA.vue'
     import ParamField from './ParamField.vue'
-
-    interface ParamHierarchy {
-        param: ParamInterface<ParamType>
-        children: {[key: string]: ParamInterface<ParamType>}
-    }
 
     type Paramable = () => ParamableInterface
 
@@ -107,28 +91,31 @@
         },
         emits: ['changed', 'openSwitcher'],
         computed: {
-            sortedParams() {
-                const sortedParams: {[key: string]: ParamHierarchy} = {}
+            visibleParams() {
+                const visParams: typeof this.paramable.params = {}
                 Object.keys(this.paramable.params).forEach(key => {
                     const param = this.paramable.params[key]
-                    if (!param.visibleDependency)
-                        sortedParams[key] = {param, children: {}}
+                    if (
+                        this.paramable.statusOf[key].invalid()
+                        || this.checkDependency(param)
+                    ) {
+                        visParams[key] = param
+                    }
                 })
-                Object.keys(this.paramable.params).forEach(key => {
-                    const param = this.paramable.params[key]
-                    if (param.visibleDependency)
-                        sortedParams[param.visibleDependency].children[key] =
-                            param
-                })
-                return sortedParams
+                return visParams
             },
         },
         methods: {
             async updateParam(paramName: string, value: string) {
                 const paramable = this.paramable
+                const param = paramable.params[paramName]
+                const oldValue = paramable.tentativeValues[paramName]
                 paramable.tentativeValues[paramName] = value
                 paramable.validateIndividual(paramName)
                 if (paramable.statusOf[paramName].invalid()) return
+                if (param.updateAction) {
+                    param.updateAction.call(paramable, value, oldValue)
+                }
                 await paramable.validate()
                 if (paramable.validationStatus.isValid()) {
                     this.$emit('changed')
@@ -139,6 +126,7 @@
                 if (!dep) return true
                 if (this.paramable.statusOf[dep].invalid()) return false
                 const parent = this.paramable.params[dep]
+                if (!this.checkDependency(parent)) return false
                 const v = realizeOne(
                     parent,
                     this.paramable.tentativeValues[dep]
@@ -146,6 +134,36 @@
                 if (param.visiblePredicate) {
                     return param.visiblePredicate(v as never)
                 } else return param.visibleValue! === v
+            },
+            displayNameOf(paramName: string | number) {
+                const paramable = this.paramable
+                const param = paramable.params[paramName]
+                if (typeof param.displayName === 'string') {
+                    return param.displayName
+                }
+                // Otherwise, it should be a function of the visibleDependency
+                const dep = param.visibleDependency
+                if (!dep) return ''
+                if (paramable.statusOf[dep].invalid()) return ''
+                const parent = paramable.params[dep]
+                const v = realizeOne(parent, paramable.tentativeValues[dep])
+                return param.displayName(v as never)
+            },
+            paramClass(param: ParamInterface<ParamType>): string {
+                let klass = ''
+                if (
+                    param.level === 1
+                    || (param.level !== 0 && param.visibleDependency)
+                ) {
+                    klass = 'sub-'
+                }
+                if (
+                    param.type === ParamType.BOOLEAN
+                    || param.type === ParamType.COLOR
+                )
+                    klass += 'inline'
+                else klass += 'stacked'
+                return klass + '-param'
             },
             openSwitcher() {
                 this.$emit('openSwitcher')
@@ -203,10 +221,30 @@
         margin-bottom: 24px;
     }
 
-    .sub-param-box {
+    .stacked-param {
+        margin-top: 24px;
+        margin-bottom: 0px;
+    }
+
+    .inline-param {
+        margin-top: 16px;
+        margin-bottom: 0px;
+    }
+
+    .sub-stacked-param {
         border-left: 1px solid var(--ns-color-black);
         margin-left: 8px;
         padding-left: 8px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+
+    .sub-inline-param {
+        border-left: 1px solid var(--ns-color-black);
+        margin-left: 8px;
+        padding-left: 8px;
+        padding-top: 6px;
+        padding-bottom: 6px;
     }
 
     .error-box {
