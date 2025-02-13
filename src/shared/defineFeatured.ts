@@ -4,7 +4,7 @@ import {specimenQuery} from './specimenEncoding'
 
 const featuredSIMs = [
     specimenQuery(
-        'The Raucous Recama&#769;n',
+        'The Raucous Recamán',
         'Turtle',
         'OEIS A005132',
         'domain=0+1&steps=2+3&strokeColor=%235e8d85&bgColor=E5E0F6'
