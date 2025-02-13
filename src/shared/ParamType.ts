@@ -1,7 +1,7 @@
 import p5 from 'p5'
 
 import {math, MathFormula} from './math'
-import type {ExtendedBigint, MathNode, SymbolNode} from './math'
+import type {ExtendedBigint} from './math'
 import type {ParamInterface} from './Paramable'
 import {ValidationStatus} from './ValidationStatus'
 
@@ -21,6 +21,7 @@ export enum ParamType { /** table header to extract:
     | --------- | -------------------------- | --------------- | -------- | */
     BOOLEAN, // | boolean | checkbox       | true or false |
     COLOR, //   | string  | color picker   | hex color code |
+    COLOR_ARRAY, // | string[] | color picker | can add/delete color blocks |
     NUMBER, //  | number  | input          | arbitrary floating point value |
     INTEGER, // | number  | input          | must be a whole number |
     BIGINT, //  | bigint  | input          | must be a whole number |
@@ -39,6 +40,7 @@ export enum ParamType { /** table header to extract:
 export type RealizedPropertyType = {
     [ParamType.BOOLEAN]: boolean
     [ParamType.COLOR]: string
+    [ParamType.COLOR_ARRAY]: string[]
     [ParamType.NUMBER]: number
     [ParamType.INTEGER]: number
     [ParamType.BIGINT]: bigint
@@ -98,27 +100,38 @@ function validateNumbers(
         bad = true
         many = `${nParts} `
     }
-    if (bad)
-        status.addError(
-            `Input must be a list of ${many}`
-                + 'numbers separated by whitespace or commas'
-        )
+    status.forbid(
+        bad,
+        `Input must be a list of ${many}`
+            + 'numbers separated by whitespace or commas'
+    )
 }
 
 // Helper function for number types:
+function validateInt(
+    value: string,
+    status: ValidationStatus,
+    message = 'Input must be an integer'
+) {
+    status.mandate(value.trim().match(/^-?\d+$/), message)
+}
 function validateExtInt(value: string, status: ValidationStatus) {
     if (value.trim().match(/^-?Infinity$/)) return
-    if (value.trim().match(/^-?\d+$/) === null)
-        status.addError('Input must be an integer or ±Infinity')
+    validateInt(value, status, 'Input must be an integer or ±Infinity')
 }
 
-const typeFunctions: {
+//Helper function for color types:
+function isColor(value: string) {
+    return value.trim().match(/^(#[0-9A-Fa-f]{3})|(#[0-9A-Fa-f]{6})$/)
+}
+
+export const typeFunctions: {
     [K in ParamType]: ParamTypeFunctions<RealizedPropertyType[K]>
 } = {
     [ParamType.BOOLEAN]: {
         validate: function (value, status) {
-            if (value.trim().match(/^true|false$/) === null)
-                status.addError('Input must be a boolean')
+            const isBool = value.trim().match(/^true|false$/)
+            status.mandate(isBool, 'Input must be a boolean')
         },
         realize: function (value) {
             return value === 'true'
@@ -129,12 +142,7 @@ const typeFunctions: {
     },
     [ParamType.COLOR]: {
         validate: function (value, status) {
-            if (
-                value
-                    .trim()
-                    .match(/^(#[0-9A-Fa-f]{3})|(#[0-9A-Fa-f]{6})$/) === null
-            )
-                status.addError('Input must be a valid color specification')
+            status.mandate(isColor(value), 'Input must be hex color string')
         },
         realize: function (value) {
             return value
@@ -143,13 +151,26 @@ const typeFunctions: {
             return `${value}`
         },
     },
+    [ParamType.COLOR_ARRAY]: {
+        validate: function (value, status) {
+            const parts = value.trim().split(/\s*[\s,]\s*/)
+            for (const part of parts) {
+                status.mandate(isColor(part), `'${part}' is not a hex color`)
+            }
+        },
+        realize: function (value) {
+            return value.trim().split(/\s*[\s,]\s*/)
+        },
+        derealize: function (colors) {
+            return colors.join(' ')
+        },
+    },
     [ParamType.NUMBER]: {
         validate: function (value, status) {
-            if (
-                value.trim().match(/^-?((\d+\.\d*|\.?\d+)|Infinity)$/)
-                === null
+            status.mandate(
+                value.trim().match(/^-?((\d+\.\d*|\.?\d+)|Infinity)$/),
+                'Input must be a number'
             )
-                status.addError('Input must be a number')
         },
         realize: function (value) {
             return parseFloat(value)
@@ -168,10 +189,7 @@ const typeFunctions: {
         },
     },
     [ParamType.BIGINT]: {
-        validate: function (value, status) {
-            if (value.trim().match(/^-?\d+$/) === null)
-                status.addError('Input must be an integer')
-        },
+        validate: validateInt,
         realize: function (value) {
             return BigInt(value)
         },
@@ -199,58 +217,42 @@ const typeFunctions: {
                 status.addError(`empty formula not allowed`)
                 return
             }
-            let parsetree: MathNode | undefined = undefined
+            const inputSymbols = this.symbols || ['n']
+            let fmla: MathFormula | undefined = undefined
             try {
-                parsetree = math.parse(value)
+                fmla = new MathFormula(value, inputSymbols)
             } catch (err: unknown) {
                 status.addError(
                     `could not parse formula: ${value}`,
-                    (err as Error).message
+                    err instanceof Error ? err.message : 'unknown error'
                 )
                 return
             }
-
-            const inputSymbols = this.inputs || ['n']
-            let unknownFunction = ''
-            const othersymbs = parsetree.filter((node, path) => {
-                if (math.isSymbolNode(node)) {
-                    if (path === 'fn') {
-                        if (!(node.name in math)) {
-                            unknownFunction = node.name
-                        }
-                        return false
-                    }
-                    return !inputSymbols.includes(node.name)
-                }
-                return false
-            })
-            if (othersymbs.length > 0) {
-                status.addError(
-                    `free variables limited to ${inputSymbols}; `,
-                    `please remove '${(othersymbs[0] as SymbolNode).name}'`
-                )
-            }
-            if (unknownFunction) {
-                status.addError(`unknown function '${unknownFunction}'`)
-            }
+            const freeVars = fmla.freevars.difference(new Set(inputSymbols))
+            status.forbid(
+                freeVars.size,
+                `free variables limited to ${inputSymbols}; `
+                    + `please remove '${freeVars}'`
+            )
+            status.forbid(
+                fmla.freefuncs.size,
+                `unknown functions '${fmla.freefuncs}'`
+            )
         },
         realize: function (value) {
-            return new MathFormula(value, this.inputs || ['n'])
+            return new MathFormula(value, this.symbols || ['n'])
         },
         derealize: function (value) {
             return value.source
         },
     },
     [ParamType.ENUM]: {
-        validate: function (value, status) {
-            if (value.trim().match(/^-?\d+$/) === null)
-                status.addError('Input must be an integer')
-        },
+        validate: validateInt,
         realize: function (value) {
             return parseInt(value)
         },
         derealize: function (value) {
-            return `${value as number}`
+            return value.toString()
         },
     },
     [ParamType.STRING]: {
@@ -279,11 +281,11 @@ const typeFunctions: {
     },
     [ParamType.BIGINT_ARRAY]: {
         validate: function (value, status) {
-            if (value.trim().match(/^(-?\d+(\s*[\s,]\s*-?\d+)*)?$/) === null)
-                status.addError(
-                    'Input must be a list of integers '
-                        + 'separated by whitespace or commas'
-                )
+            status.mandate(
+                value.trim().match(/^(-?\d+(\s*[\s,]\s*-?\d+)*)?$/),
+                'Input must be a list of integers '
+                    + 'separated by whitespace or commas'
+            )
         },
         realize: function (value) {
             return value
@@ -308,5 +310,3 @@ const typeFunctions: {
         },
     },
 }
-
-export default typeFunctions

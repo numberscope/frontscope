@@ -1,25 +1,12 @@
 import type {Factorization, SequenceInterface} from './SequenceInterface'
 import simpleFactor from './simpleFactor'
 
-import {math} from '@/shared/math'
+import {math, CachingError} from '@/shared/math'
 import type {ExtendedBigint} from '@/shared/math'
 import {Paramable, paramClone} from '@/shared/Paramable'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
-
-/**
- *
- * @class CachingError
- * extends the built-in Error class to indicate that a cache is trying
- * to be accessed while it is being filled, or other caching impropriety.
- */
-export class CachingError extends Error {
-    constructor(message: string) {
-        super(message)
-        this.name = 'CachingError' // (2)
-    }
-}
 
 interface SequenceBounds {
     firstAvailable: ExtendedBigint
@@ -379,10 +366,10 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
          * cache and reinitialize the sequence so that every element is
          * recomputed when queried.
          */
-        async parametersChanged(nameList: string[]) {
-            await super.parametersChanged(nameList)
+        async parametersChanged(names: Set<string>) {
+            await super.parametersChanged(names)
             let needsReset = false
-            for (const name of nameList) {
+            for (const name of names) {
                 if (!(name in standardSequenceParameters)) {
                     needsReset = true
                     continue

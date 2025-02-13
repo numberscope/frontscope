@@ -15,7 +15,9 @@ test.describe('Featured gallery images', () => {
             details.tag = '@webGL'
         }
         test(featProps.name, details, async ({page, browserName}) => {
-            const short = featProps.name.replaceAll(' ', '')
+            const short = encodeURIComponent(
+                featProps.name.replaceAll(' ', '')
+            )
             const testURL = `/?frames=64&randomSeed=${short}&${feature.query}`
             await page.goto(testURL)
             await expect(
@@ -23,7 +25,7 @@ test.describe('Featured gallery images', () => {
             ).toHaveId('pause-button', {timeout: 30000})
             const matchParams =
                 browserName === 'firefox' && details.tag === '@webGL'
-                    ? {maxDiffPixelRatio: 0.02}
+                    ? {maxDiffPixelRatio: 0.01}
                     : {}
             expect(
                 await page.locator('#canvas-container').screenshot()

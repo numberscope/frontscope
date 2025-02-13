@@ -84,7 +84,7 @@ If the function evaluates to a number less than 0, it will behave as 0; if it
             /* **/
         ),
         type: ParamType.FORMULA,
-        inputs: ['n', 'a', 'm'],
+        symbols: ['n', 'a', 'm'],
         displayName: 'Opacity',
         description:
             'The opacity of each new rectangle (rate at which cells'
@@ -120,7 +120,7 @@ _m_ (modulus).  Default:
             /* **/
         ),
         type: ParamType.FORMULA,
-        inputs: ['n', 'a', 'm'],
+        symbols: ['n', 'a', 'm'],
         displayName: 'Highlighting',
         description:
             "A function in 'n' (index), 'a' (entry) "
@@ -163,7 +163,7 @@ Opacity as described above will be used.
     alphaHigh: {
         default: new MathFormula(''),
         type: ParamType.FORMULA,
-        inputs: ['n', 'a', 'm'],
+        symbols: ['n', 'a', 'm'],
         displayName: 'Highlight opacity',
         description:
             'The opacity of each new rectangle (rate at which cells'
@@ -268,8 +268,8 @@ class ModFill extends P5Visualizer(paramDesc) {
 
         // because safeNumber can fail, we conly want to try it
         // if we need it in the formula
-        if (vars.includes('n')) useNum = this.trySafeNumber(num)
-        if (vars.includes('a')) useValue = this.trySafeNumber(value)
+        if (vars.has('n')) useNum = this.trySafeNumber(num)
+        if (vars.has('a')) useValue = this.trySafeNumber(value)
         let x = 0
         for (let mod = 1; mod <= this.useMod; mod++) {
             // needs to take BigInt when implemented
@@ -296,8 +296,8 @@ class ModFill extends P5Visualizer(paramDesc) {
                     alphaVars = this.alphaHigh.freevars
                 }
             }
-            if (alphaVars.includes('n')) useNum = this.trySafeNumber(num)
-            if (alphaVars.includes('a')) useValue = this.trySafeNumber(value)
+            if (alphaVars.has('n')) useNum = this.trySafeNumber(num)
+            if (alphaVars.has('a')) useValue = this.trySafeNumber(value)
             const alphaValue = alphaFormula.computeWithStatus(
                 alphaStatus,
                 useNum,

@@ -1,6 +1,6 @@
 import {hasField, makeStringFields} from './fields'
 import type {StringFields, GenericStringFields} from './fields'
-import typeFunctions, {ParamType} from './ParamType'
+import {typeFunctions, ParamType} from './ParamType'
 import type {RealizedPropertyType} from './ParamType'
 import {seqKey} from './specimenEncoding'
 import {ValidationStatus} from './ValidationStatus'
@@ -48,6 +48,7 @@ a question mark after the property name means that it is optional whether
 or not to specify that property; all other properties are required.
 
 **/
+type ParamLevel = 0 | 1
 export interface ParamInterface<PT extends ParamType> {
     /** md */
     default: RealizedPropertyType[PT]
@@ -183,13 +184,26 @@ export interface ParamInterface<PT extends ParamType> {
 <!-- -->
     **/
     /** md */
-    inputs?: string[]
+    level?: ParamLevel
+    /* **/
+    /** md
+:   An integer giving the hierarchical level of the parameter; this value
+    is used to determine aspects of the layout of the parameter entry area
+    in the UI such as its indentation, spacing, and/or border. Currently
+    only parameter levels 0 ("top-level") and 1 ("subordinate") are defined.
+    If this property is not specified, a level of 1 is used if the parameter
+    has a visibleDependency, and level 0 is used otherwise.
+<!-- -->
+    **/
+    /** md */
+    symbols?: readonly string[]
     /* **/
     /** md
 :   If the `type` property is `ParamType.FORMULA`, this property gives the
-    list of free variables that are allowed to occur in the formula. The
-    entity using the resulting MathFormula will have to supply the values
-    of those variables when it calls `computeWithStatus()` on the MathFormula.
+    list of predefined symbols (variables and function symbols) that are
+    allowed to occur in the formula. The entity using the resulting
+    MathFormula will have to supply the values of those symbols when it
+    calls `computeWithStatus()` on the MathFormula.
 <!-- -->
     **/
     /** md */
@@ -227,6 +241,19 @@ export interface ParamInterface<PT extends ParamType> {
     on which this parameter resides, so that the `validate` method may use
     other data (but **not** other parameter values) of the entity in its
     checks.
+    **/
+    /** md */
+    updateAction?(newValue: string, oldValue: string): void
+    /* **/
+    /** md
+:   This method, if it is defined, will be executed whenever the parameter
+    takes on a new valid value, although it is called with the previous and
+    newly-updated _string_ forms of the parameter, not the realized values,
+    since this method is called before all of the parameters of the entity
+    have been fully validated (although this one parameter is guaranteed to
+    be valid. Like the `validate` method, is is called with
+    its `this`-context set to the entity (usually Sequence or Visualizer)
+    on which this parameter resides.
     **/
 }
 
@@ -472,15 +499,18 @@ export interface ParamableInterface {
     the computation of re-realizing the tentative values.
 <!-- --> **/
     /** xmd */
-    refreshParams(): void /* **/
+    refreshParams(which?: Set<string>): void /* **/
     /** xmd
 :   This method is the reverse of `assignParameters()`; it should copy the
-    string representations of all of the current internal values of the
-    parameters back into the `tentativeValues` property. The idea is that
+    string representations of the current internal values of the parameters
+    listed in _which_ back into the `tentativeValues` property. If _which_
+    is not specified, it copies all parameters back. The idea is that
     in its operation, the instance may need to modify one or more of its
     parameter values. If so, it should call the `refreshParams()` method
     afterwards so that the new authoritative values of the parameters can
-    have their representations in the UI updated accordingly.
+    have their representations in the UI updated accordingly. It will disrupt
+    the user interface the least if _which_ is supplied to include only
+    the parameters that were actually changed.
 <!-- --> **/
     /** xmd */
     readonly query: string /* **/
@@ -581,17 +611,27 @@ export class Paramable implements ParamableInterface {
             // Be a little paranoid: only include "own" properties:
             if (!hasField(params, prop)) continue
             const param = params[prop]
-            // Because of how function types are unioned, we have to circumvent
-            // typescript a little bit
-            if (param.required)
-                this.tentativeValues[prop] = typeFunctions[
-                    param.type
-                ].derealize.call(param, param.default as never)
-            // We assume the default value is valid
+            // We assume the initial state is valid
             this.statusOf[prop] = ValidationStatus.ok()
+            if (param.required) this.resetParam(prop)
+            // if not required, OK to leave this[prop] undefined initially
         }
         // We assume that the default values together make a valid object:
         this.validationStatus = ValidationStatus.ok()
+    }
+
+    // Set a parameter back to its default value
+    resetParam(prop: string) {
+        const param = this.params[prop]
+        const me = this as Record<string, unknown>
+        me[prop] = param.default
+        // Because of how function types are unioned, we have to circumvent
+        // typescript a little bit
+        this.tentativeValues[prop] = typeFunctions[param.type].derealize.call(
+            param,
+            param.default as never
+        )
+        this.statusOf[prop].reset()
     }
 
     get description() {
@@ -703,7 +743,7 @@ export class Paramable implements ParamableInterface {
             realized = realizeAll(this.params, this.tentativeValues)
 
         const props: string[] = []
-        const changed: string[] = []
+        const changed = new Set<string>()
         for (const prop in realized) {
             if (!hasField(realized, prop)) continue
 
@@ -723,11 +763,11 @@ export class Paramable implements ParamableInterface {
                 if (newVersion !== myVersion) {
                     // OK, really have to change
                     me[prop] = realized[prop]
-                    changed.push(prop)
+                    changed.add(prop)
                 }
             }
         }
-        if (changed.length > 0) {
+        if (changed.size > 0) {
             if (this.parChangePromise) {
                 this.parChangePromise.then(() =>
                     this.parametersChanged(changed)
@@ -738,9 +778,10 @@ export class Paramable implements ParamableInterface {
         }
     }
 
-    refreshParams(): void {
+    refreshParams(which?: Set<string>): void {
+        if (!which) which = new Set(Object.keys(this.params))
         const me = this as unknown as ParamValues<GenericParamDescription>
-        for (const prop in this.params) {
+        for (const prop of which) {
             if (!hasField(this, prop)) continue
             const param = this.params[prop]
 
@@ -773,13 +814,13 @@ export class Paramable implements ParamableInterface {
         }
     }
     /** xmd */
-    async parametersChanged(_name: string[]): Promise<void> /* **/ {
+    async parametersChanged(_name: Set<string>): Promise<void> /* **/ {
         return
     }
     /** xmd
 :   This method will be called (by the base class implementation) whenever
     the values of one or more parameters have changed.  The _name_ argument
-    is a list of the names of parameters that have changed. Note there can
+    is a Set of the names of parameters that have changed. Note there can
     be more than one, since sometimes multiple parameters change
     simultaneously, as in a call to `loadQuery()`. In the base class itself,
     this method does nothing, but it may be overridden in derived classes to

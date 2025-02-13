@@ -13,8 +13,8 @@ import type {
     VisualizerInterface,
 } from './VisualizerInterface'
 
-import {CachingError} from '@/sequences/Cached'
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import {CachingError} from '@/shared/math'
 import {Paramable} from '@/shared/Paramable'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 
@@ -426,8 +426,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             a div that it's already inhabiting, nothing will happen.
         */
 
-        async parametersChanged(name: string[]) {
-            await super.parametersChanged(name)
+        async parametersChanged(names: Set<string>) {
+            await super.parametersChanged(names)
             await this.reset()
         }
 
