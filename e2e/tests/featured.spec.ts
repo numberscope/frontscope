@@ -25,7 +25,7 @@ test.describe('Featured gallery images', () => {
             ).toHaveId('pause-button', {timeout: 30000})
             const matchParams =
                 browserName === 'firefox' && details.tag === '@webGL'
-                    ? {maxDiffPixelRatio: 0.02}
+                    ? {maxDiffPixelRatio: 0.01}
                     : {}
             expect(
                 await page.locator('#canvas-container').screenshot()

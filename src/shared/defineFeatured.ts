@@ -150,9 +150,8 @@ const featuredSIMs = [
         'Turtle',
         'Formula',
         'angleMeaning=1&speed=5&ruleMode=1&angleFormula=log(n)*10000.06534'
-            + '&angleMeasure=1&stepFormula=200%2Fsqrt(n)'
-            + '&bgColor=201E2D'
-            + '&widthFormula=3'
+            + '&angleMeasure=1&stepFormula=300%2Fsqrt(n)&bgColor=201E2D'
+            + '&widthFormula=4-n%2F1000'
             + '&colorFormula=chroma%28%28chroma.scale%28%5B%27%23fafa6e'
             + '%27%2C+%27%232A4858%27%2C+%27%23fafa6e%27%5D%29.mode%28%27lch%27'
             + '%29.colors%28360%29%29%5Bfloor%28number%28b+rad%2C+deg%29+%25'
