@@ -73,7 +73,7 @@ const formulaSymSet = new Set(formulaSymbols)
 
 const paramDesc = {
     /** md
-- Domain: a list of numbers.  These are the values that
+- **Domain**: a list of numbers.  These are the values that
 that the turtle should pay attention to when appearing as
 entries of the sequence.  Values of the sequence
 not occurring in this list will be skipped.
@@ -112,19 +112,19 @@ have a small domain.)
 
 The following set of parameters give the instructions for the turtle's path
 (and how it changes from frame to frame). Each one can be a single number, in
-which case it is used for every element of the domain. Or it can be a list of
-numbers the same length as the domain, in which case the numbers correspond in
-order: the first number is used when an entry is equal to the first value in
-the domain, the second number is used for entries equal to the second value,
-and so on. For example, if the "Step length(s)" parameter below is "10",
-then a segment 10 pixels long will be drawn for every sequence entry in the
-domain, whereas if the domain is "0 1 2" and "Step length(s)" is "20 10 0",
-then the turtle will move 20 pixels each time it sees a sequence entry of 0,
-10 pixels for each 1, and it won't draw anything when an entry is equal to 2
-(but it might turn).
+which case it is used for every element of **Domain**. Or it can be a list
+of numbers the same length as **Domain**, in which case the numbers correspond
+in order: the first number is used when an entry is equal to the first value
+in **Domain**, the second number is used for entries equal to the second value,
+and so on. For example, if the **Step length(s)** parameter below is "10",
+then a segment 10 pixels long will be drawn for every sequence entry in
+**Domain**, whereas if **Domain** is "0 1 2" and **Step length(s)** is
+"20 10 0", then the turtle will move 20 pixels each time it sees a sequence
+entry of 0, 10 pixels for each 1, and it won't draw anything when an entry
+is equal to 2 (but it might turn).
 
-- Angle(s): Determines the bearing angle (in degrees) for the turtle before
-each step (corresponding to one sequence entry in the domain). Angles are
+- **Angle(s)**: Determines the bearing angle (in degrees) for the turtle before
+each step (corresponding to one sequence entry in **Domain**). Angles are
 measured so that positive angles run counterclockwise, and negative clockwise.
      **/
     angles: {
@@ -141,8 +141,8 @@ measured so that positive angles run counterclockwise, and negative clockwise.
         level: 0,
     },
     /** md
-- Angle is...: specifies whether the angle for each step is taken directly as
-  the new bearing of the turtle (counterclockwise from moving horizontally
+- **Angle is...**: specifies whether the angle for each step is taken directly
+  as the new bearing of the turtle (counterclockwise from moving horizontally
   to the right), or as a turn (counterclockwise change in bearing) from its
   previous bearing. In either case, the turtle takes on its new bearing
   _before_ taking its next step.
@@ -159,8 +159,8 @@ measured so that positive angles run counterclockwise, and negative clockwise.
         level: 1,
     },
     /** md
-- Step length(s): Specifies (in pixels) how far the turtle should move (and
-draw a line segment as it goes) for each sequence entry in the domain. Note
+- **Step length(s)**: Specifies (in pixels) how far the turtle should move (and
+draw a line segment as it goes) for each sequence entry in **Domain**. Note
 negative values (for moving backward) are allowed.
      **/
     steps: {
@@ -189,11 +189,11 @@ negative values (for moving backward) are allowed.
         level: 0,
     },
     /** md
-- Fold rate(s): Specifies (in units of 0.00001 degree) how each angle
+- **Folding rate(s)**: Specifies (in units of 0.00001 degree) how each angle
 changes from one frame to the next. For example, if there is just one entry
 of "5" here, then in each frame of the animation, the angle for every
-element of the domain will increase by 0.00005 degree. Similarly, if the
-domain is "0 1" and this list is "200 -100" then in each frame the angle
+element of **Domain** will increase by 0.00005 degree. Similarly, if
+**Domain** is "0 1" and this list is "200 -100" then in each frame the angle
 for 0 entries will increase by 0.002 degrees, and the angle for 1 entries
 will decrease by 0.001 degree. These increments might seem small, but with
 so many steps in a turtle path, a little goes a long way.
@@ -216,7 +216,7 @@ so many steps in a turtle path, a little goes a long way.
         visibleValue: true,
     },
     /** md
-- Stretch rate(s): Specifies (in units of 0.01 pixel) how each step length
+- **Stretch rate(s)**: Specifies (in units of 0.01 pixel) how each step length
 changes from one frame to the next.
      **/
     stretches: {
@@ -234,7 +234,7 @@ changes from one frame to the next.
         visibleValue: true,
     },
     /** md
-- Stroke width(s): Gives the width of the segment drawn for each entry,
+- **Stroke width(s)**: Gives the width of the segment drawn for each entry,
   in pixels.
     **/
     widths: {
@@ -258,8 +258,8 @@ changes from one frame to the next.
         level: 0,
     },
     /** md
-- Stroke color(s): One or more colors, corresponding to the elements in the
-  domain just as all of the above parameters do. You can add a color by
+- **Stroke color(s)**: One or more colors, corresponding to the elements in
+  **Domain** just as all of the above parameters do. You can add a color by
   clicking the `+` button, and delete a color by selecting it and pressing
   the `Delete` key.
     **/
@@ -278,13 +278,13 @@ changes from one frame to the next.
     },
     /** md
 
-(Note that as an advanced convenience feature, useful mainly when the domain is
-large, you may specify fewer entries in any of the above lists than there are
-elements in the domain, and the last one will be re-used as many times as
-necessary. Using this feature will display a warning, in case you inadvertently
-left out a value.)
+(Note that as an advanced convenience feature, useful mainly when **Domain**
+has many elements, you may specify fewer entries in any of the above lists
+than there are elements in **Domain**, and the last one will be re-used
+as many times as necessary. Using this feature will display a warning, in
+case you inadvertently left out a value.)
 
-- Background color: The color of the visualizer canvas.
+- **Background color**: The color of the visualizer canvas.
      **/
     bgColor: {
         default: '#6b1a1a',
@@ -293,12 +293,13 @@ left out a value.)
         required: true,
     },
     /** md
-- Turtle speed: a number.  If zero (or if any of the fold or stretch rates
-are nonzero), the full path is drawn all at once. Otherwise, the path drawing
-will be animated, and the Turtle speed specifies the number of steps of the
-path to draw per frame. The drawing continues as long as there are additional
-entries of the sequence to display. The Turtle visualizer has a brake on it
-to prevent lag: this speed cannot exceed 1000 steps per frame.
+- **Turtle speed**: a number.  If zero (or if any of the **Folding rate(s)**
+  or **Stretch rate(s)** are nonzero), the full path is drawn all at once.
+  Otherwise, the path drawing will be animated, and the **Turtle speed**
+  specifiesthe number of steps of the path to draw per frame. The drawing
+  continues as long as there are additional entries of the sequence to display.
+  The Turtle visualizer has a brake on it to prevent lag: this speed cannot
+  exceed 1000 steps per frame.
      **/
     speed: {
         default: 1,
@@ -313,11 +314,11 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         },
     },
     /** md
-- Rule mode: You may select "List" or "Formula". Generally speaking, the
+- **Rule mode**: You may select "List" or "Formula". Generally speaking, the
   parameters above are used to control the Turtle visualization when this
   Rule mode parameter has its default value of "List". The parameters below
-  are used when the Rule mode is "Formula". (Note that Background color
-  and Turtle speed are used in either case.) Broadly, in Formula mode,
+  are used when the **Rule mode** is "Formula". (Note that **Background color**
+  and **Turtle speed** are used in either case.) Broadly, in Formula mode,
   you can enter expressions that calculate the different aspects of each
   segment of the turtle's path (angle, step length, color, etc.) directly
   from the sequence entries. In each of these formulas, you may use the
@@ -365,6 +366,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
   in Formula mode can't possibly be captured in the simpler List mode. Hence,
   the Turtle visualizer simply doesn't try to keep the List values in
   sync with Formula changes.
+
      **/
     ruleMode: {
         default: RuleMode.List,
@@ -402,8 +404,8 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         },
     },
     /** md
-- Angle formula: an expression to compute the angle for a given step of the
-  turtle's path. Just as in list mode, the Angle is... parameter
+- **Angle formula**: an expression to compute the angle for a given step of the
+  turtle's path. Just as in list mode, the **Angle is...** parameter
   above specifies whether the value of this expression is taken directly as
   the new Bearing of the turtle, or whether the turtle makes a
   (counterclockwise) Turn by this angle before taking its next step.
@@ -423,10 +425,10 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         level: 0,
     },
     /** md
-- Angle measure: whether the result of the Angle formula should be interpreted
-  in degrees or radians. Note that the selection also gives the units in
-  which the value of the `b` (bearing) variable  that can be used in formulas
-  will be determined.
+- **Angle measure**: whether the result of the **Angle formula** should be
+  interpreted in degrees or radians. Note that the selection also gives the
+  units in which the value of the `b` (bearing) variable  that can be used
+  in formulas will be determined.
     **/
     angleMeasure: {
         default: AngleUnit.Degrees,
@@ -438,8 +440,8 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         visibleValue: RuleMode.Formula,
     },
     /** md
-- Step formula: an expression to compute the pixel length of each step of the
-  turtle's path.
+- **Step formula**: an expression to compute the pixel length of each step
+  of the turtle's path.
     **/
     stepFormula: {
         default: new MathFormula('20'),
@@ -453,8 +455,8 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         level: 0,
     },
     /** md
-- Width formula: an expression to compute the pixel width of each step of the
-  turtle's path.
+- **Width formula**: an expression to compute the pixel width of each step
+  of the turtle's path.
     **/
     widthFormula: {
         default: new MathFormula('1'),
@@ -468,7 +470,7 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         level: 0,
     },
     /** md
-- Color formula: an expression to compute the color of each step of the
+- **Color formula**: an expression to compute the color of each step of the
   turtle's path.
     **/
     colorFormula: {
@@ -483,9 +485,9 @@ to prevent lag: this speed cannot exceed 1000 steps per frame.
         level: 0,
     },
     /** md
-- Color chooser: This color picker does not directly control the display.
+- **Color chooser**: This color picker does not directly control the display.
   Instead, whenever you select a color with it, the corresponding color
-  string is inserted in the Color formula box.
+  string is inserted in the **Color formula** box.
     **/
     colorChooser: {
         default: '#00d0d0',
