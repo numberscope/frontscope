@@ -86,10 +86,11 @@ const featuredSIMs = [
         'Wait For It',
         'Turtle',
         'Formula',
-        'domain=-1+1&angles=30+120&steps=30+30&widths=2&strokeColor=%237a9f6f'
-            + '&bgColor=363071&speed=3&ruleMode=1&angleFormula=%7B%22-1%22%3A'
-            + '+30%2C+%221%22%3A+120%7D%5Bstring%28a%29%5D&stepFormula=%7B%22'
-            + '-1%22%3A+30%2C+%221%22%3A+30%7D%5Bstring%28a%29%5D&widthFormula'
+        'domain=-1+1&angles=30+120&steps=30+30&widths=2'
+            + '&strokeColor=%237a106080+%237a9f6f50&bgColor=363071&speed=3'
+            + '&angleFormula=%7B%22-1%22%3A+30%2C+%221%22%3A+120%7D'
+            + '%5Bstring%28a%29%5D&stepFormula=%7B%22-1%22%3A+30%2C'
+            + '+%221%22%3A+30%7D%5Bstring%28a%29%5D&widthFormula'
             + '=%7B%22-1%22%3A+2%2C+%221%22%3A+2%7D%5Bstring%28a%29%5D'
             + '&colorFormula=%7B%22-1%22%3A+%237a106080%2C+%221%22%3A'
             + '+%237a9f6f50%7D%5Bstring%28a%29%5D',
