@@ -14,6 +14,7 @@
                     :id="paramName"
                     v-model:value="colorValue"
                     v-model:show-picker="showPicker"
+                    show-alpha
                     :add-color="param.type === ParamType.COLOR_ARRAY"
                     @click="maybeTogglePicker"
                     @update:show-picker="reconcilePicker" />
@@ -282,6 +283,7 @@
         width: 100%;
         height: 30px;
         font-size: 14px;
+        resize: vertical;
     }
 
     .param-description {
