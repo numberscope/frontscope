@@ -29,6 +29,14 @@
                         {{ name }}
                     </option>
                 </select>
+                <textarea
+                    v-else-if="param.type === ParamType.FORMULA"
+                    :id="paramName"
+                    :class="!status.isValid() ? 'error-field' : ''"
+                    :value="value"
+                    :placeholder="placehold(param)"
+                    @keyup.enter="growArea($event)"
+                    @input="updateString($event)" />
                 <input
                     v-else
                     :id="paramName"
@@ -36,7 +44,7 @@
                     :class="!status.isValid() ? 'error-field' : ''"
                     :value="value"
                     :placeholder="placehold(param)"
-                    @keyup.enter="blurField(paramName)"
+                    @keyup.enter="blurField($event)"
                     @input="updateString($event)">
             </label>
 
@@ -99,19 +107,31 @@
         return map
     }
 
-    function blurField(id: string) {
-        window.document.getElementById(id)?.blur()
+    function blurField(e: Event) {
+        const field = e.target
+        if (field instanceof HTMLElement) field.blur()
+    }
+    function growArea(e: Event) {
+        const area = e.target
+        if (area instanceof HTMLTextAreaElement) {
+            const curheight = area.getBoundingClientRect().height
+            area.style.height = `${curheight + 14}px`
+        }
     }
 
     function updateBoolean(e: Event) {
-        blurField(props.paramName)
+        blurField(e)
         const inp = e.target as HTMLInputElement
         emit('updateParam', inp.checked + '')
     }
 
     function updateString(e: Event) {
         const t = e.target
-        if (t instanceof HTMLSelectElement || t instanceof HTMLInputElement) {
+        if (
+            t instanceof HTMLSelectElement
+            || t instanceof HTMLInputElement
+            || t instanceof HTMLTextAreaElement
+        ) {
             emit('updateParam', t.value)
         }
     }
@@ -251,6 +271,17 @@
             outline: 3px solid var(--ns-color-primary);
             border: none;
         }
+    }
+
+    textarea {
+        display: block;
+        border: none;
+        border-bottom: 1.5px solid var(--ns-color-black);
+        padding-bottom: 0px;
+        margin: 0px;
+        width: 100%;
+        height: 30px;
+        font-size: 14px;
     }
 
     .param-description {

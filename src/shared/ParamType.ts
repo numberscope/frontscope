@@ -232,7 +232,7 @@ export const typeFunctions: {
             status.forbid(
                 freeVars.size,
                 `free variables limited to ${inputSymbols}; `
-                    + `please remove '${freeVars}'`
+                    + `please remove '${Array.from(freeVars).join(', ')}'`
             )
             status.forbid(
                 fmla.freefuncs.size,
