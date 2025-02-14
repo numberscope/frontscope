@@ -222,13 +222,21 @@
     }
 
     .stacked-param {
-        margin-top: 24px;
+        margin-top: 16px;
         margin-bottom: 0px;
     }
 
+    .stacked-param + .stacked-param {
+        margin-top: 24px;
+    }
+
     .inline-param {
-        margin-top: 16px;
+        margin-top: 8px;
         margin-bottom: 0px;
+    }
+
+    .stacked-param + .inline-param {
+        margin-top: 16px;
     }
 
     .sub-stacked-param {
