@@ -47,6 +47,7 @@ const formulaSymbols = [
     'M',
     'f',
     'c',
+    'p',
     'C',
     'w',
     'x',
@@ -67,23 +68,6 @@ const paramDesc = {
             + 'used as a modulus applied to the entries.',
         validate(c: number, status: ValidationStatus) {
             if (c < 2) status.addError('must be at least 2')
-        },
-    },
-    /** md
-- **Fraction**: the fraction of a step to take (default 1/2)
-    **/
-    frac: {
-        default: 0.5,
-        type: ParamType.NUMBER,
-        displayName: 'Fraction to walk',
-        required: false,
-        description:
-            'What fraction of the way each step takes you toward the '
-            + 'vertex specified by the entry.',
-        validate(f: number, status: ValidationStatus) {
-            if (f < 0 || f > 1) {
-                status.addError('must be between 0 and 1, inclusive')
-            }
         },
     },
     /** md
@@ -133,6 +117,8 @@ const paramDesc = {
 
   'c' The corner we just stepped toward.
 
+  'p' The number of corners.
+
   'C' The corner are about to step toward.
 
   'w' The walker.
@@ -176,15 +162,44 @@ const paramDesc = {
     //               cf.substr(0, start) + newColor + cf.substr(end)
     //       },
     //   },
-    circSize: {
-        default: 1,
-        type: ParamType.NUMBER,
-        displayName: 'Size (pixels)',
+
+    /** md
+- **Size Formula**:  The size of each dot.
+    **/
+    sizeFormula: {
+        default: new MathFormula('1'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbols,
+        displayName: 'Size formula',
+        description: 'Computes the size of each dot',
         required: false,
-        validate(cs: number, status: ValidationStatus) {
-            if (cs <= 0) status.addError('must be positive')
-        },
+        level: 0,
     },
+    /** md
+- **Corner Formula**:  The corner heading of each dot.
+    **/
+    cornerFormula: {
+        default: new MathFormula('mod(a,p)'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbols,
+        displayName: 'Corner formula',
+        description: 'Computes the corner dot walks toward',
+        required: false,
+        level: 0,
+    },
+    /** md
+- **Step Formula**:  What fraction of distance to corner to walk.
+    **/
+    stepFormula: {
+        default: new MathFormula('0.5'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbols,
+        displayName: 'Step formula',
+        description: 'Computes the fraction of distance to corner to walk',
+        required: false,
+        level: 0,
+    },
+
     pixelsPerFrame: {
         default: 50,
         type: ParamType.NUMBER,
@@ -334,8 +349,8 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
             this.vertices.push([new p5.Vector()])
             this.verticesIndices.push([0n])
-            this.verticesSizes.push([this.circSize])
-            this.verticesColors.push([this.sketch.color(this.bgColor)])
+            this.verticesSizes.push([firstSize])
+            this.verticesColors.push([firstColor])
             this.verticesCorners.push([0])
         }
         this.redraw()
@@ -371,27 +386,20 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             // for each walker we look in verticesIndices
             // to check if we are between
             // start and end; this could be empty
-            console.log('drawing walker', currWalker, start, end)
             const startArrayIndex = math.max(
                 this.verticesIndices[currWalker].findIndex(
                     n => n >= BigInt(start)
                 ),
                 0
             )
-            console.log('startArrayIndex', startArrayIndex)
             let lastPos = this.vertices[currWalker][startArrayIndex]
             for (
                 let i = startArrayIndex + 1;
                 this.verticesIndices[currWalker][i] <= end;
                 i++
             ) {
-                console.log('trying', i)
                 const pos = this.vertices[currWalker][i]
                 if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
-                    console.log(
-                        'drawing',
-                        this.verticesIndices[currWalker][i]
-                    )
                     sketch.fill(this.verticesColors[currWalker][i])
                     sketch.push()
                     sketch.translate(lastPos.x, lastPos.y)
@@ -447,7 +455,6 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         }
         if (drewSome) this.cursor = this.chunks.length * CHUNK_SIZE
 
-        console.log('cursors', this.cursor, currentLength)
         if (this.cursor < currentLength) {
             this.drawVertices(this.cursor, currentLength)
             this.cursor = currentLength
@@ -472,7 +479,6 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             && currentLength >= this.maxLength
             && !this.pathFailure
         ) {
-            console.log('stopping')
             this.stop()
         }
     }
@@ -502,24 +508,46 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             } catch (e) {
                 this.pathFailure = true
                 if (e instanceof CachingError) {
-                    console.log('CACHE', e)
                     return // need to wait for more elements
                 } else {
                     // don't know what to do with this
-                    console.log(e) //throw e
+                    throw e
                 }
             }
             // later this will be by formula
             const currWalker = math.safeNumber(math.modulo(i, this.walkers))
-            console.log('walker ticker', i, currWalker)
 
             // infer last position of this walker and its corner intention
             const currlen = this.vertices[currWalker].length - 1
             const position = this.vertices[currWalker][currlen].copy()
             const lastCorner = this.verticesCorners[currWalker][currlen]
 
+            // variables you can use in corner formula (excludes C)
+            const inputCorner = {
+                n: Number(i),
+                a: Number(currElement),
+                s: Number(i - this.seq.first + 1n),
+                m: Number(this.seq.first),
+                M: Number(this.seq.last),
+                f: currentFrames,
+                c: lastCorner,
+                p: this.corners,
+                w: currWalker,
+                x: position.x,
+                y: position.y,
+                A: (n: number | bigint) =>
+                    Number(this.seq.getElement(BigInt(n))),
+            }
+
             // having found an element, we figure out its data
-            const myCorner = Number(math.modulo(currElement, this.corners))
+            let myCorner = 0
+            myCorner =
+                this.cornerFormula.computeWithStatus(
+                    this.statusOf.cornerFormula,
+                    inputCorner
+                ) ?? 1
+            if (this.statusOf.cornerFormula.invalid()) return
+
             const input = {
                 n: Number(i),
                 a: Number(currElement),
@@ -528,6 +556,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 M: Number(this.seq.last),
                 f: currentFrames,
                 c: lastCorner,
+                p: this.corners,
                 C: myCorner,
                 w: currWalker,
                 x: position.x,
@@ -544,18 +573,29 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                     input
                 ) ?? 0
             if (this.statusOf.colorFormula.invalid()) return
+            let circSize = 0
+            circSize =
+                this.sizeFormula.computeWithStatus(
+                    this.statusOf.sizeFormula,
+                    input
+                ) ?? 1
+            if (this.statusOf.sizeFormula.invalid()) return
+            let step = 0
+            step =
+                this.stepFormula.computeWithStatus(
+                    this.statusOf.stepFormula,
+                    input
+                ) ?? 1
+            if (this.statusOf.stepFormula.invalid()) return
 
             // determine new position
             // (Safe to convert to number since this.corners is "small")
             const myCornerPosition = this.cornersList[myCorner]
-            position.lerp(myCornerPosition, this.frac)
+            position.lerp(myCornerPosition, step)
 
-            console.log('pushing', i, currWalker)
             // push everything
             this.vertices[currWalker].push(position.copy())
-            this.verticesSizes[currWalker].push(
-                math.safeNumber(this.circSize)
-            )
+            this.verticesSizes[currWalker].push(math.safeNumber(circSize))
             this.verticesIndices[currWalker].push(i)
             this.verticesCorners[currWalker].push(myCorner)
             if (typeof clr === 'string') {
