@@ -1,9 +1,12 @@
 import p5 from 'p5'
+import {markRaw} from 'vue'
 
-import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
+import {INVALID_COLOR} from './P5Visualizer'
+import {P5GLVisualizer} from './P5GLVisualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
+//import type {ViewSize} from './VisualizerInterface'
 
-import {math} from '@/shared/math'
+import {math, MathFormula, CachingError} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
@@ -11,45 +14,50 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
 /** md
 # Chaos Visualizer
 
+[<img
+  src="../../assets/img/Turtle/turtle-waitforit.png"
+  width=500
+  style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/Turtle/turtle-waitforit.png)
+
 This visualizer interprets the sequence entries as instructions for walkers
 traversing the region bounded by the vertices of a regular _n_-gon, and displays
 the locations that the walkers visit.
 
-_This visualizer documentation page is a stub. You can improve Numberscope
-by adding detail._
+More precisely, the walker begins in the centre of the polygon.  As it reads
+each sequence entry a_k, it interprets that sequence entry as a polygon corner
+(typically by taking it modulo n), and walks a proportion of the distance from
+its current location to the corner (typically halfway).  Then it paits a dot
+in its current location, and repeats.
+
+When this process is performed with a random sequence, this is called the
+`chaos game.'  The chaos game on a square produces a uniformly coloured
+square, but on other shapes it produces fractal images.  For example, on
+a triangle, one obtains the Sierpinsky gasket.
+
+For non-random sequences, the distribution of dots picks up information
+about local correlations and overall distribution.
 **/
 
-// p5 Colour palette class
-class Palette {
-    colorList: p5.Color[] = []
-    backgroundColor: p5.Color
-    textColor: p5.Color
-
-    constructor(
-        sketch: p5 | undefined = undefined,
-        hexList: string[] = [],
-        hexBack = '#000000',
-        hexText = '#FFFFFF'
-    ) {
-        if (sketch) {
-            this.colorList = hexList.map(colorSpec => sketch.color(colorSpec))
-            this.backgroundColor = sketch.color(hexBack)
-            this.textColor = sketch.color(hexText)
-        } else {
-            this.backgroundColor = INVALID_COLOR
-            this.textColor = INVALID_COLOR
-        }
-    }
-}
-
-enum ColorStyle {
-    Walker,
-    Destination,
-    Index,
-    Highlighting_one_walker,
-}
+const formulaSymbols = [
+    'n',
+    'a',
+    'A',
+    's',
+    'm',
+    'M',
+    'f',
+    'c',
+    'C',
+    'w',
+    'x',
+    'y',
+] as const
 
 const paramDesc = {
+    /** md
+- **Corners**: the number of corners on the polygon
+    **/
     corners: {
         default: 4,
         type: ParamType.INTEGER,
@@ -62,6 +70,9 @@ const paramDesc = {
             if (c < 2) status.addError('must be at least 2')
         },
     },
+    /** md
+- **Fraction**: the fraction of a step to take (default 1/2)
+    **/
     frac: {
         default: 0.5,
         type: ParamType.NUMBER,
@@ -76,6 +87,9 @@ const paramDesc = {
             }
         },
     },
+    /** md
+- **Walkers**: the number of separate walkers
+    **/
     walkers: {
         default: 1,
         type: ParamType.INTEGER,
@@ -89,94 +103,104 @@ const paramDesc = {
             if (w < 1) status.addError('must be at least 1')
         },
     },
-    colorStyle: {
-        default: ColorStyle.Walker,
-        type: ParamType.ENUM,
-        from: ColorStyle,
-        displayName: 'Color dots by',
+    /** md
+- **Background color**: The color of the visualizer canvas.
+     **/
+    bgColor: {
+        default: '#111111',
+        type: ParamType.COLOR,
+        displayName: 'Background color',
         required: true,
-        description: 'The way the dots should be colored.',
     },
-    gradientLength: {
-        default: 10000,
-        type: ParamType.INTEGER,
-        displayName: 'Color cycling length',
+    /** md
+- **Color formula**: an expression to compute the color of each dot
+
+  `n` The index of the entry in the sequence being visualized.
+
+  `a` The value of the entry.
+
+  `s` The serial number of the step starting from one for the first dot.
+
+  `m` The minimum index of the sequence being visualized. Note that the
+  above definitions mean that `n`, `s`, and `m` are related by `n = m + s - 1`.
+
+  `M` The Maximum index of the sequence being visualized. Note this value
+  may be Infinity for sequences that are defined and can be calculated in
+  principle for any index.
+
+  `f` The frame number of this drawing pass. If you use this variable, the
+  visualization will be redrawn from the beginning on every frame,
+  animating the shape of the path.
+
+  'c' The corner we just stepped toward.
+
+  'C' The corner are about to step toward.
+
+  'w' The walker.
+
+  `x` The x-coordinate of the dot.
+
+  `y` The y-coordinate of the dot.
+
+    **/
+    colorFormula: {
+        default: new MathFormula('#c98787'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbols,
+        displayName: 'Color formula',
+        description: 'Computes the color of each dot',
         required: false,
-        visibleDependency: 'colorStyle',
-        visibleValue: ColorStyle.Index,
-        description:
-            'The number of entries before recycling the color sequence.',
-        validate(gl: number, status: ValidationStatus) {
-            if (gl < 1) status.addError('must be at least 1')
-        },
+        level: 0,
     },
-    highlightWalker: {
-        default: 0,
-        type: ParamType.INTEGER,
-        displayName: 'Number of walker to highlight',
-        required: false,
-        visibleDependency: 'colorStyle',
-        visibleValue: ColorStyle.Highlighting_one_walker,
-        validate(hw: number, status: ValidationStatus) {
-            if (hw < 0) status.addError('must be 0 or higher')
-        },
-    },
-    dummyDotControl: {
-        default: false,
-        type: ParamType.BOOLEAN,
-        displayName: 'Show additional parameters for the dots ↴',
-        required: false,
-    },
+    /** md
+- **Color chooser**: This color picker does not directly control the display.
+  Instead, whenever you select a color with it, the corresponding color
+  string is inserted in the **Color formula** box.
+    **/
+    //    colorChooser: {
+    //       default: '#00d0d0',
+    //       type: ParamType.COLOR,
+    //       displayName: 'Color chooser:',
+    //       required: true,
+    //       description:
+    //           'Inserts choice into the Color formula, replacing current '
+    //           + 'selection therein, if any.',
+    //       updateAction: function (newColor: string) {
+    //           const chaos = this instanceof Chaos ? this : null
+    //           if (chaos === null) return
+    //       const cfIn = document.querySelector('.param-field #colorFormula')
+    //           if (!(cfIn instanceof HTMLInputElement)) return
+    //           const cf = chaos.tentativeValues.colorFormula
+    //           const start = cfIn.selectionStart ?? cf.length
+    //           const end = cfIn.selectionEnd ?? start
+    //           chaos.tentativeValues.colorFormula =
+    //               cf.substr(0, start) + newColor + cf.substr(end)
+    //       },
+    //   },
     circSize: {
         default: 1,
         type: ParamType.NUMBER,
         displayName: 'Size (pixels)',
         required: false,
-        visibleDependency: 'dummyDotControl',
-        visibleValue: true,
         validate(cs: number, status: ValidationStatus) {
             if (cs <= 0) status.addError('must be positive')
         },
     },
-    alpha: {
-        default: 0.9,
-        type: ParamType.NUMBER,
-        displayName: 'Alpha',
-        required: false,
-        description:
-            'Alpha factor (from 0.0=transparent to 1.0=solid) of the dots.',
-        visibleDependency: 'dummyDotControl',
-        visibleValue: true,
-        validate(a: number, status: ValidationStatus) {
-            if (a < 0 || a > 1) {
-                status.addError('must be between 0 and 1, inclusive')
-            }
-        },
-    },
     pixelsPerFrame: {
-        default: 400n,
-        type: ParamType.BIGINT,
+        default: 50,
+        type: ParamType.NUMBER,
         displayName: 'Dots to draw per frame',
         required: false,
         description: '(more = faster).',
-        visibleDependency: 'dummyDotControl',
-        visibleValue: true,
         validate(p: number, status: ValidationStatus) {
             if (p < 1) status.addError('must be at least 1')
         },
     },
     showLabels: {
-        default: false,
+        default: true,
         type: ParamType.BOOLEAN,
         displayName: 'Label corners of polygon?',
         required: false,
-    },
-    darkMode: {
-        default: false,
-        type: ParamType.BOOLEAN,
-        displayName: 'Use dark mode?',
-        required: false,
-        description: 'If checked, uses light colors on a dark background.',
     },
 } satisfies GenericParamDescription
 
@@ -184,163 +208,196 @@ const paramDesc = {
 // or shrink over time;
 // circles fade to the outside
 
-class Chaos extends P5Visualizer(paramDesc) {
+const formulaParamNames = ['colorFormula'] as const
+const ruleParams = {
+    strokeColor: 'colorFormula',
+} as const
+
+type FormulaParam = (typeof formulaParamNames)[number]
+type RuleParam = keyof typeof ruleParams
+function checkRule(r: string): r is RuleParam {
+    return r in ruleParams
+}
+// the cast below is necessary b/c TypeScript doesn't type Object.fromEntries
+// tightly (#?!@!)
+const formulaRules = Object.fromEntries(
+    formulaParamNames.map(
+        (fmla: FormulaParam): [FormulaParam, RuleParam[]] => [fmla, []]
+    )
+) as Record<FormulaParam, RuleParam[]>
+for (const [rule, fmla] of Object.entries(ruleParams)) {
+    if (checkRule(rule)) formulaRules[fmla].push(rule)
+}
+// How many segments to gather into a reusable Geometry object
+// Might need tuning
+const CHUNK_SIZE = 1000
+
+class Chaos extends P5GLVisualizer(paramDesc) {
     static category = 'Chaos'
     static description = 'Chaos game played using a sequence to select moves'
 
     // current state variables (used in setup and draw)
     private myIndex = 0n
     private cornersList: p5.Vector[] = []
-    private walkerPositions: p5.Vector[] = []
+    private walkerPositions: p5.Vector[] = [] // current positions
+    private radius = 0
+    private labelOutset = 1.1 // text offset outward
 
-    // colour palette
-    private currentPalette = new Palette()
+    // variables recording the path
+
+    // this.vertices consists of walkers number of arrays, i.e.
+    // it is an array of arrays
+    // similar for the data (sizes, colors)
+    private vertices = markRaw([[new p5.Vector()]]) as p5.Vector[][]
+    private verticesSizes = markRaw([[1]]) as number[][]
+    private verticesColors = markRaw([[INVALID_COLOR]]) as p5.Color[][]
+    private chunks: p5.Geometry[] = markRaw([]) // "frozen" chunks of path
+    private cursor = 0 // vertices up to this one have already been drawn
+
+    private firstIndex = 0n // first term
+    private maxLength = Number.MAX_SAFE_INTEGER // limit # of vertices
+    private growth = 10 // new vertices per frame
+
+    private pathFailure = false
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-        if (params.highlightWalker >= params.walkers) {
-            status.addError(
-                'The highlighted walker must be less than '
-                    + 'the number of walkers.'
-            )
-            this.statusOf.highlightWalker.addWarning(
-                'must be less than the number of walkers'
-            )
-            this.statusOf.walkers.addWarning(
-                'must be larger than the highlighted walker'
-            )
-        }
         return status
     }
 
-    chaosWindow(center: p5.Vector, radius: number) {
-        // creates corners of a polygon with given centre and radius
+    chaosWindow(radius: number) {
+        // creates corners of a polygon with given radius
         const pts: p5.Vector[] = []
         for (let i = 0; i < this.corners; i++) {
-            const angle = this.sketch.radians(45 + (360 * i) / this.corners)
-            pts.push(p5.Vector.fromAngle(angle, radius).add(center))
+            const angle = this.sketch.radians(270 + (360 * i) / this.corners)
+            pts.push(p5.Vector.fromAngle(angle, radius))
         }
         return pts
     }
 
     setup() {
         super.setup()
-        // decide which palette to set by default
-        // we need a colourpicker in the params eventually
-        // right now this is a little arbitrary
-        const defaultColorList = [
-            '#588dad', // blue greenish
-            '#daa520', // orange
-            '#008a2c', // green
-            '#ff6361', // fuschia
-            '#ffa600', // bright orange
-            '#bc5090', // lerp toward purple
-            '#655ca3', // purple
-        ]
-        const darkColor = '#262626'
-        const lightColor = '#f5f5f5'
-        if (this.darkMode) {
-            this.currentPalette = new Palette(
-                this.sketch,
-                defaultColorList,
-                darkColor,
-                lightColor
-            )
-        } else {
-            this.currentPalette = new Palette(
-                this.sketch,
-                defaultColorList,
-                lightColor,
-                darkColor
-            )
-        }
-        if (
-            (this.colorStyle === ColorStyle.Walker
-                && this.walkers > defaultColorList.length)
-            || (this.colorStyle === ColorStyle.Destination
-                && this.corners > defaultColorList.length)
-        ) {
-            let paletteSize = 0
-            if (this.colorStyle === ColorStyle.Walker) {
-                paletteSize = this.walkers
-            }
-            if (this.colorStyle === ColorStyle.Destination) {
-                paletteSize = this.corners
-            }
-            const colorList: string[] = []
-            for (let c = 0; c < paletteSize; c++) {
-                let hexString = ''
-                for (let h = 0; h < 6; h++) {
-                    hexString += math.randomInt(16).toString(16)
-                }
-                colorList.push('#' + hexString)
-            }
-            this.currentPalette = new Palette(
-                this.sketch,
-                colorList,
-                this.darkMode ? darkColor : lightColor,
-                this.darkMode ? lightColor : darkColor
-            )
+
+        // reduce maxLength based on sequence
+        if (this.seq.length < this.maxLength) {
+            this.maxLength = Number(this.seq.length)
         }
 
-        // set center coords and size
-        const center = this.sketch.createVector(
-            this.sketch.width * 0.5,
-            this.sketch.height * 0.5
-        )
-        const radius = this.sketch.width * 0.4
+        // size of polygon
+        this.radius = math.min(this.sketch.height, this.sketch.width) * 0.4
 
         // text appearance control
-        const labelOutset = 1.1
-        const shrink = Math.log(this.corners)
+        //        const shrink = Math.log(this.corners)
         // Shrink the numbers appropriately (up to about 100 corners or so):
-        const textSize = (this.sketch.width * 0.04) / shrink
-        // No stroke right now, but could be added
-        const textStroke = this.sketch.width * 0
+        //        const textSize = (this.sketch.width * 0.04) / shrink
 
         this.myIndex = this.seq.first
 
         // set up arrays of walkers
-        this.walkerPositions = Array.from({length: this.walkers}, () =>
-            center.copy()
+        this.walkerPositions = Array.from(
+            {length: this.walkers},
+            () => new p5.Vector(0, 0)
         )
 
         // Set up the windows and return the coordinates of the corners
-        this.cornersList = this.chaosWindow(center, radius)
+        this.cornersList = this.chaosWindow(this.radius)
 
         // Set frame rate
         this.sketch.frameRate(10)
 
         // canvas clear/background
         this.sketch.clear(0, 0, 0, 0)
-        this.sketch.background(this.currentPalette.backgroundColor)
+        this.sketch.background(this.bgColor)
 
         // Draw corner labels if desired
         if (this.showLabels) {
-            this.sketch
-                .stroke(this.currentPalette.textColor)
-                .fill(this.currentPalette.textColor)
-                .strokeWeight(textStroke)
-                .textSize(textSize)
-                .textAlign(this.sketch.CENTER, this.sketch.CENTER)
-            // Get appropriate locations for the labels
-            const cornersLabels = this.chaosWindow(
-                center,
-                radius * labelOutset
-            )
-            for (let c = 0; c < this.corners; c++) {
-                const label = cornersLabels[c]
-                this.sketch.text(String(c), label.x, label.y)
-            }
+            this.drawLabels()
         }
 
         // no stroke (in particular, no outline on circles)
         this.sketch.strokeWeight(0)
     }
 
-    draw() {
+    drawLabels() {
+        // No stroke right now, but could be added
+        const textStroke = this.sketch.width * 0
+
+        this.sketch.stroke('white').fill('white').strokeWeight(textStroke)
+        //.textSize(textSize)
+        //.textAlign(this.sketch.CENTER, this.sketch.CENTER)
+        // Get appropriate locations for the labels
+        const cornersLabels = this.chaosWindow(this.radius * this.labelOutset)
+        for (let c = 0; c < this.corners; c++) {
+            const label = cornersLabels[c]
+            this.sketch.text(String(c), label.x, label.y)
+        }
+    }
+
+    // Draws the vertices between start and end INCLUSIVE
+    drawVertices(start: number, end: number) {
         const sketch = this.sketch
+        for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
+            let lastPos = this.vertices[currWalker][start]
+            for (let i = start + 1; i <= end; ++i) {
+                const pos = this.vertices[currWalker][i]
+                if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
+                    sketch.fill(this.verticesColors[currWalker][i])
+                    sketch.push()
+                    sketch.translate(lastPos.x, lastPos.y)
+                    sketch.circle(0, 0, this.verticesSizes[currWalker][i])
+                    sketch.pop()
+                }
+                lastPos = pos
+            }
+        }
+    }
+
+    draw() {
+        this.cursor = 0
+        if (this.handleDrags()) this.cursor = 0
+        const sketch = this.sketch
+
+        this.sketch.background(this.bgColor)
+        this.drawLabels()
+
+        // compute more vertices (if needed):
+        // the length of the arrays inside this.vertices should
+        // always be in synch so we sample one
+        const targetLength = Math.min(
+            this.vertices[0].length - 1 + this.pixelsPerFrame,
+            this.maxLength
+        )
+        this.extendVertices(sketch.frameCount, targetLength)
+
+        // draw vertices from cursor to end of this.vertices[walker]:
+        const newCursor = this.vertices[0].length - 1
+        // First see if we can use any chunks:
+        const fullChunksIn = Math.floor(this.cursor / CHUNK_SIZE)
+        let drewSome = false
+        for (let chunk = fullChunksIn; chunk < this.chunks.length; ++chunk) {
+            sketch.model(this.chunks[chunk])
+            drewSome = true
+        }
+        if (drewSome) this.cursor = this.chunks.length * CHUNK_SIZE
+        if (this.cursor < newCursor) {
+            this.drawVertices(this.cursor, newCursor)
+            this.cursor = newCursor
+        }
+
+        // See if we can create a new chunk:
+        const fullChunks = Math.floor(this.cursor / CHUNK_SIZE)
+        if (fullChunks > this.chunks.length) {
+            // @ts-expect-error  The @types/p5 package omitted this function
+            sketch.beginGeometry()
+            this.drawVertices(
+                (fullChunks - 1) * CHUNK_SIZE,
+                fullChunks * CHUNK_SIZE
+            )
+            // @ts-expect-error  Ditto :-(
+            this.chunks.push(sketch.endGeometry())
+        }
+
         // We attempt to draw pixelsPerFrame pixels each time through the
         // draw cycle; this "chunking" speeds things up -- that's essential,
         // because otherwise the overall patterns created by the chaos are
@@ -351,79 +408,115 @@ class Chaos extends P5Visualizer(paramDesc) {
         // in the next frame, likely the caching is done (or at least has moved
         // to significantly higher indices), and drawing just picks up where
         // it left off.
-        let pixelsLimit = this.myIndex + this.pixelsPerFrame
+        let pixelsLimit = this.myIndex + BigInt(this.pixelsPerFrame)
         if (pixelsLimit > this.seq.last) {
             pixelsLimit = BigInt(this.seq.last) + 1n
             // have to add one to make sure we eventually stop
         }
-        for (; this.myIndex < pixelsLimit; this.myIndex++) {
-            // get the term
-            const myTerm = this.seq.getElement(this.myIndex)
 
-            // check its modulus to see which corner to walk toward
-            // (Safe to convert to number since this.corners is "small")
-            const myCorner = Number(math.modulo(myTerm, this.corners))
-            const myCornerPosition = this.cornersList[myCorner]
-
-            // check the index modulus to see which walker is walking
-            // (Ditto on safety.)
-            const myWalker = Number(math.modulo(this.myIndex, this.walkers))
-
-            // update the walker position
-            this.walkerPositions[myWalker].lerp(myCornerPosition, this.frac)
-
-            // choose colour to mark position
-            let myColor = sketch.color(0)
-            switch (this.colorStyle) {
-                case ColorStyle.Walker:
-                    myColor = this.currentPalette.colorList[myWalker]
-                    break
-                case ColorStyle.Destination:
-                    myColor = this.currentPalette.colorList[myCorner]
-                    break
-                case ColorStyle.Index:
-                    if (typeof this.seq.length === 'bigint') {
-                        myColor = sketch.lerpColor(
-                            this.currentPalette.colorList[0],
-                            this.currentPalette.colorList[1],
-                            Number(
-                                (this.myIndex - this.seq.first)
-                                    / this.seq.length
-                            )
-                        )
-                    } else {
-                        myColor = sketch.lerpColor(
-                            this.currentPalette.colorList[0],
-                            this.currentPalette.colorList[1],
-                            Number(
-                                // Safe since gradientLength is "small"
-                                math.modulo(this.myIndex, this.gradientLength)
-                            ) / this.gradientLength
-                        )
-                    }
-                    break
-                case ColorStyle.Highlighting_one_walker:
-                    if (myWalker == this.highlightWalker) {
-                        myColor = this.currentPalette.colorList[0]
-                    } else {
-                        myColor = this.currentPalette.colorList[1]
-                    }
-                    break
-            }
-            // The following "255" is needed when in RGB mode;
-            // can change in other modes; see p5.js docs on setAlpha
-            myColor.setAlpha(255 * this.alpha)
-
-            // draw a circle
-            sketch.fill(myColor)
-            sketch.circle(
-                this.walkerPositions[myWalker].x,
-                this.walkerPositions[myWalker].y,
-                this.circSize
-            )
-        }
         // stop drawing if we exceed available terms
         if (this.myIndex > this.seq.last) this.stop()
+    }
+
+    // This should be run each time more vertices are needed.
+    // Resulting list of vertices have targetLength vertices
+    // meaning that vertices.length = that + 1
+    extendVertices(currentFrames: number, targetLength: number) {
+        // Now compute the new vertices:
+        this.pathFailure = false
+
+        for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
+            const len = this.vertices[currWalker].length - 1
+            const position = this.vertices[currWalker][len].copy()
+            const startIndex = this.firstIndex + BigInt(len)
+            const endIndex = this.firstIndex + BigInt(targetLength)
+            for (let i = startIndex; i < endIndex; i++) {
+                // get the current sequence element and infer
+                // the rotation/step
+                let currElement = 0n
+                let lastElement = 0n
+                try {
+                    currElement = this.seq.getElement(i)
+                    if (i > this.seq.first) {
+                        lastElement = this.seq.getElement(i - 1n)
+                    }
+                } catch (e) {
+                    this.pathFailure = true
+                    if (e instanceof CachingError) {
+                        return // need to wait for more elements
+                    } else {
+                        // don't know what to do with this
+                        throw e
+                    }
+                }
+                const myCorner = Number(
+                    math.modulo(currElement, this.corners)
+                )
+                const lastCorner = Number(
+                    math.modulo(lastElement, this.corners)
+                )
+
+                const input = {
+                    n: Number(i),
+                    a: Number(currElement),
+                    s: Number(i - this.seq.first + 1n),
+                    m: Number(this.seq.first),
+                    M: Number(this.seq.last),
+                    f: currentFrames,
+                    c: lastCorner,
+                    C: myCorner,
+                    w: currWalker,
+                    x: position.x,
+                    y: position.y,
+                    A: (n: number | bigint) =>
+                        Number(this.seq.getElement(BigInt(n))),
+                }
+                let clr: unknown = null
+
+                // push vertex
+                // check its modulus to see which corner to walk toward
+                // (Safe to convert to number since this.corners is "small")
+                const myCornerPosition = this.cornersList[myCorner]
+                position.lerp(myCornerPosition, this.frac)
+                this.vertices[currWalker].push(position.copy())
+
+                try {
+                    // push size of the vertex
+                    this.verticesSizes[currWalker].push(
+                        math.safeNumber(this.circSize)
+                    )
+                    // determine color of dot
+                    clr =
+                        this.colorFormula.computeWithStatus(
+                            this.statusOf.colorFormula,
+                            input
+                        ) ?? 0
+                    if (this.statusOf.colorFormula.invalid()) return
+                } catch (e) {
+                    this.pathFailure = true
+                    if (e instanceof CachingError) {
+                        return // need to wait for more elements
+                    } else {
+                        // don't know what to do with this
+                        throw e
+                    }
+                }
+
+                // push color of the vertex
+                if (typeof clr === 'string') {
+                    this.verticesColors[currWalker].push(
+                        this.sketch.color(clr)
+                    )
+                } else if (math.isChroma(clr)) {
+                    this.verticesColors[currWalker].push(
+                        this.sketch.color(clr.hex())
+                    )
+                } else
+                    this.verticesColors[currWalker].push(
+                        this.sketch.color('white')
+                    )
+            }
+        }
     }
 }
 
