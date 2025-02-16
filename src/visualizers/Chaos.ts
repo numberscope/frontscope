@@ -448,7 +448,8 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             )
             let lastPos = this.vertices[currWalker][startArrayIndex]
             for (
-                let i = startArrayIndex + 1;
+                // avoid i=0, dummy position
+                let i = math.max(1, startArrayIndex + 1);
                 this.verticesIndices[currWalker][i] <= end;
                 i++
             ) {
