@@ -279,6 +279,8 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     setup() {
         super.setup()
 
+        this.firstIndex = this.seq.first
+
         // reduce maxLength based on sequence
         if (this.seq.length < this.maxLength) {
             this.maxLength = Number(this.seq.length)
@@ -293,12 +295,6 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         //        const textSize = (this.sketch.width * 0.04) / shrink
 
         this.myIndex = this.seq.first
-
-        // set up arrays of walkers
-        this.walkerPositions = Array.from(
-            {length: this.walkers},
-            () => new p5.Vector(0, 0)
-        )
 
         // Set up the windows and return the coordinates of the corners
         this.cornersList = this.chaosWindow(this.radius)
@@ -327,10 +323,11 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         //.textSize(textSize)
         //.textAlign(this.sketch.CENTER, this.sketch.CENTER)
         // Get appropriate locations for the labels
-        const cornersLabels = this.chaosWindow(this.radius * this.labelOutset)
+        // const cornersLabels
+        // = this.chaosWindow(this.radius * this.labelOutset)
         for (let c = 0; c < this.corners; c++) {
-            const label = cornersLabels[c]
-            this.sketch.text(String(c), label.x, label.y)
+            //const label = cornersLabels[c]
+            //this.sketch.text(String(c), label.x, label.y)
         }
     }
 
@@ -353,13 +350,17 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         }
     }
 
-    draw() {
+    redraw() {
+        // blanks the screen and sets up to redraw the path
         this.cursor = 0
+        // prepare sketch
+        this.sketch.background(this.bgColor).noStroke().frameRate(30)
+        this.drawLabels()
+    }
+
+    draw() {
         if (this.handleDrags()) this.cursor = 0
         const sketch = this.sketch
-
-        this.sketch.background(this.bgColor)
-        this.drawLabels()
 
         // compute more vertices (if needed):
         // the length of the arrays inside this.vertices should
@@ -400,7 +401,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
 
         // We attempt to draw pixelsPerFrame pixels each time through the
         // draw cycle; this "chunking" speeds things up -- that's essential,
-        // because otherwise the overall patterns created by the chaos are
+        // because otherwise the overall patterns created are
         // much too slow to show up, especially at small pixel sizes.
         // Note that we might end up drawing fewer pixels if, for example,
         // we hit a cache boundary during a frame (at which point getElement
@@ -430,23 +431,23 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             const position = this.vertices[currWalker][len].copy()
             const startIndex = this.firstIndex + BigInt(len)
             const endIndex = this.firstIndex + BigInt(targetLength)
+            let currElement = 0n
             for (let i = startIndex; i < endIndex; i++) {
                 // get the current sequence element and infer
                 // the rotation/step
-                let currElement = 0n
                 let lastElement = 0n
+                if (i > startIndex) {
+                    lastElement = currElement
+                }
                 try {
                     currElement = this.seq.getElement(i)
-                    if (i > this.seq.first) {
-                        lastElement = this.seq.getElement(i - 1n)
-                    }
                 } catch (e) {
                     this.pathFailure = true
                     if (e instanceof CachingError) {
                         return // need to wait for more elements
                     } else {
                         // don't know what to do with this
-                        throw e
+                        console.log(e) //throw e
                     }
                 }
                 const myCorner = Number(
