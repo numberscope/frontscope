@@ -51,8 +51,39 @@ const formulaSymbols = [
     'p',
     'C',
     'w',
+    'W',
     'x',
     'y',
+] as const
+
+const formulaSymbolsCorner = [
+    // excludes C
+    'n',
+    'a',
+    'A',
+    's',
+    'm',
+    'M',
+    'f',
+    'c',
+    'p',
+    'w',
+    'W',
+    'x',
+    'y',
+] as const
+
+const formulaSymbolsWalker = [
+    // excludes C,w,c,x,y
+    'n',
+    'a',
+    'A',
+    's',
+    'm',
+    'M',
+    'f',
+    'p',
+    'W',
 ] as const
 
 const paramDesc = {
@@ -94,6 +125,20 @@ const paramDesc = {
         displayName: 'Background color',
         required: true,
     },
+
+    /** md
+- **Walker Formula**:  The walker to move with each term.
+    **/
+    walkerFormula: {
+        default: new MathFormula('mod(a,W)'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbolsWalker,
+        displayName: 'Walker formula',
+        description: 'The walker to move.',
+        required: false,
+        level: 0,
+    },
+
     /** md
 - **Color formula**: an expression to compute the color of each dot
 
@@ -180,7 +225,7 @@ const paramDesc = {
     cornerFormula: {
         default: new MathFormula('mod(a,p)'),
         type: ParamType.FORMULA,
-        symbols: formulaSymbols,
+        symbols: formulaSymbolsCorner, // can't depend on corner
         displayName: 'Corner formula',
         description: 'Computes the corner dot walks toward',
         required: false,
@@ -210,7 +255,7 @@ const paramDesc = {
         },
     },
     showLabels: {
-        default: true,
+        default: false,
         type: ParamType.BOOLEAN,
         displayName: 'Label corners of polygon?',
         required: false,
@@ -323,7 +368,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         this.sketch.background(this.bgColor)
 
         // Draw corner labels if desired
-        if (this.showLabels) this.drawLabels()
+        this.drawLabels()
 
         // no stroke (in particular, no outline on circles)
         this.sketch.strokeWeight(0)
@@ -359,10 +404,12 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         this.cursor = 0
         // prepare sketch
         this.sketch.background(this.bgColor).noStroke().frameRate(30)
-        if (this.showLabels) this.drawLabels()
+        this.drawLabels()
     }
 
     drawLabels() {
+        if (!this.showLabels) return
+
         // text appearance control
         const shrink = Math.log(this.corners)
         // Shrink the numbers appropriately (up to about 100 corners or so):
@@ -521,8 +568,37 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                     throw e
                 }
             }
-            // later this will be by formula
-            const currWalker = math.safeNumber(math.modulo(i, this.walkers))
+
+            // variables you can use in walker formula
+            // excludes C,c,w,x,y
+            const inputWalker = {
+                n: Number(i),
+                a: Number(currElement),
+                s: Number(i - this.seq.first + 1n),
+                m: Number(this.seq.first),
+                M: Number(this.seq.last),
+                f: currentFrames,
+                p: this.corners,
+                W: this.walkers,
+                A: (n: number | bigint) =>
+                    Number(this.seq.getElement(BigInt(n))),
+            }
+
+            // which walker do we move
+            let currWalker = 0
+            // gives bad data on bigints
+            currWalker =
+                math.safeNumber(
+                    this.walkerFormula.computeWithStatus(
+                        this.statusOf.walkerFormula,
+                        inputWalker
+                    )
+                ) ?? 0
+            if (this.statusOf.walkerFormula.invalid()) return
+            if (currWalker < 0 || currWalker >= this.walkers) {
+                throw 'walker formula out of bounds'
+                currWalker = 0
+            }
 
             // infer last position of this walker and its corner intention
             const currlen = this.vertices[currWalker].length - 1
@@ -540,6 +616,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 c: lastCorner,
                 p: this.corners,
                 w: currWalker,
+                W: this.walkers,
                 x: position.x,
                 y: position.y,
                 A: (n: number | bigint) =>
@@ -568,6 +645,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 p: this.corners,
                 C: myCorner,
                 w: currWalker,
+                W: this.walkers,
                 x: position.x,
                 y: position.y,
                 A: (n: number | bigint) =>
