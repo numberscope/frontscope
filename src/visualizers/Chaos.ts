@@ -248,8 +248,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     // it is an array of arrays
     // similar for the data (sizes, colors)
     private vertices = markRaw([[new p5.Vector()]]) as p5.Vector[][]
+    private verticesIndices = markRaw([[1n]]) as bigint[][]
     private verticesSizes = markRaw([[1]]) as number[][]
     private verticesColors = markRaw([[INVALID_COLOR]]) as p5.Color[][]
+    private verticesCorners = markRaw([[0]]) as number[][]
     private chunks: p5.Geometry[] = markRaw([]) // "frozen" chunks of path
     private cursor = 0 // vertices up to this one have already been drawn
 
@@ -320,13 +322,21 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // reset the arrays.
         const firstSize = 1
         const firstColor = this.sketch.color(this.bgColor)
+        // put the first walker dot into the arrays
         this.vertices = markRaw([[new p5.Vector()]])
+        this.verticesIndices = markRaw([[0n]])
         this.verticesSizes = markRaw([[firstSize]])
         this.verticesColors = markRaw([[firstColor]])
-        for (let currWalker = 1; currWalker < this.walkers; currWalker++) {
+        this.verticesCorners = markRaw([[0]])
+        // for every other walker, push another walker array
+        // keep in mind the first entry in the arrays is a "dummy" indicating
+        // that you start at the origin, but we don't draw that dot
+        for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
             this.vertices.push([new p5.Vector()])
+            this.verticesIndices.push([0n])
             this.verticesSizes.push([this.circSize])
             this.verticesColors.push([this.sketch.color(this.bgColor)])
+            this.verticesCorners.push([0])
         }
         this.redraw()
     }
@@ -358,10 +368,30 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     drawVertices(start: number, end: number) {
         const sketch = this.sketch
         for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
-            let lastPos = this.vertices[currWalker][start]
-            for (let i = start + 1; i <= end; ++i) {
+            // for each walker we look in verticesIndices
+            // to check if we are between
+            // start and end; this could be empty
+            console.log('drawing walker', currWalker, start, end)
+            const startArrayIndex = math.max(
+                this.verticesIndices[currWalker].findIndex(
+                    n => n >= BigInt(start)
+                ),
+                0
+            )
+            console.log('startArrayIndex', startArrayIndex)
+            let lastPos = this.vertices[currWalker][startArrayIndex]
+            for (
+                let i = startArrayIndex + 1;
+                this.verticesIndices[currWalker][i] <= end;
+                i++
+            ) {
+                console.log('trying', i)
                 const pos = this.vertices[currWalker][i]
                 if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
+                    console.log(
+                        'drawing',
+                        this.verticesIndices[currWalker][i]
+                    )
                     sketch.fill(this.verticesColors[currWalker][i])
                     sketch.push()
                     sketch.translate(lastPos.x, lastPos.y)
@@ -378,29 +408,36 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         this.cursor = 0 // make sure we redraw
     }
 
+    currentLength() {
+        // how many dots do we have stored?
+        let currentLength = -this.walkers // ignore dummy vertices
+        for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
+            currentLength += this.vertices[currWalker].length
+        }
+        return currentLength
+    }
+
     draw() {
         if (this.handleDrags()) this.cursor = 0
         const sketch = this.sketch
         if (this.cursor === 0) this.redraw()
 
+        const currentLength = this.currentLength()
+
         // compute more vertices (if needed):
         // the length of the arrays inside this.vertices should
         // always be in synch so we sample one
-        let targetLength = Math.min(
-            this.vertices[0].length - 1 + this.pixelsPerFrame,
+        const targetLength = Math.min(
+            currentLength + this.pixelsPerFrame,
             this.maxLength
         )
-        if (targetLength - this.vertices[0].length <= this.walkers) {
-            targetLength = this.vertices[0].length
-        }
 
         // extend if needed
-        if (targetLength > this.vertices[0].length) {
+        if (targetLength > currentLength) {
             this.extendVertices(sketch.frameCount, targetLength)
         }
 
-        // draw vertices from cursor to end of this.vertices[walker]:
-        const newCursor = this.vertices[0].length - 1
+        // draw vertices from cursor to end of what we have
         // First see if we can use any chunks:
         const fullChunksIn = Math.floor(this.cursor / CHUNK_SIZE)
         let drewSome = false
@@ -409,9 +446,11 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             drewSome = true
         }
         if (drewSome) this.cursor = this.chunks.length * CHUNK_SIZE
-        if (this.cursor < newCursor) {
-            this.drawVertices(this.cursor, newCursor)
-            this.cursor = newCursor
+
+        console.log('cursors', this.cursor, currentLength)
+        if (this.cursor < currentLength) {
+            this.drawVertices(this.cursor, currentLength)
+            this.cursor = currentLength
         }
 
         // See if we can create a new chunk:
@@ -430,10 +469,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // stop drawing if done
         if (
             !sketch.mouseIsPressed
-            && this.vertices[0].length
-                > math.floor(this.maxLength / this.walkers)
+            && currentLength >= this.maxLength
             && !this.pathFailure
         ) {
+            console.log('stopping')
             this.stop()
         }
     }
@@ -445,53 +484,42 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // Now compute the new vertices:
         this.pathFailure = false
 
-        // this should always be in synch
-        const len = this.vertices[0].length - 1
-        // start index is the current position
+        // infer the start index from what's stored
+        // computes the total drawable vertices stored in the arrays
+        const len = this.currentLength()
         const startIndex = this.firstIndex + BigInt(len)
         // can change if cache error
         // end index is how much more of the sequence to take
-        // divided by walkers
-        let endIndex = this.firstIndex + BigInt(targetLength)
-        const remainder = math.modulo(endIndex - startIndex, this.walkers)
-        endIndex = endIndex - remainder
+        const endIndex = this.firstIndex + BigInt(targetLength)
 
-        let currWalker = -1
         let currElement = 0n
         for (let i = startIndex; i < endIndex; i++) {
             // increment walker with each new index
-            currWalker += 1
-            if (currWalker >= this.walkers) currWalker = 0
-            // get the current sequence element and infer
-            // the rotation/step
-            let lastElement = 0n
-            if (i > startIndex) {
-                lastElement = currElement
-            }
-            const currlen = this.vertices[currWalker].length - 1
-            const position = this.vertices[currWalker][currlen].copy()
+
+            // try to get the new element and store its data
             try {
                 currElement = this.seq.getElement(i)
             } catch (e) {
                 this.pathFailure = true
                 if (e instanceof CachingError) {
                     console.log('CACHE', e)
-                    // didn't make it to next currWalker == 0
-                    // so pop the partial work
-                    for (let j = currWalker; j >= 0; j--) {
-                        this.vertices[j].pop()
-                        this.verticesSizes[j].pop()
-                        this.verticesColors[j].pop()
-                    }
                     return // need to wait for more elements
                 } else {
                     // don't know what to do with this
                     console.log(e) //throw e
                 }
             }
-            const myCorner = Number(math.modulo(currElement, this.corners))
-            const lastCorner = Number(math.modulo(lastElement, this.corners))
+            // later this will be by formula
+            const currWalker = math.safeNumber(math.modulo(i, this.walkers))
+            console.log('walker ticker', i, currWalker)
 
+            // infer last position of this walker and its corner intention
+            const currlen = this.vertices[currWalker].length - 1
+            const position = this.vertices[currWalker][currlen].copy()
+            const lastCorner = this.verticesCorners[currWalker][currlen]
+
+            // having found an element, we figure out its data
+            const myCorner = Number(math.modulo(currElement, this.corners))
             const input = {
                 n: Number(i),
                 a: Number(currElement),
@@ -507,20 +535,9 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 A: (n: number | bigint) =>
                     Number(this.seq.getElement(BigInt(n))),
             }
+
+            // determine new color
             let clr: unknown = null
-
-            // push vertex
-            // check its modulus to see which corner to walk toward
-            // (Safe to convert to number since this.corners is "small")
-            const myCornerPosition = this.cornersList[myCorner]
-            position.lerp(myCornerPosition, this.frac)
-            this.vertices[currWalker].push(position.copy())
-
-            // push size of the vertex
-            this.verticesSizes[currWalker].push(
-                math.safeNumber(this.circSize)
-            )
-            // determine color of dot
             clr =
                 this.colorFormula.computeWithStatus(
                     this.statusOf.colorFormula,
@@ -528,7 +545,19 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 ) ?? 0
             if (this.statusOf.colorFormula.invalid()) return
 
-            // push color of the vertex
+            // determine new position
+            // (Safe to convert to number since this.corners is "small")
+            const myCornerPosition = this.cornersList[myCorner]
+            position.lerp(myCornerPosition, this.frac)
+
+            console.log('pushing', i, currWalker)
+            // push everything
+            this.vertices[currWalker].push(position.copy())
+            this.verticesSizes[currWalker].push(
+                math.safeNumber(this.circSize)
+            )
+            this.verticesIndices[currWalker].push(i)
+            this.verticesCorners[currWalker].push(myCorner)
             if (typeof clr === 'string') {
                 this.verticesColors[currWalker].push(this.sketch.color(clr))
             } else if (math.isChroma(clr)) {
