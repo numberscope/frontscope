@@ -1,6 +1,7 @@
 import p5 from 'p5'
 import {markRaw} from 'vue'
 
+import interFont from '@/assets/fonts/inter/Inter-VariableFont_slnt,wght.ttf'
 import {INVALID_COLOR} from './P5Visualizer'
 import {P5GLVisualizer} from './P5GLVisualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
@@ -63,9 +64,7 @@ const paramDesc = {
         type: ParamType.INTEGER,
         displayName: 'Number of corners',
         required: true,
-        description:
-            'The number of vertices of the polygon; this value is also '
-            + 'used as a modulus applied to the entries.',
+        description: 'The number of vertices of the polygon',
         validate(c: number, status: ValidationStatus) {
             if (c < 2) status.addError('must be at least 2')
         },
@@ -80,8 +79,8 @@ const paramDesc = {
         required: false,
         description:
             'The number w of walkers. The sequence will be broken into '
-            + 'subsequences based on the residue mod w '
-            + 'of the index, each with a separate walker.',
+            + 'subsequences based on a formula,'
+            + 'each with a separate walker.',
         validate(w: number, status: ValidationStatus) {
             if (w < 1) status.addError('must be at least 1')
         },
@@ -90,7 +89,7 @@ const paramDesc = {
 - **Background color**: The color of the visualizer canvas.
      **/
     bgColor: {
-        default: '#111111',
+        default: '#000000FF',
         type: ParamType.COLOR,
         displayName: 'Background color',
         required: true,
@@ -256,6 +255,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     private walkerPositions: p5.Vector[] = [] // current positions
     private radius = 0
     private labelOutset = 1.1 // text offset outward
+    private fontsLoaded = false
 
     // variables recording the path
 
@@ -295,6 +295,12 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     setup() {
         super.setup()
 
+        this.fontsLoaded = false
+        this.sketch.loadFont(interFont, font => {
+            this.sketch.textFont(font)
+            this.fontsLoaded = true
+        })
+
         this.firstIndex = this.seq.first
 
         // reduce maxLength based on sequence
@@ -304,12 +310,6 @@ class Chaos extends P5GLVisualizer(paramDesc) {
 
         // size of polygon
         this.radius = math.min(this.sketch.height, this.sketch.width) * 0.4
-
-        // text appearance control
-        //        const shrink = Math.log(this.corners)
-        // Shrink the numbers appropriately (up to about 100 corners or so):
-        //        const textSize = (this.sketch.width * 0.04) / shrink
-
         this.myIndex = this.seq.first
 
         // Set up the windows and return the coordinates of the corners
@@ -323,9 +323,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         this.sketch.background(this.bgColor)
 
         // Draw corner labels if desired
-        if (this.showLabels) {
-            this.drawLabels()
-        }
+        if (this.showLabels) this.drawLabels()
 
         // no stroke (in particular, no outline on circles)
         this.sketch.strokeWeight(0)
@@ -361,21 +359,30 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         this.cursor = 0
         // prepare sketch
         this.sketch.background(this.bgColor).noStroke().frameRate(30)
+        if (this.showLabels) this.drawLabels()
     }
 
     drawLabels() {
+        // text appearance control
+        const shrink = Math.log(this.corners)
+        // Shrink the numbers appropriately (up to about 100 corners or so):
+        const textSize = (this.sketch.width * 0.04) / shrink
+
         // No stroke right now, but could be added
         const textStroke = this.sketch.width * 0
 
-        this.sketch.stroke('white').fill('white').strokeWeight(textStroke)
-        //.textSize(textSize)
-        //.textAlign(this.sketch.CENTER, this.sketch.CENTER)
+        // labels are white
+        this.sketch
+            .stroke('white')
+            .fill('white')
+            .strokeWeight(textStroke)
+            .textSize(textSize)
         // Get appropriate locations for the labels
-        // const cornersLabels
-        // = this.chaosWindow(this.radius * this.labelOutset)
+        const cornersLabels = this.chaosWindow(this.radius * this.labelOutset)
         for (let c = 0; c < this.corners; c++) {
-            //const label = cornersLabels[c]
-            //this.sketch.text(String(c), label.x, label.y)
+            const label = cornersLabels[c]
+            // WebGL is warning here, but we HAVE loaded a font??
+            this.sketch.text(String(c), label.x, label.y)
         }
     }
 
@@ -542,9 +549,11 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             // having found an element, we figure out its data
             let myCorner = 0
             myCorner =
-                this.cornerFormula.computeWithStatus(
-                    this.statusOf.cornerFormula,
-                    inputCorner
+                math.safeNumber(
+                    this.cornerFormula.computeWithStatus(
+                        this.statusOf.cornerFormula,
+                        inputCorner
+                    )
                 ) ?? 1
             if (this.statusOf.cornerFormula.invalid()) return
 
@@ -575,16 +584,20 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             if (this.statusOf.colorFormula.invalid()) return
             let circSize = 0
             circSize =
-                this.sizeFormula.computeWithStatus(
-                    this.statusOf.sizeFormula,
-                    input
+                math.safeNumber(
+                    this.sizeFormula.computeWithStatus(
+                        this.statusOf.sizeFormula,
+                        input
+                    )
                 ) ?? 1
             if (this.statusOf.sizeFormula.invalid()) return
             let step = 0
             step =
-                this.stepFormula.computeWithStatus(
-                    this.statusOf.stepFormula,
-                    input
+                math.safeNumber(
+                    this.stepFormula.computeWithStatus(
+                        this.statusOf.stepFormula,
+                        input
+                    )
                 ) ?? 1
             if (this.statusOf.stepFormula.invalid()) return
 
