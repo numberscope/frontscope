@@ -4,7 +4,6 @@ import {markRaw} from 'vue'
 import {INVALID_COLOR} from './P5Visualizer'
 import {P5GLVisualizer} from './P5GLVisualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
-//import type {ViewSize} from './VisualizerInterface'
 
 import {math, MathFormula, CachingError} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
@@ -313,6 +312,30 @@ class Chaos extends P5GLVisualizer(paramDesc) {
 
         // no stroke (in particular, no outline on circles)
         this.sketch.strokeWeight(0)
+
+        this.refresh()
+    }
+
+    refresh() {
+        // reset the arrays.
+        const firstSize = 1
+        const firstColor = this.sketch.color(this.bgColor)
+        this.vertices = markRaw([[new p5.Vector()]])
+        this.verticesSizes = markRaw([[firstSize]])
+        this.verticesColors = markRaw([[firstColor]])
+        for (let currWalker = 1; currWalker < this.walkers; currWalker++) {
+            this.vertices.push([new p5.Vector()])
+            this.verticesSizes.push([this.circSize])
+            this.verticesColors.push([this.sketch.color(this.bgColor)])
+        }
+        this.redraw()
+    }
+
+    redraw() {
+        // blanks the screen and sets up to redraw the path
+        this.cursor = 0
+        // prepare sketch
+        this.sketch.background(this.bgColor).noStroke().frameRate(30)
     }
 
     drawLabels() {
@@ -350,26 +373,31 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         }
     }
 
-    redraw() {
-        // blanks the screen and sets up to redraw the path
-        this.cursor = 0
-        // prepare sketch
-        this.sketch.background(this.bgColor).noStroke().frameRate(30)
-        this.drawLabels()
+    mouseWheel(event: WheelEvent) {
+        super.mouseWheel(event)
+        this.cursor = 0 // make sure we redraw
     }
 
     draw() {
         if (this.handleDrags()) this.cursor = 0
         const sketch = this.sketch
+        if (this.cursor === 0) this.redraw()
 
         // compute more vertices (if needed):
         // the length of the arrays inside this.vertices should
         // always be in synch so we sample one
-        const targetLength = Math.min(
+        let targetLength = Math.min(
             this.vertices[0].length - 1 + this.pixelsPerFrame,
             this.maxLength
         )
-        this.extendVertices(sketch.frameCount, targetLength)
+        if (targetLength - this.vertices[0].length <= this.walkers) {
+            targetLength = this.vertices[0].length
+        }
+
+        // extend if needed
+        if (targetLength > this.vertices[0].length) {
+            this.extendVertices(sketch.frameCount, targetLength)
+        }
 
         // draw vertices from cursor to end of this.vertices[walker]:
         const newCursor = this.vertices[0].length - 1
@@ -399,24 +427,15 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             this.chunks.push(sketch.endGeometry())
         }
 
-        // We attempt to draw pixelsPerFrame pixels each time through the
-        // draw cycle; this "chunking" speeds things up -- that's essential,
-        // because otherwise the overall patterns created are
-        // much too slow to show up, especially at small pixel sizes.
-        // Note that we might end up drawing fewer pixels if, for example,
-        // we hit a cache boundary during a frame (at which point getElement
-        // will throw a CachingError, breaking out of draw() altogether). But
-        // in the next frame, likely the caching is done (or at least has moved
-        // to significantly higher indices), and drawing just picks up where
-        // it left off.
-        let pixelsLimit = this.myIndex + BigInt(this.pixelsPerFrame)
-        if (pixelsLimit > this.seq.last) {
-            pixelsLimit = BigInt(this.seq.last) + 1n
-            // have to add one to make sure we eventually stop
+        // stop drawing if done
+        if (
+            !sketch.mouseIsPressed
+            && this.vertices[0].length
+                > math.floor(this.maxLength / this.walkers)
+            && !this.pathFailure
+        ) {
+            this.stop()
         }
-
-        // stop drawing if we exceed available terms
-        if (this.myIndex > this.seq.last) this.stop()
     }
 
     // This should be run each time more vertices are needed.
@@ -426,97 +445,100 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // Now compute the new vertices:
         this.pathFailure = false
 
-        for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
-            const len = this.vertices[currWalker].length - 1
-            const position = this.vertices[currWalker][len].copy()
-            const startIndex = this.firstIndex + BigInt(len)
-            const endIndex = this.firstIndex + BigInt(targetLength)
-            let currElement = 0n
-            for (let i = startIndex; i < endIndex; i++) {
-                // get the current sequence element and infer
-                // the rotation/step
-                let lastElement = 0n
-                if (i > startIndex) {
-                    lastElement = currElement
-                }
-                try {
-                    currElement = this.seq.getElement(i)
-                } catch (e) {
-                    this.pathFailure = true
-                    if (e instanceof CachingError) {
-                        return // need to wait for more elements
-                    } else {
-                        // don't know what to do with this
-                        console.log(e) //throw e
-                    }
-                }
-                const myCorner = Number(
-                    math.modulo(currElement, this.corners)
-                )
-                const lastCorner = Number(
-                    math.modulo(lastElement, this.corners)
-                )
+        // this should always be in synch
+        const len = this.vertices[0].length - 1
+        // start index is the current position
+        const startIndex = this.firstIndex + BigInt(len)
+        // can change if cache error
+        // end index is how much more of the sequence to take
+        // divided by walkers
+        let endIndex = this.firstIndex + BigInt(targetLength)
+        const remainder = math.modulo(endIndex - startIndex, this.walkers)
+        endIndex = endIndex - remainder
 
-                const input = {
-                    n: Number(i),
-                    a: Number(currElement),
-                    s: Number(i - this.seq.first + 1n),
-                    m: Number(this.seq.first),
-                    M: Number(this.seq.last),
-                    f: currentFrames,
-                    c: lastCorner,
-                    C: myCorner,
-                    w: currWalker,
-                    x: position.x,
-                    y: position.y,
-                    A: (n: number | bigint) =>
-                        Number(this.seq.getElement(BigInt(n))),
-                }
-                let clr: unknown = null
-
-                // push vertex
-                // check its modulus to see which corner to walk toward
-                // (Safe to convert to number since this.corners is "small")
-                const myCornerPosition = this.cornersList[myCorner]
-                position.lerp(myCornerPosition, this.frac)
-                this.vertices[currWalker].push(position.copy())
-
-                try {
-                    // push size of the vertex
-                    this.verticesSizes[currWalker].push(
-                        math.safeNumber(this.circSize)
-                    )
-                    // determine color of dot
-                    clr =
-                        this.colorFormula.computeWithStatus(
-                            this.statusOf.colorFormula,
-                            input
-                        ) ?? 0
-                    if (this.statusOf.colorFormula.invalid()) return
-                } catch (e) {
-                    this.pathFailure = true
-                    if (e instanceof CachingError) {
-                        return // need to wait for more elements
-                    } else {
-                        // don't know what to do with this
-                        throw e
-                    }
-                }
-
-                // push color of the vertex
-                if (typeof clr === 'string') {
-                    this.verticesColors[currWalker].push(
-                        this.sketch.color(clr)
-                    )
-                } else if (math.isChroma(clr)) {
-                    this.verticesColors[currWalker].push(
-                        this.sketch.color(clr.hex())
-                    )
-                } else
-                    this.verticesColors[currWalker].push(
-                        this.sketch.color('white')
-                    )
+        let currWalker = -1
+        let currElement = 0n
+        for (let i = startIndex; i < endIndex; i++) {
+            // increment walker with each new index
+            currWalker += 1
+            if (currWalker >= this.walkers) currWalker = 0
+            // get the current sequence element and infer
+            // the rotation/step
+            let lastElement = 0n
+            if (i > startIndex) {
+                lastElement = currElement
             }
+            const currlen = this.vertices[currWalker].length - 1
+            const position = this.vertices[currWalker][currlen].copy()
+            try {
+                currElement = this.seq.getElement(i)
+            } catch (e) {
+                this.pathFailure = true
+                if (e instanceof CachingError) {
+                    console.log('CACHE', e)
+                    // didn't make it to next currWalker == 0
+                    // so pop the partial work
+                    for (let j = currWalker; j >= 0; j--) {
+                        this.vertices[j].pop()
+                        this.verticesSizes[j].pop()
+                        this.verticesColors[j].pop()
+                    }
+                    return // need to wait for more elements
+                } else {
+                    // don't know what to do with this
+                    console.log(e) //throw e
+                }
+            }
+            const myCorner = Number(math.modulo(currElement, this.corners))
+            const lastCorner = Number(math.modulo(lastElement, this.corners))
+
+            const input = {
+                n: Number(i),
+                a: Number(currElement),
+                s: Number(i - this.seq.first + 1n),
+                m: Number(this.seq.first),
+                M: Number(this.seq.last),
+                f: currentFrames,
+                c: lastCorner,
+                C: myCorner,
+                w: currWalker,
+                x: position.x,
+                y: position.y,
+                A: (n: number | bigint) =>
+                    Number(this.seq.getElement(BigInt(n))),
+            }
+            let clr: unknown = null
+
+            // push vertex
+            // check its modulus to see which corner to walk toward
+            // (Safe to convert to number since this.corners is "small")
+            const myCornerPosition = this.cornersList[myCorner]
+            position.lerp(myCornerPosition, this.frac)
+            this.vertices[currWalker].push(position.copy())
+
+            // push size of the vertex
+            this.verticesSizes[currWalker].push(
+                math.safeNumber(this.circSize)
+            )
+            // determine color of dot
+            clr =
+                this.colorFormula.computeWithStatus(
+                    this.statusOf.colorFormula,
+                    input
+                ) ?? 0
+            if (this.statusOf.colorFormula.invalid()) return
+
+            // push color of the vertex
+            if (typeof clr === 'string') {
+                this.verticesColors[currWalker].push(this.sketch.color(clr))
+            } else if (math.isChroma(clr)) {
+                this.verticesColors[currWalker].push(
+                    this.sketch.color(clr.hex())
+                )
+            } else
+                this.verticesColors[currWalker].push(
+                    this.sketch.color('white')
+                )
         }
     }
 }
