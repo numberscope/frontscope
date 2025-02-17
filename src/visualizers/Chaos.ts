@@ -286,7 +286,7 @@ const formulaRules = Object.fromEntries(
 for (const [rule, fmla] of Object.entries(ruleParams)) {
     if (checkRule(rule)) formulaRules[fmla].push(rule)
 }
-// How many segments to gather into a reusable Geometry object
+// How many dots to gather into a reusable Geometry object
 // Might need tuning
 const CHUNK_SIZE = 1000
 
@@ -317,7 +317,6 @@ class Chaos extends P5GLVisualizer(paramDesc) {
 
     private firstIndex = 0n // first term
     private maxLength = Number.MAX_SAFE_INTEGER // limit # of vertices
-    private growth = 10 // new vertices per frame
 
     private pathFailure = false
 
@@ -361,23 +360,21 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         this.cornersList = this.chaosWindow(this.radius)
 
         // Set frame rate
-        this.sketch.frameRate(10)
+        this.sketch.frameRate(60)
 
         // canvas clear/background
         this.sketch.clear(0, 0, 0, 0)
         this.sketch.background(this.bgColor)
 
-        // Draw corner labels if desired
-        this.drawLabels()
-
         // no stroke (in particular, no outline on circles)
         this.sketch.strokeWeight(0)
 
-        this.refresh()
+        this.cursor = 0
     }
 
     refresh() {
         // reset the arrays.
+        console.log('refreshing')
         const firstSize = 1
         const firstColor = this.sketch.color(this.bgColor)
         // put the first walker dot into the arrays
@@ -399,11 +396,18 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         this.redraw()
     }
 
+    refreshParams() {
+        super.refreshParams()
+        this.cursor = 0
+        this.refresh()
+    }
+
     redraw() {
+        console.log('redrawing')
         // blanks the screen and sets up to redraw the path
         this.cursor = 0
         // prepare sketch
-        this.sketch.background(this.bgColor).noStroke().frameRate(30)
+        this.sketch.background(this.bgColor)
         this.drawLabels()
     }
 
@@ -481,59 +485,90 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     }
 
     draw() {
+        console.log('Starting')
+        console.log('Starting1.5')
         if (this.handleDrags()) this.cursor = 0
+        console.log('Starting2')
         const sketch = this.sketch
+        console.log('Starting3')
         if (this.cursor === 0) this.redraw()
+        console.log('Starting4')
 
-        const currentLength = this.currentLength()
+        let currentLength = this.currentLength()
 
         // compute more vertices (if needed):
         // the length of the arrays inside this.vertices should
         // always be in synch so we sample one
-        const targetLength = Math.min(
-            currentLength + this.pixelsPerFrame,
+        const targetCursor = Math.min(
+            this.cursor + this.pixelsPerFrame,
             this.maxLength
         )
 
         // extend if needed
-        if (targetLength > currentLength) {
-            this.extendVertices(sketch.frameCount, targetLength)
+        if (targetCursor > currentLength) {
+            console.log('computation')
+            this.extendVertices(sketch.frameCount, targetCursor)
         }
+        currentLength = this.currentLength()
 
-        // draw vertices from cursor to end of what we have
+        // draw vertices from cursor to target
         // First see if we can use any chunks:
-        const fullChunksIn = Math.floor(this.cursor / CHUNK_SIZE)
+        console.log('from to', this.cursor, targetCursor)
+        const fullChunksDrawn = Math.floor(this.cursor / CHUNK_SIZE)
+        const fullChunksExisting = math.min(
+            this.chunks.length,
+            Math.floor(targetCursor / CHUNK_SIZE)
+        )
         let drewSome = false
-        for (let chunk = fullChunksIn; chunk < this.chunks.length; ++chunk) {
+        for (
+            let chunk = fullChunksDrawn;
+            chunk < fullChunksExisting;
+            ++chunk
+        ) {
             sketch.model(this.chunks[chunk])
             drewSome = true
         }
-        if (drewSome) this.cursor = this.chunks.length * CHUNK_SIZE
+        if (drewSome) this.cursor = fullChunksExisting * CHUNK_SIZE
+        console.log('afterchunks', this.cursor)
 
-        if (this.cursor < currentLength) {
-            this.drawVertices(this.cursor, currentLength)
-            this.cursor = currentLength
+        if (this.cursor < targetCursor) {
+            this.drawVertices(this.cursor, targetCursor)
+            this.cursor = targetCursor
         }
 
         // See if we can create a new chunk:
         const fullChunks = Math.floor(this.cursor / CHUNK_SIZE)
         if (fullChunks > this.chunks.length) {
-            // @ts-expect-error  The @types/p5 package omitted this function
-            sketch.beginGeometry()
-            this.drawVertices(
-                (fullChunks - 1) * CHUNK_SIZE,
-                fullChunks * CHUNK_SIZE
-            )
-            // @ts-expect-error  Ditto :-(
-            this.chunks.push(sketch.endGeometry())
+            for (
+                let chunk = fullChunksExisting + 1;
+                chunk < fullChunks;
+                chunk++
+            ) {
+                // @ts-expect-error  The @types/p5 package omitted this function
+                sketch.beginGeometry()
+                console.log('making chunks')
+                this.drawVertices(
+                    (chunk - 1) * CHUNK_SIZE,
+                    chunk * CHUNK_SIZE
+                )
+                // @ts-expect-error  Ditto :-(
+                this.chunks.push(sketch.endGeometry())
+            }
         }
+        console.log('end drawing loop', this.cursor)
 
         // stop drawing if done
         if (
             !sketch.mouseIsPressed
-            && currentLength >= this.maxLength
+            && currentLength >= this.maxLength // computed it all
+            && this.cursor >= this.maxLength // drew it all
             && !this.pathFailure
         ) {
+            console.log('Stopping')
+            // we have drawn it all, now we can pan & zoom
+            // without doing a slow redraw
+            this.pixelsPerFrame = this.maxLength
+            this.cursor = 0
             this.stop()
         }
     }
@@ -634,6 +669,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                     )
                 ) ?? 1
             if (this.statusOf.cornerFormula.invalid()) return
+            if (myCorner < 0 || myCorner >= this.corners) {
+                throw 'corner formula out of bounds'
+                myCorner = 0
+            }
 
             const input = {
                 n: Number(i),
