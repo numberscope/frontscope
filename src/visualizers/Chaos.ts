@@ -7,7 +7,7 @@ import {P5GLVisualizer} from './P5GLVisualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
 import {math, MathFormula, CachingError} from '@/shared/math'
-import type {GenericParamDescription} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
@@ -335,7 +335,22 @@ class Chaos extends P5GLVisualizer(paramDesc) {
 
     // misc
     private firstIndex = 0n // first term
-    private maxLength = Number.MAX_SAFE_INTEGER // limit # of dots
+    private dotLimit = 100000 // limit # of dots (prevent lag)
+    private maxLength = 0 // current dot limit (can change)
+
+    checkParameters(params: ParamValues<typeof paramDesc>) {
+        const status = super.checkParameters(params)
+
+        // warn when not using entire sequence
+        if (this.seq.length > this.dotLimit) {
+            status.addWarning(
+                `Using only the first ${this.dotLimit} terms `
+                    + 'to prevent lag.'
+            )
+        }
+
+        return status
+    }
 
     chaosWindow(radius: number) {
         // creates corners of a polygon with given radius
@@ -350,7 +365,6 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     setup() {
         super.setup()
 
-        // load fonts
         this.fontsLoaded = false
         this.sketch.loadFont(interFont, font => {
             this.sketch.textFont(font)
@@ -358,11 +372,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         })
 
         this.firstIndex = this.seq.first
-
-        // reduce maxLength based on sequence
-        if (this.seq.length < this.maxLength) {
-            this.maxLength = Number(this.seq.length)
-        }
+        this.maxLength = math.min(Number(this.seq.length), this.dotLimit)
 
         // size of polygon
         this.radius = math.min(this.sketch.height, this.sketch.width) * 0.4
@@ -370,10 +380,8 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // Set up the windows and return the coordinates of the corners
         this.cornersList = this.chaosWindow(this.radius)
 
-        // Set frame rate
         this.sketch.frameRate(60)
 
-        // canvas clear
         this.sketch.clear(0, 0, 0, 0)
 
         // no stroke (in particular, no outline on circles)
@@ -387,8 +395,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     }
 
     // reset the computed dots (arrays)
+    // lose all the old data
     refresh() {
         console.log('refreshing')
+        this.chunks = markRaw([])
         const firstSize = 1
         const firstColor = this.sketch.color(this.bgColor)
         // put the first walker dot into the arrays
@@ -453,12 +463,14 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             // for each walker we look in dotsIndices
             // to check if we are between
             // start and end; this could be empty
+            console.log('findIndex')
             const startArrayIndex = math.max(
                 this.dotsIndices[currWalker].findIndex(
                     n => n >= BigInt(start)
                 ),
                 0
             )
+            console.log('done findIndex')
             let lastPos = this.dots[currWalker][startArrayIndex]
             for (
                 // avoid i=0, dummy position
@@ -496,6 +508,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     draw() {
         // check if we are zoom/panning, redraw if so
         console.log('Starting')
+        // p5 is doing something terrible right here
+        // its terribleness is proportional to the
+        // size of the stored dot data
+        // sometimes image degrades during this pause
         console.log('Starting1.5')
         if (this.handleDrags()) this.cursor = 0
         console.log('Starting2')
@@ -506,12 +522,20 @@ class Chaos extends P5GLVisualizer(paramDesc) {
 
         // how much data have we got?
         let currentLength = this.currentLength()
+        console.log('currentLength', currentLength)
 
         // how far do we want to draw?
-        const targetCursor = Math.min(
+        let targetCursor = Math.min(
             this.cursor + this.pixelsPerFrame,
             this.maxLength
         )
+        // if we are redrawing (e.g. drag),
+        // then first frame should
+        // advance all the way to where we have
+        // computed
+        if (this.cursor == 0) {
+            targetCursor = Math.max(currentLength, this.pixelsPerFrame)
+        }
 
         // extend (compute dots) if needed
         if (targetCursor > currentLength) {
@@ -580,13 +604,13 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             && this.cursor >= this.maxLength // drew it all
             && !this.pathFailure
         ) {
-            console.log('Stopping')
+            //         console.log('Stopping')
             // we have drawn it all, now we can pan & zoom
             // without doing a slow redraw
             // so we increase pixelsPerFrame
             this.pixelsPerFrame = this.maxLength
-            this.cursor = 0
-            this.stop()
+            //           this.cursor = 0
+            //            this.stop()
         }
     }
 
