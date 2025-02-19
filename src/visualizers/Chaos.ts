@@ -307,7 +307,7 @@ Variables are as for the Size Formula.
 
 // How many dots to gather into a reusable Geometry object
 // Might need tuning
-const CHUNK_SIZE = 1000
+const CHUNK_SIZE = 256
 
 class Chaos extends P5GLVisualizer(paramDesc) {
     static category = 'Chaos'
@@ -481,10 +481,12 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 const pos = this.dots[currWalker][i]
                 if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
                     sketch.fill(this.dotsColors[currWalker][i])
-                    sketch.push()
-                    sketch.translate(lastPos.x, lastPos.y)
-                    sketch.circle(0, 0, this.dotsSizes[currWalker][i])
-                    sketch.pop()
+                    const size = this.dotsSizes[currWalker][i]
+                    //sketch.push()
+                    //sketch.translate(lastPos.x, lastPos.y)
+                    //sketch.circle(pos.x, pos.y, this.dotsSizes[currWalker][i])
+                    sketch.rect(pos.x, pos.y, size, size)
+                    //sketch.pop()
                 }
                 lastPos = pos
             }
@@ -513,6 +515,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // size of the stored dot data
         // sometimes image degrades during this pause
         console.log('Starting1.5')
+        console.log('Starting1.7')
         if (this.handleDrags()) this.cursor = 0
         console.log('Starting2')
         const sketch = this.sketch
@@ -534,7 +537,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // advance all the way to where we have
         // computed
         if (this.cursor == 0) {
-            targetCursor = Math.max(currentLength, this.pixelsPerFrame)
+            targetCursor = Math.min(currentLength + this.pixelsPerFrame, this.maxLength)
         }
 
         // extend (compute dots) if needed
@@ -594,6 +597,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 // @ts-expect-error  Ditto :-(
                 this.chunks.push(sketch.endGeometry())
             }
+            this.cursor = 0
         }
         console.log('end drawing loop', this.cursor)
 
