@@ -13,11 +13,16 @@ the [chroma-js api](https://www.vis4.net/chromajs/). Additional functions
 and facilities for manipulating Chroma colors are documented below.
 
 All of the chroma-js api and operations documented here are also available
-in [mathjs formulas](math.md). In addition, all of the named colors (like
-`red` or `chartreuse`) are available as pre-defined constant symbols, as
-are the color brewer palettes, like `RdBu` or `Set1`. Note the palettes are
-arrays of colors, so to get a specific color from them in a formula you
-need to index them with a 1-based index, e.g., `Set1[5]`.
+in [mathjs formulas](math.md). For example, you can darken a color `x` an
+amount controlled by a number `x` by writing `c.darken(x)`, or desaturate it
+by writing `c.desaturate(x)`, etc.
+
+In addition, all of the named colors (like
+`red` or `chartreuse`, including all CSS (Cascading Style Sheets) named colors)
+are available as pre-defined constant symbols, as are the color brewer
+palettes, like `RdBu` or `Set1`. Note the palettes are arrays of colors,
+so to get a specific color from them in a formula you need to index them
+with a 1-based index, e.g., `Set1[5]`.
 **/
 import type {Color as Chroma} from 'chroma-js'
 import chromaRaw from 'chroma-js'
