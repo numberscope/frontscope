@@ -228,15 +228,17 @@ export const typeFunctions: {
                 )
                 return
             }
-            const freeVars = fmla.freevars.difference(new Set(inputSymbols))
+            const knownSymbols = new Set(inputSymbols)
+            const freeVars = fmla.freevars.difference(knownSymbols)
             status.forbid(
                 freeVars.size,
                 `free variables limited to ${inputSymbols}; `
                     + `please remove '${Array.from(freeVars).join(', ')}'`
             )
+            const freeFuncs = fmla.freefuncs.difference(knownSymbols)
             status.forbid(
-                fmla.freefuncs.size,
-                `unknown functions '${fmla.freefuncs}'`
+                freeFuncs.size,
+                `unknown functions '${Array.from(freeFuncs).join(', ')}'`
             )
         },
         realize: function (value) {

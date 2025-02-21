@@ -1,4 +1,12 @@
+import p5 from 'p5'
+
+import {P5Visualizer} from './P5Visualizer'
+import {VisualizerExportModule} from './VisualizerInterface'
+
+import {chroma, dilute, overlay} from '@/shared/Chroma'
+import type {Chroma} from '@/shared/Chroma'
 import {math, MathFormula} from '@/shared/math'
+import type {MathType} from '@/shared/math'
 import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
@@ -9,24 +17,28 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
 (needs image)
 
 This visualizer divides the rectangular canvas into a grid of _r_ by _c_
-identical rectangular cells. Each cell has an _x_ coordinate, a _y_ coordinate,
-and a number of spiral steps _s_ from the "spiral center" of the rectangle.
+identical rectangular cells. Each cell has an _x_ coordinate (which is the
+1-based column number of the cell), a _y_ coordinate (1-based row number),
+and a 1-based spiral step number _s_ along a rectangular spiral path starting
+near the center of rectangle.
+
 In each animation frame, Formula Grid will draw one or more shapes (from a
 variety of supported shapes) in each of the next group of consecutive cells
-in the grid.
+in the grid, in whatever fill order is currently configured.
 
 Some presets for the fill order of the cells are provided: the default is
-left-to-right, top-to-bottom, but spiral from the center and triangular layout
-with one cell in the center of the top row, two cells on its left and right in
-the second row, and so on, are also provided. In addition, you can customize
-the fill order with a formula giving the coordinates of the _i_th cell to be
-visited. Note that it is not required that a given cell in the grid is visited
-exactly once as a result of these formulas; it could equally well never be
-visited or be visited multiple times. For example, one can make a typical point
-plot of a sequence using the fill order formula `[i, r - a(n)]`. Note that the
-_y_-coordinate returned by this formula is not simply `a(n)` because the
-rows of the grid are numbered from zero at the top row to _r_ at the bottom
-row, rather than in typical Cartesian coordinate fashion.
+left-to-right, top-to-bottom. You can also easily select a spiral from the
+center and a triangular layout with one cell in the center of the top row,
+then two cells on its left and right in the second row, and so on. In addition,
+you can customize the fill order with a formula giving the coordinates of the
+_k_th cell to be visited starting from _k_ = 1. Note that there is no
+requirement that a given cell in the grid is visited exactly once as a result
+of these formulas; it could equally well never be visited or be visited
+multiple times. For example, one can make a typical point plot of a sequence
+using the fill order formula `[k, floor(r/2) - a]`. Note that the
+_y_-coordinate in this formula is not simply `a` because the rows of the grid
+are numbered from 1 to _r_ from top to bottom, rather than in typical Cartesian
+coordinate fashion with _y_ increasing upwards.
 
 The shapes drawn and the (RGBA) colors used for them are determined by the
 Fill formula. If it just returns a color or a value that can be converted to
@@ -129,7 +141,19 @@ enum FillOrder {
 }
 
 const formulaSymbols = [
-    'x', 'y', 's', 'r', 'c', 'k', 'm', 'M', 'n', 'a', 'f', 'A', 'spiral'
+    'x',
+    'y',
+    's',
+    'r',
+    'c',
+    'k',
+    'm',
+    'M',
+    'n',
+    'a',
+    'f',
+    'A',
+    'spiral',
 ] as const
 
 const formulaDescription =
@@ -141,44 +165,195 @@ const formulaDescription =
     + 'y (the y-coordinate), or s (the position along spiral from center).'
 
 // Now the formulas for computing the various preset paths.
-// The coordinates for By_Rows are easy, they are `k % c` and `floor(k / c)`
-// but listed as just `[x,y]` below because that's what the inputs x and y are
-// set to when computing the path.
+// The only tricky bit in the coordinates for By_Rows is to get the computation
+// correct with 1-based column and row numbers; they turn out to be
+// `(k - 1) % c + 1` and `ceil(k / c)`. However, they are list as just
+// `[x,y]` below because that's what the inputs x and y are set to when
+// computing the path. That way you can perturb the By_Rows order if you like,
+// e.g. transpose it easily, at least in the square case.
 // The spiral case is a bit complicated.
 // The number of "extra" right moves before the "first regular right move"
 // is `c - r - (c>r)`, where a negative value means the extra moves are down,
 // not right. We call this quantity the "horizontality" and denote it by `h`.
 // The column of the starting position is `floor((min(r,c)+1)/2)` and the row
 // is `floor(min(r,c)/2)+1`.
-// Now note that for any nonnegative integer `j`, after `j*(j+|h|)` moves we
-// have covered a `j`-by-`j+|h|` rectangle. After `k` moves, we can find the
-// largest such rectangle by `j = |_ (√(h^2+4k) - |h|)/2 _|`.
-// The coordinates of the last point reached in that `j`th rectangle are
+// Now note that for any nonnegative integer `j`, the `j*(j+|h|)`-th position
+// will complete a `j`-by-`j+|h|` rectangle (oriented either landscape or
+// portrait depending on whether `h` is positive or negative). So to find the
+// `k`th position, we can find the largest such completed rectangle by
+// `j = |_ (√(h^2+4k) - |h|)/2 _|`.
+// The coordinates of the last position included in that `j`th rectangle are
 // the starting coordinates plus
 // `[0,0]` if j = 0
-// `[(j-1)/2 + max(h,0), (j-1)/2 - min(h,0)]` if j odd, and
-// `[1 - j/2, -j/2]` if j even.
+// `[(j-1)/2 + max(h,0), (j-1)/2 - min(h,0)]` if `j` odd, and
+// `[1 - j/2, -j/2]` if `j` even.
 // We then have `l` additional steps, where `l = k - j*(j+|h|)`. If j is odd,
 // the first of these steps moves [1,0]; the next `j-min(h,0)` move [0,-1];
 // and the rest move [-1, 0]. If j is even, the first moves [-1, 0], the next
 // `j - min(h,0)` move [0, 1], and the rest move [1, 0].
 // Although the formulas above could be captured in the mathjs expression
 // language, the result would be tremendously long and complicated, so
-// we define a function here and pass the function in through the evaluation
+// we define some functions here and pass them in through the evaluation
 // scope for convenience.
 
+const X = 0
+const Y = 1
+const R = 0
+const C = 1
+// compute the "horizontality" and start position from the comments above
+function horizontalityStart(
+    r: number,
+    c: number
+): [number, [number, number]] {
+    const h = c - r - (c > r ? 1 : 0)
+    const {floor, min} = math
+    const start: [number, number] = [
+        floor((min(r, c) + 1) / 2),
+        floor(min(r, c) / 2) + 1,
+    ]
+    return [h, start]
+}
 function spiralRC(k: number, r: number, c: number) {
-    HERE!
+    // We just follow the computations in the comments above:
+    const [h, start] = horizontalityStart(r, c)
+    const {floor, abs, max, min, add} = math
+    const v = -min(h, 0) // the "verticality"
+
+    // number of completed rectangles:
+    const j = floor((Math.sqrt(h * h + 4 * k) - abs(h)) / 2)
+    const jeven = j % 2 === 0
+    const jsign = jeven ? 1 : -1
+    let cornerOffset = [0, 0]
+    if (j > 0) {
+        if (jeven) cornerOffset = [1 - j / 2, -j / 2]
+        else cornerOffset = add([max(h, 0), v], (j - 1) / 2)
+    }
+    // additional steps
+    let l = k - j * (j + abs(h))
+    const position = add(start, cornerOffset)
+    if (l > 0) {
+        if (j > 0) position[X] += -jsign
+        l -= 1
+    }
+    const turnAt = j + v
+    position[Y] += jsign * min(l, turnAt)
+    if (l > turnAt) position[X] += jsign * (l - turnAt)
+    return position
+}
+// We also need to be able to calculate the inverse of the above function
+// in order to supply the `s` value to the formulas:
+function invSpiral(x: number, y: number, r: number, c: number) {
+    const [h, start] = horizontalityStart(r, c)
+    const {subtract, abs, max, min} = math
+    const ph = max(h, 0) // the "positive horizontality"
+    const v = -min(h, 0) // the "verticality"
+    // The idea is to figure out which direction we would be traveling
+    // at [x,y]. Knowing that lets us compute the number j of completed
+    // rectangles, and then we add the number of extra steps it takes to get
+    // to our location.
+    const [offsetX, offsetY] = subtract([x, y], start)
+    let j = 0 // number of rectangles
+    let l = 0 // additional steps
+    // First: if offsetX is nonpositive and offsetY is in the interval
+    // [offsetX, verticality - offsetX) then we are going down.
+    if (offsetX <= 0 && offsetY >= offsetX && offsetY < v - offsetX) {
+        l = offsetY - offsetX + 1
+        j = -2 * offsetX
+        // Conversely, if offsetX greater than the positive horizontality
+        // and offsetY is in the interval (-offsetX + ph, offsetX - h)
+        // then we are going up.  CHECK HERE!
+    } else if (
+        offsetX > ph
+        && offsetY > ph - offsetX
+        && offsetY < offsetX - h
+    ) {
+        l = offsetX - h - offsetY
+        j = 2 * (offsetX - ph) - 1
+        // For the horizontal directions, if offsetY is negative we are going
+        // left. That's all we need to check because we've dealt with all
+        // cases of vertical motion already:
+    } else if (offsetY < 0) {
+        j = -2 * offsetY - 1
+        l = -3 * offsetY - offsetX + abs(h)
+    } else {
+        // we are going right
+        j = 2 * (offsetY - v)
+        l = j + 1 + offsetX + offsetY
+    }
+    return j * (j + abs(h)) + l
 }
 
-const path = {
+const path: Record<number, string> = {
     [FillOrder.By_Rows]: '[x, y]',
     [FillOrder.Spiral]: 'spiral(k)',
     [FillOrder.Triangle]:
-        '[floor(c/2) - invTriangular(k-1)'
+        '[ceil(c/2) - invTriangular(k-1)'
         + ' + 2*(k - triangular(invTriangular(k-1)) - 1),'
-        + 'invTriangular(k-1)]',
+        + 'invTriangular(k-1) + 1]',
 }
+
+// now the stuff for drawing shapes
+const black = chroma()
+const white = chroma(1)
+const transparent = dilute(black, 0)
+type DrawData = {
+    cx: number
+    cy: number
+    cw: number
+    ch: number
+    cm: number
+    inset: number
+    x: number
+    y: number
+    text: string
+    sketch: p5
+}
+type Drawer = (data: DrawData) => void
+const drawShape = {
+    rectangle: ({cx, cy, cw, ch, sketch}) => sketch.rect(cx, cy, cw, ch),
+    square: ({cx, cy, cw, ch, cm, inset, sketch}) => {
+        const side = cm * inset
+        sketch.rect(cx + (cw - side) / 2, cy + (ch - side) / 2, side, side)
+    },
+    ellipse: ({cx, cy, cw, ch, sketch}) => {
+        sketch.ellipse(cx + cw / 2, cy + ch / 2, cw, ch)
+    },
+    circle: ({cx, cy, cw, ch, cm, inset, sketch}) => {
+        sketch.circle(cx + cw / 2, cy + ch / 2, cm * inset)
+    },
+    hexagon: ({cx, cy, cw, ch, sketch}) => {
+        sketch.beginShape()
+        // We start 1/6 of the height above the center of the top edge:
+        sketch.vertex(cx + cw / 2, cy - ch / 6)
+        sketch.vertex(cx + (3 * cw) / 2, cy + ch / 6)
+        sketch.vertex(cx + (3 * cw) / 2, cy + (5 * ch) / 6)
+        sketch.vertex(cx + cw / 2, cy + (7 * ch) / 6)
+        sketch.vertex(cx - cw / 2, cy + (5 * ch) / 6)
+        sketch.vertex(cx - cw / 2, cy + ch / 6)
+        sketch.endShape(sketch.CLOSE)
+    },
+    triangle: ({cx, cy, cw, ch, x, y, sketch}) => {
+        const basey = x % 2 === y % 2 ? cy + ch : cy
+        const peaky = 2 * cy + ch - basey
+        sketch.triangle(
+            cx - cw / 2,
+            basey,
+            cx + cw / 2,
+            peaky,
+            cx + (3 * cw) / 2,
+            basey
+        )
+    },
+    text: ({cx, cy, cw, ch, text, sketch}) => {
+        const size = ch / (text.length > 4 ? 4 : 2)
+        sketch.textSize(size).text(text, cx + cw / 2, cy + ch / 2)
+    },
+    mouseover: _dummy => {
+        console.warn('Unhandled mouseover')
+    },
+} satisfies Record<string, Drawer>
+
+type Shape = keyof typeof drawShape
 
 const paramDesc = {
     /** md
@@ -203,7 +378,7 @@ const paramDesc = {
         hideDescription: true,
         validate: function (dim: number[], status: ValidationStatus) {
             status.forbid(
-                dim.length > 2, 
+                dim.length > 2,
                 'Just number of rows and number of columns may be specified'
             )
             status.mandate(
@@ -274,7 +449,7 @@ const paramDesc = {
     pathFormula: {
         default: new MathFormula(path[FillOrder.By_Rows], formulaSymbols),
         type: ParamType.FORMULA,
-        inputs: formulaSymbols,
+        symbols: formulaSymbols,
         displayName: 'Path formula',
         required: false,
         description:
@@ -317,7 +492,7 @@ const paramDesc = {
     fillFormula: {
         default: new MathFormula('a', formulaSymbols),
         type: ParamType.FORMULA,
-        inputs: formulaInputs,
+        symbols: formulaSymbols,
         displayName: 'Fill formula',
         required: true,
         description:
@@ -346,8 +521,8 @@ const paramDesc = {
             status.mandate(inset > 0, 'Must be positive')
         },
         visibleDependency: 'fillFormula',
-        visiblePredicate:
-           (fill: MathFormula) => /square|circle/.test(fill.source),
+        visiblePredicate: (fill: MathFormula) =>
+            /square|circle/.test(fill.source),
     },
 } satisfies GenericParamDescription
 
@@ -359,5 +534,208 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
     index = 0n
     rows = 0
     columns = 0
-    
+    cellwidth = 0
+    cellheight = 0
+    cellmin = 0
+    frames = 0
+
+    async parametersChanged(names: Set<string>) {
+        if (names.has('fillOrder') && this.fillOrder !== FillOrder.Custom) {
+            const newPath = path[this.fillOrder]
+            if (newPath !== this.pathFormula.source) {
+                this.pathFormula = new MathFormula(newPath, formulaSymbols)
+                names.add('pathFormula')
+                this.refreshParams(new Set(['pathFormula']))
+            }
+        }
+        super.parametersChanged(names)
+    }
+
+    interpretAspect() {
+        if (!this.aspect) return 1
+        if (/^[rR]/.test(this.aspect)) return 1 / Math.sqrt(3)
+        return parseFloat(this.aspect)
+    }
+
+    requestedAspectRatio() {
+        if (
+            this.dimensions.length == 2 // have specified rows and columns
+            && this.aspect !== '' // and the aspect ratio of each cell
+        ) {
+            return (
+                (this.dimensions[C] * this.interpretAspect())
+                / this.dimensions[R]
+            )
+        }
+    }
+
+    setup() {
+        super.setup()
+        // first calculate the sizes of the grid
+        switch (this.dimensions.length) {
+            case 2:
+                ;[this.rows, this.columns] = this.dimensions
+                this.cellwidth = this.sketch.width / this.columns
+                this.cellheight = this.sketch.height / this.rows
+                this.cellmin = Math.min(this.cellwidth, this.cellheight)
+                break
+            case 1:
+                this.rows = this.dimensions[R]
+                this.cellheight = this.sketch.height / this.rows
+                this.cellwidth = this.interpretAspect() * this.cellheight
+                this.columns = Math.floor(this.sketch.width / this.cellwidth)
+                this.cellmin = Math.min(this.cellwidth, this.cellheight)
+                break
+            case 0: {
+                const asp = this.interpretAspect()
+                let entries = isFinite(Number(this.seq.length))
+                    ? math.safeNumber(this.seq.length)
+                    : Infinity
+                const columnsPerRow =
+                    this.sketch.width / this.sketch.height / asp
+                if (entries === Infinity) {
+                    entries = Math.floor(
+                        (this.sketch.height / 8) ** 2 * columnsPerRow
+                    )
+                }
+                this.rows = Math.floor(Math.sqrt(entries / columnsPerRow))
+                this.cellheight = this.sketch.height / this.rows
+                this.cellwidth = asp * this.cellheight
+                this.cellmin = Math.min(this.cellwidth, this.cellheight)
+                if (this.cellmin < 0.5) {
+                    if (asp < 1) {
+                        this.cellwidth = 1
+                        this.cellheight = 1 / asp
+                    } else {
+                        this.cellheight = 1
+                        this.cellwidth = asp
+                    }
+                    this.cellmin = 1
+                    this.rows = Math.floor(
+                        this.sketch.height / this.cellheight
+                    )
+                }
+                this.columns = Math.floor(this.sketch.width / this.cellwidth)
+            }
+        }
+        // now set up to draw
+        this.index = 1n
+        this.frames = 0
+        this.sketch
+            .noStroke()
+            .textAlign(this.sketch.CENTER, this.sketch.CENTER)
+            .background(this.backgroundColor)
+    }
+
+    draw() {
+        ++this.frames
+        for (let rep = this.speed; rep > 0; --rep) {
+            // See if we've either filled the canvas or exhausted the sequence
+            if (
+                (this.fillOrder !== FillOrder.Custom
+                    && this.index > this.rows * this.columns)
+                || this.index + this.seq.first > this.seq.last
+            ) {
+                this.stop()
+                return
+            }
+
+            // prepare the sequence inputs; before we compute the path position,
+            // we pretend we are doing things by rows:
+            const k = Number(this.index)
+            const tentativeX = ((k - 1) % this.columns) + 1
+            const tentativeY = Math.ceil(k / this.columns)
+            const seqIndex = this.index + this.seq.first - 1n
+            const input = {
+                x: tentativeX,
+                y: tentativeY,
+                s: invSpiral(tentativeX, tentativeY, this.rows, this.columns),
+                r: this.rows,
+                c: this.columns,
+                k,
+                m: Number(this.seq.first),
+                M: Number(this.seq.last),
+                n: Number(seqIndex),
+                a: Number(this.seq.getElement(seqIndex)),
+                f: this.frames,
+                A: (n: number | bigint) =>
+                    Number(this.seq.getElement(BigInt(n))),
+                spiral: (k: number) => spiralRC(k, this.rows, this.columns),
+            }
+            const pos = this.pathFormula.computeWithStatus(
+                this.statusOf.pathFormula,
+                input
+            )
+            if (!Array.isArray(pos)) {
+                this.statusOf.pathFormula.addError('must return an array')
+                return
+            }
+            if (typeof pos[X] !== 'number' || typeof pos[Y] !== 'number') {
+                this.statusOf.pathFormula.addError(
+                    'must return [number, number]'
+                )
+                return
+            }
+            ;[input.x, input.y] = pos
+            input.s = invSpiral(input.x, input.y, this.rows, this.columns)
+            let toFill: MathType | Partial<Record<Shape, MathType>> =
+                this.fillFormula.computeWithStatus(
+                    this.statusOf.fillFormula,
+                    input
+                )
+            if (
+                typeof toFill !== 'object'
+                || Object.keys(toFill).some(k => !(k in drawShape))
+            ) {
+                toFill = {rectangle: toFill as MathType}
+            }
+            let color = chroma(this.backgroundColor)
+            for (const entry of Object.entries(toFill)) {
+                const shape = entry[0] as Shape
+                let spec = entry[1]
+                const text = spec.toString()
+                if (shape === 'text') {
+                    // Choose black or white to contrast with latest color
+                    let tc = black
+                    if (
+                        chroma.contrast(color, white)
+                        > chroma.contrast(color, tc)
+                    ) {
+                        tc = white
+                    }
+                    this.sketch.fill(tc.hex())
+                } else if (shape === 'mouseover') {
+                    // TODO: handle mouseover specially here, since
+                    // we likely have to save data on this instance
+                } else {
+                    // all other shapes
+                    if (!Array.isArray(spec)) {
+                        spec = [spec]
+                    }
+                    color = spec.reduce(
+                        (c: Chroma, layer: number | string | Chroma) => {
+                            return overlay(c, chroma(layer))
+                        },
+                        transparent
+                    )
+                    this.sketch.fill(color.hex())
+                }
+                drawShape[shape]({
+                    cx: (input.x - 1) * this.cellwidth,
+                    cy: (input.y - 1) * this.cellheight,
+                    cw: this.cellwidth,
+                    ch: this.cellheight,
+                    cm: this.cellmin,
+                    inset: this.inset,
+                    x: input.x,
+                    y: input.y,
+                    text,
+                    sketch: this.sketch,
+                })
+            }
+            ++this.index
+        }
+    }
 }
+
+export const exportModule = new VisualizerExportModule(FormulaGrid)
