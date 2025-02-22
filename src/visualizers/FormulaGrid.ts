@@ -88,11 +88,12 @@ triangle
 
 text
 : This key represents a special shape. The value of the associated formula
-  will be converted into a string and written centered in the cell in a font
-  size half the height of the cell if the string has four or fewer characters,
-  or a font size one quarter the height of the cell otherwise. The text color
-  will be black or white, whichever has highest contrast with the cell
-  color.
+  will be converted into a string (if it is an array, the entries will be
+  individually converted to strings and concatenated). This string will
+  be written centered in the cell in a font size half the height of the cell
+  if it has four or fewer characters, or a font size one quarter the height
+  of the cell otherwise. The text color will be black or white, whichever
+  has highest contrast with the cell color.
 
 mouseover
 : Another special shape key. The value of the associated formula will be
@@ -349,7 +350,7 @@ const drawShape = {
         sketch.textSize(size).text(text, cx + cw / 2, cy + ch / 2)
     },
     mouseover: _dummy => {
-        console.warn('Unhandled mouseover')
+        console.warn('Unhandled mouseover') // should never happen
     },
 } satisfies Record<string, Drawer>
 
@@ -538,6 +539,8 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
     cellheight = 0
     cellmin = 0
     frames = 0
+    mouseText: string[][] = []
+    popup?: HTMLElement = undefined
 
     async parametersChanged(names: Set<string>) {
         if (names.has('fillOrder') && this.fillOrder !== FillOrder.Custom) {
@@ -621,10 +624,12 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
         // now set up to draw
         this.index = 1n
         this.frames = 0
+        this.mouseText = []
         this.sketch
             .noStroke()
             .textAlign(this.sketch.CENTER, this.sketch.CENTER)
             .background(this.backgroundColor)
+        this.hidePopup()
     }
 
     draw() {
@@ -677,6 +682,15 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
                 return
             }
             ;[input.x, input.y] = pos
+            if (
+                input.x < 1
+                || input.x > this.columns
+                || input.y < 1
+                || input.y > this.rows
+            ) {
+                // Off screen, so nothing to do
+                continue
+            }
             input.s = invSpiral(input.x, input.y, this.rows, this.columns)
             let toFill: MathType | Partial<Record<Shape, MathType>> =
                 this.fillFormula.computeWithStatus(
@@ -693,7 +707,9 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
             for (const entry of Object.entries(toFill)) {
                 const shape = entry[0] as Shape
                 let spec = entry[1]
-                const text = spec.toString()
+                const text = Array.isArray(spec)
+                    ? spec.map(i => i.toString()).join('')
+                    : spec.toString()
                 if (shape === 'text') {
                     // Choose black or white to contrast with latest color
                     let tc = black
@@ -705,8 +721,9 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
                     }
                     this.sketch.fill(tc.hex())
                 } else if (shape === 'mouseover') {
-                    // TODO: handle mouseover specially here, since
-                    // we likely have to save data on this instance
+                    if (!this.mouseText[input.x]) this.mouseText[input.x] = []
+                    this.mouseText[input.x][input.y] = text
+                    continue // don't draw anything now
                 } else {
                     // all other shapes
                     if (!Array.isArray(spec)) {
@@ -735,6 +752,42 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
             }
             ++this.index
         }
+    }
+
+    mouseMoved(event: MouseEvent) {
+        const where = document.elementFromPoint(event.clientX, event.clientY)
+        const onSketch =
+            where
+            && this.within
+            && (where === this.within || where.contains(this.within))
+        let mousetext = ''
+        if (onSketch) {
+            const x = Math.floor(this.sketch.mouseX / this.cellwidth) + 1
+            const y = Math.floor(this.sketch.mouseY / this.cellheight) + 1
+            const textRow = this.mouseText[x]
+            if (textRow) mousetext = textRow[y] ?? ''
+        }
+        if (mousetext) this.showPopup(mousetext)
+        else this.hidePopup()
+    }
+
+    showPopup(text: string) {
+        if (!this.within) return
+        if (!this.popup) {
+            this.popup = document.createElement('div')
+            const sty = this.popup.style
+            sty.position = 'absolute'
+            sty.top = '0'
+            sty.right = '0'
+            sty.zIndex = '3'
+            this.within.appendChild(this.popup)
+        }
+        this.popup.style.display = 'block'
+        this.popup.textContent = text
+    }
+
+    hidePopup() {
+        if (this.popup) this.popup.style.display = 'none'
     }
 }
 
