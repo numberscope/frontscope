@@ -415,7 +415,7 @@ const paramDesc = {
         hideDescription: true,
         validate: function (s: string, status: ValidationStatus) {
             status.mandate(
-                s === 'r' || /^\d*[.]\d*$/.test(s),
+                s === 'r' || /^\d*([.]\d*)?$/.test(s),
                 'Must be a positive number or the letter `r`.'
             )
         },
