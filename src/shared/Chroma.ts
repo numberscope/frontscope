@@ -65,20 +65,22 @@ export const chroma = function (...args: unknown[]) {
             return chromaRaw(...(arg as Quad), 'gl')
         }
         if (typeof arg === 'number') {
-            arg = Math.abs(arg) // Can't think of any natural meaning for -
-            if (arg <= 1.0) {
-                return chromaRaw(arg, arg, arg, 1, 'gl')
+            // Can't think of any natural meaning for negative numbers,
+            // so just ignore sign
+            let n: number = Math.abs(arg)
+            if (n <= 1.0) {
+                return chromaRaw(n, n, n, 1, 'gl')
             }
-            if (arg > 0xffffff) { // largest number chroma interprets
-                if (arg < 0xffffffff) { // interpret last two digits as alpha
-                    const alpha = arg % 0x100
-                    const rest = Math.floor(arg/0x100)
+            if (n > 0xffffff) { // largest number chroma interprets
+                if (n < 0xffffffff) { // interpret last two digits as alpha
+                    const alpha = n % 0x100
+                    const rest = Math.floor(n/0x100)
                     return chromaRaw(rest).alpha(alpha/0xff)
                 } else { // what color should huge numbers be?
                     return chromaRaw('white')
                 }
             }
-            return chromaRaw(arg)
+            return chromaRaw(n)
         }
     }
     if (
