@@ -60,23 +60,26 @@ noted.
 export const chroma = function (...args: unknown[]) {
     if (args.length === 0) return chromaRaw('black')
     if (args.length === 1) {
-        let arg = args[0]
+        const arg = args[0]
         if (arg instanceof Array && arg.length === 4) {
             return chromaRaw(...(arg as Quad), 'gl')
         }
         if (typeof arg === 'number') {
             // Can't think of any natural meaning for negative numbers,
             // so just ignore sign
-            let n: number = Math.abs(arg)
+            const n: number = Math.abs(arg)
             if (n <= 1.0) {
                 return chromaRaw(n, n, n, 1, 'gl')
             }
-            if (n > 0xffffff) { // largest number chroma interprets
-                if (n < 0xffffffff) { // interpret last two digits as alpha
+            if (n > 0xffffff) {
+                // largest number chroma interprets
+                if (n < 0xffffffff) {
+                    // interpret last two digits as alpha
                     const alpha = n % 0x100
-                    const rest = Math.floor(n/0x100)
-                    return chromaRaw(rest).alpha(alpha/0xff)
-                } else { // what color should huge numbers be?
+                    const rest = Math.floor(n / 0x100)
+                    return chromaRaw(rest).alpha(alpha / 0xff)
+                } else {
+                    // what color should huge numbers be?
                     return chromaRaw('white')
                 }
             }

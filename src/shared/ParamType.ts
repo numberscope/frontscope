@@ -122,7 +122,9 @@ function validateExtInt(value: string, status: ValidationStatus) {
 
 //Helper function for color types:
 function isColor(value: string) {
-    return value.trim().match(/^(#[0-9A-Fa-f]{3})|(#[0-9A-Fa-f]{6})$/)
+    return value
+        .trim()
+        .match(/^#?([0-9A-Fa-f]{3,4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/)
 }
 
 export const typeFunctions: {
