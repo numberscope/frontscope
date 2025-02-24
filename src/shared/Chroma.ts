@@ -64,6 +64,9 @@ export const chroma = function (...args: unknown[]) {
         if (arg instanceof Array && arg.length === 4) {
             return chromaRaw(...(arg as Quad), 'gl')
         }
+        if (typeof arg === 'boolean') {
+            return arg ? chromaRaw('white') : chromaRaw('black').alpha(0)
+        }
         if (typeof arg === 'number') {
             // Can't think of any natural meaning for negative numbers,
             // so just ignore sign

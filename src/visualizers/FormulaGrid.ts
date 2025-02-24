@@ -17,10 +17,11 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
 (needs image)
 
 This visualizer divides the rectangular canvas into a grid of _r_ by _c_
-identical rectangular cells. Each cell has an _x_ coordinate (which is the
-1-based column number of the cell), a _y_ coordinate (1-based row number),
-and a 1-based spiral step number _s_ along a rectangular spiral path starting
-near the center of rectangle.
+identical rectangular cells. Each cell has an integer _x_ coordinate (starting
+from 1 in the leftmost column and increasing to the right), a _y_ coordinate
+(starting from 1 in the top row and increasing as you go down), and a "spiral
+position" _s_ that starts from 1 near the center of the rectangle and
+increases along a rectangular spiral path that visits every cell in the grid.
 
 In each animation frame, Formula Grid will draw one or more shapes (from a
 variety of supported shapes) in each of the next group of consecutive cells
@@ -31,7 +32,7 @@ left-to-right, top-to-bottom. You can also easily select a spiral from the
 center and a triangular layout with one cell in the center of the top row,
 then two cells on its left and right in the second row, and so on. In addition,
 you can customize the fill order with a formula giving the coordinates of the
-_k_th cell to be visited starting from _k_ = 1. Note that there is no
+_k_-th cell to be visited, starting from _k_ = 1. Note that there is no
 requirement that a given cell in the grid is visited exactly once as a result
 of these formulas; it could equally well never be visited or be visited
 multiple times. For example, one can make a typical point plot of a sequence
@@ -44,7 +45,7 @@ The shapes drawn and the (RGBA) colors used for them are determined by the
 Fill formula. If it just returns a color or a value that can be converted to
 a color, the rectangular cell at the current fill position is filled with that
 color. For details on how formulas may create and manipulate colors, see
-the [Chroma documenation](../shared/Chroma.md), but note that a false value
+the [Chroma documentation](../shared/Chroma.md), but note that a false value
 will be converted to the completely transparent color. In other words, whenever
 the fill formula returns false, nothing will be drawn. For convenience, if
 the formula returns an array that cannot otherwise be converted to a color,
@@ -61,15 +62,18 @@ rectangle
 
 square
 : Draws a square with side a configurable fraction of the shorter dimension
-  of a cell, centered in the cell.
+  of a cell, centered in the cell. The fraction is given by the inset
+  formula, documented below.
 
 ellipse
 : Draws an ellipse with axes the horizontal and vertical center lines of the
-cell.
+  cell.
 
 circle
 : Draws a circle with diameter a configurable fraction of the shorter
-  dimension of a cell, centered in the cell.
+  dimension of a cell, centered in the cell. As with the square, the fraction
+  is given by the inset formula. This means that if you specify both circle
+  and square, the circle is always inscribed in the square.
 
 hexagon
 : Draws a hexagon twice the width and 4/3 the height of a cell, in which the
@@ -97,7 +101,7 @@ text
 
 mouseover
 : Another special shape key. The value of the associated formula will be
-  converted into a string and shown in a popup with the mouse pointer hovers
+  converted into a string and shown in a popup when the mouse pointer hovers
   over the cell.
 
 Except for the special text shapes, the value associated to a key will be
@@ -109,7 +113,8 @@ The fill formula may use any of the variables _x_, _y_, _r_, _c_, and _s_
 described above; their values will be supplied by the visualizer. It may
 also use any of the following additional variables:
 
-_k_ -- the 1-based serial number of the cell in the order they are filled in
+_k_ -- the serial number of the cell in the order they are filled in, starting
+from 1
 
 _m_ -- the minimum (first) index of the current sequence being visualized
 
@@ -130,6 +135,25 @@ three-element running average of the current sequence centered on the current
 entry. The FormulaGrid visualizer also defines a function symbol `spiral`
 that takes a positive integer _k_ and returns a two-element array of the
 coordinates of the _k_th position in the spiral path from the center.
+
+Being the heart of this visualizer, there is a lot of information that is
+packed into the fill formula, and it can get relatively complicated. So
+here are a few illustrative examples, all assuming By_Rows fill order:
+
+* A black/red checkerboard: `(x+y) % 2 ? red : black`
+* Every 7th cell has a white background and every 11th cell has an inner
+  red square: `{rectangle: (k % 7) == 1, square: not(k % 11) ? red : false}`
+* Tile the plane with hexagons in a rainbow given by their distance from the
+  center of the grid; note we only color every other position, because
+  the hexagons overlap to cover every pixel twice. Also, we display
+  the distance on mouseover.
+```
+{ hexagon:
+    (x+y) % 2 ? rainbow(10*sqrt((x-c/2)^2 + (y-r/2)^2)) : false,
+  mouseover:
+    [(x-c/2)^2 + (y-r/2)^2, ' units from center']
+}
+```
 
 ## Parameters
 **/
@@ -442,7 +466,10 @@ const paramDesc = {
   cell to be visited as the visualization is drawn. It is only shown/used
   if Fill order is 'Custom'. The value may be a two-element array giving the
   _x_ and _y_ coordinates in that order, or a plain object with keys `x`
-  and `y` giving the coordinates. The formula may use any of the variables
+  and `y` giving the coordinates. For example, if you want to fill the cells
+  starting from the upper left corner and then proceeding down each column
+  in turn, you could write `[ceil(k/r), k % r + 1]`, or equivalently
+  `{x: ceil(k/r), y: k % r + 1}`. The formula may use any of the variables
   listed in the description above, where the inputs _x_, _y_, and _s_ are
   calculated as if the fill order were the default 'By_Rows'. This latter
   convention is useful if you want to tweak the default fill order.
@@ -669,12 +696,17 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
                     Number(this.seq.getElement(BigInt(n))),
                 spiral: (k: number) => spiralRC(k, this.rows, this.columns),
             }
-            const pos = this.pathFormula.computeWithStatus(
+            let pos = this.pathFormula.computeWithStatus(
                 this.statusOf.pathFormula,
                 input
             )
-            if (!Array.isArray(pos)) {
-                this.statusOf.pathFormula.addError('must return an array')
+            if (typeof pos === 'object' && 'x' in pos && 'y' in pos) {
+                pos = [Number(pos.x), Number(pos.y)]
+            } else if (!Array.isArray(pos)) {
+                this.statusOf.pathFormula.addError(
+                    'must return an array, '
+                        + 'or plain object {x: number, y: number}'
+                )
                 return
             }
             if (typeof pos[X] !== 'number' || typeof pos[Y] !== 'number') {
