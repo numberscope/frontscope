@@ -507,20 +507,22 @@ const paramDesc = {
         hideDescription: true,
     },
     /** md
-- Inset: The side length of the 'square' shape and/or diameter of the 'circle'
-  shape, as a multiple of the shorter dimension of a cell. Must be positive,
-  but allowed to be greater than one, in which case the shapes may overlap.
+- Inset formula: An expression giving the side length of the 'square' shape
+  and/or diameter of the 'circle' shape, as a multiple of the shorter
+  dimension of a cell. The value is allowed to be greater than one, in which
+  case the shapes may overlap.
     **/
     inset: {
-        default: 0.6,
-        type: ParamType.NUMBER,
-        displayName: 'Inset',
+        default: new MathFormula('0.6', formulaSymbols),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbols,
+        displayName: 'Inset formula',
         required: false,
         description:
-            'Size of circle and/or square as multiple of short side of cell',
-        validate: function (inset: number, status: ValidationStatus) {
-            status.mandate(inset > 0, 'Must be positive')
-        },
+            'A formula giving the size of circle and/or square as a '
+            + 'multiple of short side of cell.'
+            + formulaDescription,
+        hideDescription: true,
         visibleDependency: 'fillFormula',
         visiblePredicate: (fill: MathFormula) =>
             /square|circle/.test(fill.source),
@@ -737,13 +739,17 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
                     )
                     this.sketch.fill(color.hex())
                 }
+                let inset = 1
+                if (shape === 'square' || shape === 'circle') {
+                    inset = Number(this.inset.computeWithStatus(this.statusOf.inset, input))
+                }
                 drawShape[shape]({
                     cx: (input.x - 1) * this.cellwidth,
                     cy: (input.y - 1) * this.cellheight,
                     cw: this.cellwidth,
                     ch: this.cellheight,
                     cm: this.cellmin,
-                    inset: this.inset,
+                    inset,
                     x: input.x,
                     y: input.y,
                     text,
