@@ -761,29 +761,49 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
             && this.within
             && (where === this.within || where.contains(this.within))
         let mousetext = ''
+        let x = 0
         if (onSketch) {
-            const x = Math.floor(this.sketch.mouseX / this.cellwidth) + 1
+            x = Math.floor(this.sketch.mouseX / this.cellwidth) + 1
             const y = Math.floor(this.sketch.mouseY / this.cellheight) + 1
             const textRow = this.mouseText[x]
             if (textRow) mousetext = textRow[y] ?? ''
         }
-        if (mousetext) this.showPopup(mousetext)
+        if (mousetext) this.showPopup(mousetext, x)
         else this.hidePopup()
     }
 
-    showPopup(text: string) {
+    showPopup(text: string, x: number) {
         if (!this.within) return
         if (!this.popup) {
             this.popup = document.createElement('div')
+            this.popup.classList.add('shadowed')
             const sty = this.popup.style
+            sty.background = 'white'
+            sty.opacity = '1'
             sty.position = 'absolute'
-            sty.top = '0'
-            sty.right = '0'
+            sty.top = '2px'
+            sty.padding = '2px'
+            sty.border = '1px solid black'
             sty.zIndex = '3'
             this.within.appendChild(this.popup)
         }
-        this.popup.style.display = 'block'
         this.popup.textContent = text
+        const sty = this.popup.style
+        sty.display = 'block'
+        const fraction = x / this.columns
+        if (fraction < 1/3) {
+            sty.right = '8px'
+            sty.left = ''
+        } else if (fraction > 2/3) {
+            sty.right = ''
+            sty.left = '8px'
+        } else if (fraction < 1/2) {
+            sty.right = 2 * (fraction - 1/3) * this.columns * this.cellwidth + 8 + 'px'
+            sty.left = ''
+        } else {
+            sty.right = ''
+            sty.left = 2 * (2/3 - fraction) * this.columns * this.cellwidth + 8 + 'px'
+        }
     }
 
     hidePopup() {
