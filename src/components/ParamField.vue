@@ -378,7 +378,7 @@
         font-size: 12px;
 
         position: fixed;
-        z-index: 99;
+        z-index: 120;
         right: 0;
         margin-left: -120px;
 

@@ -741,7 +741,12 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
                 }
                 let inset = 1
                 if (shape === 'square' || shape === 'circle') {
-                    inset = Number(this.inset.computeWithStatus(this.statusOf.inset, input))
+                    inset = Number(
+                        this.inset.computeWithStatus(
+                            this.statusOf.inset,
+                            input
+                        )
+                    )
                 }
                 drawShape[shape]({
                     cx: (input.x - 1) * this.cellwidth,
@@ -797,18 +802,24 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
         const sty = this.popup.style
         sty.display = 'block'
         const fraction = x / this.columns
-        if (fraction < 1/3) {
+        if (fraction < 1 / 3) {
             sty.right = '8px'
             sty.left = ''
-        } else if (fraction > 2/3) {
+        } else if (fraction > 2 / 3) {
             sty.right = ''
             sty.left = '8px'
-        } else if (fraction < 1/2) {
-            sty.right = 2 * (fraction - 1/3) * this.columns * this.cellwidth + 8 + 'px'
+        } else if (fraction < 1 / 2) {
+            sty.right =
+                2 * (fraction - 1 / 3) * this.columns * this.cellwidth
+                + 8
+                + 'px'
             sty.left = ''
         } else {
             sty.right = ''
-            sty.left = 2 * (2/3 - fraction) * this.columns * this.cellwidth + 8 + 'px'
+            sty.left =
+                2 * (2 / 3 - fraction) * this.columns * this.cellwidth
+                + 8
+                + 'px'
         }
     }
 
