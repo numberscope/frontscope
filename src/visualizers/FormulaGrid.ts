@@ -62,7 +62,7 @@ rectangle
 
 square
 : Draws a square with side a configurable fraction of the shorter dimension
-  of a cell, centered in the cell. The fraction is given by the inset
+  of a cell, centered in the cell. The fraction is given by the Inset
   formula, documented below.
 
 ellipse
@@ -72,7 +72,7 @@ ellipse
 circle
 : Draws a circle with diameter a configurable fraction of the shorter
   dimension of a cell, centered in the cell. As with the square, the fraction
-  is given by the inset formula. This means that if you specify both circle
+  is given by the Inset formula. This means that if you specify both circle
   and square, the circle is always inscribed in the square.
 
 [<img src="../../assets/img/FormulaGrid/Hexagons.png" width=300
@@ -93,12 +93,19 @@ hexagon
   shape, which are drawn in black with every other one having dotted
   perimeter.
 
+[<img src="../../assets/img/FormulaGrid/Triangles.png" width=300
+ style="margin-left: 1em; margin-right: 0.5em; float: right;"
+ />](../assets/img/FormulaGrid/Triangles.png)
+
 triangle
 : Draws a triangle the height of a cell with horizontal base twice the width
   of a cell, centered on the current cell. On odd rows the odd triangles point
   up and the even triangles point down; on even rows the directions are
   reversed. The resulting triangles tile the plane. When the aspect ratio
-  of a cell is 1/√3, the triangles are equilateral.
+  of a cell is 1/√3, the triangles are equilateral. See the accompanying
+  diagram of the layout of the triangles, superimposed on the underlying
+  rectangular grid, which is shown in blue. Each triangle is associated with
+  the unique grid cell that it overlaps the most.
 
 text
 : This key represents a special shape. The value of the associated formula
@@ -140,11 +147,11 @@ integer in _k_ divided by the current drawing speed.
 
 You may also use the symbol `A` as a function symbol in your formula, and
 it will provide access to the value of the sequence being visualized for any
-index. For example, the formula `(A(n-1) + a + A(n+1))/3` would provide a
-three-element running average of the current sequence centered on the current
-entry. The FormulaGrid visualizer also defines a function symbol `spiral`
-that takes a positive integer _k_ and returns a two-element array of the
-coordinates of the _k_th position in the spiral path from the center.
+index. For example, the formula `(a + A(n+1) + A(n+2))/3` would provide a
+three-element running average of the current sequence starting from the
+current entry. The FormulaGrid visualizer also defines a function symbol
+`spiral` that takes a positive integer _k_ and returns a two-element array
+of the coordinates of the _k_-th position in the spiral path from the center.
 
 Being the heart of this visualizer, there is a lot of information that is
 packed into the fill formula, and it can get relatively complicated. So
@@ -161,7 +168,7 @@ here are a few illustrative examples, all assuming By_Rows fill order:
 { hexagon:
     (x+y) % 2 ? rainbow(10*sqrt((x-c/2)^2 + (y-r/2)^2)) : false,
   mouseover:
-    [(x-c/2)^2 + (y-r/2)^2, ' units from center']
+    [sqrt((x-c/2)^2 + (y-r/2)^2), ' units from center']
 }
 ```
 
@@ -547,7 +554,8 @@ const paramDesc = {
 - Inset formula: An expression giving the side length of the 'square' shape
   and/or diameter of the 'circle' shape, as a multiple of the shorter
   dimension of a cell. The value is allowed to be greater than one, in which
-  case the shapes may overlap.
+  case the shapes may overlap. This parameter has no effect on any shapes
+  other than circle and square.
     **/
     inset: {
         default: new MathFormula('0.6', formulaSymbols),
