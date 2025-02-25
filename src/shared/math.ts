@@ -121,7 +121,7 @@ export type TposInfinity = 1e999 // since that's above range for number,
 export type TnegInfinity = -1e999 // similarly
 export type ExtendedBigint = bigint | TposInfinity | TnegInfinity
 
-type ExtendedMathJs = Omit<MathJsInstance, 'hasNumericValue'> & {
+type ExtendedMathJs = Omit<MathJsInstance, 'hasNumericValue' | 'add'> & {
     negInfinity: TnegInfinity
     posInfinity: TposInfinity
     safeNumber(n: MathTypeTemp): number
@@ -134,10 +134,15 @@ type ExtendedMathJs = Omit<MathJsInstance, 'hasNumericValue'> & {
     bigabs(a: Integer): bigint
     bigmax(...args: Integer[]): ExtendedBigint
     bigmin(...args: Integer[]): ExtendedBigint
+    triangular(n: number): number
+    invTriangular(t: number): number
     chroma: typeof chroma
     rainbow(a: Integer): Chroma
     isChroma(a: unknown): a is Chroma
-    add: MathJsInstance['add'] & ((c: Chroma, d: Chroma) => Chroma)
+    add: ((c: Chroma, d: Chroma) => Chroma) &
+        ((v: number[], a: number) => number[]) &
+        ((v: number[], w: number[]) => number[]) &
+        ((a: MathType, b: MathType) => MathType)
     hasNumericValue(x: unknown): x is MathScalarType
     multiply: MathJsInstance['multiply'] &
         ((s: number, c: Chroma) => Chroma) &
@@ -153,6 +158,11 @@ math.typed.addType({
     name: 'Chroma',
     test: isChroma,
 })
+
+const numberTheory: Record<string, unknown> = {
+    triangular: (n: number) => (n * (n + 1)) / 2,
+    invTriangular: (t: number) => Math.floor((Math.sqrt(1 + 8 * t) - 1) / 2),
+}
 
 const colorStuff: Record<string, unknown> = {
     chroma,
@@ -182,7 +192,7 @@ for (palette in chroma.brewer) {
     colorStuff[palette] = factory(palette, [], () => clrs)
 }
 
-math.import(colorStuff)
+math.import({...numberTheory, ...colorStuff})
 
 math.negInfinity = -Infinity as TnegInfinity
 math.posInfinity = Infinity as TposInfinity

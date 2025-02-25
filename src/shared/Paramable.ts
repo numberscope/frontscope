@@ -858,7 +858,7 @@ export class Paramable implements ParamableInterface {
                 const param = this.params[key]
                 if (
                     param.type === ParamType.COLOR
-                    && value.match(/^[0-9a-fA-F]{6}$/)
+                    && value.match(/^[0-9a-fA-F]{3,8}$/)
                 )
                     this.tentativeValues[key] = '#' + value
                 else this.tentativeValues[key] = value

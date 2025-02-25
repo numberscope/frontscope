@@ -60,7 +60,7 @@ const formulaSymbols = [
     'n',
     'a',
     'A',
-    's',
+    'k',
     'm',
     'M',
     'f',
@@ -328,11 +328,11 @@ case you inadvertently left out a value.)
 
   `a` The value of the entry.
 
-  `s` The serial number of the step starting from one for the first step
+  `k` The serial number of the step starting from one for the first step
   that the turtle takes.
 
   `m` The minimum index of the sequence being visualized. Note that the
-  above definitions mean that `n`, `s`, and `m` are related by `n = m + s - 1`.
+  above definitions mean that `n`, `k`, and `m` are related by `n = m + k - 1`.
 
   `M` The Maximum index of the sequence being visualized. Note this value
   may be Infinity for sequences that are defined and can be calculated in
@@ -354,7 +354,7 @@ case you inadvertently left out a value.)
 
   `y` The current y-coordinate of the turtle.
 
-  You may also use the symbol `A` as a function symbol in your code, and it
+  You may also use the symbol `A` as a function symbol in your formula, and it
   will provide access to the value of the sequence being visualized for any
   index. For example, the formula `A(n+1) - A(n)` or equivalently `A(n+1) - a`
   would produce the so-called "first differences" of the sequence.
@@ -384,7 +384,7 @@ case you inadvertently left out a value.)
                 turtle.params.ruleMode.description =
                     'The formulas below may use the following symbols: '
                     + '`a` - sequence entry, `n` - sequence index, '
-                    + '`s` - step number, `m` - minimum index, '
+                    + '`k` - step number, `m` - minimum index, '
                     + '`M` - Maximum index, '
                     + '`A(...)` -- sequence entry at any index, '
                     + '`b` - current bearing, `x`,`y` - current position, '
@@ -871,7 +871,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             const input = {
                 n: Number(i),
                 a: Number(currElement),
-                s: Number(i - this.seq.first + 1n),
+                k: Number(i - this.seq.first + 1n),
                 m: Number(this.seq.first),
                 M: Number(this.seq.last),
                 f: currentFrames,

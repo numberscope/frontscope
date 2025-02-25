@@ -122,7 +122,9 @@ function validateExtInt(value: string, status: ValidationStatus) {
 
 //Helper function for color types:
 function isColor(value: string) {
-    return value.trim().match(/^(#[0-9A-Fa-f]{3})|(#[0-9A-Fa-f]{6})$/)
+    return value
+        .trim()
+        .match(/^#?([0-9A-Fa-f]{3,4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/)
 }
 
 export const typeFunctions: {
@@ -228,15 +230,17 @@ export const typeFunctions: {
                 )
                 return
             }
-            const freeVars = fmla.freevars.difference(new Set(inputSymbols))
+            const knownSymbols = new Set(inputSymbols)
+            const freeVars = fmla.freevars.difference(knownSymbols)
             status.forbid(
                 freeVars.size,
                 `free variables limited to ${inputSymbols}; `
                     + `please remove '${Array.from(freeVars).join(', ')}'`
             )
+            const freeFuncs = fmla.freefuncs.difference(knownSymbols)
             status.forbid(
-                fmla.freefuncs.size,
-                `unknown functions '${fmla.freefuncs}'`
+                freeFuncs.size,
+                `unknown functions '${Array.from(freeFuncs).join(', ')}'`
             )
         },
         realize: function (value) {
