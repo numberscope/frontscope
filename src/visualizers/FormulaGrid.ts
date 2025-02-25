@@ -75,13 +75,23 @@ circle
   is given by the inset formula. This means that if you specify both circle
   and square, the circle is always inscribed in the square.
 
+[<img src="../../assets/img/FormulaGrid/Hexagons.png" width=300
+ style="margin-left: 1em; margin-right: 0.5em; float: right;"
+ />](../assets/img/FormulaGrid/Hexagons.png)
+
 hexagon
 : Draws a hexagon twice the width and 4/3 the height of a cell, in which the
   current cell is inscribed. The resulting hexagons doubly cover the plane;
   if you take the odd cells horizontally in one row and the even cells in
   the next, those hexagons tile the plane. Note the Triangle pre-set fill
-  order only visits such cells. When the aspect ratio of a cell is 1/√3, the
-  hexagons are regular. (Needs diagram.)
+  order only visits such cells, making this shape ideal for use along with the
+  Triangle fill order when you want to display the rows of a triangular array
+  with one entry in the first row, two in the second, and so on. When the
+  aspect ratio of a cell is 1/√3, the hexagons are regular. See the
+  accompanying diagram for the layout of the hexagons; the underlying
+  rectangular cells are blue, each inscribed in the corresponding hexagon
+  shape, which are drawn in black with every other one having dotted
+  perimeter.
 
 triangle
 : Draws a triangle the height of a cell with horizontal base twice the width
