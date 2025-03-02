@@ -242,14 +242,13 @@ const X = 0
 const Y = 1
 const R = 0
 const C = 1
+type NPair = [number, number]
+
 // compute the "horizontality" and start position from the comments above
-function horizontalityStart(
-    r: number,
-    c: number
-): [number, [number, number]] {
+function horizontalityStart(r: number, c: number): [number, NPair] {
     const h = c - r - (c > r ? 1 : 0)
     const {floor, min} = math
-    const start: [number, number] = [
+    const start: NPair = [
         floor((min(r, c) + 1) / 2),
         floor(min(r, c) / 2) + 1,
     ]
@@ -829,11 +828,16 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
             const textRow = this.mouseText[x]
             if (textRow) mousetext = textRow[y] ?? ''
         }
-        if (mousetext) this.showPopup(mousetext, x)
-        else this.hidePopup()
+        if (mousetext) {
+            const r = where.getBoundingClientRect()
+            this.showPopup(mousetext, [
+                event.clientX - r.x,
+                event.clientY - r.y,
+            ])
+        } else this.hidePopup()
     }
 
-    showPopup(text: string, x: number) {
+    showPopup(text: string, [x, y]: NPair) {
         if (!this.within) return
         if (!this.popup) {
             this.popup = document.createElement('div')
@@ -842,7 +846,6 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
             sty.background = 'white'
             sty.opacity = '1'
             sty.position = 'absolute'
-            sty.top = '2px'
             sty.padding = '2px'
             sty.border = '1px solid black'
             sty.zIndex = '3'
@@ -851,26 +854,22 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
         this.popup.textContent = text
         const sty = this.popup.style
         sty.display = 'block'
-        const fraction = x / this.columns
-        if (fraction < 1 / 3) {
-            sty.right = '8px'
-            sty.left = ''
-        } else if (fraction > 2 / 3) {
-            sty.right = ''
-            sty.left = '8px'
-        } else if (fraction < 1 / 2) {
-            sty.right =
-                2 * (fraction - 1 / 3) * this.columns * this.cellwidth
-                + 8
-                + 'px'
-            sty.left = ''
-        } else {
-            sty.right = ''
-            sty.left =
-                2 * (2 / 3 - fraction) * this.columns * this.cellwidth
-                + 8
-                + 'px'
+        let popx = x + 16
+        let popy = y + 24
+        const pad = 6
+        let xBlocked = false
+        const popr = this.popup.getBoundingClientRect()
+        const {width, height} = this.within.getBoundingClientRect()
+        console.log('WIDE', popx, popr.width, width)
+        if (popx + popr.width + pad > width) {
+            xBlocked = true
+            popx = width - popr.width - pad
         }
+        if (popy + popr.height + pad > height) {
+            popy = (xBlocked ? y - 4 : height) - popr.height - pad
+        }
+        sty.left = popx + 'px'
+        sty.top = popy + 'px'
     }
 
     hidePopup() {
