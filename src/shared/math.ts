@@ -55,6 +55,9 @@ const neginf: ExtendedBigint = math.negInfinity
 // Like Math.floor, but with BigInt result type:
 const negTwo: bigint = math.bigInt(-1.5)
 
+const fifteen: number = math.triangular(5)
+const four: bigint = math.invTriangular(14n)
+
 const five: bigint = math.floorSqrt(30n)
 const negativeTwo: bigint = math.floorSqrt(-2n)
 
@@ -120,6 +123,11 @@ export type TposInfinity = 1e999 // since that's above range for number,
 // eslint-disable-next-line no-loss-of-precision
 export type TnegInfinity = -1e999 // similarly
 export type ExtendedBigint = bigint | TposInfinity | TnegInfinity
+type Widen<T extends number | bigint> = T extends number
+    ? number
+    : T extends bigint
+      ? bigint
+      : number | bigint
 
 type ExtendedMathJs = Omit<MathJsInstance, 'hasNumericValue' | 'add'> & {
     negInfinity: TnegInfinity
@@ -134,8 +142,8 @@ type ExtendedMathJs = Omit<MathJsInstance, 'hasNumericValue' | 'add'> & {
     bigabs(a: Integer): bigint
     bigmax(...args: Integer[]): ExtendedBigint
     bigmin(...args: Integer[]): ExtendedBigint
-    triangular(n: number): number
-    invTriangular(t: number): number
+    triangular<T extends Integer>(n: T): Widen<T>
+    invTriangular<T extends Integer>(n: T): Widen<T>
     chroma: typeof chroma
     rainbow(a: Integer): Chroma
     isChroma(a: unknown): a is Chroma
@@ -158,11 +166,6 @@ math.typed.addType({
     name: 'Chroma',
     test: isChroma,
 })
-
-const numberTheory: Record<string, unknown> = {
-    triangular: (n: number) => (n * (n + 1)) / 2,
-    invTriangular: (t: number) => Math.floor((Math.sqrt(1 + 8 * t) - 1) / 2),
-}
 
 const colorStuff: Record<string, unknown> = {
     chroma,
@@ -190,6 +193,40 @@ let palette: keyof typeof chroma.brewer = 'RdBu'
 for (palette in chroma.brewer) {
     const clrs = chroma.brewer[palette].map(hx => chroma(hx))
     colorStuff[palette] = factory(palette, [], () => clrs)
+}
+
+/** Additional numerical functions for mathjs **/
+
+/** md
+#### triangular(n: number | bigint): typeof n
+
+Returns the _n_-th triangular number, preserving the type of the input.
+
+#### invTriangular(t: number | bigint): typeof t
+
+Returns the index of the largest triangular number less than or equal to
+_t_, again preserving the type of the input.
+
+**/
+
+function triangular(n: number): number
+function triangular(n: bigint): bigint
+function triangular(n: number | bigint) {
+    let d = n as number // lie so typescript will compile
+    const one = n ? d / d : ++d / d--
+    return ((d * (d + one)) / (one + one)) as typeof n
+}
+
+const numberTheory: Record<string, unknown> = {
+    triangular,
+    invTriangular: math.typed('invTriangular', {
+        number: t => Math.floor((Math.sqrt(1 + 8 * t) - 1) / 2),
+        any: b => {
+            // FIXME when mathjs has bigint support
+            if (typeof b !== 'bigint') return 0n
+            return (isqrt(1n + 8n * b) - 1n) / 2n
+        },
+    }),
 }
 
 math.import({...numberTheory, ...colorStuff})

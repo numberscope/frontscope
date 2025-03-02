@@ -828,7 +828,7 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
             const textRow = this.mouseText[x]
             if (textRow) mousetext = textRow[y] ?? ''
         }
-        if (mousetext) {
+        if (mousetext && onSketch) {
             const r = where.getBoundingClientRect()
             this.showPopup(mousetext, [
                 event.clientX - r.x,

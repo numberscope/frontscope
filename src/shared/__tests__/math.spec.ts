@@ -94,6 +94,36 @@ describe('natlog', () => {
     })
 })
 
+describe('triangular numbers', () => {
+    it('computes the nth triangular number', () => {
+        expect(math.triangular(0)).toBe(0)
+        expect(math.triangular(1)).toBe(1)
+        expect(math.triangular(5)).toBe(15)
+        expect(math.triangular(100)).toBe(5050) // go go Gauss
+        expect(math.triangular(0n)).toBe(0n)
+        expect(math.triangular(1n)).toBe(1n)
+        expect(math.triangular(100n)).toBe(5050n)
+    })
+    it('computes an inverse of the triangular number function', () => {
+        expect(math.invTriangular(0)).toBe(0)
+        expect(math.invTriangular(1)).toBe(1)
+        expect(math.invTriangular(14)).toBe(4)
+        expect(math.invTriangular(15)).toBe(5)
+        expect(math.invTriangular(16)).toBe(5)
+        expect(math.invTriangular(5049)).toBe(99)
+        expect(math.invTriangular(5050)).toBe(100)
+        expect(math.invTriangular(5051)).toBe(100)
+        expect(math.invTriangular(0n)).toBe(0n)
+        expect(math.invTriangular(1n)).toBe(1n)
+        expect(math.invTriangular(14n)).toBe(4n)
+        expect(math.invTriangular(15n)).toBe(5n)
+        expect(math.invTriangular(16n)).toBe(5n)
+        expect(math.invTriangular(5049n)).toBe(99n)
+        expect(math.invTriangular(5050n)).toBe(100n)
+        expect(math.invTriangular(5051n)).toBe(100n)
+    })
+})
+
 describe('colors', () => {
     const chroma = math.chroma
     it('constructs a color from a string', () => {
