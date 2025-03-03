@@ -860,7 +860,6 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
         let xBlocked = false
         const popr = this.popup.getBoundingClientRect()
         const {width, height} = this.within.getBoundingClientRect()
-        console.log('WIDE', popx, popr.width, width)
         if (popx + popr.width + pad > width) {
             xBlocked = true
             popx = width - popr.width - pad
