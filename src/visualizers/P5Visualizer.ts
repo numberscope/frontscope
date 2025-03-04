@@ -17,6 +17,7 @@ import type {SequenceInterface} from '@/sequences/SequenceInterface'
 import {CachingError} from '@/shared/math'
 import {Paramable} from '@/shared/Paramable'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import {Specimen} from '@/shared/Specimen'
 
 // Ugh, the gyrations we go through to keep TypeScript happy
 // while only listing the p5 methods once:
@@ -451,11 +452,22 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          *     readability of calling code.
          */
         async reset(forcePresketch: boolean = false) {
+            console.log('Forcing', forcePresketch)
             if (!this._sketch) return
             const element = this.within!
             this.stop()
             if (forcePresketch) this.depart(element)
-            await this.inhabit(element, this.size)
+            let size = this.size
+            if (this.within) {
+                size = Specimen.calculateSize(
+                    {
+                        width: element.clientWidth,
+                        height: element.clientHeight,
+                    },
+                    this.requestedAspectRatio()
+                )
+            }
+            await this.inhabit(element, size)
             this.show()
         }
     }
