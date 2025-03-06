@@ -410,6 +410,7 @@ const paramDesc = {
         type: ParamType.NUMBER_ARRAY,
         displayName: 'Dimensions',
         required: false,
+        placeholder: '(auto)',
         description:
             'Number of rows, or number of rows and number of '
             + 'columns separated by a space or comma, to divide the canvas '
