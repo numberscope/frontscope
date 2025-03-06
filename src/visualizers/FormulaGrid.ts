@@ -448,6 +448,7 @@ const paramDesc = {
         type: ParamType.STRING,
         displayName: 'Cell aspect',
         required: false,
+        placeholder: '(auto)',
         description:
             'Cell aspect ratio (width/height). If unspecified, '
             + 'FormulaGrid will adjust to fill the canvas. Use `r` to '
