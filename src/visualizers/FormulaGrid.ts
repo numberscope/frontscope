@@ -410,7 +410,8 @@ const paramDesc = {
         type: ParamType.NUMBER_ARRAY,
         displayName: 'Dimensions',
         required: false,
-        placeholder: '(auto)',
+        placeholder: '',
+        placeholderAlways: true,
         description:
             'Number of rows, or number of rows and number of '
             + 'columns separated by a space or comma, to divide the canvas '
@@ -449,7 +450,7 @@ const paramDesc = {
         type: ParamType.STRING,
         displayName: 'Cell aspect',
         required: false,
-        placeholder: '(auto)',
+        placeholder: '',
         description:
             'Cell aspect ratio (width/height). If unspecified, '
             + 'FormulaGrid will adjust to fill the canvas. Use `r` to '
@@ -629,6 +630,7 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
                 this.cellwidth = this.sketch.width / this.columns
                 this.cellheight = this.sketch.height / this.rows
                 this.cellmin = Math.min(this.cellwidth, this.cellheight)
+                this.params.dimensions.placeholder = ''
                 break
             case 1:
                 this.rows = this.dimensions[R]
@@ -636,6 +638,8 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
                 this.cellwidth = this.interpretAspect() * this.cellheight
                 this.columns = Math.floor(this.sketch.width / this.cellwidth)
                 this.cellmin = Math.min(this.cellwidth, this.cellheight)
+                this.params.dimensions.placeholder =
+                    this.columns + ' (from window width)'
                 break
             case 0: {
                 const asp = this.interpretAspect()
@@ -667,8 +671,15 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
                     )
                 }
                 this.columns = Math.floor(this.sketch.width / this.cellwidth)
+                this.params.dimensions.placeholder =
+                    `${this.rows} ${this.columns} ` + '(from window size)'
             }
         }
+        const actualAspect = this.cellwidth / this.cellheight
+        let digits = 3
+        if (math.isInteger(actualAspect)) digits = 0
+        this.params.aspect.placeholder =
+            actualAspect.toFixed(digits) + ' (to fill window)'
         // now set up to draw
         this.index = 1n
         this.frames = 0

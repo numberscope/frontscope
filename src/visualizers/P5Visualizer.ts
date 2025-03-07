@@ -452,7 +452,6 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          *     readability of calling code.
          */
         async reset(forcePresketch: boolean = false) {
-            console.log('Forcing', forcePresketch)
             if (!this._sketch) return
             const element = this.within!
             this.stop()

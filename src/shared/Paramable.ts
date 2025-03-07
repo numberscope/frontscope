@@ -103,13 +103,18 @@ export interface ParamInterface<PT extends ParamType> {
     placeholder?: string
     /* **/
     /** md
-:   The placeholder text that appears in the input box for the parameter
-    when that box is empty. This property is really only useful on parameters
-    for which the `required` property is false, because otherwise the input
-    box is not allowed to be empty. If the `placeholder` property is not
-    specified, the string representation of the `default` property is used
-    instead.
+:   The placeholder text that appears in the input box for the parameter.
+    If the `placeholder` property is not specified, the string representation
+    of the `default` property is used instead.
 <!-- -->
+    **/
+    /** md */
+    placeholderAlways?: boolean
+    /* **/
+    /** md
+:   Whether the placeholder should always be displayed, even when something
+    has been entered in the text box. (The usual behavior is to blank the
+    placeholder as soon as there is input.)
     **/
     /** md */
     description?: string
