@@ -226,19 +226,18 @@ const featuredSIMs = [
         'OEIS A293773',
         '&dimensions=200+5000&fillOrder=3&pathFormula=%5Bk%2C+floor'
             + '%28r%2F2%29+-+a%5D&backgroundColor=D2E1FBFF'
-            + '&fillFormula=%7B+circle%3A+%27black%27%7D'
-            + '&inset=12',
+            + '&fillFormula={circle%3A+black}&inset=12',
         ''
     ),
     specimenQuery(
         'Modular Multiplication Table',
         'FormulaGrid',
         'Formula',
-        '&dimensions=200+200&aspect=1&backgroundColor=0B207CFF'
-            + '&speed=100&fillFormula=%7B+square%3A+chroma%28%27%233bbf7d%27%29'
-            + '.alpha%28abs%28%28x*y%29+%25+200-100%29%2F100%29%2C%0Amouseover'
-            + '%3A+%5B+x%2C+%27x%27%2C+y%2C+%27%3D%27%2C+mod%28x*y%2Cc%29%5D'
-            + '+%7D&inset=1',
+        'dimensions=200+200&aspect=1&backgroundColor=0B207CFF&speed=100'
+            + '&fillFormula=%7Brectangle%3A%0A++%233bbf7d'
+            + '.alpha%28abs%282*mod%28x+y%2C+c%29-c%29%2Fc%29%2C%0A'
+            + 'mouseover%3A+%5B+x%2C+%27%C3%97%27%2C+y%2C+%27%3D%27%2C'
+            + '+mod%28x+y%2C+c%29%5D%7D',
         ''
     ),
     specimenQuery(
@@ -246,10 +245,11 @@ const featuredSIMs = [
         'FormulaGrid',
         'OEIS A000005',
         '&dimensions=200+200&aspect=1&fillOrder=1&pathFormula=spiral%28k%29'
-            + '&backgroundColor=000000FF&speed=100&fillFormula=%7B+circle%3A'
-            + '+chroma.mix%28%27%230571b0%27%2C+%27darkseagreen%27%0A%2C0.125'
-            + '*%28a-10%29%29%2C+mouseover%3A+%5B%0A++++%27d%28%27%2C+n%2C+'
-            + '%27%29+%3D+%27%2C+a%0A%5D%7D&inset=0.8',
+            + '&backgroundColor=000000FF&speed=100'
+            + '&fillFormula=%7Bcircle%3A%0A++%230571b0'
+            + '.mix%28darkseagreen%2C+%28a-10%29%2F8%29%2C%0A'
+            + 'mouseover%3A+%5B%27d%28%27%2C+n%2C+%27%29+%3D+%27%2C+a%5D%7D'
+            + '&inset=0.8',
         ''
     ),
     specimenQuery(
@@ -257,11 +257,10 @@ const featuredSIMs = [
         'FormulaGrid',
         'Formula',
         '&dimensions=200&backgroundColor=000000FF&speed=1024'
-            + '&fillFormula=%7Bcircle%3A+chroma.mix%28%27yellow'
-            + '%27%2C%27black%27%2C1-gcd%28x%2Cy%29%2Fsqrt%28x'
-            + '*y%29%29%2C%0A+mouseover%3A+%5B%0A++++%27gcd'
-            + '%28%27%2C+x%2C+%27%2C+%27%2C+y%2C+%27%29+%3D'
-            + '+%27%2C+gcd%28x%2Cy%29%0A%5D%7D&inset=0.8',
+            + '&fillFormula=%7Bcircle%3A%0A++yellow'
+            + '.mix%28black%2C+1-gcd%28x%2Cy%29%2Fsqrt%28x+y%29%29%2C%0A'
+            + 'mouseover%3A+%5B%0A++++%27gcd%28%27%2C+x%2C+%27%2C+%27%2C'
+            + '+y%2C+%27%29+%3D+%27%2C+gcd%28x%2Cy%29%0A%5D%7D&inset=0.8',
         ''
     ),
 ]
