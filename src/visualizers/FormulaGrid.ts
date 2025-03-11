@@ -14,7 +14,14 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
 /** md
 # Formula Grid visualizer
 
-(needs image)
+[<img src="../../assets/img/FormulaGrid/UlamSpiral.png" width="39%"
+style="float: left; margin-right: 1em; margin-left: 0.5em"
+/>](../assets/img/FormulaGrid/UlamSpiral.png)
+[<img src="../../assets/img/FormulaGrid/ArithmeticTriangle.png" width="56%"
+style="float: right; margin-left: 1em; margin-right: 8px;"
+/>](../assets/img/FormulaGrid/ArithmeticTriangle.png)
+
+<div style="clear: both;">&nbsp;</div>
 
 This visualizer divides the rectangular canvas into a grid of _r_ by _c_
 identical rectangular cells. Each cell has an integer _x_ coordinate (starting
@@ -126,9 +133,10 @@ interpreted as a color in the same way as the default behavior, and the shape
 will be drawn in that color. If multiple keys are specified, the shapes are
 drawn successively in the order that they appear in the object returned.
 
-The fill formula may use any of the variables _x_, _y_, _r_, _c_, and _s_
-described above; their values will be supplied by the visualizer. It may
-also use any of the following additional variables:
+The fill formula may use any of the variables described above: _x_, _y_
+(coordinates), _r_ (rows), _c_ (columns), and _s_ (spiral position); their
+values will be supplied by the visualizer. It may also use any of the
+following additional variables:
 
 _k_ -- the serial number of the cell in the order they are filled in, starting
 from 1
@@ -143,7 +151,7 @@ current cell
 _a_ -- the value of the current sequence at index _n_
 
 _f_ -- the frame number of the current drawing pass; this is the greatest
-integer in _k_ divided by the current drawing speed.
+integer in the quantity _k_ divided by the current drawing speed.
 
 You may also use the symbol `A` as a function symbol in your formula, and
 it will provide access to the value of the sequence being visualized for any
@@ -154,19 +162,19 @@ current entry. The FormulaGrid visualizer also defines a function symbol
 of the coordinates of the _k_-th position in the spiral path from the center.
 
 Being the heart of this visualizer, there is a lot of information that is
-packed into the fill formula, and it can get relatively complicated. So
+packed into the Fill formula, and it can get relatively complicated. So
 here are a few illustrative examples, all assuming By_Rows fill order:
 
 * A black/red checkerboard: `(x+y) % 2 ? red : black`
-* Every 7th cell has a white background and every 11th cell has an inner
-  red square: `{rectangle: (k % 7) == 1, square: not(k % 11) ? red : false}`
+* Every 7th cell is filled with white, and every 11th cell has an inner
+  red square: `{rectangle: (k % 7) == 1, square: not(k % 11) and red}`
 * Tile the plane with hexagons in a rainbow given by their distance from the
-  center of the grid; note we only color every other position, because
-  the hexagons overlap to cover every pixel twice. Also, we display
-  the distance on mouseover.
+  center of the grid; note we only color every other position, by alternately
+  setting the opacity to 1 or 0, because the hexagons overlap to cover every
+  pixel twice. Also, we display the distance on mouseover.
 ```
 { hexagon:
-    (x+y) % 2 ? rainbow(10*sqrt((x-c/2)^2 + (y-r/2)^2)) : false,
+    rainbow(10*sqrt((x-c/2)^2 + (y-r/2)^2), (x+y) % 2),
   mouseover:
     [sqrt((x-c/2)^2 + (y-r/2)^2), ' units from center']
 }
@@ -467,11 +475,12 @@ const paramDesc = {
 - Fill order: the path through the grid in which cells should be filled.
   Defaults to 'By_Rows', which fills them left-to-right and top-to-bottom.
   May also be 'Spiral', which makes a rectangular spiral filling the grid,
-  or 'Triangle', which visit cells starting with the top center, then the
+  or 'Triangle', which visits cells starting with the top center, then the
   two immediately left and right in the next row, then three in the middle of
-  the third row, etc. Finally, if this is set to 'Custom', an entry box for
-  a formula explicitly giving the _x_ and _y_ coordinates of the _k_-th cell
-  visited will pop up, allowing custom paths, scatter plots, etc.
+  the third row, etc. Finally, if this parameter is set to 'Custom', an
+  entry box for the Path formula parameter will pop up, allowing you to
+  explicit specify the _x_ and _y_ coordinates of the _k_-th cell visited
+  in order to create custom paths, scatter plots, etc.
     **/
     fillOrder: {
         default: FillOrder.By_Rows,

@@ -124,6 +124,28 @@ describe('triangular numbers', () => {
     })
 })
 
+describe('logical operators', () => {
+    const red = math.chroma('red')
+    const rzero = math.fraction(0, 1)
+    const rone = math.fraction(1, 1)
+    it('computes short-circuiting `and`', () => {
+        expect(math.and(true, false)).toBe(false)
+        expect(math.and(1, red)).toBe(red)
+        expect(math.and(rzero, true)).toBe(rzero)
+        expect(
+            math.evaluate('and(fraction(0,1), fraction(0,0))')
+        ).toStrictEqual(rzero)
+    })
+    it('computes short-circuiting `or`', () => {
+        expect(math.or(true, false)).toBe(true)
+        expect(math.or(1, red)).toBe(1)
+        expect(math.or(rzero, true)).toBe(true)
+        expect(
+            math.evaluate('or(fraction(1,1), fraction(0,0))')
+        ).toStrictEqual(rone)
+    })
+})
+
 describe('colors', () => {
     const chroma = math.chroma
     it('constructs a color from a string', () => {
@@ -251,7 +273,8 @@ describe('colors', () => {
         expect(g.gl()).toStrictEqual([0, 1, 0, 1])
     })
     it('provides a rainbow function', () => {
-        expect(math.rainbow(45).hex()).toStrictEqual('#ed2400')
+        expect(math.rainbow(45).hex()).toBe('#ed2400')
+        expect(math.evaluate('rainbow(2+2i, 0.5)').hex()).toBe('#ed240080')
     })
     it('takes linear combinations in expressions', () => {
         expect(

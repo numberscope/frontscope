@@ -127,18 +127,19 @@ const dummy = chroma('white')
 const chromaConstructor = dummy.constructor
 
 /** md
-#### rainbow(hue: bigint | number)
+#### rainbow(hue: bigint | number, opacity?: number)
 
 This function conveniently allows creation of an opaque color from just
 a "hue angle" in color space, periodically interpreted with the main period
-from 0 to 360. It uses the "oklch" color space provided by chromajs to ensure
-that all of the colors it returns will have approximately the same apparent
-lightness and hue saturation (and hopefully these levels have been selected
-to produce attractive colors).
+from 0 to 360. Optionally, you can also specify an opacity for the resulting
+color, from 1 to 0. It uses the "oklch" color space provided by chromajs
+to ensure that all of the colors it returns will have approximately the same
+apparent lightness and hue saturation (and hopefully these levels have been
+selected to produce attractive colors).
 **/
-export function rainbow(hue: bigint | number): Chroma {
+export function rainbow(hue: bigint | number, opacity = 1): Chroma {
     if (typeof hue === 'bigint') hue = Number(hue % 360n)
-    return chroma.oklch(0.6, 0.25, hue % 360)
+    return chroma.oklch(0.6, 0.25, hue % 360).alpha(opacity)
 }
 
 /** md

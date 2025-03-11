@@ -26,7 +26,10 @@ accept either `number` or `bigint` inputs for all arguments and convert them
 to bigints as needed.
 
 In addition, math formulas may create and manipulate colors using
-[Chroma](./Chroma.md) objects and functions.
+[Chroma](./Chroma.md) objects and functions. The formulas extend the hue
+argument to of the `rainbow` function to any value that can be converted
+into a bigint or number, and to complex numbers by taking their so-called
+argument angle as the hue angle.
 
 ### Example usage
 ```ts
@@ -78,6 +81,9 @@ const seven: bigint = math.bigabs(-7n)
 const twelve: ExtendedBigint = math.bigmax(5n, 12, -3)
 const negthree: ExtendedBigint = math.bigmin(5n, 12, -3)
 const anotherNegInf = math.bigmin(5n, math.negInfinity, -3)
+
+const orangey = math.evaluate('rainbow(1+i)')
+// depends just on arg of a complex number input
 ```
 
 ### Detailed function reference
@@ -88,9 +94,13 @@ import {modPow} from 'bigint-mod-arith'
 import {all, create, factory} from 'mathjs'
 import type {
     EvalFunction,
+    Fraction,
+    MathCollection,
     MathJsInstance,
+    MathNode,
     MathType,
     MathScalarType,
+    Matrix,
     Unit,
 } from 'mathjs'
 import temml from 'temml'
@@ -123,6 +133,7 @@ export type TposInfinity = 1e999 // since that's above range for number,
 // eslint-disable-next-line no-loss-of-precision
 export type TnegInfinity = -1e999 // similarly
 export type ExtendedBigint = bigint | TposInfinity | TnegInfinity
+export type MathAnyScalar = MathScalarType | Chroma | Fraction | boolean
 type Widen<T extends number | bigint> = T extends number
     ? number
     : T extends bigint
@@ -145,12 +156,18 @@ type ExtendedMathJs = Omit<MathJsInstance, 'hasNumericValue' | 'add'> & {
     triangular<T extends Integer>(n: T): Widen<T>
     invTriangular<T extends Integer>(n: T): Widen<T>
     chroma: typeof chroma
-    rainbow(a: Integer): Chroma
+    rainbow(a: Integer, opacity?: number): Chroma
     isChroma(a: unknown): a is Chroma
     add: ((c: Chroma, d: Chroma) => Chroma) &
         ((v: number[], a: number) => number[]) &
         ((v: number[], w: number[]) => number[]) &
         ((a: MathType, b: MathType) => MathType)
+    and: MathJsInstance['and'] &
+        ((a: boolean, b: boolean) => boolean) &
+        ((a: MathAnyScalar, b: MathAnyScalar) => MathAnyScalar)
+    or: MathJsInstance['or'] &
+        ((a: boolean, b: boolean) => boolean) &
+        ((a: MathAnyScalar, b: MathAnyScalar) => MathAnyScalar)
     hasNumericValue(x: unknown): x is MathScalarType
     multiply: MathJsInstance['multiply'] &
         ((s: number, c: Chroma) => Chroma) &
@@ -169,12 +186,12 @@ math.typed.addType({
 
 const colorStuff: Record<string, unknown> = {
     chroma,
-    rainbow: (h: MathScalarType | bigint) => {
+    rainbow: (h: MathScalarType | bigint, opacity = 1) => {
         if (math.isComplex(h)) h = (math.arg(h) * 180) / math.pi
         else if (typeof h !== 'number' && typeof h !== 'bigint') {
             h = math.number(h)
         }
-        return rainbow(h)
+        return rainbow(h, opacity)
     },
     add: math.typed('add', {'Chroma, Chroma': (c, d) => overlay(c, d)}),
     isChroma,
@@ -183,7 +200,14 @@ const colorStuff: Record<string, unknown> = {
         'Chroma, number': dilute,
     }),
     typeOf: math.typed('typeOf', {Chroma: () => 'Chroma'}),
+    boolean: math.typed('boolean', {
+        Chroma: c => c.alpha() > 0,
+        Complex: z => z.re !== 0 || z.im !== 0,
+        Fraction: r => !r.equals(r.neg()),
+        Unit: u => !!u.value,
+    }),
 }
+
 // work around omission of `colors` property in @types/chroma-js
 for (const name in (chroma as unknown as {colors: Record<string, string>})
     .colors) {
@@ -230,6 +254,79 @@ const numberTheory: Record<string, unknown> = {
 }
 
 math.import({...numberTheory, ...colorStuff})
+
+/* Fix up and/or so they will work with any mathjs type */
+function logicalFn(invert: boolean) {
+    function logicalCombiner(...callArgs: unknown[]) {
+        let input: MathNode[] = []
+        let unevaluated = false
+        let scope: unknown = undefined
+        let last = callArgs.length
+        /* First check if we are being called from the expression parser */
+        if (
+            last === 3
+            && Array.isArray(callArgs[0])
+            && math.isNode(callArgs[0][0])
+        ) {
+            input = callArgs[0]
+            last = input.length
+            unevaluated = true
+            scope = callArgs[2]
+        }
+        let value: unknown = invert
+        let collection = false
+        let terminated = false
+        for (let i = 0; i < last; ++i) {
+            const arg = unevaluated ? input[i].evaluate(scope) : callArgs[i]
+            const argColl = math.isCollection(arg)
+            if (collection) {
+                if (argColl) {
+                    const newValue: unknown[] = []
+                    const valueArray: unknown[] = Array.isArray(value)
+                        ? value
+                        : (value as Matrix).valueOf()
+                    const argArray: unknown[] = Array.isArray(arg)
+                        ? arg
+                        : arg.valueOf()
+                    for (let j = 0; j < valueArray.length; ++j) {
+                        newValue.push(
+                            logicalCombiner(valueArray[j], argArray[j])
+                        )
+                    }
+                    value = newValue
+                } else {
+                    value = math.map(value as MathCollection, elt =>
+                        logicalCombiner(elt, arg)
+                    )
+                }
+            } else {
+                if (argColl) {
+                    value = math.map(arg, elt => logicalCombiner(value, elt))
+                    collection = true
+                } else {
+                    // scalar-scalar case, in which we don't consider any
+                    // more arguments once the truth value is determined,
+                    // except that in the non-short-circuiting (direct
+                    // JavaScript call) case, we continue in case we encounter
+                    // a collection.
+                    if (terminated) continue
+                    let test = math.boolean(arg)
+                    if (invert) test = !test
+                    if (test) {
+                        if (unevaluated) return arg
+                        terminated = true
+                    }
+                    value = arg
+                }
+            }
+        }
+        return value
+    }
+    logicalCombiner.rawArgs = true
+    return logicalCombiner
+}
+
+math.import({and: logicalFn(true), or: logicalFn(false)}, {override: true})
 
 math.negInfinity = -Infinity as TnegInfinity
 math.posInfinity = Infinity as TposInfinity
