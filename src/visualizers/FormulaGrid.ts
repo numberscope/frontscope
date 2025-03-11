@@ -12,7 +12,7 @@ import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
-# Formula Grid visualizer
+# Formula Grid Visualizer
 
 [<img src="../../assets/img/FormulaGrid/UlamSpiral.png" width="39%"
 style="float: left; margin-right: 1em; margin-left: 0.5em"
