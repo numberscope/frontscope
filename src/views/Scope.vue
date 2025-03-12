@@ -384,23 +384,23 @@ visualizers you can select.
 
     const specimen = reactive(new Specimen()) // starts empty
 
-    async function showURL(url: string, saveSequence?: string) {
+    function showURL(url: string, saveSequence?: string) {
         const urlQuery = extractQueryFromPath(url)
         if (urlQuery) {
-            await specimen.loadQuery(urlQuery)
-            updateCurrent(specimen)
             if (saveSequence) {
                 const {sequenceKind, sequenceQuery} =
                     parseSpecimenQuery(urlQuery)
                 addSequence(sequenceKind, sequenceQuery)
             }
-        } else {
-            // This should no longer be possible now that the router
-            // redirects `/` to `/?[CURRENT QUERY]` but in case we
-            // somehow end up with a URL with no query, we have to do
-            // something:
-            await specimen.loadQuery(getCurrent().query)
+            return specimen.loadQuery(urlQuery).then(spec => {
+                updateCurrent(spec)
+                return spec
+            })
         }
+        // This should no longer be possible now that the router redirects
+        // `/` to `/?[CURRENT QUERY]`, but in case we somehow end up with
+        // a URL that has no query, we have to do something:
+        return specimen.loadQuery(getCurrent().query)
     }
 
     const tabWidth = parseInt(
@@ -442,41 +442,36 @@ visualizers you can select.
     }
 
     let canvasContainer: HTMLElement = document.documentElement
-    type IntervalID = ReturnType<typeof setInterval>
-    let resizePoll: IntervalID
+    let initialLoad: Promise<Specimen> | undefined = undefined
 
     onBeforeMount(() => {
         // First load up the specimen
-        showURL(route.fullPath, 'save sequence')
+        initialLoad = showURL(route.fullPath, 'save sequence')
     })
 
     onMounted(() => {
-        const specimenContainer = document.getElementById(
-            'specimen-container'
-        )!
-
         positionAndSizeAllTabs()
+        canvasContainer = document.getElementById('canvas-container')!
+
+        if (!initialLoad) throw new Error("showURL didn't promise Specimen")
+        initialLoad.then(spec => spec.setup(canvasContainer))
 
         window.addEventListener('resize', () => {
             positionAndSizeAllTabs()
         })
 
-        canvasContainer = document.getElementById('canvas-container')!
-        specimen.setup(canvasContainer)
-
-        resizePoll = setInterval(() => {
+        new ResizeObserver(() =>
             specimen.resized({
                 width: canvasContainer.clientWidth,
                 height: canvasContainer.clientHeight,
             })
-        }, 500)
+        ).observe(canvasContainer)
     })
 
     onUnmounted(() => {
         // Save the current sequence for future use
         addSequence(specimen.sequenceKey, specimen.sequence.query)
         // Now clean up
-        clearInterval(resizePoll)
         specimen.visualizer.depart(canvasContainer)
     })
 
