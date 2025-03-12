@@ -13,11 +13,16 @@ the [chroma-js api](https://www.vis4.net/chromajs/). Additional functions
 and facilities for manipulating Chroma colors are documented below.
 
 All of the chroma-js api and operations documented here are also available
-in [mathjs formulas](math.md). In addition, all of the named colors (like
-`red` or `chartreuse`) are available as pre-defined constant symbols, as
-are the color brewer palettes, like `RdBu` or `Set1`. Note the palettes are
-arrays of colors, so to get a specific color from them in a formula you
-need to index them with a 1-based index, e.g., `Set1[5]`.
+in [mathjs formulas](math.md). For example, you can darken a color `x` an
+amount controlled by a number `x` by writing `c.darken(x)`, or desaturate it
+by writing `c.desaturate(x)`, etc.
+
+In addition, all of the named colors (like
+`red` or `chartreuse`, including all CSS (Cascading Style Sheets) named colors)
+are available as pre-defined constant symbols, as are the color brewer
+palettes, like `RdBu` or `Set1`. Note the palettes are arrays of colors,
+so to get a specific color from them in a formula you need to index them
+with a 1-based index, e.g., `Set1[5]`.
 **/
 import type {Color as Chroma} from 'chroma-js'
 import chromaRaw from 'chroma-js'
@@ -59,11 +64,29 @@ export const chroma = function (...args: unknown[]) {
         if (arg instanceof Array && arg.length === 4) {
             return chromaRaw(...(arg as Quad), 'gl')
         }
+        if (typeof arg === 'boolean') {
+            return arg ? chromaRaw('white') : chromaRaw('black').alpha(0)
+        }
         if (typeof arg === 'number') {
-            if (arg <= 1.0) {
-                return chromaRaw(arg, arg, arg, 1, 'gl')
+            // Can't think of any natural meaning for negative numbers,
+            // so just ignore sign
+            const n: number = Math.abs(arg)
+            if (n <= 1.0) {
+                return chromaRaw(n, n, n, 1, 'gl')
             }
-            return chromaRaw(arg)
+            if (n > 0xffffff) {
+                // largest number chroma interprets
+                if (n < 0xffffffff) {
+                    // interpret last two digits as alpha
+                    const alpha = n % 0x100
+                    const rest = Math.floor(n / 0x100)
+                    return chromaRaw(rest).alpha(alpha / 0xff)
+                } else {
+                    // what color should huge numbers be?
+                    return chromaRaw('white')
+                }
+            }
+            return chromaRaw(n)
         }
     }
     if (
@@ -104,18 +127,19 @@ const dummy = chroma('white')
 const chromaConstructor = dummy.constructor
 
 /** md
-#### rainbow(hue: bigint | number)
+#### rainbow(hue: bigint | number, opacity?: number)
 
 This function conveniently allows creation of an opaque color from just
 a "hue angle" in color space, periodically interpreted with the main period
-from 0 to 360. It uses the "oklch" color space provided by chromajs to ensure
-that all of the colors it returns will have approximately the same apparent
-lightness and hue saturation (and hopefully these levels have been selected
-to produce attractive colors).
+from 0 to 360. Optionally, you can also specify an opacity for the resulting
+color, from 1 to 0. It uses the "oklch" color space provided by chromajs
+to ensure that all of the colors it returns will have approximately the same
+apparent lightness and hue saturation (and hopefully these levels have been
+selected to produce attractive colors).
 **/
-export function rainbow(hue: bigint | number): Chroma {
+export function rainbow(hue: bigint | number, opacity = 1): Chroma {
     if (typeof hue === 'bigint') hue = Number(hue % 360n)
-    return chroma.oklch(0.6, 0.25, hue % 360)
+    return chroma.oklch(0.6, 0.25, hue % 360).alpha(opacity)
 }
 
 /** md

@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="param-field">
-            <label>
+            <label class="param-label">
                 {{ displayName }}
                 <input
                     v-if="param.type === ParamType.BOOLEAN"
@@ -36,7 +36,6 @@
                     :class="!status.isValid() ? 'error-field' : ''"
                     :value="value"
                     :placeholder="placehold(param)"
-                    @keyup.enter="growArea($event)"
                     @input="updateString($event)" />
                 <input
                     v-else
@@ -47,15 +46,24 @@
                     :placeholder="placehold(param)"
                     @keyup.enter="blurField($event)"
                     @input="updateString($event)">
+                <div
+                    v-if="param.placeholderAlways"
+                    v-safe-html="param.placeholder"
+                    class="fakePlaceholder" />
             </label>
 
             <div
                 v-if="param.hideDescription && param.description"
                 class="desc-tooltip">
-                <span class="material-icons-sharp">help</span>
-                <div class="desc-tooltip-text shadowed">
-                    {{ param.description }}
-                </div>
+                <span
+                    class="material-icons-sharp"
+                    @mouseenter="popHelp"
+                    @mouseleave="hideHelp">help</span>
+                <Teleport to="body">
+                    <div ref="helpText" class="desc-tooltip-text shadowed">
+                        {{ param.description }}
+                    </div>
+                </Teleport>
             </div>
         </div>
         <p
@@ -76,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-    import {ref, watch} from 'vue'
+    import {ref, onMounted, useTemplateRef, watch} from 'vue'
     import PickColors from 'vue-pick-colors'
 
     import type {ParamInterface} from '../shared/Paramable'
@@ -90,6 +98,33 @@
         displayName: string
         status: ValidationStatus
     }>()
+
+    const helpPopup = useTemplateRef('helpText')
+    function popHelp(e: Event) {
+        const help = helpPopup?.value
+        if (!help) return
+        help.style.opacity = '1'
+        help.style.visibility = 'visible'
+        if (e.target instanceof HTMLSpanElement) {
+            const rect = e.target.getBoundingClientRect()
+            const popHeight = help.offsetHeight
+            if (rect.top > popHeight) {
+                help.style.top = rect.top - popHeight - 4 + 'px'
+                help.style.right = '8px'
+            } else if (rect.bottom + popHeight + 4 < window.innerHeight) {
+                help.style.top = rect.bottom + 4 + 'px'
+                help.style.right = '8px'
+            } else {
+                help.style.top = '0px'
+                help.style.right = '42px'
+            }
+        }
+    }
+    function hideHelp() {
+        if (!helpPopup?.value) return
+        helpPopup.value.style.opacity = '0'
+        helpPopup.value.style.visibility = 'hidden'
+    }
 
     const emit = defineEmits(['updateParam'])
     const isColorful =
@@ -112,13 +147,58 @@
         const field = e.target
         if (field instanceof HTMLElement) field.blur()
     }
-    function growArea(e: Event) {
-        const area = e.target
-        if (area instanceof HTMLTextAreaElement) {
-            const curheight = area.getBoundingClientRect().height
-            area.style.height = `${curheight + 14}px`
+
+    function growArea(area: HTMLTextAreaElement) {
+        if (area.scrollHeight > area.offsetHeight) {
+            area.style.height = `${area.scrollHeight + 3}px`
         }
     }
+
+    // based on: https://stackoverflow.com/questions/118241
+    // ---------
+    function cssStyle(element: HTMLElement, prop: string) {
+        return window.getComputedStyle(element, null).getPropertyValue(prop)
+    }
+
+    function canvasFont(el: HTMLElement) {
+        const fontWeight = cssStyle(el, 'font-weight') || 'normal'
+        const fontSize = cssStyle(el, 'font-size') || '16px'
+        const fontFamily = cssStyle(el, 'font-family') || 'Times New Roman'
+
+        return `${fontWeight} ${fontSize} ${fontFamily}`
+    }
+
+    const rulerContext = document.createElement('canvas').getContext('2d')
+    function textWidth(text: string, element: HTMLElement) {
+        if (!rulerContext) return 10
+        rulerContext.font = canvasFont(element)
+        return rulerContext.measureText(text).width
+    }
+    // ---------
+
+    function repositionFake(t: HTMLInputElement | HTMLTextAreaElement) {
+        const faker = t.parentElement?.querySelector('.fakePlaceholder')
+        if (faker instanceof HTMLElement) {
+            faker.style.left = textWidth(t.value, t) + 12 + 'px'
+        }
+    }
+
+    onMounted(() => {
+        const field = document.getElementById(props.paramName)
+        if (
+            props.param.type === ParamType.FORMULA
+            && field instanceof HTMLTextAreaElement
+        ) {
+            growArea(field)
+        }
+        if (
+            (props.param.placeholderAlways
+                && field instanceof HTMLInputElement)
+            || field instanceof HTMLTextAreaElement
+        ) {
+            repositionFake(field)
+        }
+    })
 
     function updateBoolean(e: Event) {
         blurField(e)
@@ -134,6 +214,13 @@
             || t instanceof HTMLTextAreaElement
         ) {
             emit('updateParam', t.value)
+            if (t instanceof HTMLTextAreaElement) growArea(t)
+            if (
+                !(t instanceof HTMLSelectElement)
+                && props.param.placeholderAlways
+            ) {
+                repositionFake(t)
+            }
         }
     }
 
@@ -218,6 +305,7 @@
     }
 
     function placehold(par: ParamInterface<ParamType>) {
+        if (par.placeholderAlways) return ''
         if (typeof par.placeholder === 'string') return par.placeholder
         const stringifier = typeFunctions[par.type].derealize
         return stringifier.call(par, par.default as never)
@@ -227,6 +315,10 @@
 <style scoped lang="scss">
     label {
         font-size: 12px;
+    }
+
+    .param-label {
+        position: relative;
     }
 
     input {
@@ -247,7 +339,8 @@
         }
     }
 
-    ::placeholder {
+    ::placeholder,
+    .fakePlaceholder {
         color: grey;
         opacity: 0.5;
     }
@@ -258,6 +351,14 @@
     ::-ms-input-placeholder {
         color: grey;
         opacity: 0.5;
+    }
+
+    .fakePlaceholder {
+        position: absolute;
+        font-size: 14px;
+        left: 10px;
+        bottom: 8px;
+        z-index: 2;
     }
 
     select {
@@ -327,11 +428,10 @@
         }
 
         right: 4px;
-        bottom: 0px;
+        top: 4px;
     }
 
-    .desc-tooltip .desc-tooltip-text {
-        visibility: hidden;
+    .desc-tooltip-text {
         width: 240px;
         background-color: var(--ns-color-white);
         color: var(--ns-color-black);
@@ -340,20 +440,15 @@
         padding: 8px;
         font-size: 12px;
 
-        position: absolute;
-        z-index: 1;
-        bottom: 125%;
+        position: fixed;
+        z-index: 120;
         right: 0;
         margin-left: -120px;
 
         opacity: 0;
+        visibility: hidden;
         transition:
             opacity 0.2s,
             visibility 0.2s;
-    }
-
-    .desc-tooltip:hover .desc-tooltip-text {
-        visibility: visible;
-        opacity: 1;
     }
 </style>
