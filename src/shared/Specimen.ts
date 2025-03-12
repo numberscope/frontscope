@@ -124,6 +124,8 @@ export class Specimen {
         return this
     }
 
+    /* Static helper functions */
+
     // Helper for loadQuery and for extracting sequence name
     static makeSequence(key: string, query?: string) {
         const sequence = produceSequence(key)
@@ -131,6 +133,22 @@ export class Specimen {
         sequence.validate()
         sequence.initialize()
         return sequence
+    }
+
+    /**
+     * Helper to calculate the size of the visualizer in a container.
+     * @param {number} containerWidth  width of the container
+     * @param {number} containerHeight  height of the container
+     * @param {number?} aspectRatio  aspect ratio requested by visualizer
+     * @returns {{width: number, height: number}} resulting size of visualizer
+     */
+    static calculateSize(inSize: ViewSize, aspectRatio?: number): ViewSize {
+        if (aspectRatio === undefined) return inSize
+        const constraint = inSize.width / inSize.height < aspectRatio
+        return {
+            width: constraint ? inSize.width : inSize.height * aspectRatio,
+            height: constraint ? inSize.width / aspectRatio : inSize.height,
+        }
     }
 
     /**
@@ -155,7 +173,7 @@ export class Specimen {
      */
     async reset() {
         if (!this.isSetup) return
-        this.size = this.calculateSize(
+        this.size = Specimen.calculateSize(
             {
                 width: this.location?.clientWidth ?? 0,
                 height: this.location?.clientHeight ?? 0,
@@ -243,22 +261,6 @@ export class Specimen {
     }
 
     /**
-     * Calculates the size of the visualizer in its container.
-     * @param {number} containerWidth  width of the container
-     * @param {number} containerHeight  height of the container
-     * @param {number?} aspectRatio  aspect ratio requested by visualizer
-     * @returns {{width: number, height: number}} resulting size of visualizer
-     */
-    calculateSize(inSize: ViewSize, aspectRatio?: number): ViewSize {
-        if (aspectRatio === undefined) return inSize
-        const constraint = inSize.width / inSize.height < aspectRatio
-        return {
-            width: constraint ? inSize.width : inSize.height * aspectRatio,
-            height: constraint ? inSize.width / aspectRatio : inSize.height,
-        }
-    }
-
-    /**
      * This function should be called when the size of the visualizer container
      * has changed. It calculates the size of the contents according to the
      * aspect ratio requested and calls the resize function.
@@ -266,7 +268,7 @@ export class Specimen {
      *     New width and height of the visualizer container
      */
     async resized(toSize: ViewSize): Promise<void> {
-        const newSize = this.calculateSize(
+        const newSize = Specimen.calculateSize(
             toSize,
             this._visualizer?.requestedAspectRatio()
         )

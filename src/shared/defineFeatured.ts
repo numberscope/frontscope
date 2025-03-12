@@ -208,6 +208,61 @@ const featuredSIMs = [
         'domain=0+1&angles=15+-165&steps=2+1'
             + '&speed=10&bgColor=e0def7&strokeColor=%231E90FF'
     ),
+    specimenQuery(
+        "Pascal's Triangle",
+        'FormulaGrid',
+        'OEIS A007318',
+        '&aspect=r&fillOrder=2&pathFormula=%5Bceil%28c%2F2%29+-+invTriangular'
+            + '%28k-1%29+%2B+2*%28k+-+triangular%28invTriangular%28k-1%29%29+'
+            + '-+1%29%2CinvTriangular%28k-1%29+%2B+1%5D'
+            + '&backgroundColor=21218FFF'
+            + '&fillFormula=%7Bhexagon%3A+rainbow%2872a-100%29.desaturate'
+            + '%281.2%29.brighten%280.8%29%7D',
+        ''
+    ),
+    specimenQuery(
+        'Lattice Murmuration',
+        'FormulaGrid',
+        'OEIS A293773',
+        '&dimensions=200+5000&fillOrder=3&pathFormula=%5Bk%2C+floor'
+            + '%28r%2F2%29+-+a%5D&backgroundColor=D2E1FBFF'
+            + '&fillFormula={circle%3A+black}&inset=12',
+        ''
+    ),
+    specimenQuery(
+        'Modular Multiplication Table',
+        'FormulaGrid',
+        'Formula',
+        'dimensions=200+200&aspect=1&backgroundColor=0B207CFF&speed=100'
+            + '&fillFormula=%7Brectangle%3A%0A++%233bbf7d'
+            + '.alpha%28abs%282*mod%28x+y%2C+c%29-c%29%2Fc%29%2C%0A'
+            + 'mouseover%3A+%5B+x%2C+%27%C3%97%27%2C+y%2C+%27%3D%27%2C'
+            + '+mod%28x+y%2C+c%29%5D%7D',
+        ''
+    ),
+    specimenQuery(
+        'Ulam Divisors',
+        'FormulaGrid',
+        'OEIS A000005',
+        '&dimensions=200+200&aspect=1&fillOrder=1&pathFormula=spiral%28k%29'
+            + '&backgroundColor=000000FF&speed=100'
+            + '&fillFormula=%7Bcircle%3A%0A++%230571b0'
+            + '.mix%28darkseagreen%2C+%28a-10%29%2F8%29%2C%0A'
+            + 'mouseover%3A+%5B%27d%28%27%2C+n%2C+%27%29+%3D+%27%2C+a%5D%7D'
+            + '&inset=0.8',
+        ''
+    ),
+    specimenQuery(
+        'Integerstellar',
+        'FormulaGrid',
+        'Formula',
+        '&dimensions=200&backgroundColor=000000FF&speed=1024'
+            + '&fillFormula=%7Bcircle%3A%0A++yellow'
+            + '.mix%28black%2C+1-gcd%28x%2Cy%29%2Fsqrt%28x+y%29%29%2C%0A'
+            + 'mouseover%3A+%5B%0A++++%27gcd%28%27%2C+x%2C+%27%2C+%27%2C'
+            + '+y%2C+%27%29+%3D+%27%2C+gcd%28x%2Cy%29%0A%5D%7D&inset=0.8',
+        ''
+    ),
 ]
 
 // Is there any reason for us to associate dates with featured specimens? Do
