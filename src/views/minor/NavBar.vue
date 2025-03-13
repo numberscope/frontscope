@@ -25,7 +25,7 @@
                         Gallery
                     </RouterLink>
                     <div class="help-popper">
-                        Help
+                        <a href="/doc/">Help</a>
                         <div id="help-popup" class="shadowed">
                             <div class="nav-link">
                                 <a href="/doc/doc/user_guide/">User Guide</a>
@@ -149,6 +149,14 @@
                 font-size: var(--ns-size-display);
                 position: relative;
                 padding-right: 0.5em;
+
+                a {
+                    font-family: var(--ns-font-display);
+                    text-decoration: none;
+                }
+                a:hover {
+                    text-decoration: underline;
+                }
 
                 #help-popup {
                     visibility: hidden;
