@@ -5,10 +5,12 @@ import type {Factorization} from './SequenceInterface'
 import simpleFactor from './simpleFactor'
 
 import {alertMessage} from '@/shared/alertMessage'
+import {breakableString} from '@/shared/layoutUtilities'
 import {math} from '@/shared/math'
 import type {ExtendedBigint} from '@/shared/math'
 import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
+import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
 # OEIS sequence
@@ -61,6 +63,9 @@ const paramDesc = {
         required: false,
         description:
             'If nonzero, take the residue of each element to this modulus.',
+        validate: function (n: bigint, status: ValidationStatus) {
+            status.forbid(n < 0n, "can't be negative")
+        },
     },
 } satisfies GenericParamDescription
 
@@ -113,7 +118,7 @@ export class OEIS extends Cached(paramDesc) {
     get description() {
         // Unusual: override the per-instance description
         let desc = this.oeisName
-        if (this.modulus > 0n) desc += ` (mod ${this.modulus})`
+        if (this.modulus) desc += ` (mod ${breakableString(this.modulus)})`
         return desc
     }
 
