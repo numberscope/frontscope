@@ -16,12 +16,13 @@ export function breakableString(n: bigint) {
     const breaklength = 10 + minus
     if (s.length < breaklength) return s
     let firstblock = s.length % 3
-    if (!firstblock && minus) firstblock = 4
+    if (firstblock === 1 && minus) firstblock = 4
     let prefix = ''
     if (firstblock) {
         prefix = s.substr(0, firstblock)
         s = s.substr(firstblock)
     }
+    console.log(n, firstblock, prefix, s)
     const parts = Array.from(s.match(/.{3}/g) ?? [])
     if (prefix) parts.unshift(prefix)
     return parts.join('\u2009') // thin space
