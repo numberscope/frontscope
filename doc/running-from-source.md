@@ -11,6 +11,11 @@
     install the venv module with a command like `apt install python3.11-venv`
     (you may have to replace the "3.11" with the version that is currently
     running in your installation).
+
+    If you are working under MacOS and would like more detail on how to set up
+    all of these tools, take a look at the Mac notes in the
+    [onboarding](onboarding.md) page.
+
 2.  In addition, if you want to build the documentation website for the
     `frontscope` system, you will need the [d2](https://d2lang.com) diagram
     generation software installed on your system. This step is not necessary
