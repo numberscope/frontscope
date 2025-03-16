@@ -55,7 +55,7 @@ Boulder Experimental Mathematics Lab.)
     to the latest version of nvm; it was current at the time of this writing,
     but you can always find the latest release on its
     [GitHub page](https://github.com/nvm-sh/nvm/releases).] Now either log out
-    and log back in for the nvm installtion to take effect, or instead just
+    and log back in for the nvm installation to take effect, or instead just
     execute `. ~/.nvm/nvm.sh`. Finally to install Node, choose the version of
     Node you want (latest was 23 at the time of this writing, but you can
     always look up the
@@ -66,9 +66,9 @@ Boulder Experimental Mathematics Lab.)
 4. Make sure you have [Make](https://linuxhandbook.com/using-make/) installed.
    There's a guide for Linux on that page; or you can try this link for
    [Windows](https://stackoverflow.com/questions/32127524/how-to-install-and-use-make-in-windows).
-   _Mac_: Unfortunately, the version of make that Apple includes with its
+   _Mac_: Unfortunately, the version of `make` that Apple includes with its
    developer tools is too outdated to work with frontscope. Therefore, you
-   must compile and install a more recent version of make. One relatively
+   must compile and install a more recent version of `make`. One relatively
    simple way to do this is to install the "Homebrew" package management
    system for MacOS, via
 
