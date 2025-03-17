@@ -14,11 +14,11 @@ steps where they apply, preceded by "_Mac_:"
 
 ## Accounts, etc.
 
-(Steps 2 and 3 only apply to the members of the Numberscope project at the CU
-Boulder Experimental Mathematics Lab.)
-
-1. If you don't have an account, sign up for [GitHub](https://github.com).
-2. Make sure you've been added to the Numberscope GitHub organization.
+1. If you are planning to contribute code and don't have a GitHub account,
+   [sign up for one](https://github.com).
+2. For members of the Numberscope project at the CU Boulder Experimental
+   Mathematics Lab only: Make sure you've been added to the Numberscope
+   GitHub organization.
 
 ## Setting up your computer for development
 
@@ -32,12 +32,12 @@ Boulder Experimental Mathematics Lab.)
     - TypeScript Vue Plugin (Volar)
     - Vue Language Features (Volar)
 
-    For more info on extensions, see:
-    https://code.visualstudio.com/docs/editor/extension-marketplace.
+    For more info on extensions, see the Visual Studio
+    [extension marketplace](https://code.visualstudio.com/docs/editor/extension-marketplace).
 
 2. If you don't have [Git](https://git-scm.com/) installed, install it. We use
    Git to keep track of the different versions of our code. _Mac_: The easiest
-   way to install git is to install the Mac "developer tools." You can do so
+   way to install Git is to install the Mac "developer tools." You can do so
    by opening Settings > General > Software Update and then (in a terminal, as
    mentioned above) executing `xcode-select --install`. Then follow the
    prompts in the Software Update window; your computer may need to restart
@@ -56,10 +56,10 @@ Boulder Experimental Mathematics Lab.)
     but you can always find the latest release on its
     [GitHub page](https://github.com/nvm-sh/nvm/releases).] Now either log out
     and log back in for the nvm installation to take effect, or instead just
-    execute `. ~/.nvm/nvm.sh`. Finally to install Node, choose the version of
+    execute `. ~/.nvm/nvm.sh`. Finally, to install Node, choose the version of
     Node you want (latest was 23 at the time of this writing, but you can
     always look up the
-    [available releases](https://nodejs.org/en/about/previous-releases). Then
+    [available releases](https://nodejs.org/en/about/previous-releases).) Then
     execute the command `nvm install [DESIRED_VERSION]`, e.g.,
     `nvm install 23`.
 
