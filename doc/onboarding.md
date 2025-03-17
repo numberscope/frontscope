@@ -59,7 +59,7 @@ steps where they apply, preceded by "_Mac_:"
     execute `. ~/.nvm/nvm.sh`. Finally, to install Node, choose the version of
     Node you want (latest was 23 at the time of this writing, but you can
     always look up the
-    [available releases](https://nodejs.org/en/about/previous-releases) ). Then
+    [available releases](https://nodejs.org/en/about/previous-releases)). Then
     execute the command `nvm install [DESIRED_VERSION]`, e.g.,
     `nvm install 23`.
 
