@@ -17,8 +17,8 @@ steps where they apply, preceded by "_Mac_:"
 1. If you are planning to contribute code and don't have a GitHub account,
    [sign up for one](https://github.com).
 2. For members of the Numberscope project at the CU Boulder Experimental
-   Mathematics Lab only: Make sure you've been added to the Numberscope
-   GitHub organization.
+   Mathematics Lab only: Make sure you've been added to the Numberscope GitHub
+   organization.
 
 ## Setting up your computer for development
 
