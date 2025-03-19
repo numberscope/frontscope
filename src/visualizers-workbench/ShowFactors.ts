@@ -1,5 +1,5 @@
-import {P5Visualizer} from './P5Visualizer'
-import {VisualizerExportModule} from './VisualizerInterface'
+import {P5Visualizer} from '../visualizers/P5Visualizer'
+import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
 
 import {math} from '@/shared/math'
 
