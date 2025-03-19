@@ -22,7 +22,6 @@ export function breakableString(n: bigint) {
         prefix = s.substr(0, firstblock)
         s = s.substr(firstblock)
     }
-    console.log(n, firstblock, prefix, s)
     const parts = Array.from(s.match(/.{3}/g) ?? [])
     if (prefix) parts.unshift(prefix)
     return parts.join('\u2009') // thin space
