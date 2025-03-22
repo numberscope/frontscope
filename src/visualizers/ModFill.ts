@@ -55,7 +55,7 @@ to the largest modulus to consider.
 - Background color: The color of the background
      **/
     backgroundColor: {
-        default: '#FFFFFF',
+        default: '#FFFFFFFF',
         type: ParamType.COLOR,
         displayName: 'Background color',
         required: true,
@@ -64,7 +64,7 @@ to the largest modulus to consider.
 - Fill color: The color used to fill each cell by default.
      **/
     fillColor: {
-        default: '#000000',
+        default: '#000000FF',
         type: ParamType.COLOR,
         displayName: 'Fill color',
         required: true,
@@ -192,19 +192,14 @@ Chinese Remainder Theorem).
      **/
     sunzi: {
         default: 0,
-        type: ParamType.NUMBER,
+        type: ParamType.BOOLEAN,
         displayName: 'Sunzi effect',
         description:
-            'The canvas background colour is painted at this '
-            + 'opacity between '
-            + 'each term of the '
-            + 'sequence.  '
-            + 'If 0, no effect.  If 1, canvas completely '
-            + 'blanks between terms (warning! can be '
-            + 'stroboscopic), so the residues of only a '
-            + 'single term are shown '
-            + 'in each frame.  '
-            + 'Otherwise a history fading effect (try 0.05).',
+            'If true, the canvas background colour is re-painted between '
+            + 'each term of the sequence.  Warning: a true setting can '
+            + 'create a stroboscopic effect. With a nearly transparent '
+            + 'background color, this creates an effect of fading the '
+            + 'residues displayed by earlier sequence values over time.',
         required: false,
         validate: function (n: number, status: ValidationStatus) {
             if (n < 0 || n > 1) status.addError('Must be between 0 and 1.')
@@ -212,7 +207,7 @@ Chinese Remainder Theorem).
     },
     /** md
 - Frame rate: Entries displayed per second.  Can be useful in combination with
-Sunzi mode. Only visible when Sunzi mode is nonzero.
+Sunzi mode. Only visible when Sunzi mode is true.
      **/
     frameRate: {
         default: 60,
@@ -220,7 +215,7 @@ Sunzi mode. Only visible when Sunzi mode is nonzero.
         displayName: 'Frame rate',
         required: false,
         visibleDependency: 'sunzi',
-        visiblePredicate: s => s !== 0,
+        visiblePredicate: s => s,
         validate: function (n: number, status: ValidationStatus) {
             if (n < 0 || n > 100)
                 status.addError('Must be between 0 and 100.')
@@ -255,7 +250,6 @@ class ModFill extends P5Visualizer(paramDesc) {
     }
 
     drawNew(num: bigint) {
-        let drawColor = this.useFillColor
         let alphaFormula = this.alpha
         let alphaStatus = this.statusOf.alpha
         let alphaVars = this.alpha.freevars
@@ -272,6 +266,7 @@ class ModFill extends P5Visualizer(paramDesc) {
         if (vars.has('a')) useValue = this.trySafeNumber(value)
         let x = 0
         for (let mod = 1; mod <= this.useMod; mod++) {
+            let drawColor = this.useFillColor
             // needs to take BigInt when implemented
             const highValue = this.highlightFormula.computeWithStatus(
                 this.statusOf.highlightFormula,
@@ -360,6 +355,8 @@ class ModFill extends P5Visualizer(paramDesc) {
 
         // set color info
         this.useBackColor = this.sketch.color(this.backgroundColor)
+        const opaqueBack = this.sketch.color(this.backgroundColor)
+        opaqueBack.setAlpha(255)
         this.useFillColor = this.sketch.color(this.fillColor)
         this.useHighColor = this.sketch.color(this.highColor)
 
@@ -367,9 +364,8 @@ class ModFill extends P5Visualizer(paramDesc) {
         this.sketch
             .frameRate(this.frameRate)
             .noStroke()
-            .background(this.useBackColor)
+            .background(opaqueBack)
         this.i = this.seq.first
-        this.useBackColor.setAlpha(255 * this.sunzi)
     }
 
     draw() {
@@ -378,8 +374,10 @@ class ModFill extends P5Visualizer(paramDesc) {
             return
         }
         // sunzi effect
-        this.sketch.fill(this.useBackColor)
-        this.sketch.rect(0, 0, this.sketch.width, this.sketch.height)
+        if (this.sunzi) {
+            this.sketch.fill(this.useBackColor)
+            this.sketch.rect(0, 0, this.sketch.width, this.sketch.height)
+        }
 
         // draw residues
         this.drawNew(this.i)
