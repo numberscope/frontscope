@@ -22,34 +22,31 @@ const featuredSIMs = [
         'Dance no. 163',
         'ModFill',
         'Formula',
-        'modDimension=600&fillColor=a51d2d&alpha=min(0.4%2C+0.01*m)'
-            + '&highlightFormula=n+mod+163+%3E+81&highColor=ff7800',
+        'modDimension=600&fillColor=min(0.4%2C+m%2F100)'
+            + '+*+(n+mod+163+>+81+%3F+%23ff7800+%3A+%23a51d2d)',
         'formula=163n'
     ),
     specimenQuery(
         "Virahanka's Prime Construct",
         'ModFill',
         'OEIS A000045',
-        'modDimension=130&backgroundColor=62a0ea&fillColor=613583'
-            + '&alpha=0.05&aspectRatio=false&highlightFormula=isPrime%28n%29'
-            + '&highColor=e5a50a',
-        ''
+        'modDimension=130&backgroundColor=62a0ea'
+            + '&fillColor=isPrime(n)+%3F+%23e5a50a0d+%3A+%236135830d'
     ),
     specimenQuery(
         'Prime Residues',
         'ModFill',
         'Formula',
-        'fillColor=1a5fb4&alpha=0.1&highlightFormula=isPrime%28n%29'
-            + '&highColor=f66151',
-        'formula=n'
+        'fillColor=isPrime(n)+%3F+%23f661511a+%3A+%231a5fb41a'
     ),
     specimenQuery(
         'Baffling Beatty Bars',
         'ModFill',
         'Formula',
-        'modDimension=350&fillColor=26a269&alpha=0.3'
-            + '&highlightFormula=floor%28sqrt%283%29n%29&highColor=1a5fb4',
-        'formula=floor%28sqrt%282%29*n%29'
+        'modDimension=350'
+            + '&fillColor=floor(sqrt(3)n)+%25+2'
+            + '+%3F+%231a5fb44d+%3A+%2326a2694d',
+        'formula=floor(sqrt(2)n)'
     ),
     specimenQuery(
         'Woven Residues',
@@ -62,9 +59,9 @@ const featuredSIMs = [
         "Picasso's Periods",
         'ModFill',
         'Formula',
-        'modDimension=100&backgroundColor=00000008&fillColor=1a5fb4'
-            + '&alpha=0.15&aspectRatio=false&highlightFormula=isPrime%28a%29'
-            + '&highColor=bf8383&alphaHigh=0.4&sunzi=true&frameRate=24',
+        'modDimension=100&backgroundColor=00000008'
+            + '&fillColor=isPrime(a)+%3F+%23bf838366+%3A+%231a5fb424'
+            + '&sunzi=true&frameRate=24',
         'formula=n%5E3%2B2n%2B1'
     ),
     specimenQuery(

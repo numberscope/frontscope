@@ -7,11 +7,6 @@ import type {GenericParamDescription} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
-/* Helper for parameter specifications: */
-function nontrivialFormula(fmla: string) {
-    return fmla !== '' && fmla !== '0' && fmla !== 'false'
-}
-
 /** md
 # Mod Fill Visualizer
 
@@ -31,8 +26,9 @@ each time the corresponding residue modulo _m_ occurs for
 some entry of the sequence. The sequence terms _a_(_n_) are considered in
 order, filling the corresponding cells in turn, so you can get an
 idea of when various residues occur by watching the order
-the cells are filled in as the diagram is drawn.  There are options
-to control color and transparency of the fill.
+the cells are filled in as the diagram is drawn. You specify how to compute
+the color used for filling each cell with the formula in the `Fill color`
+option.
 
 ## Parameters
 **/
@@ -61,37 +57,18 @@ to the largest modulus to consider.
         required: true,
     },
     /** md
-- Fill color: The color used to fill each cell by default.
+- Fill color: A formula which computes the color used to fill each cell as it
+  is drawn. See the [Chroma](../shared/Chroma.md) documentation for ways to
+  specify colors in a formula.
      **/
     fillColor: {
-        default: '#000000FF',
-        type: ParamType.COLOR,
-        displayName: 'Fill color',
-        required: true,
-    },
-    /** md
-- Opacity: The rate at which cells darken with repeated drawing.  This
-should be set between 0 (transparent) and 1 (solid), typically as a constant,
-but can be set as a function of _n_, the sequence index, _a_, the sequence
-entry, and/or _m_, the modulus.
-If the function evaluates to a number less than 0, it will behave as 0; if it
- evaluates to more than 1, it will behave as 1.  Default:
-     **/
-    alpha: {
-        default: new MathFormula(
-            /** md */
-            `1`
-            /* **/
-        ),
+        default: new MathFormula('black'),
         type: ParamType.FORMULA,
         symbols: ['n', 'a', 'm'],
-        displayName: 'Opacity',
+        displayName: 'Fill color',
         description:
-            'The opacity of each new rectangle (rate at which cells'
-            + ' darken with repeated drawing).  Between 0 '
-            + '(transparent) and 1 (solid).  '
-            + "Can be a function in 'n' (index), 'a' (entry) "
-            + "and 'm' (modulus).",
+            'A formula to compute the color that each cell relating '
+            + 'to a given sequence entry will be filled with.',
         required: false,
     },
     /** md
@@ -103,79 +80,6 @@ Defaults to false.
         type: ParamType.BOOLEAN,
         displayName: 'Square canvas',
         required: false,
-    },
-    /** md
-- Highlight formula: A formula whose output, modulo 2, determines whether
-to apply the highlight color (residue 0) or fill color (residue 1).
-Note that a boolean `true` value counts as 1 and `false` as 0. As with
-Opacity, the formula can involve variables _n_ (index), _a_ (entry) and/or
-_m_ (modulus).  Default:
-**/
-    highlightFormula: {
-        default: new MathFormula(
-            // Note: he markdown comment closed with */ means to include code
-            // into the docs, until mkdocs reaches a comment ending with **/
-            /** md */
-            `false`
-            /* **/
-        ),
-        type: ParamType.FORMULA,
-        symbols: ['n', 'a', 'm'],
-        displayName: 'Highlighting',
-        description:
-            "A function in 'n' (index), 'a' (entry) "
-            + "and 'm' (modulus); "
-            + 'when output is odd '
-            + '(number) or true (boolean), draws residue of '
-            + 'a(n) in the highlight color.'
-            /** md
-{! ModFill.ts extract:
-    start: '[*] EXAMPLES [*]'
-    stop: 'required[:]'
-    replace: [['^\s*[+]\s"(.*)"[\s,]*$', '       \1']]
-!}
-        **/
-            /* EXAMPLES */
-            + 'Examples: `isPrime(n)` highlights entries with prime index; '
-            + '`a` highlights entries with odd value; and `m == 30` '
-            + 'highlights the modulus 30 column.',
-        required: false,
-    },
-    /** md
-- Highlight color: The color used for highlighting.
-     **/
-    highColor: {
-        default: '#c98787',
-        type: ParamType.COLOR,
-        displayName: 'Highlight color',
-        required: true,
-        visibleDependency: 'highlightFormula',
-        visiblePredicate: (dependentValue: MathFormula) =>
-            nontrivialFormula(dependentValue.source),
-    },
-    /** md
-- Highlight opacity: The rate at which cells darken with repeated
-highlighting.  This should be set between 0 (transparent) and 1 (opaque),
-and has the analogous meaning and may use the same variables as Opacity.
-Default: if this parameter is not specified, the same value/formula for
-Opacity as described above will be used.
-     **/
-    alphaHigh: {
-        default: new MathFormula(''),
-        type: ParamType.FORMULA,
-        symbols: ['n', 'a', 'm'],
-        displayName: 'Highlight opacity',
-        description:
-            'The opacity of each new rectangle (rate at which cells'
-            + ' darken with repeated drawing).  Between 0'
-            + '(transparent) and 1 (opaque).  '
-            + "Can be a function in 'n' (index), 'a' (value) "
-            + "and 'm' (modulus).",
-        placeholder: '[same as Opacity]',
-        required: false,
-        visibleDependency: 'highlightFormula',
-        visiblePredicate: (dependentValue: MathFormula) =>
-            nontrivialFormula(dependentValue.source),
     },
     /** md
 - Sunzi mode: Warning: can create a stroboscopic effect.
@@ -232,8 +136,6 @@ class ModFill extends P5Visualizer(paramDesc) {
     rectWidth = 0
     rectHeight = 0
     useMod = 0
-    useFillColor = INVALID_COLOR
-    useHighColor = INVALID_COLOR
     useBackColor = INVALID_COLOR
     i = 0n
 
@@ -250,13 +152,11 @@ class ModFill extends P5Visualizer(paramDesc) {
     }
 
     drawNew(num: bigint) {
-        let alphaFormula = this.alpha
-        let alphaStatus = this.statusOf.alpha
-        let alphaVars = this.alpha.freevars
+        const sketch = this.sketch
         const value = this.seq.getElement(num)
 
-        // determine alpha
-        const vars = this.highlightFormula.freevars
+        // determine color
+        const vars = this.fillColor.freevars
         let useNum = 0
         let useValue = 0
 
@@ -266,45 +166,22 @@ class ModFill extends P5Visualizer(paramDesc) {
         if (vars.has('a')) useValue = this.trySafeNumber(value)
         let x = 0
         for (let mod = 1; mod <= this.useMod; mod++) {
-            let drawColor = this.useFillColor
             // needs to take BigInt when implemented
-            const highValue = this.highlightFormula.computeWithStatus(
-                this.statusOf.highlightFormula,
+            const clr = this.fillColor.computeWithStatus(
+                this.statusOf.fillColor,
                 useNum,
                 useValue,
                 mod
             )
-            let high = false
-            if (typeof highValue === 'boolean') high = highValue
-            else if (
-                typeof highValue === 'number'
-                || typeof highValue === 'bigint'
-            ) {
-                high = math.modulo(highValue, 2) === 1n
-            }
-            // set color
-            if (high) {
-                drawColor = this.useHighColor
-                if (this.alphaHigh.source !== '') {
-                    alphaFormula = this.alphaHigh
-                    alphaStatus = this.statusOf.alphaHigh
-                    alphaVars = this.alphaHigh.freevars
-                }
-            }
-            if (alphaVars.has('n')) useNum = this.trySafeNumber(num)
-            if (alphaVars.has('a')) useValue = this.trySafeNumber(value)
-            const alphaValue = alphaFormula.computeWithStatus(
-                alphaStatus,
-                useNum,
-                useValue,
-                mod
-            )
-            if (typeof alphaValue === 'number') {
-                drawColor.setAlpha(255 * alphaValue)
-            }
-
+            if (this.statusOf.fillColor.invalid()) return
             // draw rectangle
-            this.sketch.fill(drawColor)
+            const sketchColor =
+                typeof clr === 'string'
+                    ? sketch.color(clr)
+                    : math.isChroma(clr)
+                      ? sketch.color(clr.hex())
+                      : sketch.color('black')
+            this.sketch.fill(sketchColor)
             const y =
                 this.sketch.height
                 - Number(math.modulo(value, mod) + 1n) * this.rectHeight
@@ -357,8 +234,6 @@ class ModFill extends P5Visualizer(paramDesc) {
         this.useBackColor = this.sketch.color(this.backgroundColor)
         const opaqueBack = this.sketch.color(this.backgroundColor)
         opaqueBack.setAlpha(255)
-        this.useFillColor = this.sketch.color(this.fillColor)
-        this.useHighColor = this.sketch.color(this.highColor)
 
         // Set up to draw:
         this.sketch
