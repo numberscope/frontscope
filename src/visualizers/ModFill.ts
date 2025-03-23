@@ -58,8 +58,16 @@ to the largest modulus to consider.
     },
     /** md
 - Fill color: A formula which computes the color used to fill each cell as it
-  is drawn. See the [Chroma](../shared/Chroma.md) documentation for ways to
-  specify colors in a formula.
+is drawn. See the [Chroma](../shared/Chroma.md) documentation for ways to
+specify colors in a formula. The formula may use any of the following variables,
+the values of which will be predefined for you:
+     - `a`, the current entry of the sequence,
+     - `n`, the current index in the sequence,
+     - `m`, the modulus represented by the current cell.
+
+To recover the residue of the current cell being filled, use the expression
+`a % m`.
+
      **/
     fillColor: {
         default: new MathFormula('black'),
@@ -68,7 +76,9 @@ to the largest modulus to consider.
         displayName: 'Fill color',
         description:
             'A formula to compute the color that each cell relating '
-            + 'to a given sequence entry will be filled with.',
+            + 'to a given sequence entry will be filled with. May use '
+            + 'variables `a` for the current sequence entry, `n` for the '
+            + 'sequence index, and/or `m` for the modulus.',
         required: false,
     },
     /** md
@@ -82,17 +92,15 @@ Defaults to false.
         required: false,
     },
     /** md
-- Sunzi mode: Warning: can create a stroboscopic effect.
-This sets the opacity of the background color
-overlay added at each step.  If 0, there is no effect.
-If 1, then the canvas completely blanks between terms,
-allowing you to see each term of the sequence individually.
-In that case, it helps to turn down the Frame rate (it
-can create quite a stroboscopic effect).  If
-set in the region of 0.05, it has a "history fading effect"
-in that the contribution of long past terms fades into the background.
-This parameter is named for Sunzi's Theorem (also known as the
-Chinese Remainder Theorem).
+- Sunzi mode: Warning: can create a stroboscopic effect. If true, the
+background is redrawn on every frame. If the background color is opaque or
+nearly so, this mode creates a stroboscopic effect in which only the residues
+of the current sequence element are visible in each frame. (It can help to
+turn down the Frame rate if the visual effect is too jarring.) If the opacity
+of the background is roughly 0.05, turning on the Sunzi mode has a
+"history fading effect," in that the contribution of long past terms fades
+into the background. This parameter is named for Sunzi's Theorem (also known
+as the Chinese Remainder Theorem).
      **/
     sunzi: {
         default: 0,
