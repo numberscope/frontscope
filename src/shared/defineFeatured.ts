@@ -52,7 +52,7 @@ const featuredSIMs = [
         'Woven Residues',
         'ModFill',
         'Random',
-        'modDimension=5000',
+        'modDimension=5000&fillColor=rainbow(n%2F2)',
         'min=10000&max=100000'
     ),
     specimenQuery(
