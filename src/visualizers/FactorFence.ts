@@ -369,6 +369,29 @@ term that the mouse is above. Clicking a prime will set it as the persistent
 highlight value. You can drag the chart in any direction to pan the view.
 
     **/
+    // Implementation notes: control events (keypresses and mouse gestures) are
+    // handled in this code in a slightly roundabout way: every draw() call
+    // checks whether a keypress is in effect and/or whether any mouse
+    // gestures are occurring, and handles them accordingly. But since the
+    // graph doesn't change except as a result of these actions (or the cache
+    // filling), the draw loop can generally stop. So the interaction checkers
+    // have to extend the draw loop if they fire. And then finally, since
+    // the draw loop tends to stop, pretty much all that the actual
+    // event-handling functions (mousePressed() etc, well below here in this
+    // file) have to do is restart the draw loop, and then the interaction
+    // checkers in draw() will actually implement the behaviors that should
+    // be invoked by those events.
+    // It might be more natural-seeming to implement the behaviors directly
+    // in the event-handling functions. That simpler scheme would likely work
+    // for the mouse events. However, it is unclear how, in that scheme, one
+    // could implement the behavior that the graph continues to zoom (or
+    // stretch or whatever) as you hold the corresponding key down. That's
+    // because you can only rely on a single keyPressed() event and a single
+    // keyReleased() event, no matter how long you hold a key down.
+    // So something has to run in the meantime and check if the key is still
+    // down, and it seems as though that has to be the draw() call. And
+    // as long as the draw() call is implementing the key controls, it seems
+    // that for consistency, it might as well do all the controls.
     mouseCheckDrag() {
         const movement = new p5.Vector(this.sketch.mouseX, this.sketch.mouseY)
         movement.sub(this.dragStart)
