@@ -359,9 +359,6 @@ class FactorFence extends P5Visualizer(paramDesc) {
         // no stroke (rectangles without borders)
         this.sketch.strokeWeight(0)
         this.sketch.frameRate(30)
-
-        // Only need a couple of frames to start with:
-        this.stop(tryFrames)
     }
 
     /** md
@@ -381,6 +378,7 @@ highlight value. You can drag the chart in any direction to pan the view.
             this.dragging = true
             movement.mult(1 / this.scaleFactor)
             this.graphCorner = this.graphCornerStart.copy().add(movement)
+            this.extendLoop()
         }
     }
 
@@ -404,37 +402,36 @@ In addition, several keypress commands are recognized:
                 : 0.97
             this.scaleFactor *= keyScale
             this.graphCorner.y = this.graphCorner.y / keyScale
-        }
-        /** md
+        } else if (this.sketch.keyIsDown(this.sketch.UP_ARROW)) {
+            /** md
 - up and down arrow: stretch the bars vertically
-        **/
-        if (this.sketch.keyIsDown(this.sketch.UP_ARROW)) {
+             **/
             // stretch up UP
             this.heightScale *= 1.03
-        }
-        if (this.sketch.keyIsDown(this.sketch.DOWN_ARROW)) {
+        } else if (this.sketch.keyIsDown(this.sketch.DOWN_ARROW)) {
             // contract down DOWN
             this.heightScale *= 0.97
-        }
-        /** md
+        } else if (this.sketch.keyIsDown(74)) {
+            /** md
 - J/I/K/L: pan the chart left/up/down/right
-        **/
-        if (this.sketch.keyIsDown(74)) {
+             **/
             // pan left J
             this.graphCorner.x -= 10 / this.scaleFactor
-        }
-        if (this.sketch.keyIsDown(76)) {
+        } else if (this.sketch.keyIsDown(76)) {
             // pan right L
             this.graphCorner.x += 10 / this.scaleFactor
-        }
-        if (this.sketch.keyIsDown(73)) {
+        } else if (this.sketch.keyIsDown(73)) {
             // pan up I
             this.graphCorner.y -= 10 / this.scaleFactor
-        }
-        if (this.sketch.keyIsDown(75)) {
+        } else if (this.sketch.keyIsDown(75)) {
             // pan down K
             this.graphCorner.y += 10 / this.scaleFactor
+        } else {
+            // no key we care about
+            return
         }
+        // Make sure that if we keep the key down, the drawing keeps adjusting:
+        this.extendLoop()
     }
 
     draw() {
@@ -516,6 +513,8 @@ In addition, several keypress commands are recognized:
         // If we are waiting on elements or factorizations, extend lifetime
         if (this.collectFailed || this.firstFailure < barsInfo.maxBars) {
             this.extendLoop()
+        } else {
+            this.stop(tryFrames)
         }
     }
 
@@ -677,12 +676,17 @@ In addition, several keypress commands are recognized:
         this.extendLoop()
     }
 
+    mouseDragged(event: MouseEvent) {
+        this.mouseLast = event
+        this.extendLoop()
+    }
+
     mousePressed() {
         if (!this.mouseOnSketch()) return
         this.mouseDown = true
         this.dragStart = new p5.Vector(this.sketch.mouseX, this.sketch.mouseY)
         this.graphCornerStart = this.graphCorner.copy()
-        this.continue()
+        this.extendLoop()
     }
 
     mouseReleased() {
