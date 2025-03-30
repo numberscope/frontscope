@@ -622,10 +622,9 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             && this.seq.length > this.throttleWarn
             && this.seq.length <= this.throttleLimit
         ) {
-            // bug... why isn't this displaying?
             status.addWarning(
                 `Animating with more than ${this.throttleWarn} steps is `
-                    + 'likely to be quite laggy.'
+                    + 'likely to have a very low frame rate.'
             )
         }
         if (animating && this.seq.length > this.throttleLimit) {
@@ -634,30 +633,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                     + 'entries of the sequence.'
             )
         }
-
-        // Check that the domain seems suitable for the sequence:
-        const toTest = 100n
-        const threshold = 10
-        if (this.seq.length >= toTest) {
-            let nIn = 0
-            const limit = this.seq.first + toTest
-            for (let i = this.seq.first; i < limit; ++i) {
-                try {
-                    const val = this.seq.getElement(i)
-                    if (params.domain.includes(val)) ++nIn
-                } catch {
-                    // bag the test
-                    return status
-                }
-            }
-            if (nIn < threshold) {
-                this.statusOf.domain.addWarning(
-                    `only ${nIn} of the first ${toTest} sequence entries `
-                        + 'are in this list; consider adjusting'
-                )
-            }
-        }
-
         return status
     }
 
@@ -853,6 +828,9 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         const position = this.vertices[len].copy()
         const startIndex = this.firstIndex + BigInt(len)
         const endIndex = this.firstIndex + BigInt(targetLength)
+        let checked = 0
+        let inDomain = 0
+        const threshold = 0.03
         for (let i = startIndex; i < endIndex; i++) {
             // get the current sequence element and infer
             // the rotation/step
@@ -867,6 +845,10 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                     // don't know what to do with this
                     throw e
                 }
+            }
+            if (this.ruleMode === RuleMode.List) {
+                ++checked
+                if (this.domain.includes(currElement)) inDomain++
             }
             const input = {
                 n: Number(i),
@@ -941,6 +923,15 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             this.pathLengths.push(stepLength)
             this.pathBearings.push(this.bearing)
             this.vertices.push(position.copy())
+        }
+        if (this.ruleMode === RuleMode.List) {
+            this.statusOf.domain.warnings.length = 0 // clear prior warning
+            if (inDomain / checked < threshold) {
+                this.statusOf.domain.addWarning(
+                    `only ${inDomain} of current group of ${checked} sequence`
+                        + 'entries are in this list; consider adjusting'
+                )
+            }
         }
     }
 
