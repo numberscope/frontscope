@@ -753,6 +753,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
                 sketch.fill(this.pathColors[i])
                 sketch.push()
+                sketch.scale(1, -1, 1)
                 sketch.translate(lastPos.x, lastPos.y).rotateZ(radBearing)
                 if (Math.abs(length) > width / 3) {
                     sketch.rect(0, -width / 2, length - width / 3, width)
