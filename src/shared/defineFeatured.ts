@@ -147,12 +147,12 @@ const featuredSIMs = [
         'Zeta Zero #10143',
         'Turtle',
         'Formula',
-        'angleMeaning=1&speed=5&ruleMode=1&angleFormula=log(n)*10000.06534'
+        'angleMeaning=1&speed=5&ruleMode=1&angleFormula=-log(n)*10000.06534'
             + '&angleMeasure=1&stepFormula=300%2Fsqrt(n)&bgColor=201E2D'
             + '&widthFormula=4-n%2F1000'
-            + '&colorFormula=chroma%28%28chroma.scale%28%5B%27%23fafa6e'
-            + '%27%2C+%27%232A4858%27%2C+%27%23fafa6e%27%5D%29.mode%28%27lch%27'
-            + '%29.colors%28360%29%29%5Bfloor%28number%28b+rad%2C+deg%29+%25'
+            + '&colorFormula=chroma%28chroma.scale%28%5B%23fafa6e%2C'
+            + '+%232A4858%2C+%23fafa6e%5D%29.mode%28%27lch%27'
+            + '%29.colors%28360%29%5Bfloor%28number%28b+rad%2C+deg%29+%25'
             + '+360%29%2B1%5D%29.alpha%280.2%2Bn%2F1000%29',
         'first=1&last=3183&length=3183'
     ),
@@ -168,8 +168,8 @@ const featuredSIMs = [
         'Gosper Flowsnake',
         'Turtle',
         'OEIS A229214',
-        'domain=-3+-2+-1+1+2+3&angles=-60+-120+180+0+60+120'
-            + '&angleMeaning=1&steps=8&widths=2&strokeColor=%2390EE90'
+        'domain=-3+-2+-1+1+2+3&angles=-150+150+90+-90+-30+30'
+            + '&angleMeaning=1&steps=12&widths=2&strokeColor=%2390EE90'
             + '+%2300CED1+%23FF7D4D+%231F93FF+%23B63A71+%23C71585'
             + '&bgColor=22274e&speed=10&angleFormula=%7B%22-3%22%3A'
             + '+-60%2C+%22-2%22%3A+-120%2C+%22-1%22%3A+180%2C+%221%22'
