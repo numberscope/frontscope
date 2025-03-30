@@ -944,8 +944,9 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         }
     }
 
-    async resized(_toSize: ViewSize) {
+    async resized(toSize: ViewSize) {
         this.cursor = 0 // make sure we redraw
+        this.sketch.resizeCanvas(toSize.width, toSize.height)
         return true // we handled it; framework need not do anything
     }
 
