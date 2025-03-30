@@ -191,7 +191,11 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                         ) {
                             sketch[method] = (event: KeyboardEvent) => {
                                 const active = document.activeElement
-                                if (active && active.tagName === 'INPUT') {
+                                if (
+                                    active
+                                    && (active.tagName === 'INPUT'
+                                        || active.tagName === 'TEXTAREA')
+                                ) {
                                     return true
                                 }
                                 return this[method](event)
