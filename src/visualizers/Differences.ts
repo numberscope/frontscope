@@ -2,7 +2,7 @@ import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
 import {math} from '@/shared/math'
-import type {GenericParamDescription} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
@@ -50,20 +50,32 @@ class Differences extends P5Visualizer(paramDesc) {
     useTerms = -1n
     useLevels = -1n
 
+    calcLevelsTerms(inLevels: bigint): [bigint, bigint] {
+        let useTerms = 40n // Typically more than enough to fill screen
+        if (this.seq.last < this.seq.first + useTerms - 1n) {
+            useTerms = BigInt(this.seq.last) - this.seq.first + 1n
+        }
+        const useLevels = inLevels < useTerms ? inLevels : useTerms
+        return [useLevels, useTerms]
+    }
+
+    checkParameters(params: ParamValues<typeof paramDesc>) {
+        const status = super.checkParameters(params)
+
+        const [useLevels] = this.calcLevelsTerms(params.levels)
+        this.statusOf.levels.warnings.length = 0
+        if (params.levels > useLevels) {
+            this.statusOf.levels.addWarning(
+                `too few sequence entries for ${params.levels} rows; `
+                    + `using ${useLevels}`
+            )
+        }
+        return status
+    }
+
     setup() {
         super.setup()
-        this.useTerms = 40n // Typically more than enough to fill screen
-        if (this.seq.last < this.seq.first + this.useTerms - 1n) {
-            this.useTerms = BigInt(this.seq.last) - this.seq.first + 1n
-        }
-        this.useLevels = this.levels
-        if (this.useLevels > this.useTerms) {
-            this.useLevels = this.useTerms
-            // TODO IN OVERHAUL: Should really warn about this situation
-            // So some of this code will have to move into checkParameters
-            // maybe there will need to be a common helper function called
-            // from both there and here.
-        }
+        ;[this.useLevels, this.useTerms] = this.calcLevelsTerms(this.levels)
     }
 
     draw() {
