@@ -74,10 +74,11 @@ class Differences extends P5Visualizer(paramDesc) {
     yDelta = 50
     leftMargin = 10
 
-    // Dummy values, actually computed in setup()
+    // Dummy values, actually computed in setup() / draw()
     useTerms = -1n
     useLevels = -1n
     xDelta = -1
+    entries = [['0']]
 
     calcLevelsTerms(inLevels: bigint): [bigint, bigint] {
         let useTerms = 40n // Typically more than enough to fill screen
@@ -114,6 +115,8 @@ class Differences extends P5Visualizer(paramDesc) {
             .colorMode(this.sketch.HSB, 255)
         const demoString = '˗' + '0'.repeat(this.digits) + ' '
         this.xDelta = this.sketch.textWidth(demoString)
+        this.entries = []
+        for (let i = 0; i < this.useLevels; ++i) this.entries.push([])
     }
 
     draw() {
@@ -143,10 +146,12 @@ class Differences extends P5Visualizer(paramDesc) {
             for (let j = 0; j < workingSequence.length; j++) {
                 const num = workingSequence[j]
                 const abs = num < 0 ? -num : num
+                let newEntry = num.toString()
                 let s = abs.toString()
                 if (s.length > this.digits) {
                     s = s.substr(0, this.digits - 2) + '…'
-                }
+                } else newEntry = ''
+                this.entries[i].push(newEntry)
                 if (num < 0) s = '˗' + s
                 sketch.text(s, curX, this.firstY + i * this.yDelta)
                 curX += this.xDelta
@@ -159,6 +164,19 @@ class Differences extends P5Visualizer(paramDesc) {
             workingSequence.pop()
         }
         this.stop()
+    }
+
+    mouseMoved(_event: MouseEvent) {
+        this.simplePopup()
+        const sk = this.sketch
+        const adjY = sk.mouseY + this.yDelta - this.firstY
+        const row = Math.floor(adjY / this.yDelta)
+        const posInRow = adjY % this.yDelta
+        if (posInRow < this.yDelta - this.fontSize) return
+
+        const adjX = sk.mouseX - (row * this.xDelta) / 2 - this.leftMargin
+        const col = Math.floor(adjX / this.xDelta)
+        this.simplePopup(this.entries[row][col], [sk.mouseX, sk.mouseY])
     }
 }
 

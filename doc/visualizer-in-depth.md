@@ -494,6 +494,22 @@ browser, often with the JavaScript `Event` structure as shown.
 !}
 ```
 
+### Display a simple informational popup
+
+As a convenience and to prevent code duplication among Visualizers derived
+from P5Visualizer, the base P5Visualizer class provides a simple informational
+popup/tooltip facility, via the following instance method:
+
+`this.simplePopup('Display me', [atX, atY])`
+
+-   Shows the popup with the given text ('Display me' in this example) at the
+    given X and Y coordinates (here `atX` and `atY`). If the text to display
+    is empty (the default), hides the popup instead; thus, you can simply call
+    `this.simplePopup()` to hide the popup.
+
+The popup is styled to coordinate with the overall frontscope visual design;
+there is not currently any mechanism to alter its styling.
+
 ### How to report errors
 
 There are three ways to let people interacting with a visualizer know that
