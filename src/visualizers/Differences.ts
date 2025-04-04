@@ -27,7 +27,7 @@ difference of.
 const paramDesc = {
     /** md
 - **Number of rows:** How many rows to produce. _(Positive integer, no larger
-than the number of elements in the sequence')_
+  than the number of elements in the sequence')_
      **/
     levels: {
         default: 12n,
@@ -38,6 +38,28 @@ than the number of elements in the sequence')_
             if (l < 1n) stat.addError('Need at least one row')
         },
     },
+    /** md
+- **Digits displayed:** The maximum number of digits to display for each
+  sequence entry and difference displayed. If a number to be shown has more
+  digits, only the most significant ones will be shown, with an ellipsis,
+  and mousing over the number will show the full number in a popup.
+     **/
+    digits: {
+        default: 4,
+        type: ParamType.INTEGER,
+        displayName: 'Digits displayed',
+        required: true,
+        description:
+            'Maximum digits of each entry to display; excess will be '
+            + 'replaced with an ellipsis.',
+        hideDescription: true,
+        validate: function (n: number, stat: ValidationStatus) {
+            stat.forbid(
+                n < 2,
+                'Room for at least 2 digits per entry required'
+            )
+        },
+    },
 } satisfies GenericParamDescription
 
 class Differences extends P5Visualizer(paramDesc) {
@@ -46,9 +68,16 @@ class Differences extends P5Visualizer(paramDesc) {
         'Produces a table of differences '
         + 'between consecutive entries, potentially iterated several times'
 
+    // Some fixed configuration values:
+    fontSize = 20
+    firstY = 30
+    yDelta = 50
+    leftMargin = 10
+
     // Dummy values, actually computed in setup()
     useTerms = -1n
     useLevels = -1n
+    xDelta = -1
 
     calcLevelsTerms(inLevels: bigint): [bigint, bigint] {
         let useTerms = 40n // Typically more than enough to fill screen
@@ -76,22 +105,20 @@ class Differences extends P5Visualizer(paramDesc) {
     setup() {
         super.setup()
         ;[this.useLevels, this.useTerms] = this.calcLevelsTerms(this.levels)
+        this.sketch
+            .background('black')
+            .textAlign(this.sketch.CENTER)
+            .textFont('Arial')
+            .textSize(this.fontSize)
+            .textStyle(this.sketch.BOLD)
+            .colorMode(this.sketch.HSB, 255)
+        const demoString = '˗' + '0'.repeat(this.digits) + ' '
+        this.xDelta = this.sketch.textWidth(demoString)
     }
 
     draw() {
         const sketch = this.sketch
         const sequence = this.seq
-        const fontSize = 20
-        const xDelta = 50
-        const yDelta = 50
-        let firstX = 30
-        const firstY = 30
-        sketch
-            .background('black')
-            .textFont('Arial')
-            .textSize(fontSize)
-            .textStyle(sketch.BOLD)
-            .colorMode(sketch.HSB, 255)
         let myColor = sketch.color(100, 255, 150)
         let hue = 0
 
@@ -110,13 +137,19 @@ class Differences extends P5Visualizer(paramDesc) {
             hue = ((i * 255) / 6) % 255
             myColor = sketch.color(hue, 150, 200)
             sketch.fill(myColor)
+            let curX = ((i + 1) * this.xDelta) / 2 + this.leftMargin
+
             /* Draw the row, updating workingSequence: */
             for (let j = 0; j < workingSequence.length; j++) {
-                sketch.text(
-                    workingSequence[j].toString(),
-                    firstX + j * xDelta,
-                    firstY + i * yDelta
-                )
+                const num = workingSequence[j]
+                const abs = num < 0 ? -num : num
+                let s = abs.toString()
+                if (s.length > this.digits) {
+                    s = s.substr(0, this.digits - 2) + '…'
+                }
+                if (num < 0) s = '˗' + s
+                sketch.text(s, curX, this.firstY + i * this.yDelta)
+                curX += this.xDelta
                 if (j < workingSequence.length - 1) {
                     workingSequence[j] =
                         workingSequence[j + 1] - workingSequence[j]
@@ -124,8 +157,6 @@ class Differences extends P5Visualizer(paramDesc) {
             }
 
             workingSequence.pop()
-            // Move the next row forward half an entry, for a pyramid shape.
-            firstX = firstX + (1 / 2) * xDelta
         }
         this.stop()
     }
