@@ -81,7 +81,7 @@ class Differences extends P5Visualizer(paramDesc) {
     entries = [['0']]
 
     calcLevelsTerms(inLevels: bigint): [bigint, bigint] {
-        let useTerms = 40n // Typically more than enough to fill screen
+        let useTerms = inLevels + 40n
         if (this.seq.last < this.seq.first + useTerms - 1n) {
             useTerms = BigInt(this.seq.last) - this.seq.first + 1n
         }
@@ -149,7 +149,9 @@ class Differences extends P5Visualizer(paramDesc) {
                 let newEntry = num.toString()
                 let s = abs.toString()
                 if (s.length > this.digits) {
-                    s = s.substr(0, this.digits - 2) + '…'
+                    const lessDigits = Math.max(1, this.digits - 2)
+                    const suffix = this.digits === 2 ? '..' : '…'
+                    s = s.substr(0, lessDigits) + suffix
                 } else newEntry = ''
                 this.entries[i].push(newEntry)
                 if (num < 0) s = '˗' + s
