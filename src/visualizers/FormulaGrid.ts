@@ -598,7 +598,6 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
     cellmin = 0
     frames = 0
     mouseText: string[][] = []
-    popup?: HTMLElement = undefined
 
     async parametersChanged(names: Set<string>) {
         if (names.has('fillOrder') && this.fillOrder !== FillOrder.Custom) {
@@ -697,7 +696,7 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
             .noStroke()
             .textAlign(this.sketch.CENTER, this.sketch.CENTER)
             .background(this.backgroundColor)
-        this.hidePopup()
+        this.simplePopup()
     }
 
     draw() {
@@ -852,49 +851,11 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
         }
         if (mousetext && onSketch) {
             const r = where.getBoundingClientRect()
-            this.showPopup(mousetext, [
+            this.simplePopup(mousetext, [
                 event.clientX - r.x,
                 event.clientY - r.y,
             ])
-        } else this.hidePopup()
-    }
-
-    showPopup(text: string, [x, y]: NPair) {
-        if (!this.within) return
-        if (!this.popup) {
-            this.popup = document.createElement('div')
-            this.popup.classList.add('shadowed')
-            const sty = this.popup.style
-            sty.background = 'white'
-            sty.opacity = '1'
-            sty.position = 'absolute'
-            sty.padding = '2px'
-            sty.border = '1px solid black'
-            sty.zIndex = '3'
-            this.within.appendChild(this.popup)
-        }
-        this.popup.textContent = text
-        const sty = this.popup.style
-        sty.display = 'block'
-        let popx = x + 16
-        let popy = y + 24
-        const pad = 6
-        let xBlocked = false
-        const popr = this.popup.getBoundingClientRect()
-        const {width, height} = this.within.getBoundingClientRect()
-        if (popx + popr.width + pad > width) {
-            xBlocked = true
-            popx = width - popr.width - pad
-        }
-        if (popy + popr.height + pad > height) {
-            popy = (xBlocked ? y - 4 : height) - popr.height - pad
-        }
-        sty.left = popx + 'px'
-        sty.top = popy + 'px'
-    }
-
-    hidePopup() {
-        if (this.popup) this.popup.style.display = 'none'
+        } else this.simplePopup()
     }
 }
 
