@@ -505,7 +505,9 @@ popup/tooltip facility, via the following instance method:
 -   Shows the popup with the given text ('Display me' in this example) at the
     given X and Y coordinates (here `atX` and `atY`). If the text to display
     is empty (the default), hides the popup instead; thus, you can simply call
-    `this.simplePopup()` to hide the popup.
+    `this.simplePopup()` to hide the popup. The popup starts invisible and
+    will not be displayed unless/until there is a call to this method with a
+    non-empty first argument.
 
 The popup is styled to coordinate with the overall frontscope visual design;
 there is not currently any mechanism to alter its styling.

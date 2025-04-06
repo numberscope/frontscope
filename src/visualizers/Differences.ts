@@ -27,7 +27,7 @@ difference of.
 const paramDesc = {
     /** md
 - **Number of rows:** How many rows to produce. _(Positive integer, no larger
-  than the number of elements in the sequence')_
+  than the number of elements in the sequence)_
      **/
     levels: {
         default: 12n,
@@ -39,10 +39,10 @@ const paramDesc = {
         },
     },
     /** md
-- **Digits displayed:** The maximum number of digits to display for each
-  sequence entry and difference displayed. If a number to be shown has more
-  digits, only the most significant ones will be shown, with an ellipsis,
-  and mousing over the number will show the full number in a popup.
+- **Digits displayed:** The maximum amount of digits to display for each
+  number shown. If a number to be shown has more digits, only the most
+  significant ones will be displayed, with an ellipsis, and mousing over
+  the number will show its full value in a popup.
      **/
     digits: {
         default: 4,
