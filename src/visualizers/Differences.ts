@@ -2,7 +2,7 @@ import {P5Visualizer} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
 import {math} from '@/shared/math'
-import type {GenericParamDescription} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
@@ -27,7 +27,7 @@ difference of.
 const paramDesc = {
     /** md
 - **Number of rows:** How many rows to produce. _(Positive integer, no larger
-than the number of elements in the sequence')_
+  than the number of elements in the sequence)_
      **/
     levels: {
         default: 12n,
@@ -38,6 +38,28 @@ than the number of elements in the sequence')_
             if (l < 1n) stat.addError('Need at least one row')
         },
     },
+    /** md
+- **Digits displayed:** The maximum amount of digits to display for each
+  number shown. If a number to be shown has more digits, only the most
+  significant ones will be displayed, with an ellipsis, and mousing over
+  the number will show its full value in a popup.
+     **/
+    digits: {
+        default: 4,
+        type: ParamType.INTEGER,
+        displayName: 'Digits displayed',
+        required: true,
+        description:
+            'Maximum digits of each entry to display; excess will be '
+            + 'replaced with an ellipsis.',
+        hideDescription: true,
+        validate: function (n: number, stat: ValidationStatus) {
+            stat.forbid(
+                n < 2,
+                'Room for at least 2 digits per entry required'
+            )
+        },
+    },
 } satisfies GenericParamDescription
 
 class Differences extends P5Visualizer(paramDesc) {
@@ -46,40 +68,60 @@ class Differences extends P5Visualizer(paramDesc) {
         'Produces a table of differences '
         + 'between consecutive entries, potentially iterated several times'
 
-    // Dummy values, actually computed in setup()
+    // Some fixed configuration values:
+    fontSize = 20
+    firstY = 30
+    yDelta = 50
+    leftMargin = 10
+
+    // Dummy values, actually computed in setup() / draw()
     useTerms = -1n
     useLevels = -1n
+    xDelta = -1
+    entries = [['0']]
+
+    calcLevelsTerms(inLevels: bigint): [bigint, bigint] {
+        let useTerms = inLevels + 40n
+        if (this.seq.last < this.seq.first + useTerms - 1n) {
+            useTerms = BigInt(this.seq.last) - this.seq.first + 1n
+        }
+        const useLevels = inLevels < useTerms ? inLevels : useTerms
+        return [useLevels, useTerms]
+    }
+
+    checkParameters(params: ParamValues<typeof paramDesc>) {
+        const status = super.checkParameters(params)
+
+        const [useLevels] = this.calcLevelsTerms(params.levels)
+        this.statusOf.levels.warnings.length = 0
+        if (params.levels > useLevels) {
+            this.statusOf.levels.addWarning(
+                `too few sequence entries for ${params.levels} rows; `
+                    + `using ${useLevels}`
+            )
+        }
+        return status
+    }
 
     setup() {
         super.setup()
-        this.useTerms = 40n // Typically more than enough to fill screen
-        if (this.seq.last < this.seq.first + this.useTerms - 1n) {
-            this.useTerms = BigInt(this.seq.last) - this.seq.first + 1n
-        }
-        this.useLevels = this.levels
-        if (this.useLevels > this.useTerms) {
-            this.useLevels = this.useTerms
-            // TODO IN OVERHAUL: Should really warn about this situation
-            // So some of this code will have to move into checkParameters
-            // maybe there will need to be a common helper function called
-            // from both there and here.
-        }
+        ;[this.useLevels, this.useTerms] = this.calcLevelsTerms(this.levels)
+        this.sketch
+            .background('black')
+            .textAlign(this.sketch.CENTER)
+            .textFont('Arial')
+            .textSize(this.fontSize)
+            .textStyle(this.sketch.BOLD)
+            .colorMode(this.sketch.HSB, 255)
+        const demoString = '˗' + '0'.repeat(this.digits) + ' '
+        this.xDelta = this.sketch.textWidth(demoString)
+        this.entries = []
+        for (let i = 0; i < this.useLevels; ++i) this.entries.push([])
     }
 
     draw() {
         const sketch = this.sketch
         const sequence = this.seq
-        const fontSize = 20
-        const xDelta = 50
-        const yDelta = 50
-        let firstX = 30
-        const firstY = 30
-        sketch
-            .background('black')
-            .textFont('Arial')
-            .textSize(fontSize)
-            .textStyle(sketch.BOLD)
-            .colorMode(sketch.HSB, 255)
         let myColor = sketch.color(100, 255, 150)
         let hue = 0
 
@@ -98,13 +140,23 @@ class Differences extends P5Visualizer(paramDesc) {
             hue = ((i * 255) / 6) % 255
             myColor = sketch.color(hue, 150, 200)
             sketch.fill(myColor)
+            let curX = ((i + 1) * this.xDelta) / 2 + this.leftMargin
+
             /* Draw the row, updating workingSequence: */
             for (let j = 0; j < workingSequence.length; j++) {
-                sketch.text(
-                    workingSequence[j].toString(),
-                    firstX + j * xDelta,
-                    firstY + i * yDelta
-                )
+                const num = workingSequence[j]
+                const abs = num < 0 ? -num : num
+                let newEntry = num.toString()
+                let s = abs.toString()
+                if (s.length > this.digits) {
+                    const lessDigits = Math.max(1, this.digits - 2)
+                    const suffix = this.digits === 2 ? '..' : '…'
+                    s = s.substr(0, lessDigits) + suffix
+                } else newEntry = ''
+                this.entries[i].push(newEntry)
+                if (num < 0) s = '˗' + s
+                sketch.text(s, curX, this.firstY + i * this.yDelta)
+                curX += this.xDelta
                 if (j < workingSequence.length - 1) {
                     workingSequence[j] =
                         workingSequence[j + 1] - workingSequence[j]
@@ -112,10 +164,21 @@ class Differences extends P5Visualizer(paramDesc) {
             }
 
             workingSequence.pop()
-            // Move the next row forward half an entry, for a pyramid shape.
-            firstX = firstX + (1 / 2) * xDelta
         }
         this.stop()
+    }
+
+    mouseMoved(_event: MouseEvent) {
+        this.simplePopup()
+        const sk = this.sketch
+        const adjY = sk.mouseY + this.yDelta - this.firstY
+        const row = Math.floor(adjY / this.yDelta)
+        const posInRow = adjY % this.yDelta
+        if (posInRow < this.yDelta - this.fontSize) return
+
+        const adjX = sk.mouseX - (row * this.xDelta) / 2 - this.leftMargin
+        const col = Math.floor(adjX / this.xDelta)
+        this.simplePopup(this.entries[row][col], [sk.mouseX, sk.mouseY])
     }
 }
 

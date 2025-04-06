@@ -19,6 +19,13 @@ import {Paramable} from '@/shared/Paramable'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {Specimen} from '@/shared/Specimen'
 
+/* NOTE: There is not embedded markdown documentation here, because
+   the P5Visualizer is reasonably thoroughly documented in
+   doc/visualizer-in-depth.md. That situation unfortunately means that
+   if you make feature changes here, you likely need to edit that doc
+   file to keep code and documentation in sync. :-/
+ */
+
 // Ugh, the gyrations we go through to keep TypeScript happy
 // while only listing the p5 methods once:
 
@@ -93,6 +100,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         drawingState: DrawingState = DrawingUnmounted
 
         within?: HTMLElement
+        popup?: HTMLElement = undefined
+
         usesGL() {
             return false
         }
@@ -472,6 +481,45 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             }
             await this.inhabit(element, size)
             this.show()
+        }
+
+        simplePopup(text: string = '', [x, y]: [number, number] = [0, 0]) {
+            if (!this.within) return
+            if (!text) {
+                // Hide the popup
+                if (this.popup) this.popup.style.display = 'none'
+                return
+            }
+            if (!this.popup) {
+                this.popup = document.createElement('div')
+                this.popup.classList.add('shadowed')
+                const sty = this.popup.style
+                sty.background = 'white'
+                sty.opacity = '1'
+                sty.position = 'absolute'
+                sty.padding = '2px'
+                sty.border = '1px solid black'
+                sty.zIndex = '3'
+                this.within.appendChild(this.popup)
+            }
+            this.popup.textContent = text
+            const sty = this.popup.style
+            sty.display = 'block'
+            let popx = x + 16
+            let popy = y + 24
+            const pad = 6
+            let xBlocked = false
+            const popr = this.popup.getBoundingClientRect()
+            const {width, height} = this.within.getBoundingClientRect()
+            if (popx + popr.width + pad > width) {
+                xBlocked = true
+                popx = width - popr.width - pad
+            }
+            if (popy + popr.height + pad > height) {
+                popy = (xBlocked ? y - 4 : height) - popr.height - pad
+            }
+            sty.left = popx + 'px'
+            sty.top = popy + 'px'
         }
     }
 
