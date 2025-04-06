@@ -13,11 +13,18 @@ const featuredSIMs = [
     + '&colorChooser=813d9c'
   ),
   specimenQuery(
+<<<<<<< HEAD
     "Phoenix Rising",
     'Chaos',
     'OEIS A000005',
     '&corners=12&walkers=3&colorFormula=rainbow%28w*360%2FW%2B65%29.brighten'
     + '%281%29&pixelsPerFrame=500',
+=======
+    'Divisor Square',
+    'Chaos',
+    'OEIS A000005',
+    'corners=8&walkers=8&alpha=0.7&pixelsPerFrame=2000'
+>>>>>>> 80d2bd7 (featured, remove console log, warnings)
   ),
   specimenQuery(
     'Dance no. 163',
@@ -69,7 +76,12 @@ const featuredSIMs = [
     'Chaos Game',
     'Chaos',
     'Random',
+<<<<<<< HEAD
     '&corners=3&pixelsPerFrame=25&seq=Random&max=2&last=10000&length=10001',
+=======
+    'corners=3&colorStyle=1&dummyDotControl=true'
+    + '&circSize=2&alpha=0.4&darkMode=true',
+>>>>>>> 80d2bd7 (featured, remove console log, warnings)
     'max=2'
   ),
   specimenQuery(
@@ -105,8 +117,12 @@ const featuredSIMs = [
     + '%29%5D&widthFormula=%7B%220%22%3A+1%2C+%221%22%3A+1%2C+%22'
     + '-1%22%3A+1%7D%5Bstring%28a%29%5D&colorFormula=%7B%220%22%3A'
     + '+%23E9F4F2%2C+%221%22%3A+%23DC967E%2C+%22-1%22%3A+%237FB7ED'
+<<<<<<< HEAD
     + '%7D%5Bstring%28a%29%5D&colorChooser=813d9c',
     ''
+=======
+    + '%7D%5Bstring%28a%29%5D&colorChooser=813d9c'
+>>>>>>> 80d2bd7 (featured, remove console log, warnings)
   ),
   specimenQuery(
     'Hat Trick',
@@ -116,8 +132,12 @@ const featuredSIMs = [
     + '+%2300CED1+%23FF7D4D+%231F93FF+%23B63A71+%23C71585+%23FF7D4D'
     + '&bgColor=795767&speed=10&ruleMode=1&angleFormula=a*30'
     + '&widthFormula=3&colorFormula=chroma.scale%28%27YlGnBu%27%29'
+<<<<<<< HEAD
     + '.colors%2850%29%5Bmod%28n%2C30%29%2B1%5D&colorChooser=409CF5',
     ''
+=======
+    + '.colors%2850%29%5Bmod%28n%2C30%29%2B1%5D&colorChooser=409CF5'
+>>>>>>> 80d2bd7 (featured, remove console log, warnings)
   ),
   specimenQuery(
     'Tau Many Primes',
@@ -141,7 +161,11 @@ const featuredSIMs = [
     'domain=0+1+2&angles=79+0+45&steps=2.5+1.5+3'
     + '&speed=30&bgColor=354F6B&strokeColor='
     + '%23DEACAC+%23DFB5C3+%23410510',
+<<<<<<< HEAD
     '&formula=floor%28n*sqrt%282%29%29%253'
+=======
+    'formula=floor%28n*sqrt%282%29%29%253'
+>>>>>>> 80d2bd7 (featured, remove console log, warnings)
   ),
   specimenQuery(
     'Zeta Zero #10143',
@@ -209,22 +233,36 @@ const featuredSIMs = [
     "Pascal's Triangle",
     'FormulaGrid',
     'OEIS A007318',
+<<<<<<< HEAD
     '&aspect=r&fillOrder=2&pathFormula=%5Bceil%28c%2F2%29+-+invTriangular'
+=======
+    'aspect=r&fillOrder=2&pathFormula=%5Bceil%28c%2F2%29+-+invTriangular'
+>>>>>>> 80d2bd7 (featured, remove console log, warnings)
     + '%28k-1%29+%2B+2*%28k+-+triangular%28invTriangular%28k-1%29%29+'
     + '-+1%29%2CinvTriangular%28k-1%29+%2B+1%5D'
     + '&backgroundColor=21218FFF'
     + '&fillFormula=%7Bhexagon%3A+rainbow%2872a-100%29.desaturate'
+<<<<<<< HEAD
     + '%281.2%29.brighten%280.8%29%7D',
     ''
+=======
+    + '%281.2%29.brighten%280.8%29%7D'
+>>>>>>> 80d2bd7 (featured, remove console log, warnings)
   ),
   specimenQuery(
     'Lattice Murmuration',
     'FormulaGrid',
     'OEIS A293773',
+<<<<<<< HEAD
     '&dimensions=200+5000&fillOrder=3&pathFormula=%5Bk%2C+floor'
     + '%28r%2F2%29+-+a%5D&backgroundColor=D2E1FBFF'
     + '&fillFormula={circle%3A+black}&inset=12',
     ''
+=======
+    'dimensions=200+5000&fillOrder=3&pathFormula=%5Bk%2C+floor'
+    + '%28r%2F2%29+-+a%5D&backgroundColor=D2E1FBFF'
+    + '&fillFormula={circle%3A+black}&inset=12'
+>>>>>>> 80d2bd7 (featured, remove console log, warnings)
   ),
   specimenQuery(
     'Modular Multiplication Table',
@@ -234,31 +272,57 @@ const featuredSIMs = [
     + '&fillFormula=%7Brectangle%3A%0A++%233bbf7d'
     + '.alpha%28abs%282*mod%28x+y%2C+c%29-c%29%2Fc%29%2C%0A'
     + 'mouseover%3A+%5B+x%2C+%27%C3%97%27%2C+y%2C+%27%3D%27%2C'
+<<<<<<< HEAD
     + '+mod%28x+y%2C+c%29%5D%7D',
     ''
+=======
+    + '+mod%28x+y%2C+c%29%5D%7D'
+>>>>>>> 80d2bd7 (featured, remove console log, warnings)
   ),
   specimenQuery(
     'Ulam Divisors',
     'FormulaGrid',
     'OEIS A000005',
+<<<<<<< HEAD
     '&dimensions=200+200&aspect=1&fillOrder=1&pathFormula=spiral%28k%29'
+=======
+    'dimensions=200+200&aspect=1&fillOrder=1&pathFormula=spiral%28k%29'
+>>>>>>> 80d2bd7 (featured, remove console log, warnings)
     + '&backgroundColor=000000FF&speed=100'
     + '&fillFormula=%7Bcircle%3A%0A++%230571b0'
     + '.mix%28darkseagreen%2C+%28a-10%29%2F8%29%2C%0A'
     + 'mouseover%3A+%5B%27d%28%27%2C+n%2C+%27%29+%3D+%27%2C+a%5D%7D'
+<<<<<<< HEAD
     + '&inset=0.8',
     ''
+=======
+    + '&inset=0.8'
+>>>>>>> 80d2bd7 (featured, remove console log, warnings)
   ),
   specimenQuery(
     'Integerstellar',
     'FormulaGrid',
     'Formula',
+<<<<<<< HEAD
     '&dimensions=200&backgroundColor=000000FF&speed=1024'
     + '&fillFormula=%7Bcircle%3A%0A++yellow'
     + '.mix%28black%2C+1-gcd%28x%2Cy%29%2Fsqrt%28x+y%29%29%2C%0A'
     + 'mouseover%3A+%5B%0A++++%27gcd%28%27%2C+x%2C+%27%2C+%27%2C'
     + '+y%2C+%27%29+%3D+%27%2C+gcd%28x%2Cy%29%0A%5D%7D&inset=0.8',
     ''
+=======
+    'dimensions=200&backgroundColor=000000FF&speed=1024'
+    + '&fillFormula=%7Bcircle%3A%0A++yellow'
+    + '.mix%28black%2C+1-gcd%28x%2Cy%29%2Fsqrt%28x+y%29%29%2C%0A'
+    + 'mouseover%3A+%5B%0A++++%27gcd%28%27%2C+x%2C+%27%2C+%27%2C'
+    + '+y%2C+%27%29+%3D+%27%2C+gcd%28x%2Cy%29%0A%5D%7D&inset=0.8'
+  ),
+  specimenQuery(
+    'Deja vu Differences',
+    'Differences',
+    'OEIS A000045',
+    'levels=25'
+>>>>>>> 80d2bd7 (featured, remove console log, warnings)
   ),
 ]
 
