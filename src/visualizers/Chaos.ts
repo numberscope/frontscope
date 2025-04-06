@@ -679,7 +679,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                         this.statusOf.walkerFormula,
                         inputWalker
                     )
-                ) ?? 0
+                ) ?? -1 // invalid
             )
             if (this.statusOf.walkerFormula.invalid()) return
             if (currWalker < 0 || currWalker >= this.walkers) {
@@ -687,6 +687,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 this.statusOf.walkerFormula.addWarning(
                     'some walkerFormula values not in walker range'
                 )
+                currWalker = -1 // invalid
+            }
+            if (currWalker == -1) {
+                continue
             }
 
             // look up last position of this walker
@@ -720,13 +724,17 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                         this.statusOf.cornerFormula,
                         inputCorner
                     )
-                ) ?? 1
+                ) ?? -1 // invalid
             if (this.statusOf.cornerFormula.invalid()) return
             if (myCorner < 0 || myCorner >= this.corners) {
                 this.statusOf.cornerFormula.warnings.length = 0
                 this.statusOf.cornerFormula.addWarning(
                     'some cornerFormula values not in corner range'
                 )
+                myCorner = -1 // invalid
+            }
+            if (myCorner == -1) {
+                continue
             }
 
             const input = {
@@ -773,13 +781,13 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                         this.statusOf.stepFormula,
                         input
                     )
-                ) ?? 1
+                ) ?? 0
             if (this.statusOf.stepFormula.invalid()) return
             // determine new position
             const myCornerPosition = this.cornersList[myCorner]
             position.lerp(myCornerPosition, step)
 
-            // push everything
+            // push everything if valid
             this.dots[currWalker].push(position.copy())
             this.dotsSizes[currWalker].push(math.safeNumber(circSize))
             this.dotsIndices[currWalker].push(i)
