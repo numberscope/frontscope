@@ -683,8 +683,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             )
             if (this.statusOf.walkerFormula.invalid()) return
             if (currWalker < 0 || currWalker >= this.walkers) {
-                throw 'walker formula out of bounds'
-                currWalker = 0 // is this code unreachable?
+                this.statusOf.walkerFormula.warnings.length = 0
+                this.statusOf.walkerFormula.addWarning(
+                    'some walkerFormula values not in walker range'
+                )
             }
 
             // look up last position of this walker
@@ -721,8 +723,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 ) ?? 1
             if (this.statusOf.cornerFormula.invalid()) return
             if (myCorner < 0 || myCorner >= this.corners) {
-                throw 'corner formula out of bounds'
-                myCorner = 0
+                this.statusOf.cornerFormula.warnings.length = 0
+                this.statusOf.cornerFormula.addWarning(
+                    'some cornerFormula values not in corner range'
+                )
             }
 
             const input = {
