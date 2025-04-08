@@ -32,7 +32,7 @@ corner (typically halfway).  Then it paints a dot in its current
 location, and repeats using the next sequence term, etc.
 
 When this process is performed with a random sequence, this is called the
-`chaos game.'  The chaos game on a square produces a uniformly coloured
+'chaos game.'  The chaos game on a square produces a uniformly coloured
 square, but on other shapes it produces fractal images.  For example, on
 a triangle, one obtains the Sierpinsky gasket in the limit.
 
@@ -97,6 +97,7 @@ const formulaSymbolsWalker = [
 
 const paramDesc = {
     /** md
+
 - **Corners**: the number of corners on the polygon.
 There must be at least two.
 If there are n corners, then the corners are numbered 0, 1,
@@ -117,6 +118,7 @@ If there are n corners, then the corners are numbered 0, 1,
         },
     },
     /** md
+
 - **Walkers**: the number of separate walkers (each one having its
 own independent state variables).
 If there are n walkers, then the walkers are numbered 0, 1,
@@ -140,6 +142,7 @@ If there are n walkers, then the walkers are numbered 0, 1,
         },
     },
     /** md
+
 - **Background color**: The color of the visualizer canvas.
 **/
     bgColor: {
@@ -168,11 +171,10 @@ above definitions mean that `n`, `s`, and `m` are related by `n = m + s - 1`.
 may be Infinity for sequences that are defined and can be calculated in
 principle for any index.
 
-'p' The number of corners.
+`p` The number of corners.
 
-`f` The frame number of this drawing pass. If you use this variable, the
-visualization will be redrawn from the beginning on every frame,
-animating the shape of the path.
+`f` The frame number of the drawing pass the dot is created in.  For
+example, you can use this to colour dots differently over time.
 
 You may also use the symbol `A` as a function symbol in your code, and it
 will provide access to the value of the sequence being visualized for any
@@ -191,13 +193,14 @@ would produce the so-called "first differences" of the sequence.
     },
 
     /** md
-- **Corner Formula**:  The corner heading of the next term.
+- **Corner formula**:  The corner heading of the next term.
+(Outputs are floored and move no walker if no such corner exists.)
 
 Besides the previous variables, it can additionally depend on:
 
-'c' The corner we just stepped toward.
+`c` The corner we just stepped toward.
 
-'w' The walker.
+`w` The walker.
 
 `x` The x-coordinate of the dot (before stepping).
 
@@ -215,11 +218,11 @@ Besides the previous variables, it can additionally depend on:
     },
 
     /** md
-- **Size Formula**:  The size of each dot.
+- **Size formula**:  The size of each dot.
 
 Besides the previous variables, it can additionally depend on:
 
-'C' The corner we are about to step toward.
+`C` The corner we are about to step toward.
 
 **/
     sizeFormula: {
@@ -232,7 +235,7 @@ Besides the previous variables, it can additionally depend on:
         level: 0,
     },
     /** md
-- **Step Formula**:  What fraction of distance to corner to walk.
+- **Step formula**:  What fraction of distance to corner to walk.
 Variables are as for the Size Formula.
 **/
     stepFormula: {
@@ -248,11 +251,11 @@ Variables are as for the Size Formula.
     },
 
     /** md
-- **Color formula**: an expression to compute the color of each dot.
+- **Color formula**: An expression to compute the color of each dot.
 Variables are as for the Size Formula.
 **/
     colorFormula: {
-        default: new MathFormula('#c98787ff'),
+        default: new MathFormula('#c98787'),
         type: ParamType.FORMULA,
         symbols: formulaSymbols,
         displayName: 'Color formula',
@@ -265,14 +268,13 @@ Variables are as for the Size Formula.
 Instead, whenever you select a color with it, the corresponding color
 string is inserted in the **Color formula** box.
 **/
+    /// Currently broken here and in Turtle
     colorChooser: {
         default: '#00d0d0',
         type: ParamType.COLOR,
         displayName: 'Color chooser:',
         required: true,
-        description:
-            'Inserts choice into the Color formula, replacing current '
-            + 'selection therein, if any.',
+        description: 'Inserts choice into the Color formula.',
         updateAction: function (newColor: string) {
             const chaos = this instanceof Chaos ? this : null
             if (chaos === null) return
@@ -291,7 +293,7 @@ string is inserted in the **Color formula** box.
 **/
 
     pixelsPerFrame: {
-        default: 50,
+        default: 30,
         type: ParamType.NUMBER,
         displayName: 'Dots to draw per frame',
         required: false,
@@ -304,7 +306,25 @@ string is inserted in the **Color formula** box.
     },
 
     /** md
-- **Show Labels**:  Labels the corners of the polygon.
+- **Fade effect**:  How fast old dots fade away.  This effect is reset
+whenever the user moves or zooms the canvas.
+**/
+
+    fadeEffect: {
+        default: 0,
+        type: ParamType.NUMBER,
+        displayName: 'Between 0 and 1; larger = faster fade',
+        required: false,
+        description:
+            'Warning:  with large number, can create a stroboscopic effect.',
+        validate(p: number, status: ValidationStatus) {
+            if (p < 0) status.addError('must be at least 0')
+            if (p > 1) status.addError('must be at most 1')
+        },
+    },
+
+    /** md
+- **Show labels**:  Labels the corners of the polygon.
 **/
 
     showLabels: {
@@ -404,6 +424,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         this.cursor = 0
 
         // set up the arrays
+        // should then redraw, i.e. background
         this.refresh()
     }
 
@@ -442,6 +463,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     }
 
     drawLabels() {
+        //console.log("labels")
         if (!this.showLabels) return
 
         // text appearance control
@@ -470,6 +492,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     // Draws the dots between start and end INCLUSIVE
     drawVertices(start: number, end: number) {
         const sketch = this.sketch
+        // for fade effect
+        const bg = sketch.color(this.bgColor)
+        bg.setAlpha(255 * this.fadeEffect)
+
         for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
             // for each walker we look in dotsIndices
             // to check if we are between
@@ -488,6 +514,16 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 i++
             ) {
                 const pos = this.dots[currWalker][i]
+                if (this.fadeEffect > 0) {
+                    sketch.fill(bg)
+                    sketch.rect(
+                        -this.sketch.width / 2,
+                        -this.sketch.height / 2,
+                        this.sketch.width,
+                        this.sketch.height
+                    )
+                }
+                this.drawLabels()
                 if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
                     sketch.fill(this.dotsColors[currWalker][i])
                     const size = this.dotsSizes[currWalker][i]
@@ -616,7 +652,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         if (
             !sketch.mouseIsPressed
             && currentLength >= this.maxLength // computed it all
-            && this.cursor >= this.maxLength // drew it all
+            && targetCursor >= this.maxLength // drew it all
             && !this.pathFailure
         ) {
             // we have drawn it all, now we can pan & zoom
@@ -624,7 +660,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             // so we increase pixelsPerFrame
             this.pixelsPerFrame = this.maxLength
             //           this.cursor = 0
-            //            this.stop()
+            this.stop()
         }
     }
 
