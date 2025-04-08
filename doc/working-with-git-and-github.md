@@ -58,6 +58,15 @@ Before you are able to do this, you either need to install the
 using the GitHub CLI or
 [install an SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
 
+Before pushing, you may want to confirm the name of your remote:
+
+```sh
+git remote -v
+```
+
+This shows a list of remotes and their corresponding URLs. The default is usually origin.
+
+
 To push your changes to a remote version of your repository (i.e. to the
 version on GitHub) or to "store" your photo, issue the following command:
 
