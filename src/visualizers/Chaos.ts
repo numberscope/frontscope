@@ -21,11 +21,11 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
 # Chaos Visualizer
 
 This visualizer interprets the sequence entries as instructions for walkers
-traversing the region bounded by the vertices of a regular _n_-gon, and displays
+traversing the region bounded by the vertices of a regular _p_-gon, and displays
 the locations that the walkers visit.
 
-More precisely, the walker begins in the centre of the polygon.  As it reads
-each sequence entry a_k, it interprets that sequence entry as a polygon corner
+More precisely, each walker begins in the centre of the polygon.  As it reads
+each sequence entry a_n, it interprets that sequence entry as a polygon corner
 (typically by taking it modulo n; but a customizable formula is optional),
 and walks a proportion of the distance from its current location to the
 corner (typically halfway).  Then it paints a dot in its current
@@ -34,7 +34,7 @@ location, and repeats using the next sequence term, etc.
 When this process is performed with a random sequence, this is called the
 'chaos game.'  The chaos game on a square produces a uniformly coloured
 square, but on other shapes it produces fractal images.  For example, on
-a triangle, one obtains the Sierpinsky gasket in the limit.
+a triangle, one obtains the Sierpiński gasket in the limit.
 
 For non-random sequences, the distribution of dots can pick up information
 about local correlations and overall distribution.
@@ -101,7 +101,8 @@ const paramDesc = {
 - **Corners**: the number of corners on the polygon.
 There must be at least two.
 If there are n corners, then the corners are numbered 0, 1,
-2, ..., n-1 (for use in the formulas via the `c' variable).
+2, ..., n-1.  These numberings are used in the `c` and `C`
+variables when referencing a corner.
 **/
     corners: {
         default: 4,
@@ -112,17 +113,16 @@ If there are n corners, then the corners are numbered 0, 1,
         validate(c: number, status: ValidationStatus) {
             if (c < 2) status.addError('must be at least 2')
             if (c > 100)
-                status.addWarning(
-                    'a large number may affect' + ' performance'
-                )
+                status.addWarning('a large number may affect performance')
         },
     },
     /** md
 
 - **Walkers**: the number of separate walkers (each one having its
-own independent state variables).
+own independent location and heading).
 If there are n walkers, then the walkers are numbered 0, 1,
-2, ..., n-1 (for use in formulas via the `w' variable).
+2, ..., n-1.  These numberings are used in the `w`
+variable when referencing a walker.
 **/
     walkers: {
         default: 1,
@@ -154,7 +154,7 @@ If there are n walkers, then the walkers are numbered 0, 1,
 
     /** md
 - **Walker Formula**:  The walker to move on the next term.
-(Outputs are floored and move no walker if no such walker exists.)
+(Formula results are floored and move no walker if no such walker exists.)
 
 It can depend on:
 
@@ -162,7 +162,8 @@ It can depend on:
 
 `a` The value of the entry.
 
-`s` The serial number of the step starting from one for the first dot.
+`s` The serial number of the step (for the relevant walker)
+starting from one for the first dot.
 
 `m` The minimum index of the sequence being visualized. Note that the
 above definitions mean that `n`, `s`, and `m` are related by `n = m + s - 1`.
@@ -194,11 +195,11 @@ would produce the so-called "first differences" of the sequence.
 
     /** md
 - **Corner formula**:  The corner heading of the next term.
-(Outputs are floored and move no walker if no such corner exists.)
+(Formula results are floored and move no walker if no such corner exists.)
 
 Besides the previous variables, it can additionally depend on:
 
-`c` The corner we just stepped toward.
+`c` The corner the walker stepped toward on its last step.
 
 `w` The walker.
 
@@ -270,7 +271,7 @@ string is inserted in the **Color formula** box.
 **/
     /// Currently broken here and in Turtle
     colorChooser: {
-        default: '#00d0d0',
+        default: '#c98787',
         type: ParamType.COLOR,
         displayName: 'Color chooser:',
         required: true,
@@ -389,6 +390,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // creates corners of a polygon with given radius
         const pts: p5.Vector[] = []
         for (let i = 0; i < this.corners; i++) {
+            // clockwise starting from noon
             const angle = this.sketch.radians(270 + (360 * i) / this.corners)
             pts.push(p5.Vector.fromAngle(angle, radius))
         }
@@ -527,12 +529,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
                     sketch.fill(this.dotsColors[currWalker][i])
                     const size = this.dotsSizes[currWalker][i]
-                    //sketch.push()
-                    //sketch.translate(lastPos.x, lastPos.y)
-                    //sketch.circle(pos.x, pos.y, this.dotsSizes[currWalker][i])
-                    //sketch.rect(pos.x, pos.y, size, size)
                     this.polygon(pos.x, pos.y, size)
-                    //sketch.pop()
                 }
                 lastPos = pos
             }
@@ -828,12 +825,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             this.dotsSizes[currWalker].push(math.safeNumber(circSize))
             this.dotsIndices[currWalker].push(i)
             this.dotsCorners[currWalker].push(myCorner)
-            if (typeof clr === 'string') {
-                this.dotsColors[currWalker].push(this.sketch.color(clr))
-            } else if (math.isChroma(clr)) {
-                this.dotsColors[currWalker].push(this.sketch.color(clr.hex()))
-            } else
-                this.dotsColors[currWalker].push(this.sketch.color('white'))
+            this.dotsColors[currWalker].push(this.sketch.color(clr.hex()))
         }
     }
 }
