@@ -361,6 +361,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     private radius = 0 // of polygon
     private labelOutset = 1.1 // text offset outward
     private fontsLoaded = false
+    private labelsDrawn = false
 
     private whichWalker = markRaw([0])
     // variables recording the drawing data (dots)
@@ -471,13 +472,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         this.cursor = 0
         // prepare canvas with polygon labels
         this.sketch.background(this.bgColor)
-        this.drawLabels()
+        this.labelsDrawn = false
     }
 
     drawLabels() {
-        //console.log("labels")
-        if (!this.showLabels) return
-
         // text appearance control
         const shrink = Math.log(this.corners)
         // Shrink the numbers appropriately (up to about 100 corners or so)
@@ -499,6 +497,8 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             // WebGL is warning here, but we HAVE loaded a font back in setup??
             this.sketch.text(String(c), label.x, label.y)
         }
+
+        this.labelsDrawn = true
     }
 
     // Draws the dots between start and end INCLUSIVE
@@ -535,7 +535,6 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                         this.sketch.height
                     )
                 }
-                this.drawLabels()
                 if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
                     sketch.fill(this.dotsColors[currWalker][i])
                     const size = this.dotsSizes[currWalker][i]
@@ -580,6 +579,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         if (this.handleDrags()) this.cursor = 0
         const sketch = this.sketch
         if (this.cursor === 0) this.redraw()
+
+        if (this.showLabels && !this.labelsDrawn && this.fontsLoaded) {
+            this.drawLabels()
+        }
 
         // how much data have we got?
         let currentLength = this.currentLength()
