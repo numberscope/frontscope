@@ -825,7 +825,12 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             this.dotsSizes[currWalker].push(math.safeNumber(circSize))
             this.dotsIndices[currWalker].push(i)
             this.dotsCorners[currWalker].push(myCorner)
-            this.dotsColors[currWalker].push(this.sketch.color(clr.hex()))
+            if (typeof clr === 'string') {
+                this.dotsColors[currWalker].push(this.sketch.color(clr))
+            } else if (math.isChroma(clr)) {
+                this.dotsColors[currWalker].push(this.sketch.color(clr.hex()))
+            } else
+                this.dotsColors[currWalker].push(this.sketch.color('white'))
         }
     }
 }
