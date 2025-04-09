@@ -6,6 +6,7 @@ import {INVALID_COLOR} from './P5Visualizer'
 import {P5GLVisualizer} from './P5GLVisualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
+import {chroma} from '@/shared/Chroma'
 import {math, MathFormula, CachingError} from '@/shared/math'
 import type {ScopeValue} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
@@ -808,8 +809,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             }
 
             // determine new color
-            let clr: unknown = null
-            clr =
+            const clr =
                 this.colorFormula.computeWithStatus(
                     this.statusOf.colorFormula,
                     input
@@ -831,12 +831,9 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             this.dotsSizes[currWalker].push(math.safeNumber(circSize))
             this.dotsIndices[currWalker].push(i)
             this.dotsCorners[currWalker].push(myCorner)
-            if (typeof clr === 'string') {
-                this.dotsColors[currWalker].push(this.sketch.color(clr))
-            } else if (math.isChroma(clr)) {
-                this.dotsColors[currWalker].push(this.sketch.color(clr.hex()))
-            } else
-                this.dotsColors[currWalker].push(this.sketch.color('white'))
+            this.dotsColors[currWalker].push(
+                this.sketch.color(chroma(clr.toString()).hex())
+            )
         }
     }
 }
