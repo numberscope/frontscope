@@ -503,7 +503,10 @@ math.bigmin = (...args: Integer[]): ExtendedBigint => {
 }
 
 /* Helper for outputting scopes: */
-type ScopeValue = MathType | Record<string, number> | ((x: never) => MathType)
+export type ScopeValue =
+    | MathType
+    | Record<string, number>
+    | ((x: never) => MathType)
 type ScopeType = Record<string, ScopeValue>
 function scopeToString(scope: ScopeType) {
     return Object.entries(scope)

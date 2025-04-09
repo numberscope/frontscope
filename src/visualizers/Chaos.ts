@@ -7,6 +7,7 @@ import {P5GLVisualizer} from './P5GLVisualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
 import {math, MathFormula, CachingError} from '@/shared/math'
+import type {ScopeValue} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
@@ -20,90 +21,71 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
 /** md
 # Chaos Visualizer
 
-This visualizer interprets the sequence entries as instructions for walkers
-traversing the region bounded by the vertices of a regular _p_-gon, and displays
-the locations that the walkers visit.
+This visualizer interprets the sequence entries as instructions for
+a "herd" of _h_ ≥ 1 walkers traversing the vicinity of the vertices
+of a regular _p_-gon, and displays the locations that the walkers visit.
 
-More precisely, each walker begins in the centre of the polygon.  As it reads
-each sequence entry a_n, it interprets that sequence entry as a polygon corner
-(typically by taking it modulo n; but a customizable formula is optional),
-and walks a proportion of the distance from its current location to the
-corner (typically halfway).  Then it paints a dot in its current
-location, and repeats using the next sequence term, etc.
+More precisely, each walker begins in the centre of the polygon.  As it
+receives each sequence entry _a_ ₙ, it interprets that entry as a polygon
+corner (typically by taking it modulo _p_, but a customizable formula may
+optionally be specified). It then walks a configurable proportion of the
+distance from its current location to that corner (typically halfway).
+It paints a dot in its new location, and repeats using the next sequence
+entry, etc.
 
 When this process is performed with a random sequence, this is called the
 'chaos game.'  The chaos game on a square produces a uniformly coloured
 square, but on other shapes it produces fractal images.  For example, on
 a triangle, one obtains the Sierpiński gasket in the limit.
 
-For non-random sequences, the distribution of dots can pick up information
-about local correlations and overall distribution.
-**/
+For non-random sequences, the distribution of dots can reveal information
+about local correlations and overall distribution of the sequence values.
 
-// the symbols available for the colour and step formulas
-const formulaSymbols = [
-    'n',
-    'a',
-    'A',
-    's',
-    'm',
-    'M',
-    'f',
-    'c',
-    'p',
-    'C',
-    'w',
-    'W',
-    'x',
-    'y',
-] as const
+## Parameters
+ **/
 
-// the symbols available for the corner formula
-// excludes C (corner walking too)
-// since that would be circular
-const formulaSymbolsCorner = [
-    'n',
-    'a',
-    'A',
-    's',
-    'm',
-    'M',
-    'f',
-    'c',
-    'p',
-    'w',
-    'W',
-    'x',
-    'y',
-] as const
-
-// the symbols available for the walker formula
-// excludes C,w,c,x,y
-// since which walker you are choosing
-// cannot depend on properties of the walker
-// and this is determined before a corner
-// is chosen
 const formulaSymbolsWalker = [
-    'n',
-    'a',
-    'A',
-    's',
-    'm',
-    'M',
-    'f',
-    'p',
-    'W',
+    'n', // The index of the entry in the sequence being visualized.
+    'a', // The value of the entry.
+    'k', // The serial number of the step, starting from one for the first dot.
+    'm', // The minimum index of the sequence being visualized.
+    'M', // The Maximum index of the sequence being visualized.
+    'p', // The number of corners.
+    'w', // The number of the prior walker to take a step.
+    'h', // The number of walkers.
+    'f', // The frame number of the drawing pass in which this step occurs.
+    'A', // (function symbol for the sequence)
 ] as const
+
+// Corner formula adds more symbols
+const formulaSymbolsCorner = (
+    formulaSymbolsWalker as readonly string[]
+).concat([
+    'W', // The number of the current walker.
+    'c', // The corner that walker `W` stepped toward on its last step.
+    'x', // The x-coordinate of the prior dot (before stepping).
+    'y', // The y-coordinate of the prior dot (before stepping).
+])
+
+// Step formula can use another symbols
+const formulaSymbolsStep = formulaSymbolsCorner.concat([
+    'C', // The corner we are about to step toward
+])
+
+// Remaining formulas have two more
+const formulaSymbols = formulaSymbolsStep.concat([
+    'X', // The x-coordinate of the new dot (after stepping).
+    'Y', // The y-coordinate of the new dot (after stepping).
+])
 
 const paramDesc = {
     /** md
 
-- **Corners**: the number of corners on the polygon.
-There must be at least two.
-If there are n corners, then the corners are numbered 0, 1,
-2, ..., n-1.  These numberings are used in the `c` and `C`
+- **Number of corners**: (of the polygon). There must be at least two.
+If there are _p_ corners, then they are numbered 0, 1,
+2, ..., _p_ - 1.  These numberings are used in the `c` and `C`
 variables when referencing a corner.
-**/
+     **/
     corners: {
         default: 4,
         type: ParamType.INTEGER,
@@ -118,33 +100,31 @@ variables when referencing a corner.
     },
     /** md
 
-- **Walkers**: the number of separate walkers (each one having its
-own independent location and heading).
-If there are n walkers, then the walkers are numbered 0, 1,
-2, ..., n-1.  These numberings are used in the `w`
-variable when referencing a walker.
-**/
+- **Number of walkers**: Each walker has its own independent location
+and heading. If there are _h_ walkers, then they are numbered 0, 1,
+2, ..., _h_ - 1.  These numberings are used in the `w` and `W` variables
+when referencing a walker.
+     **/
     walkers: {
         default: 1,
         type: ParamType.INTEGER,
         displayName: 'Number of walkers',
         required: false,
         description:
-            'The number w of walkers. The sequence will be broken into '
+            'The number h of walkers. The sequence will be broken into '
             + 'subsequences based on a formula,'
             + 'each with a separate independent walker.',
-        validate(w: number, status: ValidationStatus) {
-            if (w < 1) status.addError('must be at least 1')
-            if (w > 100)
-                status.addWarning(
-                    'a large number may affect' + ' performance'
-                )
+        validate(h: number, status: ValidationStatus) {
+            status.forbid(h < 1, 'must be at least 1')
+            if (h > 100) {
+                status.addWarning('a large number may affect performance')
+            }
         },
     },
     /** md
 
 - **Background color**: The color of the visualizer canvas.
-**/
+     **/
     bgColor: {
         default: '#000000FF',
         type: ParamType.COLOR,
@@ -153,38 +133,34 @@ variable when referencing a walker.
     },
 
     /** md
-- **Walker Formula**:  The walker to move on the next term.
-(Formula results are floored and move no walker if no such walker exists.)
+- **Walker formula**:  An expression that determines which walker to move
+for the current entry of the sequence being visualized. Non-integer values
+are reduced to the nearest smaller integer. The result is interpreted as
+the number of a walker, and no walker is moved at all if there is no such
+walker. For example, a formula value of 5.7 will move the walker numbered 5,
+and if there are fewer than 6 walkers, none will move.
 
-It can depend on:
+The formula can use the following pre-defined variables:
 
-`n` The index of the entry in the sequence being visualized.
+{! Chaos.ts extract:
+    start: 'const formulaSymbolsWalker'
+    stop: "'A',"
+    replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+!}
 
-`a` The value of the entry.
+Note that the above definitions mean that `n`, `k`, and `m` are related by
+`n = m + k - 1`. The maximum index `M` value may be Infinity for sequences
+that are defined and can be calculated (in principle) for any index. The
+frame variable `f` can be used to colour dots differently as time progresses.
 
-`s` The serial number of the step (for the relevant walker)
-starting from one for the first dot.
-
-`m` The minimum index of the sequence being visualized. Note that the
-above definitions mean that `n`, `s`, and `m` are related by `n = m + s - 1`.
-
-`M` The Maximum index of the sequence being visualized. Note this value
-may be Infinity for sequences that are defined and can be calculated in
-principle for any index.
-
-`p` The number of corners.
-
-`f` The frame number of the drawing pass the dot is created in.  For
-example, you can use this to colour dots differently over time.
-
-You may also use the symbol `A` as a function symbol in your code, and it
+You may also use the symbol `A` as a function symbol in this formula, and it
 will provide access to the value of the sequence being visualized for any
 index. For example, the formula `A(n+1) - A(n)` or equivalently `A(n+1) - a`
 would produce the so-called "first differences" of the sequence.
 
-**/
+     **/
     walkerFormula: {
-        default: new MathFormula('mod(n,W)'),
+        default: new MathFormula('mod(n, h)'),
         type: ParamType.FORMULA,
         symbols: formulaSymbolsWalker,
         displayName: 'Walker formula',
@@ -194,20 +170,20 @@ would produce the so-called "first differences" of the sequence.
     },
 
     /** md
-- **Corner formula**:  The corner heading of the next term.
-(Formula results are floored and move no walker if no such corner exists.)
+- **Corner formula**:  An expression that determines which corner the
+current walker should step toward. (Non-integer values are handled as
+with the Walker formula, and again, if there is no such corner, the
+walker does not move at all.)
 
-Besides the previous variables, it can additionally depend on:
+Besides the previous variables, the corner heading can additionally depend on:
 
-`c` The corner the walker stepped toward on its last step.
+{! Chaos.ts extract:
+    start: 'const formulaSymbolsCorner'
+    stop: ']'
+    replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+!}
 
-`w` The walker.
-
-`x` The x-coordinate of the dot (before stepping).
-
-`y` The y-coordinate of the dot (before stepping).
-
-**/
+     **/
     cornerFormula: {
         default: new MathFormula('mod(a,p)'),
         type: ParamType.FORMULA,
@@ -219,30 +195,22 @@ Besides the previous variables, it can additionally depend on:
     },
 
     /** md
-- **Size formula**:  The size of each dot.
+- **Step formula**:  An expression that specifies what fraction of
+the distance toward the chosen corner the chosen walker will walk.
 
-Besides the previous variables, it can additionally depend on:
+Besides the previous variables, this formula may also use:
 
-`C` The corner we are about to step toward.
+{! Chaos.ts extract:
+    start: 'const formulaSymbolsStep'
+    stop: ']'
+    replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+!}
 
-**/
-    sizeFormula: {
-        default: new MathFormula('1'),
-        type: ParamType.FORMULA,
-        symbols: formulaSymbols,
-        displayName: 'Size formula',
-        description: 'Computes the size of each dot',
-        required: false,
-        level: 0,
-    },
-    /** md
-- **Step formula**:  What fraction of distance to corner to walk.
-Variables are as for the Size Formula.
-**/
+     **/
     stepFormula: {
         default: new MathFormula('0.5'),
         type: ParamType.FORMULA,
-        symbols: formulaSymbols,
+        symbols: formulaSymbolsStep,
         displayName: 'Step formula',
         description:
             'Computes the fraction of distance to corner'
@@ -252,9 +220,37 @@ Variables are as for the Size Formula.
     },
 
     /** md
-- **Color formula**: An expression to compute the color of each dot.
-Variables are as for the Size Formula.
-**/
+- **Size formula**:  An expression that specifies the radius of the
+dot that will be drawn at the new location of the walker (after
+executing the current step). The sign of the radius is ignored, but
+a zero radius will result in no dot being drawn.
+
+Besides the previous variables, this formula can additionally depend on:
+
+{! Chaos.ts extract:
+    start: 'const formulaSymbols ='
+    stop: ']'
+    replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+!}
+
+     **/
+    sizeFormula: {
+        default: new MathFormula('1'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbols,
+        displayName: 'Size formula',
+        description: 'Computes the size of each dot',
+        required: false,
+        level: 0,
+    },
+
+    /** md
+- **Color formula**: An expression that determines the color of the
+dot that will be drawn at the new location of the current walker, after
+it takes its step. Variables are as for the Size Formula. For details on
+how formulas may create and manipulate colors, see the
+[Chroma documentation](../shared/Chroma.md).
+     **/
     colorFormula: {
         default: new MathFormula('#c98787'),
         type: ParamType.FORMULA,
@@ -264,12 +260,13 @@ Variables are as for the Size Formula.
         required: false,
         level: 0,
     },
+
     /** md
 - **Color chooser**: This color picker does not directly control the display.
 Instead, whenever you select a color with it, the corresponding color
 string is inserted in the **Color formula** box.
-**/
-    /// Currently broken here and in Turtle
+     **/
+    // Currently broken here and in Turtle
     colorChooser: {
         default: '#c98787',
         type: ParamType.COLOR,
@@ -290,8 +287,8 @@ string is inserted in the **Color formula** box.
     },
 
     /** md
-- **Dots per frame**:  How fast the visualization fills in the dots.
-**/
+- **Dots to draw per frame**:  How fast the visualization fills in the dots.
+     **/
 
     pixelsPerFrame: {
         default: 30,
@@ -307,17 +304,20 @@ string is inserted in the **Color formula** box.
     },
 
     /** md
-- **Fade effect**:  How fast old dots fade away.  This effect is reset
-whenever the user moves or zooms the canvas.
-**/
+- **Fade rate**:  How fast old dots fade away, as a number between
+0 and 1, with 0 corresponding to no fade and 1 to all older dots
+disappearing every frame. This effect is reset whenever you move or
+zoom the canvas. Warning: a large value can create a stroboscopic effect.
+     **/
 
     fadeEffect: {
         default: 0,
         type: ParamType.NUMBER,
-        displayName: 'Between 0 and 1; larger = faster fade',
+        displayName: 'Fade rate',
         required: false,
         description:
-            'Warning:  with large number, can create a stroboscopic effect.',
+            'A number between 0 and 1; larger -> faster fade. Warning: '
+            + 'a large value can create a stroboscopic effect.',
         validate(p: number, status: ValidationStatus) {
             if (p < 0) status.addError('must be at least 0')
             if (p > 1) status.addError('must be at most 1')
@@ -325,16 +325,24 @@ whenever the user moves or zooms the canvas.
     },
 
     /** md
-- **Show labels**:  Labels the corners of the polygon.
-**/
+- **Show corner labels**:  If checked, labels the corners of the polygon.
+     **/
 
     showLabels: {
         default: false,
         type: ParamType.BOOLEAN,
-        displayName: 'Label corners of polygon?',
+        displayName: 'Show corner labels?',
         required: false,
     },
 } satisfies GenericParamDescription
+
+/** md
+
+## Controls
+
+You may click and drag to pan the view, and use the scroll wheel to zoom
+in and out.
+ **/
 
 // How many dots to gather into a reusable Geometry object
 // Might need tuning
@@ -354,6 +362,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     private labelOutset = 1.1 // text offset outward
     private fontsLoaded = false
 
+    private whichWalker = markRaw([0])
     // variables recording the drawing data (dots)
     // this.dots consists of this.walkers number of arrays, i.e.
     // it is an array of arrays
@@ -436,6 +445,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         this.chunks = markRaw([])
         const firstSize = 1
         const firstColor = this.sketch.color(this.bgColor)
+        this.whichWalker = markRaw([this.walkers])
         // put the first walker dot into the arrays
         this.dots = markRaw([[new p5.Vector()]])
         this.dotsIndices = markRaw([[0n]])
@@ -537,6 +547,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     }
     // from p5.js docs examples
     polygon(x: number, y: number, radius: number) {
+        if (Math.abs(radius) < 0.001) return
         const angle = this.sketch.TWO_PI / this.sides
         this.sketch.beginShape()
         for (let a = 0; a < this.sketch.TWO_PI; a += angle) {
@@ -675,6 +686,9 @@ class Chaos extends P5GLVisualizer(paramDesc) {
 
         let currElement = 0n
         for (let i = startIndex; i < endIndex; i++) {
+            const stepSerial = Number(i - this.seq.first + 1n)
+            const lastWalker = this.whichWalker[stepSerial - 1]
+
             // try to get the new element and store its data
             try {
                 currElement = this.seq.getElement(i)
@@ -689,16 +703,19 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             }
 
             // variables you can use in walker formula
-            // excludes C,c,w,x,y
-            const inputWalker = {
+            const inputWalker: Record<
+                (typeof formulaSymbolsWalker)[number],
+                ScopeValue
+            > = {
                 n: Number(i),
                 a: Number(currElement),
-                s: Number(i - this.seq.first + 1n),
+                k: stepSerial,
                 m: Number(this.seq.first),
                 M: Number(this.seq.last),
-                f: currentFrames,
                 p: this.corners,
-                W: this.walkers,
+                w: lastWalker,
+                h: this.walkers,
+                f: currentFrames,
                 A: (n: number | bigint) =>
                     Number(this.seq.getElement(BigInt(n))),
             }
@@ -714,6 +731,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                     )
                 ) ?? -1 // invalid
             )
+            this.whichWalker[stepSerial] = currWalker
             if (this.statusOf.walkerFormula.invalid()) return
             if (currWalker < 0 || currWalker >= this.walkers) {
                 this.statusOf.walkerFormula.warnings.length = 0
@@ -731,22 +749,13 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             const position = this.dots[currWalker][currlen].copy()
             const lastCorner = this.dotsCorners[currWalker][currlen]
 
-            // variables you can use in corner formula (excludes C)
+            // variables you can use in corner formula
             const inputCorner = {
-                n: Number(i),
-                a: Number(currElement),
-                s: Number(i - this.seq.first + 1n),
-                m: Number(this.seq.first),
-                M: Number(this.seq.last),
-                f: currentFrames,
+                ...inputWalker,
+                W: currWalker,
                 c: lastCorner,
-                p: this.corners,
-                w: currWalker,
-                W: this.walkers,
                 x: position.x,
                 y: position.y,
-                A: (n: number | bigint) =>
-                    Number(this.seq.getElement(BigInt(n))),
             }
 
             // what corner should I head for?
@@ -770,22 +779,29 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 continue
             }
 
-            const input = {
-                n: Number(i),
-                a: Number(currElement),
-                s: Number(i - this.seq.first + 1n),
-                m: Number(this.seq.first),
-                M: Number(this.seq.last),
-                f: currentFrames,
-                c: lastCorner,
-                p: this.corners,
+            // variables you can use in step formula
+            const inputStep = {
+                ...inputCorner,
                 C: myCorner,
-                w: currWalker,
-                W: this.walkers,
-                x: position.x,
-                y: position.y,
-                A: (n: number | bigint) =>
-                    Number(this.seq.getElement(BigInt(n))),
+            }
+            // determine new stepsize
+            let step = 0
+            step =
+                math.safeNumber(
+                    this.stepFormula.computeWithStatus(
+                        this.statusOf.stepFormula,
+                        inputStep
+                    )
+                ) ?? 0
+            if (this.statusOf.stepFormula.invalid()) return
+            // determine new position
+            const myCornerPosition = this.cornersList[myCorner]
+            position.lerp(myCornerPosition, step)
+
+            const input = {
+                ...inputStep,
+                X: position.x,
+                Y: position.y,
             }
 
             // determine new color
@@ -806,19 +822,6 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                     )
                 ) ?? 1
             if (this.statusOf.sizeFormula.invalid()) return
-            // determine new stepsize
-            let step = 0
-            step =
-                math.safeNumber(
-                    this.stepFormula.computeWithStatus(
-                        this.statusOf.stepFormula,
-                        input
-                    )
-                ) ?? 0
-            if (this.statusOf.stepFormula.invalid()) return
-            // determine new position
-            const myCornerPosition = this.cornersList[myCorner]
-            position.lerp(myCornerPosition, step)
 
             // push everything if valid
             this.dots[currWalker].push(position.copy())
