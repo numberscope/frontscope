@@ -2,11 +2,10 @@ import p5 from 'p5'
 import {markRaw} from 'vue'
 
 import interFont from '@/assets/fonts/inter/Inter-VariableFont_slnt,wght.ttf'
-import {INVALID_COLOR} from './P5Visualizer'
 import {P5GLVisualizer} from './P5GLVisualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
-import {chroma} from '@/shared/Chroma'
+import {chroma, overlay, ply} from '@/shared/Chroma'
 import {math, MathFormula, CachingError} from '@/shared/math'
 import type {ScopeValue} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
@@ -369,11 +368,11 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     // this.dots consists of this.walkers number of arrays, i.e.
     // it is an array of arrays
     // similar for the other data (sizes, colors)
-    private dots = markRaw([[new p5.Vector()]]) as p5.Vector[][]
-    private dotsIndices = markRaw([[1n]]) as bigint[][]
-    private dotsSizes = markRaw([[1]]) as number[][]
-    private dotsColors = markRaw([[INVALID_COLOR]]) as p5.Color[][]
-    private dotsCorners = markRaw([[0]]) as number[][]
+    private dots = markRaw([[new p5.Vector()]])
+    private dotsSerial = markRaw([[0]])
+    private dotsSizes = markRaw([[1]])
+    private dotsColors = markRaw([[chroma()]])
+    private dotsCorners = markRaw([[0]])
     private chunks: p5.Geometry[] = markRaw([]) // "frozen" chunks of data
     private cursor = 0 // where in data to start drawing
     private pathFailure = false // for cache errors
@@ -446,11 +445,11 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     refresh() {
         this.chunks = markRaw([])
         const firstSize = 1
-        const firstColor = this.sketch.color(this.bgColor)
+        const firstColor = chroma(this.bgColor)
         this.whichWalker = markRaw([this.walkers])
         // put the first walker dot into the arrays
         this.dots = markRaw([[new p5.Vector()]])
-        this.dotsIndices = markRaw([[0n]])
+        this.dotsSerial = markRaw([[0]])
         this.dotsSizes = markRaw([[firstSize]])
         this.dotsColors = markRaw([[firstColor]])
         this.dotsCorners = markRaw([[0]])
@@ -459,7 +458,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // that you start at the origin, but we don't draw that dot
         for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
             this.dots.push([new p5.Vector()])
-            this.dotsIndices.push([0n])
+            this.dotsSerial.push([0])
             this.dotsSizes.push([firstSize])
             this.dotsColors.push([firstColor])
             this.dotsCorners.push([0])
@@ -505,24 +504,31 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     // Draws the dots between start and end INCLUSIVE
     drawVertices(start: number, end: number) {
         const sketch = this.sketch
-        const bigStart = BigInt(start)
-
+        // for fading:
+        const fadeOnce = chroma(this.bgColor).alpha(this.fadeEffect)
         for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
-            const indices = this.dotsIndices[currWalker]
+            const serial = this.dotsSerial[currWalker]
             // for each walker we look in dotsIndices
             // to check if we are between
             // start and end; this could be empty
-            const startArrayIndex = indices.findIndex(n => n >= bigStart)
+            const startArrayIndex = serial.findIndex(n => n >= start)
             if (startArrayIndex < 0) continue // walker still since start
 
             for (
                 // avoid i=0, dummy position
                 let i = math.max(1, startArrayIndex);
-                i < indices.length && indices[i] <= end;
+                i < serial.length && serial[i] <= end;
                 i++
             ) {
                 const pos = this.dots[currWalker][i]
-                sketch.fill(this.dotsColors[currWalker][i])
+                let clr = this.dotsColors[currWalker][i]
+                if (this.fadeEffect > 0) {
+                    const nFades = this.countFades(serial[i], end)
+                    if (nFades > 0) {
+                        clr = overlay(clr, ply(fadeOnce, nFades))
+                    }
+                }
+                sketch.fill(clr.hex())
                 const size = this.dotsSizes[currWalker][i]
                 this.polygon(pos.x, pos.y, size)
             }
@@ -554,6 +560,13 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         return currentLength
     }
 
+    // how many times would you fade between start and end, not including end?
+    countFades(start: number, end: number) {
+        // Assume we fade just after the integral multiples of pixelsPerFrame
+        const period = this.pixelsPerFrame
+        return Math.floor((end - 1) / period) - Math.floor(start / period)
+    }
+
     draw() {
         // check if we are zoom/panning, redraw if so
         // p5 is doing something terrible right here
@@ -564,12 +577,11 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         const sketch = this.sketch
         if (this.cursor === 0) this.redraw()
 
+        const bg = chroma(this.bgColor).alpha(this.fadeEffect)
+        const {width, height} = sketch
         // fade if desired
         if (this.fadeEffect > 0) {
-            const bg = sketch.color(this.bgColor)
-            bg.setAlpha(255 * this.fadeEffect)
-            const {width, height} = sketch
-            sketch.fill(bg).rect(-width / 2, -height / 2, width, height)
+            sketch.fill(bg.hex()).rect(-width / 2, -height / 2, width, height)
             this.labelsDrawn = false
         }
 
@@ -615,6 +627,17 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         let drewSome = false
         // draw available chunks not yet drawn
         for (let chunk = fullChunksDrawn; chunk < chunkLimit; ++chunk) {
+            if (this.fadeEffect > 0) {
+                const nFades = this.countFades(
+                    chunk * CHUNK_SIZE,
+                    (chunk + 1) * CHUNK_SIZE
+                )
+                if (nFades > 0) {
+                    sketch
+                        .fill(ply(bg, nFades).hex())
+                        .rect(-width / 2, -height / 2, width, height)
+                }
+            }
             sketch.model(this.chunks[chunk])
             drewSome = true
         }
@@ -817,11 +840,9 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             // push everything if valid
             this.dots[currWalker].push(position.copy())
             this.dotsSizes[currWalker].push(math.safeNumber(circSize))
-            this.dotsIndices[currWalker].push(i)
+            this.dotsSerial[currWalker].push(stepSerial)
             this.dotsCorners[currWalker].push(myCorner)
-            this.dotsColors[currWalker].push(
-                this.sketch.color(chroma(clr.toString()).hex())
-            )
+            this.dotsColors[currWalker].push(chroma(clr.toString()))
         }
     }
 }
