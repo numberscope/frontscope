@@ -505,43 +505,26 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     // Draws the dots between start and end INCLUSIVE
     drawVertices(start: number, end: number) {
         const sketch = this.sketch
-        // for fade effect
-        const bg = sketch.color(this.bgColor)
-        bg.setAlpha(255 * this.fadeEffect)
+        const bigStart = BigInt(start)
 
         for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
+            const indices = this.dotsIndices[currWalker]
             // for each walker we look in dotsIndices
             // to check if we are between
             // start and end; this could be empty
-            const startArrayIndex = math.max(
-                this.dotsIndices[currWalker].findIndex(
-                    n => n >= BigInt(start)
-                ),
-                0
-            )
-            let lastPos = this.dots[currWalker][startArrayIndex]
+            const startArrayIndex = indices.findIndex(n => n >= bigStart)
+            if (startArrayIndex < 0) continue // walker still since start
+
             for (
                 // avoid i=0, dummy position
-                let i = math.max(1, startArrayIndex + 1);
-                this.dotsIndices[currWalker][i] <= end;
+                let i = math.max(1, startArrayIndex);
+                i < indices.length && indices[i] <= end;
                 i++
             ) {
                 const pos = this.dots[currWalker][i]
-                if (this.fadeEffect > 0) {
-                    sketch.fill(bg)
-                    sketch.rect(
-                        -this.sketch.width / 2,
-                        -this.sketch.height / 2,
-                        this.sketch.width,
-                        this.sketch.height
-                    )
-                }
-                if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
-                    sketch.fill(this.dotsColors[currWalker][i])
-                    const size = this.dotsSizes[currWalker][i]
-                    this.polygon(pos.x, pos.y, size)
-                }
-                lastPos = pos
+                sketch.fill(this.dotsColors[currWalker][i])
+                const size = this.dotsSizes[currWalker][i]
+                this.polygon(pos.x, pos.y, size)
             }
         }
     }
@@ -581,6 +564,15 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         const sketch = this.sketch
         if (this.cursor === 0) this.redraw()
 
+        // fade if desired
+        if (this.fadeEffect > 0) {
+            const bg = sketch.color(this.bgColor)
+            bg.setAlpha(255 * this.fadeEffect)
+            const {width, height} = sketch
+            sketch.fill(bg).rect(-width / 2, -height / 2, width, height)
+            this.labelsDrawn = false
+        }
+
         if (this.showLabels && !this.labelsDrawn && this.fontsLoaded) {
             this.drawLabels()
         }
@@ -616,21 +608,17 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // How many chunks in what's already drawn
         const fullChunksDrawn = Math.floor(this.cursor / CHUNK_SIZE)
         // How many chunks are stored between cursor and target
-        const fullChunksExisting = math.min(
+        const chunkLimit = math.min(
             this.chunks.length,
             Math.floor(targetCursor / CHUNK_SIZE)
         )
         let drewSome = false
         // draw available chunks not yet drawn
-        for (
-            let chunk = fullChunksDrawn;
-            chunk < fullChunksExisting;
-            ++chunk
-        ) {
+        for (let chunk = fullChunksDrawn; chunk < chunkLimit; ++chunk) {
             sketch.model(this.chunks[chunk])
             drewSome = true
         }
-        if (drewSome) this.cursor = fullChunksExisting * CHUNK_SIZE
+        if (drewSome) this.cursor = chunkLimit * CHUNK_SIZE
 
         // draw remaining dots
         if (this.cursor < targetCursor) {
@@ -644,15 +632,15 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // if we don't have that many
         if (fullChunks > this.chunks.length) {
             for (
-                let chunk = fullChunksExisting + 1;
+                let chunk = this.chunks.length;
                 chunk < fullChunks;
                 chunk++
             ) {
                 // @ts-expect-error  The @types/p5 package omitted this function
                 sketch.beginGeometry()
                 this.drawVertices(
-                    (chunk - 1) * CHUNK_SIZE,
-                    chunk * CHUNK_SIZE
+                    chunk * CHUNK_SIZE,
+                    (chunk + 1) * CHUNK_SIZE
                 )
                 // @ts-expect-error  Ditto :-(
                 this.chunks.push(sketch.endGeometry())
