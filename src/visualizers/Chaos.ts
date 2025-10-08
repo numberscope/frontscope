@@ -376,6 +376,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     private chunks: p5.Geometry[] = markRaw([]) // "frozen" chunks of data
     private cursor = 0 // where in data to start drawing
     private pathFailure = false // for cache errors
+    private buffer: p5.Framebuffer | undefined = undefined
 
     // misc
     private firstIndex = 0n // first term
@@ -409,10 +410,11 @@ class Chaos extends P5GLVisualizer(paramDesc) {
 
     setup() {
         super.setup()
+        const sketch = this.sketch
 
         this.fontsLoaded = false
-        this.sketch.loadFont(interFont, font => {
-            this.sketch.textFont(font)
+        sketch.loadFont(interFont, font => {
+            sketch.textFont(font)
             this.fontsLoaded = true
         })
 
@@ -425,12 +427,12 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // Set up the windows and return the coordinates of the corners
         this.cornersList = this.chaosWindow(this.radius)
 
-        this.sketch.frameRate(60)
+        sketch.frameRate(60)
 
-        this.sketch.clear(0, 0, 0, 0)
+        sketch.clear(0, 0, 0, 0)
 
         // no stroke (in particular, no outline on circles)
-        this.sketch.strokeWeight(0)
+        sketch.strokeWeight(0)
 
         // draw from beginning
         this.cursor = 0
@@ -443,7 +445,6 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     // reset the computed dots (arrays)
     // lose all the old data
     refresh() {
-        this.chunks = markRaw([])
         const firstSize = 1
         const firstColor = chroma(this.bgColor)
         this.whichWalker = markRaw([this.walkers])
@@ -463,6 +464,29 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             this.dotsColors.push([firstColor])
             this.dotsCorners.push([0])
         }
+        // get rid of any chunks
+        for (const chunk of this.chunks) {
+            // @ts-expect-error  The @types/p5 package omitted freeGeometry
+            this.sketch.freeGeometry(chunk)
+        }
+        this.chunks = markRaw([])
+
+        // Create a high precision framebuffer that we will render to, instead
+        // of directly to the canvas. We just copy the framebuffer to the
+        // canvas on each draw() call, once it is updated
+        if (this.buffer) this.buffer.remove() // clean any old one
+        this.buffer = markRaw(
+            this.sketch.createFramebuffer({
+                format: this.sketch.FLOAT,
+            }) as unknown as p5.Framebuffer
+            // @types/p5 package has wrong return type, ugh
+        )
+        this.buffer.draw(() => {
+            if (this.buffer) {
+                this.camera = this.buffer.createCamera()
+                // this.camera.move(50,50, -200)
+            }
+        })
         this.redraw()
     }
 
@@ -471,7 +495,9 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     redraw() {
         this.cursor = 0
         // prepare canvas with polygon labels
-        this.sketch.background(this.bgColor)
+        if (this.buffer) {
+            this.buffer.draw(() => this.sketch.background(this.bgColor))
+        }
         this.labelsDrawn = false
     }
 
@@ -574,9 +600,14 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // size of the stored dot data
         // sometimes image degrades during this pause
         if (this.handleDrags()) this.cursor = 0
-        const sketch = this.sketch
         if (this.cursor === 0) this.redraw()
 
+        const sketch = this.sketch
+        if (this.buffer) {
+            this.buffer.begin()
+            if (this.camera) sketch.setCamera(this.camera)
+            sketch.resetMatrix()
+        }
         const bg = chroma(this.bgColor).alpha(this.fadeEffect)
         const {width, height} = sketch
         // fade if desired
@@ -670,7 +701,12 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             }
             this.cursor = 0
         }
-
+        if (this.buffer) {
+            this.buffer.end()
+            // now copy the buffer to canvas
+            sketch.background(this.bgColor)
+            sketch.image(this.buffer, -width / 2, -height / 2)
+        }
         // stop the draw() loop if there's nothing left to do
         if (
             !sketch.mouseIsPressed

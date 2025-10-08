@@ -47,6 +47,12 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
                 )
             this.camera = markRaw(this.sketch.createCamera())
             this.initialCameraZ = this.camera.eyeZ
+            // Now need to make the clipping planes of frustum very far apart
+            // to allow for a good range of zooming
+            const defaultFOV = 2 * Math.atan(this.size.height / 2 / 800)
+            const ar = this.size.width / this.size.height
+            // @ts-expect-error @types/p5 has wrong signature for perspective()
+            this.camera.perspective(defaultFOV, ar, 1, 100000)
         }
 
         // returns the coordinates and scaling of an absolute viewport position
@@ -128,7 +134,9 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
         // Provides default mouse wheel behavior: zoom
         mouseWheel(event: WheelEvent) {
             if (this.camera) {
-                this.camera.move(0, 0, event.deltaY / 10)
+                let camMove = this.camera.eyeZ / 2
+                if (event.deltaY < 0) camMove = (-camMove * 2) / 3
+                this.camera.move(0, 0, camMove)
                 this.continue()
             }
         }
