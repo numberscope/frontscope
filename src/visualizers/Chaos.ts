@@ -475,18 +475,19 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // of directly to the canvas. We just copy the framebuffer to the
         // canvas on each draw() call, once it is updated
         if (this.buffer) this.buffer.remove() // clean any old one
-        this.buffer = markRaw(
-            this.sketch.createFramebuffer({
-                format: this.sketch.FLOAT,
-            }) as unknown as p5.Framebuffer
-            // @types/p5 package has wrong return type, ugh
-        )
-        this.buffer.draw(() => {
-            if (this.buffer) {
-                this.camera = this.buffer.createCamera()
-                // this.camera.move(50,50, -200)
-            }
-        })
+        if (this.fadeEffect > 0) {
+            this.buffer = markRaw(
+                this.sketch.createFramebuffer({
+                    format: this.sketch.FLOAT,
+                }) as unknown as p5.Framebuffer
+                // @types/p5 package has wrong return type, ugh
+            )
+            this.buffer.draw(() => {
+                if (this.buffer) {
+                    this.camera = this.buffer.createCamera()
+                }
+            })
+        }
         this.redraw()
     }
 
@@ -495,9 +496,11 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     redraw() {
         this.cursor = 0
         // prepare canvas with polygon labels
-        if (this.buffer) {
-            this.buffer.draw(() => this.sketch.background(this.bgColor))
-        }
+        if (this.fadeEffect > 0) {
+            if (this.buffer) {
+                this.buffer.draw(() => this.sketch.background(this.bgColor))
+            }
+        } else this.sketch.background(this.bgColor)
         this.labelsDrawn = false
     }
 
@@ -603,7 +606,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         if (this.cursor === 0) this.redraw()
 
         const sketch = this.sketch
-        if (this.buffer) {
+        if (this.fadeEffect > 0 && this.buffer) {
             this.buffer.begin()
             if (this.camera) sketch.setCamera(this.camera)
             sketch.resetMatrix()
@@ -656,20 +659,29 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             Math.floor(targetCursor / CHUNK_SIZE)
         )
         let drewSome = false
+        const brightEnough = 0.0001 // don't bother to draw stuff too faded
         // draw available chunks not yet drawn
         for (let chunk = fullChunksDrawn; chunk < chunkLimit; ++chunk) {
+            let eventualBrightness = 1.0
             if (this.fadeEffect > 0) {
                 const nFades = this.countFades(
                     chunk * CHUNK_SIZE,
                     (chunk + 1) * CHUNK_SIZE
                 )
-                if (nFades > 0) {
+                const furtherFades = this.countFades(
+                    (chunk + 1) * CHUNK_SIZE,
+                    targetCursor
+                )
+                eventualBrightness = (1 - this.fadeEffect) ** furtherFades
+                if (nFades > 0 && eventualBrightness > brightEnough) {
                     sketch
                         .fill(ply(bg, nFades).hex())
                         .rect(-width / 2, -height / 2, width, height)
                 }
             }
-            sketch.model(this.chunks[chunk])
+            if (eventualBrightness > brightEnough) {
+                sketch.model(this.chunks[chunk])
+            }
             drewSome = true
         }
         if (drewSome) this.cursor = chunkLimit * CHUNK_SIZE
@@ -701,7 +713,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             }
             this.cursor = 0
         }
-        if (this.buffer) {
+        if (this.fadeEffect > 0 && this.buffer) {
             this.buffer.end()
             // now copy the buffer to canvas
             sketch.background(this.bgColor)
