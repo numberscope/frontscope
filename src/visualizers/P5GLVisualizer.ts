@@ -135,8 +135,9 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
                 const newZ = this.camera.eyeZ
                 const defaultFOV = 2 * Math.atan(this.sketch.height / 2 / 800)
                 const ar = this.sketch.width / this.sketch.height
+                const nearPlane = Math.max(newZ - 1, 3.0 * newZ / 4.0)
                 // @ts-expect-error  @types/p5 has wrong signature:
-                this.camera.perspective(defaultFOV, ar, newZ - 1, newZ + 1)
+                this.camera.perspective(defaultFOV, ar, nearPlane, newZ + 1)
                 this.continue()
             }
         }
