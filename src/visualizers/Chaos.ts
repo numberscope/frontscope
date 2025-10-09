@@ -428,7 +428,8 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         this.cornersList = this.chaosWindow(this.radius)
 
         sketch.frameRate(60)
-
+        // use doubles from 0 to 1 for color precision in fading:
+        sketch.colorMode(sketch.RGB, 1)
         sketch.clear(0, 0, 0, 0)
 
         // no stroke (in particular, no outline on circles)
@@ -557,7 +558,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                         clr = overlay(clr, ply(fadeOnce, nFades))
                     }
                 }
-                sketch.fill(clr.hex())
+                sketch.fill(clr.gl())
                 const size = this.dotsSizes[currWalker][i]
                 this.polygon(pos.x, pos.y, size)
             }
@@ -596,12 +597,21 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         return Math.floor((end - 1) / period) - Math.floor(start / period)
     }
 
+    // fade the entire drawing as if you went from start to end,
+    // not including end
+    fadeDrawing(start: number, end: number) {
+        const nFades = this.countFades(start, end)
+        if (nFades > 0) {
+            const bg = chroma(this.bgColor).alpha(this.fadeEffect)
+            const {width, height} = this.sketch
+            this.sketch
+                .fill(ply(bg, nFades).gl())
+                .rect(-width / 2, -height / 2, width, height)
+        }
+    }
+
     draw() {
         // check if we are zoom/panning, redraw if so
-        // p5 is doing something terrible right here
-        // its terribleness is proportional to the
-        // size of the stored dot data
-        // sometimes image degrades during this pause
         if (this.handleDrags()) this.cursor = 0
         if (this.cursor === 0) this.redraw()
 
@@ -611,13 +621,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             if (this.camera) sketch.setCamera(this.camera)
             sketch.resetMatrix()
         }
-        const bg = chroma(this.bgColor).alpha(this.fadeEffect)
         const {width, height} = sketch
-        // fade if desired
-        if (this.fadeEffect > 0) {
-            sketch.fill(bg.hex()).rect(-width / 2, -height / 2, width, height)
-            this.labelsDrawn = false
-        }
 
         if (this.showLabels && !this.labelsDrawn && this.fontsLoaded) {
             this.drawLabels()
@@ -627,20 +631,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         let currentLength = this.currentLength()
 
         // how far do we want to draw?
-        let targetCursor = Math.min(
-            this.cursor + this.pixelsPerFrame,
+        const targetCursor = Math.min(
+            Math.max(this.cursor, currentLength) + this.pixelsPerFrame,
             this.maxLength
         )
-        // if we are redrawing (e.g. drag),
-        // then first frame should
-        // advance all the way to where we have
-        // computed
-        if (this.cursor == 0) {
-            targetCursor = Math.min(
-                currentLength + this.pixelsPerFrame,
-                this.maxLength
-            )
-        }
 
         // extend (compute dots) if needed
         if (targetCursor > currentLength) {
@@ -659,24 +653,21 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             Math.floor(targetCursor / CHUNK_SIZE)
         )
         let drewSome = false
-        const brightEnough = 0.0001 // don't bother to draw stuff too faded
+        const brightEnough = 0.001 // don't bother to draw stuff too faded
         // draw available chunks not yet drawn
         for (let chunk = fullChunksDrawn; chunk < chunkLimit; ++chunk) {
             let eventualBrightness = 1.0
             if (this.fadeEffect > 0) {
-                const nFades = this.countFades(
-                    chunk * CHUNK_SIZE,
-                    (chunk + 1) * CHUNK_SIZE
-                )
                 const furtherFades = this.countFades(
                     (chunk + 1) * CHUNK_SIZE,
                     targetCursor
                 )
                 eventualBrightness = (1 - this.fadeEffect) ** furtherFades
-                if (nFades > 0 && eventualBrightness > brightEnough) {
-                    sketch
-                        .fill(ply(bg, nFades).hex())
-                        .rect(-width / 2, -height / 2, width, height)
+                if (eventualBrightness > brightEnough) {
+                    this.fadeDrawing(
+                        chunk * CHUNK_SIZE,
+                        (chunk + 1) * CHUNK_SIZE
+                    )
                 }
             }
             if (eventualBrightness > brightEnough) {
@@ -688,6 +679,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
 
         // draw remaining dots
         if (this.cursor < targetCursor) {
+            // First fade everything else the proper number of times:
+            if (this.fadeEffect > 0) {
+                this.fadeDrawing(this.cursor, targetCursor + 1)
+            }
             this.drawVertices(this.cursor, targetCursor)
             this.cursor = targetCursor
         }
