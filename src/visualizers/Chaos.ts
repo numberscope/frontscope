@@ -623,10 +623,6 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         }
         const {width, height} = sketch
 
-        if (this.showLabels && !this.labelsDrawn && this.fontsLoaded) {
-            this.drawLabels()
-        }
-
         // how much data have we got?
         let currentLength = this.currentLength()
 
@@ -682,6 +678,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             // First fade everything else the proper number of times:
             if (this.fadeEffect > 0) {
                 this.fadeDrawing(this.cursor, targetCursor + 1)
+                this.labelsDrawn = false // we just faded them :(
+            }
+            if (this.showLabels && !this.labelsDrawn && this.fontsLoaded) {
+                this.drawLabels()
             }
             this.drawVertices(this.cursor, targetCursor)
             this.cursor = targetCursor
