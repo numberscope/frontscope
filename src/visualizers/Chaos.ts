@@ -344,9 +344,9 @@ You may click and drag to pan the view, and use the scroll wheel to zoom
 in and out.
  **/
 
-// How many dots to gather into a reusable Geometry object
-// Might need tuning
-const CHUNK_SIZE = 256
+// Some display/performance parameters that might need tuning:
+const CHUNK_SIZE = 256 // How many dots to make a reusable Geometry object
+const MAX_LABELS = 256 // How many corners will we label individually?
 
 class Chaos extends P5GLVisualizer(paramDesc) {
     static category = 'Chaos'
@@ -430,6 +430,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         sketch.frameRate(60)
         // use doubles from 0 to 1 for color precision in fading:
         sketch.colorMode(sketch.RGB, 1)
+        sketch.textAlign(this.sketch.CENTER, this.sketch.CENTER)
         sketch.clear(0, 0, 0, 0)
 
         // no stroke (in particular, no outline on circles)
@@ -471,7 +472,6 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             this.sketch.freeGeometry(chunk)
         }
         this.chunks = markRaw([])
-
         // Create a high precision framebuffer that we will render to, instead
         // of directly to the canvas. We just copy the framebuffer to the
         // canvas on each draw() call, once it is updated
@@ -507,9 +507,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
 
     drawLabels() {
         // text appearance control
-        const shrink = Math.log(this.corners)
+        const shrink = Math.log(Math.min(this.corners, MAX_LABELS))
         // Shrink the numbers appropriately (up to about 100 corners or so)
-        const textSize = (this.sketch.width * 0.04) / shrink
+        const textSize =
+            Math.min(this.sketch.width, this.sketch.height) * 0.06 / shrink
 
         // labels are currently white: TODO make contrast background
         this.sketch
@@ -519,14 +520,25 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             .textSize(textSize)
 
         // Draw the labels
-        for (let c = 0; c < this.corners; c++) {
+        const inc = Math.ceil(this.corners / MAX_LABELS)
+        for (let c = 0; c < this.corners; c += inc) {
             // @ts-expect-error @types/p5 package has wrong return type, ugh
             const label: p5.Vector = p5.Vector.mult(
                 this.cornersList[c],
                 this.labelOutset
             )
-            // WebGL is warning here, but we HAVE loaded a font back in setup??
-            this.sketch.text(String(c), label.x, label.y)
+            this.sketch.push()
+            this.sketch.translate(label)
+            // with three-digit labels, we need to make them read radially
+            // so they don't overlap
+            if (this.corners > 100) {
+                let rotation = c / this.corners
+                if (rotation > 0.5) rotation += 0.25
+                else rotation -= 0.25
+                this.sketch.rotate(rotation * this.sketch.TAU)
+            }
+            this.sketch.text(String(c), 0, 0)
+            this.sketch.pop()
         }
 
         this.labelsDrawn = true
@@ -722,11 +734,6 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             && targetCursor >= this.maxLength // drew it all
             && !this.pathFailure
         ) {
-            // we have drawn it all, now we can pan & zoom
-            // without doing a slow redraw
-            // so we increase pixelsPerFrame
-            this.pixelsPerFrame = this.maxLength
-            //           this.cursor = 0
             this.stop()
         }
     }
