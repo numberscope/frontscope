@@ -518,12 +518,13 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             .strokeWeight(0)
             .textSize(textSize)
 
-        // Find locations for labels
-        const cornersLabels = this.chaosWindow(this.radius * this.labelOutset)
-
         // Draw the labels
         for (let c = 0; c < this.corners; c++) {
-            const label = cornersLabels[c]
+            // @ts-expect-error @types/p5 package has wrong return type, ugh
+            const label: p5.Vector = p5.Vector.mult(
+                this.cornersList[c],
+                this.labelOutset
+            )
             // WebGL is warning here, but we HAVE loaded a font back in setup??
             this.sketch.text(String(c), label.x, label.y)
         }
