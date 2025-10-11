@@ -510,7 +510,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         const shrink = Math.log(Math.min(this.corners, MAX_LABELS))
         // Shrink the numbers appropriately (up to about 100 corners or so)
         const textSize =
-            Math.min(this.sketch.width, this.sketch.height) * 0.06 / shrink
+            (Math.min(this.sketch.width, this.sketch.height) * 0.06) / shrink
 
         // labels are currently white: TODO make contrast background
         this.sketch
