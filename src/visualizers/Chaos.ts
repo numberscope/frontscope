@@ -67,7 +67,7 @@ const formulaSymbolsCorner = (
     'y', // The y-coordinate of the prior dot (before stepping).
 ])
 
-// Step formula can use another symbols
+// Step formula can use another symbol
 const formulaSymbolsStep = formulaSymbolsCorner.concat([
     'C', // The corner we are about to step toward
 ])
@@ -131,8 +131,24 @@ when referencing a walker.
         displayName: 'Background color',
         required: true,
     },
-
     /** md
+
+- **Static mode**: When checked, turns off zoom/pan and removes the
+    iteration limit
+     **/
+    staticMode: {
+        default: false,
+        type: ParamType.BOOLEAN,
+        displayName: 'Static mode',
+        required: false,
+        description:
+            'When checked, disables pan/zoom and allows unlimited '
+            + 'iterations of the Chaos game, which can reveal additional '
+            + 'detail. However, slow fade effects may not be as accurate.',
+        hideDescription: true,
+    },
+    /** md
+
 - **Walker formula**:  An expression that determines which walker to move
 for the current entry of the sequence being visualized. Non-integer values
 are reduced to the nearest smaller integer. The result is interpreted as
@@ -376,6 +392,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     private chunks: p5.Geometry[] = markRaw([]) // "frozen" chunks of data
     private cursor = 0 // where in data to start drawing
     private pathFailure = false // for cache errors
+    private useBuffer = false // Do we need a framebuffer for accuracy?
     private buffer: p5.Framebuffer | undefined = undefined
 
     // misc
@@ -387,7 +404,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         const status = super.checkParameters(params)
 
         // warn when not using entire sequence
-        if (this.seq.length > this.dotLimit) {
+        if (!params.staticMode && this.seq.length > this.dotLimit) {
             status.addWarning(
                 `Using only the first ${this.dotLimit} terms `
                     + 'to prevent lag.'
@@ -419,7 +436,9 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         })
 
         this.firstIndex = this.seq.first
+        if (this.staticMode) this.dotLimit = Infinity
         this.maxLength = math.min(Number(this.seq.length), this.dotLimit)
+        this.useBuffer = !this.staticMode && this.fadeEffect > 0
 
         // size of polygon
         this.radius = math.min(this.sketch.height, this.sketch.width) * 0.4
@@ -475,8 +494,8 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // Create a high precision framebuffer that we will render to, instead
         // of directly to the canvas. We just copy the framebuffer to the
         // canvas on each draw() call, once it is updated
-        if (this.buffer) this.buffer.remove() // clean any old one
-        if (this.fadeEffect > 0) {
+        if (this.useBuffer) {
+            if (this.buffer) this.buffer.remove() // clean any old one
             this.buffer = markRaw(
                 this.sketch.createFramebuffer({
                     format: this.sketch.FLOAT,
@@ -497,10 +516,8 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     redraw() {
         this.cursor = 0
         // prepare canvas with polygon labels
-        if (this.fadeEffect > 0) {
-            if (this.buffer) {
-                this.buffer.draw(() => this.sketch.background(this.bgColor))
-            }
+        if (this.useBuffer && this.buffer) {
+            this.buffer.draw(() => this.sketch.background(this.bgColor))
         } else this.sketch.background(this.bgColor)
         this.labelsDrawn = false
     }
@@ -625,11 +642,13 @@ class Chaos extends P5GLVisualizer(paramDesc) {
 
     draw() {
         // check if we are zoom/panning, redraw if so
-        if (this.handleDrags()) this.cursor = 0
+        if (!this.staticMode) {
+            if (this.handleDrags()) this.cursor = 0
+        }
         if (this.cursor === 0) this.redraw()
 
         const sketch = this.sketch
-        if (this.fadeEffect > 0 && this.buffer) {
+        if (this.useBuffer && this.buffer) {
             this.buffer.begin()
             if (this.camera) sketch.setCamera(this.camera)
             sketch.resetMatrix()
@@ -704,7 +723,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         // how many chunks ought to be possible
         const fullChunks = Math.floor(this.cursor / CHUNK_SIZE)
         // if we don't have that many
-        if (fullChunks > this.chunks.length) {
+        if (!this.staticMode && fullChunks > this.chunks.length) {
             for (
                 let chunk = this.chunks.length;
                 chunk < fullChunks;
@@ -721,7 +740,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
             }
             this.cursor = 0
         }
-        if (this.fadeEffect > 0 && this.buffer) {
+        if (this.useBuffer && this.buffer) {
             this.buffer.end()
             // now copy the buffer to canvas
             sketch.background(this.bgColor)
