@@ -62,20 +62,28 @@ const formulaSymbolsCorner = (
     formulaSymbolsWalker as readonly string[]
 ).concat([
     'W', // The number of the current walker.
-    'c', // The corner that walker `W` stepped toward on its last step.
-    'x', // The x-coordinate of the prior dot (before stepping).
-    'y', // The y-coordinate of the prior dot (before stepping).
+    'c', // The corner number that walker `W` stepped toward on its last step.
+    'P', // The [x,y] coordinate pair of the prior dot (before stepping).
+    'x', // The x-coordinate of P.
+    'y', // The y-coordinate of P.
 ])
 
-// Step formula can use another symbol
-const formulaSymbolsStep = formulaSymbolsCorner.concat([
-    'C', // The corner we are about to step toward
+// Eagerness formula adds more symbols
+const formulaSymbolsEagerness = formulaSymbolsCorner.concat([
+    'C', // The corner number we are about to step toward
+    'T', // The [x,y] coordinate pair of corner C
+])
+
+// Step formula adds another symbol
+const formulaSymbolsStep = formulaSymbolsEagerness.concat([
+    'g', // The eagerness with which we are stepping,
 ])
 
 // Remaining formulas have two more
 const formulaSymbols = formulaSymbolsStep.concat([
-    'X', // The x-coordinate of the new dot (after stepping).
-    'Y', // The y-coordinate of the new dot (after stepping).
+    'N', // The [X,Y] coordinate pair of the new dot after stepping.
+    'X', // The x-coordinate of N.
+    'Y', // The y-coordinate of N.
 ])
 
 const paramDesc = {
@@ -99,7 +107,6 @@ variables when referencing a corner.
         },
     },
     /** md
-
 - **Number of walkers**: Each walker has its own independent location
 and heading. If there are _h_ walkers, then they are numbered 0, 1,
 2, ..., _h_ - 1.  These numberings are used in the `w` and `W` variables
@@ -122,7 +129,6 @@ when referencing a walker.
         },
     },
     /** md
-
 - **Background color**: The color of the visualizer canvas.
      **/
     bgColor: {
@@ -132,7 +138,6 @@ when referencing a walker.
         required: true,
     },
     /** md
-
 - **Static mode**: When checked, turns off zoom/pan and removes the
     iteration limit
      **/
@@ -148,7 +153,6 @@ when referencing a walker.
         hideDescription: true,
     },
     /** md
-
 - **Walker formula**:  An expression that determines which walker to move
 for the current entry of the sequence being visualized. Non-integer values
 are reduced to the nearest smaller integer. The result is interpreted as
@@ -184,7 +188,6 @@ would produce the so-called "first differences" of the sequence.
         required: false,
         level: 0,
     },
-
     /** md
 - **Corner formula**:  An expression that determines which corner the
 current walker should step toward. (Non-integer values are handled as
@@ -209,10 +212,34 @@ Besides the previous variables, the corner heading can additionally depend on:
         required: false,
         level: 0,
     },
-
     /** md
-- **Step formula**:  An expression that specifies what fraction of
+- **Eagerness formula**:  An expression that specifies what fraction of
 the distance toward the chosen corner the chosen walker will walk.
+
+Besides the previous variables, this formula may also use:
+
+{! Chaos.ts extract:
+    start: 'const formulaSymbolsEagerness'
+    stop: ']'
+    replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+!}
+
+     **/
+    eagernessFormula: {
+        default: new MathFormula('0.5'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbolsEagerness,
+        displayName: 'Eagerness formula',
+        description:
+            'Computes the fraction of distance to corner'
+            + ' to walk (can exceed 1 or be negative)',
+        required: false,
+        level: 0,
+    },
+    /** md
+- **Step formula**: An expression that computes the new coordinates
+of the walker resulting from its current step of the specified portion of
+the distance to its chosen corner.
 
 Besides the previous variables, this formula may also use:
 
@@ -221,20 +248,16 @@ Besides the previous variables, this formula may also use:
     stop: ']'
     replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
 !}
-
      **/
     stepFormula: {
-        default: new MathFormula('0.5'),
+        default: new MathFormula('g*T + (1-g)P'),
         type: ParamType.FORMULA,
         symbols: formulaSymbolsStep,
         displayName: 'Step formula',
-        description:
-            'Computes the fraction of distance to corner'
-            + ' to walk (can exceed 1 or be negative)',
+        description: 'Computes the coordinates reached by the current step',
         required: false,
         level: 0,
     },
-
     /** md
 - **Size formula**:  An expression that specifies the radius of the
 dot that will be drawn at the new location of the walker (after
@@ -259,7 +282,6 @@ Besides the previous variables, this formula can additionally depend on:
         required: false,
         level: 0,
     },
-
     /** md
 - **Color formula**: An expression that determines the color of the
 dot that will be drawn at the new location of the current walker, after
@@ -276,7 +298,6 @@ how formulas may create and manipulate colors, see the
         required: false,
         level: 0,
     },
-
     /** md
 - **Color chooser**: This color picker does not directly control the display.
 Instead, whenever you select a color with it, the corresponding color
@@ -301,11 +322,9 @@ string is inserted in the **Color formula** box.
                 cf.substr(0, start) + newColor + cf.substr(end)
         },
     },
-
     /** md
 - **Dots to draw per frame**:  How fast the visualization fills in the dots.
      **/
-
     pixelsPerFrame: {
         default: 30,
         type: ParamType.NUMBER,
@@ -318,14 +337,12 @@ string is inserted in the **Color formula** box.
                 status.addWarning('a large number may affect performance')
         },
     },
-
     /** md
 - **Fade rate**:  How fast old dots fade away, as a number between
 0 and 1, with 0 corresponding to no fade and 1 to all older dots
 disappearing every frame. This effect is reset whenever you move or
 zoom the canvas. Warning: a large value can create a stroboscopic effect.
      **/
-
     fadeEffect: {
         default: 0,
         type: ParamType.NUMBER,
@@ -339,11 +356,9 @@ zoom the canvas. Warning: a large value can create a stroboscopic effect.
             if (p > 1) status.addError('must be at most 1')
         },
     },
-
     /** md
 - **Show corner labels**:  If checked, labels the corners of the polygon.
      **/
-
     showLabels: {
         default: false,
         type: ParamType.BOOLEAN,
@@ -831,7 +846,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
 
             // look up last position of this walker
             const currlen = this.dots[currWalker].length - 1
-            const position = this.dots[currWalker][currlen].copy()
+            let position = this.dots[currWalker][currlen].copy()
             const lastCorner = this.dotsCorners[currWalker][currlen]
 
             // variables you can use in corner formula
@@ -839,6 +854,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 ...inputWalker,
                 W: currWalker,
                 c: lastCorner,
+                P: [position.x, position.y],
                 x: position.x,
                 y: position.y,
             }
@@ -864,27 +880,49 @@ class Chaos extends P5GLVisualizer(paramDesc) {
                 continue
             }
 
-            // variables you can use in step formula
-            const inputStep = {
+            // variables you can use in eagerness formula
+            const myCornerPosition = this.cornersList[myCorner]
+            const inputEagerness = {
                 ...inputCorner,
                 C: myCorner,
+                T: [myCornerPosition.x, myCornerPosition.y],
             }
-            // determine new stepsize
-            let step = 0
-            step =
+            // determine new eagerness
+            const eagerness =
                 math.safeNumber(
-                    this.stepFormula.computeWithStatus(
-                        this.statusOf.stepFormula,
-                        inputStep
+                    this.eagernessFormula.computeWithStatus(
+                        this.statusOf.eagernessFormula,
+                        inputEagerness
                     )
                 ) ?? 0
-            if (this.statusOf.stepFormula.invalid()) return
-            // determine new position
-            const myCornerPosition = this.cornersList[myCorner]
-            position.lerp(myCornerPosition, step)
+            if (this.statusOf.eagernessFormula.invalid()) return
 
+            // variables you can use in step formula
+            const inputStep = {
+                ...inputEagerness,
+                g: eagerness,
+            }
+            // determine new position
+            const rawPos = this.stepFormula.computeWithStatus(
+                this.statusOf.stepFormula,
+                inputStep
+            )
+            if (this.statusOf.stepFormula.invalid()) return
+            const rawPosValue = rawPos.valueOf()
+            const arrPos = Array.isArray(rawPos)
+                ? rawPos
+                : Array.isArray(rawPosValue)
+                  ? rawPosValue
+                  : [0, 0]
+            position = new p5.Vector(
+                math.safeNumber(arrPos[0]) ?? 0,
+                math.safeNumber(arrPos[1]) ?? 0
+            )
+
+            // Variables that can be used in the remaining formulas
             const input = {
                 ...inputStep,
+                N: [position.x, position.y],
                 X: position.x,
                 Y: position.y,
             }
