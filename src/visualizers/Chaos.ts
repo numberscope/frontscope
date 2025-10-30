@@ -12,11 +12,11 @@ import type { GenericParamDescription, ParamValues } from '@/shared/Paramable'
 import { ParamType } from '@/shared/ParamType'
 import { ValidationStatus } from '@/shared/ValidationStatus'
 
-//[<img
-//  src="../../assets/img/Chaos/doily.png"
-//  width=500
-//  style="margin-left: 1em; margin-right: 0.5em"
-///>](../assets/img/Chaos/doily.png)
+[<img
+  src="../../assets/img/Chaos/doily.png"
+  width = 500
+  style = "margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img / Chaos / doily.png)
 
 /** md
 # Chaos Visualizer
