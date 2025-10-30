@@ -622,7 +622,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
         this.sketch.endShape(this.sketch.CLOSE)
     }
     mouseWheel(event: WheelEvent) {
-        if (!this.staticMode) return
+        if (this.staticMode) return
         super.mouseWheel(event)
         this.cursor = 0 // make sure we redraw
     }
