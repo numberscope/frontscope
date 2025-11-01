@@ -54,6 +54,15 @@ const featuredSIMs = [
     'fillColor=isPrime(n)+%3F+%23f661511a+%3A+%231a5fb41a'
   ),
   specimenQuery(
+    'The Murmurations of the Punctual Bird',
+    'Chaos',
+    'OEIS A132131',
+    'corners=8&walkers=4&eagernessFormula=0.16&sizeFormula=2'
+    + '&colorFormula=rainbow%28W*360%2Fh%29&pixelsPerFrame=3'
+    + '&fadeEffect=0.015',
+    'first=1000&length=26349'
+  ),
+  specimenQuery(
     'Baffling Beatty Bars',
     'ModFill',
     'Formula',
