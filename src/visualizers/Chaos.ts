@@ -454,7 +454,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     this.firstIndex = this.seq.first
     if (this.staticMode) this.dotLimit = Infinity
     this.maxLength = math.min(Number(this.seq.length), this.dotLimit)
-    this.useBuffer = !this.staticMode && this.fadeEffect > 0
+    this.useBuffer = this.fadeEffect > 0
 
     // size of polygon
     this.radius = math.min(this.sketch.height, this.sketch.width) * 0.4
@@ -532,9 +532,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
   redraw() {
     this.cursor = 0
     // prepare canvas with polygon labels
+    const bg = chroma(this.bgColor)
     if (this.useBuffer && this.buffer) {
-      this.buffer.draw(() => this.sketch.background(this.bgColor))
-    } else this.sketch.background(this.bgColor)
+      this.buffer.draw(() => this.sketch.background(bg.gl()))
+    } else this.sketch.background(bg.gl())
     this.labelsDrawn = false
   }
 
@@ -650,9 +651,10 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     const nFades = this.countFades(start, end)
     if (nFades > 0) {
       const bg = chroma(this.bgColor).alpha(this.fadeEffect)
+      const fadeBy = ply(bg, nFades)
       const { width, height } = this.sketch
       this.sketch
-        .fill(ply(bg, nFades).gl())
+        .fill(fadeBy.gl())
         .rect(-width / 2, -height / 2, width, height)
     }
   }
@@ -760,7 +762,7 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     if (this.useBuffer && this.buffer) {
       this.buffer.end()
       // now copy the buffer to canvas
-      sketch.background(this.bgColor)
+      sketch.background(chroma(this.bgColor).gl())
       sketch.image(this.buffer, -width / 2, -height / 2)
     }
     // stop the draw() loop if there's nothing left to do
