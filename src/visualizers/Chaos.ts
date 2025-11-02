@@ -539,6 +539,13 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     this.labelsDrawn = false
   }
 
+  // When we close the visualization, be sure to clean up the
+  // framebuffer. Do we need to do this for chunks?
+  depart(element: HTMLElement) {
+    if (this.buffer) this.buffer.remove()
+    super.depart(element)
+  }
+
   drawLabels() {
     // text appearance control
     const shrink = Math.log(Math.min(this.corners, MAX_LABELS))
