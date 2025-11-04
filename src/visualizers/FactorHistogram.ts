@@ -3,7 +3,7 @@ import {P5GLVisualizer} from './P5GLVisualizer'
 
 import interFont from '@/assets/fonts/inter/Inter-VariableFont_slnt,wght.ttf'
 import {math} from '@/shared/math'
-import type {GenericParamDescription} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
@@ -68,14 +68,20 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     numUnknown = 0
     fontsLoaded = false
 
+    checkParameters(params: ParamValues<typeof paramDesc>) {
+        const status = super.checkParameters(params)
+        if (typeof this.seq.last !== 'bigint') {
+            status.addWarning('Using first 10000 terms of infinite sequence.')
+        }
+        return status
+    }
+
     // Obtain the binned difference of an input
     binOf(input: number): number {
         return Math.trunc(input / this.binSize)
     }
 
     endIndex(): bigint {
-        // TODO: Should post warning about artificial limitation here
-        // (when it takes effect)
         return typeof this.seq.last === 'bigint'
             ? this.seq.last
             : this.seq.first + 9999n
@@ -86,7 +92,8 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     // are put into -1
     factorCounts(): number[] {
         const factorCount = []
-        for (let i = this.seq.first; i <= this.endIndex(); i++) {
+        const last = this.endIndex()
+        for (let i = this.seq.first; i <= last; i++) {
             let counter = 0
             const factors = this.seq.getFactors(i)
             if (factors) {
