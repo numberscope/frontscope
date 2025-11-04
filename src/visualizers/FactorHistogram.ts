@@ -109,7 +109,8 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
     // Create an array with the frequency of each number
     // of factors in the corresponding bins
-    async binFactorArraySetup() {
+    async presketch() {
+        this.factoring = true
         await this.seq.fill(this.endIndex(), 'factors')
         const factorCount = this.factorCounts()
         let largestValue = factorCount.length - 1
@@ -168,8 +169,6 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
             this.sketch.textFont(font)
             this.fontsLoaded = true
         })
-        this.factoring = true
-        this.binFactorArraySetup()
     }
 
     barLabel(binIndex: number) {
