@@ -41,7 +41,7 @@ class WithP5 extends Paramable {
     mouseDragged(_event: MouseEvent) {}
     mouseMoved(_event: MouseEvent) {}
     mousePressed(_event: MouseEvent) {}
-    mouseReleased() {}
+    mouseReleased(_event: MouseEvent) {}
     mouseWheel(_event: WheelEvent) {}
     touchEnded() {}
     touchMoved() {}
@@ -71,11 +71,18 @@ export const INVALID_COLOR = {} as p5.Color
 /* Flag to force a call to presketch in a reset() call: */
 export const P5ForcePresketch = true
 
+/* Helper for mouse handling */
+function isPrimaryDown(e: MouseEvent) {
+    const flags = e.buttons ?? e.which
+    return (flags & 1) === 1
+}
+
 export interface P5VizInterface extends VisualizerInterface, WithP5 {
     _sketch?: p5
     _canvas?: p5.Renderer
     _framesRemaining: number
     size: ViewSize
+    mousePrimaryDown: boolean
     drawingState: DrawingState
     readonly sketch: p5
     readonly canvas: p5.Renderer
@@ -97,6 +104,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         _canvas?: p5.Renderer
         _framesRemaining = Infinity
         size = nullSize
+        mousePrimaryDown = false
         drawingState: DrawingState = DrawingUnmounted
 
         within?: HTMLElement
@@ -160,60 +168,77 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 // `this[method]` is defined or undefined:
                 for (const method of p5methods) {
                     const definition = this[method]
-                    if (definition !== dummyWithP5[method]) {
-                        if (
-                            method === 'mousePressed'
-                            || method === 'mouseClicked'
-                            || method === 'mouseWheel'
-                        ) {
+                    const trivial = definition === dummyWithP5[method]
+                    if (
+                        method === 'mousePressed'
+                        || method === 'mouseClicked'
+                        || method === 'mouseWheel'
+                    ) {
+                        if (trivial) {
                             sketch[method] = (event: MouseEvent) => {
-                                if (!this.within) return true
-                                // Check that the event position is in bounds
-                                const rect =
-                                    this.within.getBoundingClientRect()
-                                const x = event.clientX
-                                if (x < rect.left || x >= rect.right) {
-                                    return true
-                                }
-                                const y = event.clientY
-                                if (y < rect.top || y >= rect.bottom) {
-                                    return true
-                                }
-                                // Check also that the event element is OK
-                                const where = document.elementFromPoint(x, y)
-                                if (!where) return true
-                                if (
-                                    where !== this.within
-                                    && !where.contains(this.within)
-                                ) {
-                                    return true
-                                }
-                                return this[method](event as never)
-                                // Cast makes typescript happy :-/
+                                this.mousePrimaryDown = isPrimaryDown(event)
+                                return true
                             }
                             continue
                         }
-                        if (
-                            method === 'keyPressed'
+                        sketch[method] = (event: MouseEvent) => {
+                            this.mousePrimaryDown = isPrimaryDown(event)
+                            if (!this.within) return true
+                            // Check that the event position is in bounds
+                            const rect = this.within.getBoundingClientRect()
+                            const x = event.clientX
+                            if (x < rect.left || x >= rect.right) return true
+                            const y = event.clientY
+                            if (y < rect.top || y >= rect.bottom) return true
+                            // Check also that the event element is OK
+                            const where = document.elementFromPoint(x, y)
+                            if (!where) return true
+                            if (
+                                where !== this.within
+                                    && !where.contains(this.within)
+                            ) {
+                                return true
+                            }
+                            return this[method](event as never)
+                            // Cast makes typescript happy :-/
+                        }
+                        continue
+                    }
+                    if (method === 'mouseReleased' || method === 'mouseMoved') {
+                        if (trivial) {
+                            sketch[method] = (event: MouseEvent) => {
+                                this.mousePrimaryDown = isPrimaryDown(event)
+                                return true
+                            }
+                            continue
+                        }
+                        sketch[method] = (event: MouseEvent) => {
+                            this.mousePrimaryDown = isPrimaryDown(event)
+                            return this[method](event as never)
+                        }
+                        continue
+                    }
+                    if (trivial) continue
+                    if (
+                        method === 'keyPressed'
                             || method === 'keyReleased'
                             || method === 'keyTyped'
-                        ) {
-                            sketch[method] = (event: KeyboardEvent) => {
-                                const active = document.activeElement
-                                if (
-                                    active
+                    ) {
+                        sketch[method] = (event: KeyboardEvent) => {
+                            const active = document.activeElement
+                            if (
+                                active
                                     && (active.tagName === 'INPUT'
                                         || active.tagName === 'TEXTAREA')
-                                ) {
-                                    return true
-                                }
-                                return this[method](event)
+                            ) {
+                                return true
                             }
-                            continue
+                            return this[method](event)
                         }
-                        // Otherwise no special condition, just forward event
-                        sketch[method] = definition.bind(this) as () => void
+                        continue
                     }
+                    // Otherwise no special condition, just forward event
+                    sketch[method] = definition.bind(this) as () => void
                 }
 
                 // And draw is special because of the error handling:

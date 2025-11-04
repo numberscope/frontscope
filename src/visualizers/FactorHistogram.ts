@@ -267,8 +267,10 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         const xAxisHeight = largeOffsetScalar * sketch.height
 
         // Checks to see whether the mouse is in the bin drawn on the screen
+        // only trigger if no mouse button is pressed (e.g., not in midst
+        // of drag).
         let inBin = false
-        if (this.mouseOver) {
+        if (this.mouseOver && !this.mousePrimaryDown) {
             inBin = this.mouseOverInBin(xAxisHeight, binIndex)
         }
 
@@ -381,14 +383,14 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
             this.drawHoverBox(binIndex, smallOffsetNumber)
         }
         // Once everything is loaded, no need to redraw until mouse moves
-        if (!this.fontsLoaded || this.factoring || sketch.mouseIsPressed) {
+        if (!this.fontsLoaded || this.factoring || this.mousePrimaryDown) {
             this.continue()
             this.stop(3)
         }
     }
 
     mouseMoved() {
-        if (this.mouseOver || this.sketch.mouseIsPressed) {
+        if (this.mouseOver || this.mousePrimaryDown) {
             this.continue()
             this.stop(3)
         }

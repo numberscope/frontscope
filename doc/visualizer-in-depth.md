@@ -298,6 +298,14 @@ fills it in from the `category`, and makes it read-only.
 
 ### Other properties
 
+#### Status of mouse primary button
+
+A P5Visualizer automatically maintains a property `mousePrimaryDown` that is
+true when the primary mouse button is in its pressed/down state. This property
+is in essence identical to `sketch.mouseIsPressed` but (a) it specifically
+only pays attention to the primary mouse button, and (b) has its value
+maintained more reliably in the face of events outside the sketch.
+
 #### Vue and reactive objects
 
 It is important to know that Vue will instrument (i.e., insert code into) your
