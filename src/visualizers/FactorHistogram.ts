@@ -249,7 +249,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         const {pX, scale} = this.mouseToPlot()
         sketch.textSize(Math.max(0.02 * sketch.height * scale, 10))
         const height = this.height() // "unit" height
-        const textHeight = sketch.textAscent() * scale
+        const textHeight = sketch.textAscent()
         const largeOffsetScalar = 0.945 // padding between axes and edge
         const smallOffsetScalar = 0.996
         const largeOffsetNumber = (1 - largeOffsetScalar) * sketch.width
@@ -331,7 +331,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         // Draws the markings on the Y-axis
         const tickLeft = yAxisPosition - largeOffsetNumber / 5
         const tickRight = yAxisPosition + largeOffsetNumber / 5
-        const rightJustify = bigTickWidth < tickLeft - 2 * smallOffsetNumber
+        const rightJustify = bigTickWidth < tickLeft * scale - 2 * smallOffsetNumber
         for (let i = 1; i <= nTicks; i++) {
             // Draws the tick marks
             let tickY = xAxisHeight - tickHeight * height * i
