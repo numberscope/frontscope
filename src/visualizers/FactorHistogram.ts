@@ -26,8 +26,11 @@ Omega(n),_number_of_prime_factors_of_n_(with_multiplicity)).
 The horizontal axis represents values of Omega.  Each
 bar corresponds to a range of possible Omega values (a bin).
 The height of each bar shows how many entries in the sequence
-have a corresponding value of Omega.
-
+have a corresponding value of Omega. The leftmost bar corresponding to 0
+factors counts all sequence entries equal to 0 or 1, as well as those entries
+that could not be factored (because their values were too large for Numberscope
+to handle). The latter are indicated by hashing a portion of that leftmost bar
+proportional to the number of unfactored entries.
 
 ## Parameters
 **/
