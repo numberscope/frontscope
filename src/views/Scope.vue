@@ -165,7 +165,7 @@ visualizers you can select.
     import NavBar from './minor/NavBar.vue'
     import SpecimenBar from '../components/SpecimenBar.vue'
     import {getCurrent, updateCurrent} from '@/shared/browserCaching'
-    import {isMobile} from '@/shared/layoutUtilities'
+    import {isMobile} from '@/shared/layout'
 
     /**
      * Positions a tab to be inside a dropzone

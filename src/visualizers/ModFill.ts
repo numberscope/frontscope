@@ -202,16 +202,12 @@ class ModFill extends P5Visualizer(paramDesc) {
         return this.aspectRatio == true ? 1 : undefined
     }
 
-    async presketch(size: ViewSize) {
-        await super.presketch(size)
-        const minDimension = Math.min(size.width, size.height)
+    setup() {
+        super.setup()
+        const minDimension = Math.min(this.size.width, this.size.height)
         // 16 was chosen in the following expression by doubling the
         // multiplier until the traces were almost too faint to see at all.
         this.maxModulus = 16 * minDimension
-    }
-
-    setup() {
-        super.setup()
         const modDimWarning = 'Running with maximum modulus'
 
         // We need to check if the "mod dimension" fits on screen,

@@ -2,6 +2,7 @@ import {VisualizerExportModule} from './VisualizerInterface'
 import {P5GLVisualizer} from './P5GLVisualizer'
 
 import interFont from '@/assets/fonts/inter/Inter-VariableFont_slnt,wght.ttf'
+import {yieldExecution} from '@/shared/asynchronous'
 import {math} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
@@ -63,7 +64,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     static description =
         'Displays a histogram of the number of prime factors of a sequence'
 
-    factoring = true
+    precomputing = ''
     binFactorArray: number[] = []
     numUnknown = 0
     fontsLoaded = false
@@ -90,10 +91,11 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     // Create an array with the value at n being the number of entries
     // of the sequence having n factors. Entries with unknown factorization
     // are put into -1
-    factorCounts(): number[] {
+    async factorCounts(): Promise<number[]> {
         const factorCount = []
         const last = this.endIndex()
         for (let i = this.seq.first; i <= last; i++) {
+            if (i % 10000n === 0n) await yieldExecution()
             let counter = 0
             const factors = this.seq.getFactors(i)
             if (factors) {
@@ -116,10 +118,17 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
     // Create an array with the frequency of each number
     // of factors in the corresponding bins
-    async presketch() {
-        this.factoring = true
+    async presketch(seqChanged: boolean, sizeChanged: boolean) {
+        this.precomputing = 'Evaluating sequence entries ...'
+        await super.presketch(seqChanged, sizeChanged)
+        if (!seqChanged) {
+            this.precomputing = ''
+            return
+        }
+        this.precomputing = 'Factoring ...'
         await this.seq.fill(this.endIndex(), 'factors')
-        const factorCount = this.factorCounts()
+        this.precomputing = 'Collecting values ...'
+        const factorCount = await this.factorCounts()
         let largestValue = factorCount.length - 1
         if (largestValue < 0) largestValue = 0
         this.binFactorArray = new Array(this.binOf(largestValue) + 1).fill(0)
@@ -130,7 +139,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
             this.numUnknown = factorCount[-1]
             this.binFactorArray[0] += this.numUnknown
         } else this.numUnknown = 0
-        this.factoring = false
+        this.precomputing = ''
     }
 
     // Create a number that represents how
@@ -261,9 +270,12 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         const largeOffsetNumber = (1 - largeOffsetScalar) * sketch.width
         const smallOffsetNumber = (1 - smallOffsetScalar) * sketch.width
 
-        if (this.factoring) {
+        if (this.precomputing) {
             sketch.fill('red')
-            this.write('Factoring ...', largeOffsetNumber, textHeight * 2)
+            this.write(
+                `${this.precomputing} ${this.seq.lastFactorCached}`,
+                largeOffsetNumber,
+                textHeight * 2)
             this.continue()
             this.stop(3)
         }
@@ -389,7 +401,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
             this.drawHoverBox(binIndex, smallOffsetNumber)
         }
         // Once everything is loaded, no need to redraw until mouse moves
-        if (!this.fontsLoaded || this.factoring || this.mousePrimaryDown) {
+        if (!this.fontsLoaded || this.precomputing || this.mousePrimaryDown) {
             this.continue()
             this.stop(3)
         }

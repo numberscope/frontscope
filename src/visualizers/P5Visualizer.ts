@@ -87,8 +87,9 @@ export interface P5VizInterface extends VisualizerInterface, WithP5 {
     readonly sketch: p5
     readonly canvas: p5.Renderer
     seq: SequenceInterface
+    presketchComplete: boolean
     _initializeSketch(): (sketch: p5) => void
-    presketch(size: ViewSize): Promise<void>
+    presketch(sequenceChanged: boolean, sizeChanged: boolean): Promise<void>
     hatchRect(x: number, y: number, w: number, h: number): void
     reset(): Promise<void>
 }
@@ -106,6 +107,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         size = nullSize
         mousePrimaryDown = false
         drawingState: DrawingState = DrawingUnmounted
+        presketchComplete = false
 
         within?: HTMLElement
         popup?: HTMLElement = undefined
@@ -284,25 +286,27 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          *     The width and height the visualizer should occupy
          */
         async inhabit(element: HTMLElement, size: ViewSize) {
-            let needsPresketch = true
+            let sequenceChanged = true
+            let sizeChanged = true
             if (this.within) {
                 // oops, already inhabiting somewhere else; depart there
                 this.depart(this.within)
-                // Only do the presketch initialization if the size has
-                // changed, though:
-                needsPresketch =
+                sequenceChanged = false // viewing a new sequence departs
+                sizeChanged =
                     size.width !== this.size.width
                     || size.height !== this.size.height
             }
             this.size = size
             this.within = element
-            // Perform any necessary asynchronous preparation before
+            // Initiate any necessary asynchronous preparation before
             // creating sketch. For example, some Visualizers need sequence
-            // factorizations in setup().
-            if (needsPresketch) await this.presketch(size)
-            // TODO: Can presketch() sometimes take so long that we should
-            // show an hourglass icon in the meantime, or something like that?
-
+            // factorizations, which are expensive to compute.
+            if (sequenceChanged || sizeChanged) {
+                this.presketchComplete = false
+                this.presketch(sequenceChanged, sizeChanged).then(() => {
+                    this.presketchComplete = true
+                })
+            }
             // Now we can create the sketch
             this._sketch = new p5(this._initializeSketch(), element)
         }
@@ -312,8 +316,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * things that must happen asynchronously before a p5 visualizer
          * can create its sketch.
          */
-        async presketch(_size: ViewSize) {
-            await this.seq.fill()
+        async presketch(seqChange: boolean, _sizeChange: boolean) {
+            if (seqChange) await this.seq.fill()
         }
 
         /**

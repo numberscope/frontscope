@@ -113,14 +113,14 @@ class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
     textColor = INVALID_COLOR
     outlineColor = INVALID_COLOR
 
-    async presketch(size: ViewSize) {
+    async presketch(seqChanged: boolean, sizeChanged: boolean) {
         // === Asynchronous setup ===
         // If any pre-computations must be run before the sketch is created,
         // placing them in the `presketch()` function will allow them
         // to run asynchronously, i.e. without blocking the browser.
         // The sketch will not be created until this function completes.
 
-        await super.presketch(size)
+        await super.presketch(seqChanged, sizeChanged)
         // The above call performs the default behavior of intializing the
         // first cache block of the sequence.
         // So down here is where you can do any computation-heavy preparation

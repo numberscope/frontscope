@@ -169,13 +169,13 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         this.last = this.seq.first + this.n - 1n
     }
 
-    async presketch(size: ViewSize) {
-        await super.presketch(size)
-        this.adjustTermsAndColumns(size)
-        // NumberGlyph needs access to its entire range of values
-        // before the sketch setup is even called
-        await this.seq.fill(this.last, 'factors')
+    async presketch(seqChanged: boolean, sizeChanged: boolean) {
+        await super.presketch(seqChanged, sizeChanged)
+        this.adjustTermsAndColumns(this.size)
 
+        if (!seqChanged) return
+
+        await this.seq.fill(this.last, 'factors')
         // Obtain all prime numbers that appear as factors in the sequence
         for (let i = this.seq.first; i < this.last; i++) {
             const checkCurrentFactors = this.seq.getFactors(i)
@@ -213,33 +213,30 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     setup() {
         super.setup()
 
-        this.adjustTermsAndColumns(this.size)
         this.currentIndex = this.seq.first
         this.position = this.sketch.createVector(0, 0)
-        this.initialRadius = Math.floor(this.positionIncrement / 2)
-        this.radii = this.initialRadius
 
         this.sketch
             .background('black')
             .colorMode(this.sketch.HSB, 360, 100, 100)
             .frameRate(30)
-
-        // Set position of the circle
-        this.initialPosition = this.sketch.createVector(
-            this.initialRadius,
-            this.initialRadius
-        )
-        this.position = this.initialPosition.copy()
     }
 
     draw() {
+        if (!this.presketchComplete) {
+            this.sketch
+                .fill('red')
+                .text(
+                    'Factoring...', this.size.width / 2, this.size.height / 2)
+            return
+        }
+        if (this.changePosition()) this.sketch.background('black')
         this.sketch.noStroke()
         if (this.currentIndex > this.last) {
             this.stop()
             return
         }
         this.drawCircle(this.currentIndex)
-        this.changePosition()
         ++this.currentIndex
     }
 
@@ -301,8 +298,19 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         }
     }
 
-    changePosition() {
-        this.position.add(this.positionIncrement, 0)
+    // returns true on first draw, false otherwise
+    changePosition(): boolean {
+        this.initialRadius = Math.floor(this.positionIncrement / 2)
+        this.radii = this.initialRadius
+        let first = false
+        if (this.position.x === 0) {
+            first = true
+            this.initialPosition = this.sketch.createVector(
+                this.initialRadius,
+                this.initialRadius
+            )
+            this.position = this.initialPosition.copy()
+        } else this.position.add(this.positionIncrement, 0)
         // if we need to go to next line
         if (
             math.divides(
@@ -313,6 +321,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
             this.position.x = this.initialPosition.x
             this.position.add(0, this.positionIncrement)
         }
+        return first
     }
 
     isPrime(ind: bigint): boolean {
