@@ -22,6 +22,7 @@ const featuredSIMs = [
     + '%2C%23612B39%5D%5Bmod%28A%28n%29-A%28n%2B8%29%2C8'
     + '%29%2B1%5D&pixelsPerFrame=200',
     'formula=isPrime%28n%29*2%2BisPrime%28n%2B24%29'
+    + '&last=99999&length=100000'
   ),
   specimenQuery(
     'Resistance is Futile',
@@ -102,12 +103,12 @@ const featuredSIMs = [
     'Barnsley Fern',
     'Chaos',
     'Random',
-    'stepFormula=%28%28%5B0%2C0%3B0%2C.16%5D*%28a%3D%3D0%29+%2B+'
-    + '%5B.85%2C.04%3B-.04%2C.85%5D+*%28a%3E2%29+%2B+%5B.2'
-    + '%2C-.26%3B.23%2C.22%5D*%28a%3D%3D1%29+%2B++%5B-.15'
-    + '%2C.28%3B.26%2C.24%5D*%28a%3D%3D2%29%29*P%2F40+%2B'
-    + '+%5B0%2C1.6%5D*%28a%3D1+or+a%3E2%29+%2B+%5B0%2C.44'
-    + '%5D*%28a%3D%3D2%29%29*40&sizeFormula=0.5'
+    'stepFormula=%28%28%5B0%2C0%3B0%2C.16%5D*%28a%3D%3D0%29+%2B+%5B.85'
+    + '%2C.04%3B-.04%2C.85%5D+*%28a%3E2%29+%2B+%5B.2%2C-.26%3B.23'
+    + '%2C.22%5D*%28a%3D%3D1%29+%2B++%5B-.15%2C.28%3B.26%2C.24%5D'
+    + '*%28a%3D%3D2%29%29*%28P%2B%5B0%2C200%5D%29%2F40+%2B+%5B0'
+    + '%2C1.6%5D*%28a%3D1+or+a%3E2%29+%2B+%5B0%2C.44%5D*%28a%3D'
+    + '%3D2%29%29*40+-+%5B0%2C200%5D&sizeFormula=0.5'
     + '&colorFormula=%2300D132&colorChooser=00D132FF',
     'max=7&last=99999&length=100000'
   ),
