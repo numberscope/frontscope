@@ -168,9 +168,9 @@ and if there are fewer than 6 walkers, none will move.
 The formula can use the following pre-defined variables:
 
 {! Chaos.ts extract:
-start: 'const formulaSymbolsWalker'
-stop: "'A',"
-replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+ start: 'const formulaSymbolsWalker'
+ stop: "'A',"
+ replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
 !}
 
 Note that the above definitions mean that `n`, `k`, and `m` are related by
@@ -200,9 +200,9 @@ with the Walker formula, and again, if there is no such corner, the
 walker does not move at all.)
 
 {! Chaos.ts extract:
-start: 'const formulaSymbolsCorner'
-stop: ']'
-replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+ start: 'const formulaSymbolsCorner'
+ stop: ']'
+ replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
 !}
 
  **/
@@ -222,9 +222,9 @@ the distance toward the chosen corner the chosen walker will walk.
 Besides the previous variables, this formula may also use:
 
 {! Chaos.ts extract:
-start: 'const formulaSymbolsEagerness'
-stop: ']'
-replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+ start: 'const formulaSymbolsEagerness'
+ stop: ']'
+ replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
 !}
 
  **/
@@ -247,10 +247,11 @@ the distance to its chosen corner.
 Besides the previous variables, this formula may also use:
 
 {! Chaos.ts extract:
-start: 'const formulaSymbolsStep'
-stop: ']'
-replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+ start: 'const formulaSymbolsStep'
+ stop: ']'
+ replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
 !}
+
  **/
     stepFormula: {
         default: new MathFormula('g*T + (1-g)P'),
@@ -268,9 +269,9 @@ executing the current step). The sign of the radius is ignored, but
 a zero radius will result in no dot being drawn.
 
 {! Chaos.ts extract:
-start: 'const formulaSymbols ='
-stop: ']'
-replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+ start: 'const formulaSymbols ='
+ stop: ']'
+ replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
 !}
 
  **/
