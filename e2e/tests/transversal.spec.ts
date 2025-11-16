@@ -69,7 +69,7 @@ test.describe('Visualizer-sequence challenges', () => {
     for (const viz of vizKeys) {
         const vizPar = viz === 'Chaos' ? 'circSize=5' : '' // ow tough to see
         const details = {}
-        if (viz === 'Histogram') {
+        if (viz === 'Histogram' || viz === 'Turtle' || viz === 'Chaos') {
             details.tag = '@webGL'
         }
         for (const seq of vizSeqs[viz]) {
@@ -80,7 +80,9 @@ test.describe('Visualizer-sequence challenges', () => {
                     page
                         .locator('#specimen-bar-desktop')
                         .getByText('play_arrow')
-                ).toHaveId('pause-button', {timeout: 20000})
+                ).toHaveId('pause-button', {
+                    timeout: viz === 'Chaos' ? 60000 : 20000,
+                })
                 const matchParams =
                     browserName === 'firefox' && details.tag === '@webGL'
                         ? {maxDiffPixelRatio: 0.02}

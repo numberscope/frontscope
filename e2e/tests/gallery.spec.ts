@@ -30,16 +30,16 @@ test.describe('Gallery', () => {
         )
     })
     test('clicking on a featured item', async ({page}) => {
-        const danceCard = await page.locator('.card-body >> nth=2')
-        await expect(danceCard.locator('.titlespan')).toContainText(/Dance/)
+        const futileCard = await page.locator('.card-body >> nth=2')
+        await expect(futileCard.locator('.titlespan')).toContainText(/Futile/)
         await page.locator('.card-body >> nth=2').click()
         await expect(page.url()).not.toContain('gallery')
         await expect(
             await page.locator('#sequenceTab .item-name')
-        ).toContainText(/163/)
+        ).toContainText(/A000005/)
         await expect(
             await page.locator('#visualiserTab .item-name').innerText()
-        ).toMatch('Mod Fill')
+        ).toMatch('Chaos')
     })
     test('saving a specimen and then deleting it', async ({page}) => {
         // test originally written when the following was the default:
