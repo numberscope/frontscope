@@ -623,9 +623,9 @@ class Chaos extends P5GLVisualizer(paramDesc) {
     // from p5.js docs examples
     polygon(x: number, y: number, radius: number) {
         if (Math.abs(radius) < 0.001) return
-        const angle = this.sketch.TWO_PI / this.sides
+        const angle = this.sketch.TAU / this.sides
         this.sketch.beginShape()
-        for (let a = 0; a < this.sketch.TWO_PI; a += angle) {
+        for (let a = 0; a < this.sketch.TAU; a += angle) {
             const sx = x + this.sketch.cos(a) * radius
             const sy = y + this.sketch.sin(a) * radius
             this.sketch.vertex(sx, sy)
