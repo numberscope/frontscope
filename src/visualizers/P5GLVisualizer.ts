@@ -128,7 +128,16 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
         // Provides default mouse wheel behavior: zoom
         mouseWheel(event: WheelEvent) {
             if (this.camera) {
-                this.camera.move(0, 0, event.deltaY / 10)
+                let camMove = this.camera.eyeZ / 2
+                if (event.deltaY < 0) camMove = (-camMove * 2) / 3
+                this.camera.move(0, 0, camMove)
+                // Make sure the clipping planes include the XY-plane
+                const newZ = this.camera.eyeZ
+                const defaultFOV = 2 * Math.atan(this.sketch.height / 2 / 800)
+                const ar = this.sketch.width / this.sketch.height
+                const nearPlane = Math.max(newZ - 1, (3.0 * newZ) / 4.0)
+                // @ts-expect-error  @types/p5 has wrong signature:
+                this.camera.perspective(defaultFOV, ar, nearPlane, newZ + 1)
                 this.continue()
             }
         }

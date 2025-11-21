@@ -13,9 +13,24 @@ const featuredSIMs = [
             + '&colorChooser=813d9c'
     ),
     specimenQuery(
-        'Divisor Square',
+        'Prime Jewels',
+        'Chaos',
+        'Formula',
+        'corners=4&walkers=2&sizeFormula=0.7'
+            + '&colorFormula=%5B%23103547%2C%2375795E%2C%23962020'
+            + '%2C%23D76533%2C%23385563%2C%23BDCAAE%2C%23DA9202'
+            + '%2C%23612B39%5D%5Bmod%28A%28n%29-A%28n%2B8%29%2C8'
+            + '%29%2B1%5D&pixelsPerFrame=200',
+        'formula=isPrime%28n%29*2%2BisPrime%28n%2B24%29'
+            + '&last=99999&length=100000'
+    ),
+    specimenQuery(
+        'Resistance is Futile',
         'Chaos',
         'OEIS A000005',
+        'corners=8&walkers=2&sizeFormula=0.6'
+            + '&colorFormula=%5B%234D8E90%2C%23C6B06E%5D'
+            + '%5Bmod%28w%2C2%29%2B1%5D&pixelsPerFrame=200',
         'corners=8&walkers=8&alpha=0.7&pixelsPerFrame=2000'
     ),
     specimenQuery(
@@ -38,6 +53,15 @@ const featuredSIMs = [
         'ModFill',
         'Formula',
         'fillColor=isPrime(n)+%3F+%23f661511a+%3A+%231a5fb41a'
+    ),
+    specimenQuery(
+        'The Murmurations of the Punctual Bird',
+        'Chaos',
+        'OEIS A132131',
+        'corners=8&walkers=4&eagernessFormula=0.16&sizeFormula=2'
+            + '&colorFormula=rainbow%28W*360%2Fh%29&pixelsPerFrame=3'
+            + '&fadeEffect=0.015',
+        'first=1000&length=26349'
     ),
     specimenQuery(
         'Baffling Beatty Bars',
@@ -65,12 +89,27 @@ const featuredSIMs = [
         'formula=n%5E3%2B2n%2B1'
     ),
     specimenQuery(
-        'Chaos Game',
+        'Doily-Dally',
+        'Chaos',
+        'Formula',
+        'corners=11&bgColor=1D0E0E03&staticMode=true'
+            + '&cornerFormula=mod%28a%2Bc%2Cp%29'
+            + '&sizeFormula=0.5&colorFormula=a%3F%235351BEFF%3A%231D5C98FF'
+            + '&colorChooser=5351BEFF&pixelsPerFrame=500&fadeEffect=0.00',
+        'formula=pickRandom%28%5B+0%2C3%2C3%2C-3' + '%2C-3%5D%29'
+    ),
+    specimenQuery(
+        'Barnsley Fern',
         'Chaos',
         'Random',
-        'corners=3&colorStyle=1&dummyDotControl=true'
-            + '&circSize=2&alpha=0.4&darkMode=true',
-        'max=2'
+        'stepFormula=%28%28%5B0%2C0%3B0%2C.16%5D*%28a%3D%3D0%29+%2B+%5B.85'
+            + '%2C.04%3B-.04%2C.85%5D+*%28a%3E2%29+%2B+%5B.2%2C-.26%3B.23'
+            + '%2C.22%5D*%28a%3D%3D1%29+%2B++%5B-.15%2C.28%3B.26%2C.24%5D'
+            + '*%28a%3D%3D2%29%29*%28P%2B%5B0%2C200%5D%29%2F40+%2B+%5B0'
+            + '%2C1.6%5D*%28a%3D1+or+a%3E2%29+%2B+%5B0%2C.44%5D*%28a%3D'
+            + '%3D2%29%29*40+-+%5B0%2C200%5D&sizeFormula=0.5'
+            + '&colorFormula=%2300D132&colorChooser=00D132FF',
+        'max=7&last=99999&length=100000'
     ),
     specimenQuery(
         'Polyfactors',
