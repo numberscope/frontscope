@@ -11,6 +11,7 @@ test.describe('Featured gallery images', () => {
         if (
             featProps.visualizerKind === 'Histogram'
             || featProps.visualizerKind === 'Turtle'
+            || featProps.visualizerKind === 'Chaos'
         ) {
             details.tag = '@webGL'
         }
@@ -22,7 +23,9 @@ test.describe('Featured gallery images', () => {
             await page.goto(testURL)
             await expect(
                 page.locator('#specimen-bar-desktop').getByText('play_arrow')
-            ).toHaveId('pause-button', {timeout: 30000})
+            ).toHaveId('pause-button', {
+                timeout: featProps.visualizerKind === 'Chaos' ? 60000 : 30000,
+            })
             const matchParams =
                 browserName === 'firefox' && details.tag === '@webGL'
                     ? {maxDiffPixelRatio: 0.01}

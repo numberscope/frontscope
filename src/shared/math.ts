@@ -106,7 +106,7 @@ import type {
 import temml from 'temml'
 
 import type {ValidationStatus} from './ValidationStatus'
-import {chroma, isChroma, dilute, overlay, rainbow} from './Chroma'
+import {chroma, isChroma, dilute, overlay, ply, rainbow} from './Chroma'
 import type {Chroma} from './Chroma'
 
 export type {MathType, MathNode, SymbolNode} from 'mathjs'
@@ -156,6 +156,7 @@ type ExtendedMathJs = Omit<MathJsInstance, 'hasNumericValue' | 'add'> & {
     triangular<T extends Integer>(n: T): Widen<T>
     invTriangular<T extends Integer>(n: T): Widen<T>
     chroma: typeof chroma
+    dilute(c: Chroma, factor: number): Chroma
     rainbow(a: Integer, opacity?: number): Chroma
     isChroma(a: unknown): a is Chroma
     add: ((c: Chroma, d: Chroma) => Chroma) &
@@ -186,6 +187,7 @@ math.typed.addType({
 
 const colorStuff: Record<string, unknown> = {
     chroma,
+    dilute: (c: Chroma, factor: number) => dilute(c, factor),
     rainbow: (h: MathScalarType | bigint, opacity = 1) => {
         if (math.isComplex(h)) h = (math.arg(h) * 180) / math.pi
         else if (typeof h !== 'number' && typeof h !== 'bigint') {
@@ -196,8 +198,8 @@ const colorStuff: Record<string, unknown> = {
     add: math.typed('add', {'Chroma, Chroma': (c, d) => overlay(c, d)}),
     isChroma,
     multiply: math.typed('multiply', {
-        'number, Chroma': (s, c) => dilute(c, s),
-        'Chroma, number': dilute,
+        'number, Chroma': (s, c) => ply(c, s),
+        'Chroma, number': ply,
     }),
     typeOf: math.typed('typeOf', {Chroma: () => 'Chroma'}),
     boolean: math.typed('boolean', {
@@ -503,7 +505,10 @@ math.bigmin = (...args: Integer[]): ExtendedBigint => {
 }
 
 /* Helper for outputting scopes: */
-type ScopeValue = MathType | Record<string, number> | ((x: never) => MathType)
+export type ScopeValue =
+    | MathType
+    | Record<string, number>
+    | ((x: never) => MathType)
 type ScopeType = Record<string, ScopeValue>
 function scopeToString(scope: ScopeType) {
     return Object.entries(scope)

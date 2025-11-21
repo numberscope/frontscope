@@ -1,9 +1,13 @@
 import p5 from 'p5'
+import {markRaw} from 'vue'
 
-import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
+import interFont from '@/assets/fonts/inter/Inter-VariableFont_slnt,wght.ttf'
+import {P5GLVisualizer} from './P5GLVisualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 
-import {math} from '@/shared/math'
+import {chroma, overlay, ply} from '@/shared/Chroma'
+import {math, MathFormula, CachingError} from '@/shared/math'
+import type {ScopeValue} from '@/shared/math'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
@@ -11,419 +15,956 @@ import {ValidationStatus} from '@/shared/ValidationStatus'
 /** md
 # Chaos Visualizer
 
-This visualizer interprets the sequence entries as instructions for walkers
-traversing the region bounded by the vertices of a regular _n_-gon, and displays
-the locations that the walkers visit.
+[<img
+  src="../../assets/img/Chaos/doily.png"
+  width=500
+  style="margin-left: 1em; margin-right: 0.5em"
+/>](../assets/img/Chaos/doily.png)
 
-_This visualizer documentation page is a stub. You can improve Numberscope
-by adding detail._
-**/
+This visualizer interprets the sequence entries as instructions for
+a "herd" of _h_ ≥ 1 walkers traversing the vicinity of the vertices
+of a regular _p_-gon, and displays the locations that the walkers visit.
 
-// p5 Colour palette class
-class Palette {
-    colorList: p5.Color[] = []
-    backgroundColor: p5.Color
-    textColor: p5.Color
+More precisely, each walker begins in the centre of the polygon.  As it
+receives each sequence entry _a_ ₙ, it interprets that entry as a polygon
+corner (typically by taking it modulo _p_, but a customizable formula may
+optionally be specified). It then walks a configurable proportion of the
+distance from its current location to that corner (typically halfway).
+It paints a dot in its new location, and repeats using the next sequence
+entry, etc.
 
-    constructor(
-        sketch: p5 | undefined = undefined,
-        hexList: string[] = [],
-        hexBack = '#000000',
-        hexText = '#FFFFFF'
-    ) {
-        if (sketch) {
-            this.colorList = hexList.map(colorSpec => sketch.color(colorSpec))
-            this.backgroundColor = sketch.color(hexBack)
-            this.textColor = sketch.color(hexText)
-        } else {
-            this.backgroundColor = INVALID_COLOR
-            this.textColor = INVALID_COLOR
-        }
-    }
-}
+It is also possible to configure a more complex formula for the step the
+walker takes, not just along a straight line toward the corner.  This
+makes the visualizer capable of drawing an arbitrary iterated function
+system on the plane.
 
-enum ColorStyle {
-    Walker,
-    Destination,
-    Index,
-    Highlighting_one_walker,
-}
+When this process is performed with a random sequence, this has been called
+the 'chaos game.'  The chaos game on a square produces a uniformly coloured
+square, but on other shapes it produces fractal images.  For example, on
+a triangle, one obtains the Sierpiński gasket in the limit.
+
+For non-random sequences, the distribution of dots can reveal information
+about local correlations and overall distribution of the sequence values.
+
+## Parameters
+ **/
+
+const formulaSymbolsWalker = [
+    'n', // The index of the entry in the sequence being visualized.
+    'a', // The value of the entry.
+    'k', // The serial number of the step, starting from one for the first dot.
+    'm', // The minimum index of the sequence being visualized.
+    'M', // The Maximum index of the sequence being visualized.
+    'p', // The number of corners.
+    'w', // The number of the prior walker to take a step.
+    'h', // The number of walkers.
+    'f', // The frame number of the drawing pass in which this step occurs.
+    'A', // (function symbol for the sequence)
+] as const
+
+// Corner formula adds more symbols
+const formulaSymbolsCorner = (
+    formulaSymbolsWalker as readonly string[]
+).concat([
+    'W', // The number of the current walker.
+    'c', // The corner number that walker `W` stepped toward on its last step.
+    'P', // The [x,y] coordinate pair of the prior dot (before stepping).
+    'x', // The x-coordinate of P.
+    'y', // The y-coordinate of P.
+])
+
+// Eagerness formula adds more symbols
+const formulaSymbolsEagerness = formulaSymbolsCorner.concat([
+    'C', // The corner number we are about to step toward
+    'T', // The [x,y] coordinate pair of corner C
+])
+
+// Step formula adds another symbol
+const formulaSymbolsStep = formulaSymbolsEagerness.concat([
+    'g', // The eagerness with which we are stepping,
+])
+
+// Remaining formulas have two more
+const formulaSymbols = formulaSymbolsStep.concat([
+    'N', // The [X,Y] coordinate pair of the new dot after stepping.
+    'X', // The x-coordinate of N.
+    'Y', // The y-coordinate of N.
+])
 
 const paramDesc = {
+    /** md
+
+- **Number of corners**: (of the polygon). There must be at least two.
+If there are _p_ corners, then they are numbered 0, 1,
+2, ..., _p_ - 1.  These numberings are used in the `c` and `C`
+variables when referencing a corner.
+ **/
     corners: {
         default: 4,
         type: ParamType.INTEGER,
         displayName: 'Number of corners',
         required: true,
-        description:
-            'The number of vertices of the polygon; this value is also '
-            + 'used as a modulus applied to the entries.',
+        description: 'The number of vertices of the polygon',
         validate(c: number, status: ValidationStatus) {
             if (c < 2) status.addError('must be at least 2')
+            if (c > 100)
+                status.addWarning('a large number may affect performance')
         },
     },
-    frac: {
-        default: 0.5,
-        type: ParamType.NUMBER,
-        displayName: 'Fraction to walk',
-        required: false,
-        description:
-            'What fraction of the way each step takes you toward the '
-            + 'vertex specified by the entry.',
-        validate(f: number, status: ValidationStatus) {
-            if (f < 0 || f > 1) {
-                status.addError('must be between 0 and 1, inclusive')
-            }
-        },
-    },
+    /** md
+- **Number of walkers**: Each walker has its own independent location
+and heading. If there are _h_ walkers, then they are numbered 0, 1,
+2, ..., _h_ - 1.  These numberings are used in the `w` and `W` variables
+when referencing a walker.
+ **/
     walkers: {
         default: 1,
         type: ParamType.INTEGER,
         displayName: 'Number of walkers',
         required: false,
         description:
-            'The number w of walkers. The sequence will be broken into '
-            + 'subsequences based on the residue mod w '
-            + 'of the index, each with a separate walker.',
-        validate(w: number, status: ValidationStatus) {
-            if (w < 1) status.addError('must be at least 1')
-        },
-    },
-    colorStyle: {
-        default: ColorStyle.Walker,
-        type: ParamType.ENUM,
-        from: ColorStyle,
-        displayName: 'Color dots by',
-        required: true,
-        description: 'The way the dots should be colored.',
-    },
-    gradientLength: {
-        default: 10000,
-        type: ParamType.INTEGER,
-        displayName: 'Color cycling length',
-        required: false,
-        visibleDependency: 'colorStyle',
-        visibleValue: ColorStyle.Index,
-        description:
-            'The number of entries before recycling the color sequence.',
-        validate(gl: number, status: ValidationStatus) {
-            if (gl < 1) status.addError('must be at least 1')
-        },
-    },
-    highlightWalker: {
-        default: 0,
-        type: ParamType.INTEGER,
-        displayName: 'Number of walker to highlight',
-        required: false,
-        visibleDependency: 'colorStyle',
-        visibleValue: ColorStyle.Highlighting_one_walker,
-        validate(hw: number, status: ValidationStatus) {
-            if (hw < 0) status.addError('must be 0 or higher')
-        },
-    },
-    dummyDotControl: {
-        default: false,
-        type: ParamType.BOOLEAN,
-        displayName: 'Show additional parameters for the dots ↴',
-        required: false,
-    },
-    circSize: {
-        default: 1,
-        type: ParamType.NUMBER,
-        displayName: 'Size (pixels)',
-        required: false,
-        visibleDependency: 'dummyDotControl',
-        visibleValue: true,
-        validate(cs: number, status: ValidationStatus) {
-            if (cs <= 0) status.addError('must be positive')
-        },
-    },
-    alpha: {
-        default: 0.9,
-        type: ParamType.NUMBER,
-        displayName: 'Alpha',
-        required: false,
-        description:
-            'Alpha factor (from 0.0=transparent to 1.0=solid) of the dots.',
-        visibleDependency: 'dummyDotControl',
-        visibleValue: true,
-        validate(a: number, status: ValidationStatus) {
-            if (a < 0 || a > 1) {
-                status.addError('must be between 0 and 1, inclusive')
+            'The number h of walkers. The sequence will be broken into '
+            + 'subsequences based on a formula,'
+            + 'each with a separate independent walker.',
+        validate(h: number, status: ValidationStatus) {
+            status.forbid(h < 1, 'must be at least 1')
+            if (h > 100) {
+                status.addWarning('a large number may affect performance')
             }
         },
     },
+    /** md
+- **Background color**: The color of the visualizer canvas.
+ **/
+    bgColor: {
+        default: '#000000FF',
+        type: ParamType.COLOR,
+        displayName: 'Background color',
+        required: true,
+    },
+    /** md
+- **Static mode**: When checked, turns off zoom/pan and removes the
+iteration limit, allowing for more performant images.
+ **/
+    staticMode: {
+        default: false,
+        type: ParamType.BOOLEAN,
+        displayName: 'Static mode',
+        required: false,
+        description:
+            'When checked, disables pan/zoom and allows unlimited '
+            + 'iterations of the Chaos game, which can reveal additional '
+            + 'detail. However, slow fade effects may not be as accurate.',
+        hideDescription: true,
+    },
+    /** md
+- **Walker formula**:  An expression that determines which walker to move
+for the current entry of the sequence being visualized. Non-integer values
+are reduced to the nearest smaller integer. The result is interpreted as
+the number of a walker, and no walker is moved at all if there is no such
+walker. For example, a formula value of 5.7 will move the walker numbered 5,
+and if there are fewer than 6 walkers, none will move.
+
+The formula can use the following pre-defined variables:
+
+{! Chaos.ts extract:
+ start: 'const formulaSymbolsWalker'
+ stop: "'A',"
+ replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+!}
+
+Note that the above definitions mean that `n`, `k`, and `m` are related by
+`n = m + k - 1`. The maximum index `M` value may be Infinity for sequences
+that are defined and can be calculated (in principle) for any index. The
+frame variable `f` can be used to colour dots differently as time progresses.
+
+You may also use the symbol `A` as a function symbol in this formula, and it
+will provide access to the value of the sequence being visualized for any
+index. For example, the formula `A(n+1) - A(n)` or equivalently `A(n+1) - a`
+would produce the so-called "first differences" of the sequence.
+
+ **/
+    walkerFormula: {
+        default: new MathFormula('mod(n, h)'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbolsWalker,
+        displayName: 'Walker formula',
+        description: 'The walker to move.',
+        required: false,
+        level: 0,
+    },
+    /** md
+- **Corner formula**:  An expression that determines which corner the
+current walker should step toward. (Non-integer values are handled as
+with the Walker formula, and again, if there is no such corner, the
+walker does not move at all.)
+
+{! Chaos.ts extract:
+ start: 'const formulaSymbolsCorner'
+ stop: ']'
+ replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+!}
+
+ **/
+    cornerFormula: {
+        default: new MathFormula('mod(a,p)'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbolsCorner, // can't depend on corner
+        displayName: 'Corner formula',
+        description: 'Computes the corner dot walks toward',
+        required: false,
+        level: 0,
+    },
+    /** md
+- **Eagerness formula**:  An expression that specifies what fraction of
+the distance toward the chosen corner the chosen walker will walk.
+
+Besides the previous variables, this formula may also use:
+
+{! Chaos.ts extract:
+ start: 'const formulaSymbolsEagerness'
+ stop: ']'
+ replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+!}
+
+ **/
+    eagernessFormula: {
+        default: new MathFormula('0.5'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbolsEagerness,
+        displayName: 'Eagerness formula',
+        description:
+            'Computes the fraction of distance to corner'
+            + ' to walk (can exceed 1 or be negative)',
+        required: false,
+        level: 0,
+    },
+    /** md
+- **Step formula**: An expression that computes the new coordinates
+of the walker resulting from its current step of the specified portion of
+the distance to its chosen corner.
+
+Besides the previous variables, this formula may also use:
+
+{! Chaos.ts extract:
+ start: 'const formulaSymbolsStep'
+ stop: ']'
+ replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+!}
+
+ **/
+    stepFormula: {
+        default: new MathFormula('g*T + (1-g)P'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbolsStep,
+        displayName: 'Step formula',
+        description: 'Computes the coordinates reached by the current step',
+        required: false,
+        level: 0,
+    },
+    /** md
+- **Size formula**:  An expression that specifies the radius of the
+dot that will be drawn at the new location of the walker (after
+executing the current step). The sign of the radius is ignored, but
+a zero radius will result in no dot being drawn.
+
+{! Chaos.ts extract:
+ start: 'const formulaSymbols ='
+ stop: ']'
+ replace: [['(\w).,\s//(.*)', '`\1` \2\n\n']]
+!}
+
+ **/
+    sizeFormula: {
+        default: new MathFormula('1'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbols,
+        displayName: 'Size formula',
+        description: 'Computes the size of each dot',
+        required: false,
+        level: 0,
+    },
+    /** md
+- **Color formula**: An expression that determines the color of the
+dot that will be drawn at the new location of the current walker, after
+it takes its step. Variables are as for the Size Formula. For details on
+how formulas may create and manipulate colors, see the
+[Chroma documentation](../shared/Chroma.md).
+ **/
+    colorFormula: {
+        default: new MathFormula('#c98787'),
+        type: ParamType.FORMULA,
+        symbols: formulaSymbols,
+        displayName: 'Color formula',
+        description: 'Computes the color of each dot',
+        required: false,
+        level: 0,
+    },
+    /** md
+- **Color chooser**: This color picker does not directly control the display.
+Instead, whenever you select a color with it, the corresponding color
+string is inserted in the **Color formula** box.
+ **/
+    // Currently broken here and in Turtle
+    colorChooser: {
+        default: '#c98787',
+        type: ParamType.COLOR,
+        displayName: 'Color chooser:',
+        required: true,
+        description: 'Inserts choice into the Color formula.',
+        updateAction: function (newColor: string) {
+            const chaos = this instanceof Chaos ? this : null
+            if (chaos === null) return
+            const cfIn = document.querySelector('.param-field #colorFormula')
+            if (!(cfIn instanceof HTMLInputElement)) return
+            const cf = chaos.tentativeValues.colorFormula
+            const start = cfIn.selectionStart ?? cf.length
+            const end = cfIn.selectionEnd ?? start
+            chaos.tentativeValues.colorFormula =
+                cf.substr(0, start) + newColor + cf.substr(end)
+        },
+    },
+    /** md
+- **Dots to draw per frame**:  How fast the visualization fills in the dots.
+ **/
     pixelsPerFrame: {
-        default: 400n,
-        type: ParamType.BIGINT,
+        default: 30,
+        type: ParamType.NUMBER,
         displayName: 'Dots to draw per frame',
         required: false,
         description: '(more = faster).',
-        visibleDependency: 'dummyDotControl',
-        visibleValue: true,
         validate(p: number, status: ValidationStatus) {
             if (p < 1) status.addError('must be at least 1')
+            if (p > 1000)
+                status.addWarning('a large number may affect performance')
         },
     },
+    /** md
+- **Fade rate**:  How fast old dots fade away, as a number between
+0 and 1, with 0 corresponding to no fade and 1 to all older dots
+disappearing every frame. This effect is reset whenever you move or
+zoom the canvas. Warning: a large value can create a stroboscopic effect.
+ **/
+    fadeEffect: {
+        default: 0,
+        type: ParamType.NUMBER,
+        displayName: 'Fade rate',
+        required: false,
+        description:
+            'A number between 0 and 1; larger -> faster fade. Warning: '
+            + 'a large value can create a stroboscopic effect.',
+        validate(p: number, status: ValidationStatus) {
+            if (p < 0) status.addError('must be at least 0')
+            if (p > 1) status.addError('must be at most 1')
+        },
+    },
+    /** md
+- **Show corner labels**:  If checked, labels the corners of the polygon.
+ **/
     showLabels: {
         default: false,
         type: ParamType.BOOLEAN,
-        displayName: 'Label corners of polygon?',
+        displayName: 'Show corner labels?',
         required: false,
-    },
-    darkMode: {
-        default: false,
-        type: ParamType.BOOLEAN,
-        displayName: 'Use dark mode?',
-        required: false,
-        description: 'If checked, uses light colors on a dark background.',
     },
 } satisfies GenericParamDescription
 
-// other ideas:  previous parts of the sequence fade over time,
-// or shrink over time;
-// circles fade to the outside
+/** md
 
-class Chaos extends P5Visualizer(paramDesc) {
+## Controls
+
+Unless *Static mode* is turned on, you may click and drag to pan
+the view, and use the scroll wheel to zoom
+in and out.
+ **/
+
+// Some display/performance parameters that might need tuning:
+const CHUNK_SIZE = 256 // How many dots to make a reusable Geometry object
+const MAX_LABELS = 256 // How many corners will we label individually?
+
+class Chaos extends P5GLVisualizer(paramDesc) {
     static category = 'Chaos'
-    static description = 'Chaos game played using a sequence to select moves'
+    static description =
+        'Terms of the sequence attract a walker to a corner of the polygon'
 
+    // sides of "circle" to draw for the dot
+    // more = laggier but prettier
+    private sides: number = 6
     // current state variables (used in setup and draw)
-    private myIndex = 0n
-    private cornersList: p5.Vector[] = []
-    private walkerPositions: p5.Vector[] = []
+    private cornersList: p5.Vector[] = [] // locations of polygon corners
+    private radius = 0 // of polygon
+    private labelOutset = 1.1 // text offset outward
+    private fontsLoaded = false
+    private labelsDrawn = false
 
-    // colour palette
-    private currentPalette = new Palette()
+    private whichWalker = markRaw([0])
+    // variables recording the drawing data (dots)
+    // this.dots consists of this.walkers number of arrays, i.e.
+    // it is an array of arrays
+    // similar for the other data (sizes, colors)
+    private dots = markRaw([[new p5.Vector()]])
+    private dotsSerial = markRaw([[0]])
+    private dotsSizes = markRaw([[1]])
+    private dotsColors = markRaw([[chroma()]])
+    private dotsCorners = markRaw([[0]])
+    private chunks: p5.Geometry[] = markRaw([]) // "frozen" chunks of data
+    private cursor = 0 // where in data to start drawing
+    private pathFailure = false // for cache errors
+    private useBuffer = false // Do we need a framebuffer for accuracy?
+    private buffer: p5.Framebuffer | undefined = undefined
+
+    // misc
+    private firstIndex = 0n // first term
+    private dotLimit = 100000 // limit # of dots (prevent lag)
+    private maxLength = 0 // current dot limit (can change)
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
-        if (params.highlightWalker >= params.walkers) {
-            status.addError(
-                'The highlighted walker must be less than '
-                    + 'the number of walkers.'
-            )
-            this.statusOf.highlightWalker.addWarning(
-                'must be less than the number of walkers'
-            )
-            this.statusOf.walkers.addWarning(
-                'must be larger than the highlighted walker'
+        // warn when not using entire sequence
+        if (!params.staticMode && this.seq.length > this.dotLimit) {
+            status.addWarning(
+                `Using only the first ${this.dotLimit} terms `
+                    + 'to prevent lag.'
             )
         }
+
         return status
     }
 
-    chaosWindow(center: p5.Vector, radius: number) {
-        // creates corners of a polygon with given centre and radius
+    chaosWindow(radius: number) {
+        // creates corners of a polygon with given radius
         const pts: p5.Vector[] = []
         for (let i = 0; i < this.corners; i++) {
-            const angle = this.sketch.radians(45 + (360 * i) / this.corners)
-            pts.push(p5.Vector.fromAngle(angle, radius).add(center))
+            // clockwise starting from noon
+            const angle = this.sketch.radians(270 + (360 * i) / this.corners)
+            pts.push(p5.Vector.fromAngle(angle, radius))
         }
         return pts
     }
 
     setup() {
         super.setup()
-        // decide which palette to set by default
-        // we need a colourpicker in the params eventually
-        // right now this is a little arbitrary
-        const defaultColorList = [
-            '#588dad', // blue greenish
-            '#daa520', // orange
-            '#008a2c', // green
-            '#ff6361', // fuschia
-            '#ffa600', // bright orange
-            '#bc5090', // lerp toward purple
-            '#655ca3', // purple
-        ]
-        const darkColor = '#262626'
-        const lightColor = '#f5f5f5'
-        if (this.darkMode) {
-            this.currentPalette = new Palette(
-                this.sketch,
-                defaultColorList,
-                darkColor,
-                lightColor
-            )
-        } else {
-            this.currentPalette = new Palette(
-                this.sketch,
-                defaultColorList,
-                lightColor,
-                darkColor
-            )
-        }
-        if (
-            (this.colorStyle === ColorStyle.Walker
-                && this.walkers > defaultColorList.length)
-            || (this.colorStyle === ColorStyle.Destination
-                && this.corners > defaultColorList.length)
-        ) {
-            let paletteSize = 0
-            if (this.colorStyle === ColorStyle.Walker) {
-                paletteSize = this.walkers
-            }
-            if (this.colorStyle === ColorStyle.Destination) {
-                paletteSize = this.corners
-            }
-            const colorList: string[] = []
-            for (let c = 0; c < paletteSize; c++) {
-                let hexString = ''
-                for (let h = 0; h < 6; h++) {
-                    hexString += math.randomInt(16).toString(16)
-                }
-                colorList.push('#' + hexString)
-            }
-            this.currentPalette = new Palette(
-                this.sketch,
-                colorList,
-                this.darkMode ? darkColor : lightColor,
-                this.darkMode ? lightColor : darkColor
-            )
-        }
+        const sketch = this.sketch
 
-        // set center coords and size
-        const center = this.sketch.createVector(
-            this.sketch.width * 0.5,
-            this.sketch.height * 0.5
-        )
-        const radius = this.sketch.width * 0.4
+        this.fontsLoaded = false
+        sketch.loadFont(interFont, font => {
+            sketch.textFont(font)
+            this.fontsLoaded = true
+        })
 
-        // text appearance control
-        const labelOutset = 1.1
-        const shrink = Math.log(this.corners)
-        // Shrink the numbers appropriately (up to about 100 corners or so):
-        const textSize = (this.sketch.width * 0.04) / shrink
-        // No stroke right now, but could be added
-        const textStroke = this.sketch.width * 0
+        this.firstIndex = this.seq.first
+        if (this.staticMode) this.dotLimit = Infinity
+        this.maxLength = math.min(Number(this.seq.length), this.dotLimit)
+        this.useBuffer = this.fadeEffect > 0
 
-        this.myIndex = this.seq.first
-
-        // set up arrays of walkers
-        this.walkerPositions = Array.from({length: this.walkers}, () =>
-            center.copy()
-        )
+        // size of polygon
+        this.radius = math.min(this.sketch.height, this.sketch.width) * 0.4
 
         // Set up the windows and return the coordinates of the corners
-        this.cornersList = this.chaosWindow(center, radius)
+        this.cornersList = this.chaosWindow(this.radius)
 
-        // Set frame rate
-        this.sketch.frameRate(10)
-
-        // canvas clear/background
-        this.sketch.clear(0, 0, 0, 0)
-        this.sketch.background(this.currentPalette.backgroundColor)
-
-        // Draw corner labels if desired
-        if (this.showLabels) {
-            this.sketch
-                .stroke(this.currentPalette.textColor)
-                .fill(this.currentPalette.textColor)
-                .strokeWeight(textStroke)
-                .textSize(textSize)
-                .textAlign(this.sketch.CENTER, this.sketch.CENTER)
-            // Get appropriate locations for the labels
-            const cornersLabels = this.chaosWindow(
-                center,
-                radius * labelOutset
-            )
-            for (let c = 0; c < this.corners; c++) {
-                const label = cornersLabels[c]
-                this.sketch.text(String(c), label.x, label.y)
-            }
-        }
+        sketch.frameRate(60)
+        // use doubles from 0 to 1 for color precision in fading:
+        sketch.colorMode(sketch.RGB, 1)
+        sketch.textAlign(this.sketch.CENTER, this.sketch.CENTER)
+        sketch.clear(0, 0, 0, 0)
 
         // no stroke (in particular, no outline on circles)
-        this.sketch.strokeWeight(0)
+        sketch.strokeWeight(0)
+
+        // draw from beginning
+        this.cursor = 0
+
+        // set up the arrays
+        // should then redraw, i.e. background
+        this.refresh()
+    }
+
+    // reset the computed dots (arrays)
+    // lose all the old data
+    refresh() {
+        const firstSize = 1
+        const firstColor = chroma(this.bgColor)
+        this.whichWalker = markRaw([this.walkers])
+        // put the first walker dot into the arrays
+        this.dots = markRaw([[new p5.Vector()]])
+        this.dotsSerial = markRaw([[0]])
+        this.dotsSizes = markRaw([[firstSize]])
+        this.dotsColors = markRaw([[firstColor]])
+        this.dotsCorners = markRaw([[0]])
+        // for every other walker, push another walker array
+        // keep in mind the first entry in the arrays is a "dummy" indicating
+        // that you start at the origin, but we don't draw that dot
+        for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
+            this.dots.push([new p5.Vector()])
+            this.dotsSerial.push([0])
+            this.dotsSizes.push([firstSize])
+            this.dotsColors.push([firstColor])
+            this.dotsCorners.push([0])
+        }
+        // get rid of any chunks
+        for (const chunk of this.chunks) {
+            // @ts-expect-error  The @types/p5 package omitted freeGeometry
+            this.sketch.freeGeometry(chunk)
+        }
+        this.chunks = markRaw([])
+        // Create a high precision framebuffer that we will render to, instead
+        // of directly to the canvas. We just copy the framebuffer to the
+        // canvas on each draw() call, once it is updated
+        if (this.useBuffer) {
+            if (this.buffer) this.buffer.remove() // clean any old one
+            this.buffer = markRaw(
+                this.sketch.createFramebuffer({
+                    format: this.sketch.FLOAT,
+                }) as unknown as p5.Framebuffer
+                // @types/p5 package has wrong return type, ugh
+            )
+            this.buffer.draw(() => {
+                if (this.buffer) {
+                    this.camera = this.buffer.createCamera()
+                }
+            })
+        }
+        this.redraw()
+    }
+
+    // reset the drawing without resetting the computed dots
+    // blanks the screen and sets up to redraw the dots
+    redraw() {
+        this.cursor = 0
+        // prepare canvas with polygon labels
+        const bg = chroma(this.bgColor)
+        if (this.useBuffer && this.buffer) {
+            this.buffer.draw(() => this.sketch.background(bg.gl()))
+        } else this.sketch.background(bg.gl())
+        this.labelsDrawn = false
+    }
+
+    // When we close the visualization, be sure to clean up the
+    // framebuffer. Do we need to do this for chunks?
+    depart(element: HTMLElement) {
+        if (this.buffer) this.buffer.remove()
+        super.depart(element)
+    }
+
+    drawLabels() {
+        // text appearance control
+        const shrink = Math.log(Math.min(this.corners, MAX_LABELS))
+        // Shrink the numbers appropriately (up to about 100 corners or so)
+        const textSize =
+            (Math.min(this.sketch.width, this.sketch.height) * 0.06) / shrink
+
+        // labels are currently white: TODO make contrast background
+        this.sketch
+            .stroke('white')
+            .fill('white')
+            .strokeWeight(0)
+            .textSize(textSize)
+
+        // Draw the labels
+        const inc = Math.ceil(this.corners / MAX_LABELS)
+        for (let c = 0; c < this.corners; c += inc) {
+            // @ts-expect-error @types/p5 package has wrong return type, ugh
+            const label: p5.Vector = p5.Vector.mult(
+                this.cornersList[c],
+                this.labelOutset
+            )
+            this.sketch.push()
+            this.sketch.translate(label)
+            // with three-digit labels, we need to make them read radially
+            // so they don't overlap
+            if (this.corners > 100) {
+                let rotation = c / this.corners
+                if (rotation > 0.5) rotation += 0.25
+                else rotation -= 0.25
+                this.sketch.rotate(rotation * this.sketch.TAU)
+            }
+            this.sketch.text(String(c), 0, 0)
+            this.sketch.pop()
+        }
+
+        this.labelsDrawn = true
+    }
+
+    // Draws the dots between start and end INCLUSIVE
+    drawVertices(start: number, end: number) {
+        const sketch = this.sketch
+        // for fading:
+        const fadeOnce = chroma(this.bgColor).alpha(this.fadeEffect)
+        for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
+            const serial = this.dotsSerial[currWalker]
+            // for each walker we look in dotsIndices
+            // to check if we are between
+            // start and end; this could be empty
+            const startArrayIndex = serial.findIndex(n => n >= start)
+            if (startArrayIndex < 0) continue // walker still since start
+
+            for (
+                // avoid i=0, dummy position
+                let i = math.max(1, startArrayIndex);
+                i < serial.length && serial[i] <= end;
+                i++
+            ) {
+                const pos = this.dots[currWalker][i]
+                let clr = this.dotsColors[currWalker][i]
+                if (this.fadeEffect > 0) {
+                    const nFades = this.countFades(serial[i], end)
+                    if (nFades > 0) {
+                        clr = overlay(clr, ply(fadeOnce, nFades))
+                    }
+                }
+                sketch.fill(clr.gl())
+                const size = this.dotsSizes[currWalker][i]
+                this.polygon(pos.x, pos.y, size)
+            }
+        }
+    }
+    // from p5.js docs examples
+    polygon(x: number, y: number, radius: number) {
+        if (Math.abs(radius) < 0.001) return
+        const angle = this.sketch.TAU / this.sides
+        this.sketch.beginShape()
+        for (let a = 0; a < this.sketch.TAU; a += angle) {
+            const sx = x + this.sketch.cos(a) * radius
+            const sy = y + this.sketch.sin(a) * radius
+            this.sketch.vertex(sx, sy)
+        }
+        this.sketch.endShape(this.sketch.CLOSE)
+    }
+    mouseWheel(event: WheelEvent) {
+        if (this.staticMode) return
+        super.mouseWheel(event)
+        this.cursor = 0 // make sure we redraw
+    }
+
+    // how many dots do we have stored?
+    currentLength() {
+        let currentLength = -this.walkers // ignore dummy dots
+        for (let currWalker = 0; currWalker < this.walkers; currWalker++) {
+            currentLength += this.dots[currWalker].length
+        }
+        return currentLength
+    }
+
+    // how many times would you fade between start and end, not including end?
+    countFades(start: number, end: number) {
+        // Assume we fade just after the integral multiples of pixelsPerFrame
+        const period = this.pixelsPerFrame
+        return Math.floor((end - 1) / period) - Math.floor(start / period)
+    }
+
+    // fade the entire drawing as if you went from start to end,
+    // not including end
+    fadeDrawing(start: number, end: number) {
+        const nFades = this.countFades(start, end)
+        if (nFades > 0) {
+            const bg = chroma(this.bgColor).alpha(this.fadeEffect)
+            const fadeBy = ply(bg, nFades)
+            const {width, height} = this.sketch
+            this.sketch
+                .fill(fadeBy.gl())
+                .rect(-width / 2, -height / 2, width, height)
+        }
     }
 
     draw() {
+        // check if we are zoom/panning, redraw if so
+        if (!this.staticMode) {
+            if (this.handleDrags()) this.cursor = 0
+        }
+        if (this.cursor === 0) this.redraw()
+
         const sketch = this.sketch
-        // We attempt to draw pixelsPerFrame pixels each time through the
-        // draw cycle; this "chunking" speeds things up -- that's essential,
-        // because otherwise the overall patterns created by the chaos are
-        // much too slow to show up, especially at small pixel sizes.
-        // Note that we might end up drawing fewer pixels if, for example,
-        // we hit a cache boundary during a frame (at which point getElement
-        // will throw a CachingError, breaking out of draw() altogether). But
-        // in the next frame, likely the caching is done (or at least has moved
-        // to significantly higher indices), and drawing just picks up where
-        // it left off.
-        let pixelsLimit = this.myIndex + this.pixelsPerFrame
-        if (pixelsLimit > this.seq.last) {
-            pixelsLimit = BigInt(this.seq.last) + 1n
-            // have to add one to make sure we eventually stop
+        if (this.useBuffer && this.buffer) {
+            this.buffer.begin()
+            if (this.camera) sketch.setCamera(this.camera)
+            sketch.resetMatrix()
         }
-        for (; this.myIndex < pixelsLimit; this.myIndex++) {
-            // get the term
-            const myTerm = this.seq.getElement(this.myIndex)
+        const {width, height} = sketch
 
-            // check its modulus to see which corner to walk toward
-            // (Safe to convert to number since this.corners is "small")
-            const myCorner = Number(math.modulo(myTerm, this.corners))
-            const myCornerPosition = this.cornersList[myCorner]
+        // how much data have we got?
+        let currentLength = this.currentLength()
 
-            // check the index modulus to see which walker is walking
-            // (Ditto on safety.)
-            const myWalker = Number(math.modulo(this.myIndex, this.walkers))
+        // how far do we want to draw?
+        const targetCursor = Math.min(
+            Math.max(this.cursor, currentLength) + this.pixelsPerFrame,
+            this.maxLength
+        )
 
-            // update the walker position
-            this.walkerPositions[myWalker].lerp(myCornerPosition, this.frac)
+        // extend (compute dots) if needed
+        if (targetCursor > currentLength) {
+            this.extendVertices(sketch.frameCount, targetCursor)
+        }
+        currentLength = this.currentLength()
 
-            // choose colour to mark position
-            let myColor = sketch.color(0)
-            switch (this.colorStyle) {
-                case ColorStyle.Walker:
-                    myColor = this.currentPalette.colorList[myWalker]
-                    break
-                case ColorStyle.Destination:
-                    myColor = this.currentPalette.colorList[myCorner]
-                    break
-                case ColorStyle.Index:
-                    if (typeof this.seq.length === 'bigint') {
-                        myColor = sketch.lerpColor(
-                            this.currentPalette.colorList[0],
-                            this.currentPalette.colorList[1],
-                            Number(
-                                (this.myIndex - this.seq.first)
-                                    / this.seq.length
-                            )
-                        )
-                    } else {
-                        myColor = sketch.lerpColor(
-                            this.currentPalette.colorList[0],
-                            this.currentPalette.colorList[1],
-                            Number(
-                                // Safe since gradientLength is "small"
-                                math.modulo(this.myIndex, this.gradientLength)
-                            ) / this.gradientLength
-                        )
-                    }
-                    break
-                case ColorStyle.Highlighting_one_walker:
-                    if (myWalker == this.highlightWalker) {
-                        myColor = this.currentPalette.colorList[0]
-                    } else {
-                        myColor = this.currentPalette.colorList[1]
-                    }
-                    break
+        // Now draw dots from cursor to target
+
+        // First see if we can use any chunks
+        // How many chunks in what's already drawn
+        const fullChunksDrawn = Math.floor(this.cursor / CHUNK_SIZE)
+        // How many chunks are stored between cursor and target
+        const chunkLimit = math.min(
+            this.chunks.length,
+            Math.floor(targetCursor / CHUNK_SIZE)
+        )
+        let drewSome = false
+        const brightEnough = 0.001 // don't bother to draw stuff too faded
+        // draw available chunks not yet drawn
+        for (let chunk = fullChunksDrawn; chunk < chunkLimit; ++chunk) {
+            let eventualBrightness = 1.0
+            if (this.fadeEffect > 0) {
+                const furtherFades = this.countFades(
+                    (chunk + 1) * CHUNK_SIZE,
+                    targetCursor
+                )
+                eventualBrightness = (1 - this.fadeEffect) ** furtherFades
+                if (eventualBrightness > brightEnough) {
+                    this.fadeDrawing(
+                        chunk * CHUNK_SIZE,
+                        (chunk + 1) * CHUNK_SIZE
+                    )
+                }
             }
-            // The following "255" is needed when in RGB mode;
-            // can change in other modes; see p5.js docs on setAlpha
-            myColor.setAlpha(255 * this.alpha)
-
-            // draw a circle
-            sketch.fill(myColor)
-            sketch.circle(
-                this.walkerPositions[myWalker].x,
-                this.walkerPositions[myWalker].y,
-                this.circSize
-            )
+            if (eventualBrightness > brightEnough) {
+                sketch.model(this.chunks[chunk])
+            }
+            drewSome = true
         }
-        // stop drawing if we exceed available terms
-        if (this.myIndex > this.seq.last) this.stop()
+        if (drewSome) this.cursor = chunkLimit * CHUNK_SIZE
+
+        // draw remaining dots
+        if (this.cursor < targetCursor) {
+            // First fade everything else the proper number of times:
+            if (this.fadeEffect > 0) {
+                this.fadeDrawing(this.cursor, targetCursor + 1)
+                this.labelsDrawn = false // we just faded them :(
+            }
+            if (this.showLabels && !this.labelsDrawn && this.fontsLoaded) {
+                this.drawLabels()
+            }
+            this.drawVertices(this.cursor, targetCursor)
+            this.cursor = targetCursor
+        }
+
+        // See if we can create a new chunk
+        // how many chunks ought to be possible
+        const fullChunks = Math.floor(this.cursor / CHUNK_SIZE)
+        // if we don't have that many
+        if (!this.staticMode && fullChunks > this.chunks.length) {
+            for (
+                let chunk = this.chunks.length;
+                chunk < fullChunks;
+                chunk++
+            ) {
+                // @ts-expect-error  The @types/p5 package omitted this function
+                sketch.beginGeometry()
+                this.drawVertices(
+                    chunk * CHUNK_SIZE,
+                    (chunk + 1) * CHUNK_SIZE
+                )
+                // @ts-expect-error  Ditto :-(
+                this.chunks.push(sketch.endGeometry())
+            }
+            this.cursor = 0
+        }
+        if (this.useBuffer && this.buffer) {
+            this.buffer.end()
+            // now copy the buffer to canvas
+            sketch.background(chroma(this.bgColor).gl())
+            sketch.image(this.buffer, -width / 2, -height / 2)
+        }
+        // stop the draw() loop if there's nothing left to do
+        if (
+            !sketch.mouseIsPressed
+            && currentLength >= this.maxLength // computed it all
+            && targetCursor >= this.maxLength // drew it all
+            && !this.pathFailure
+        ) {
+            this.stop()
+        }
+    }
+
+    // This should be run each time more dots are needed.
+    extendVertices(currentFrames: number, targetLength: number) {
+        this.pathFailure = false
+
+        // infer the start index from what's stored / not
+        // computes the total drawable dots stored in the arrays
+        const len = this.currentLength()
+        const startIndex = this.firstIndex + BigInt(len)
+        // can change if cache error
+        // end index is how much more of the sequence to compute
+        const endIndex = this.firstIndex + BigInt(targetLength)
+
+        let currElement = 0n
+        for (let i = startIndex; i < endIndex; i++) {
+            const stepSerial = Number(i - this.seq.first + 1n)
+            const lastWalker = this.whichWalker[stepSerial - 1]
+
+            // try to get the new element and store its data
+            try {
+                currElement = this.seq.getElement(i)
+            } catch (e) {
+                this.pathFailure = true
+                if (e instanceof CachingError) {
+                    return // need to wait for more elements
+                } else {
+                    // don't know what to do with this
+                    throw e
+                }
+            }
+
+            // variables you can use in walker formula
+            const inputWalker: Record<
+                (typeof formulaSymbolsWalker)[number],
+                ScopeValue
+            > = {
+                n: Number(i),
+                a: Number(currElement),
+                k: stepSerial,
+                m: Number(this.seq.first),
+                M: Number(this.seq.last),
+                p: this.corners,
+                w: lastWalker,
+                h: this.walkers,
+                f: currentFrames,
+                A: (n: number | bigint) =>
+                    Number(this.seq.getElement(BigInt(n))),
+            }
+
+            // which walker do we move
+            let currWalker = 0
+            // gives bad data on bigints
+            currWalker = math.floor(
+                math.safeNumber(
+                    this.walkerFormula.computeWithStatus(
+                        this.statusOf.walkerFormula,
+                        inputWalker
+                    )
+                ) ?? -1 // invalid
+            )
+            this.whichWalker[stepSerial] = currWalker
+            if (this.statusOf.walkerFormula.invalid()) return
+            if (currWalker < 0 || currWalker >= this.walkers) {
+                this.statusOf.walkerFormula.warnings.length = 0
+                this.statusOf.walkerFormula.addWarning(
+                    'some walkerFormula values not in walker range'
+                )
+                currWalker = -1 // invalid
+            }
+            if (currWalker == -1) {
+                continue
+            }
+
+            // look up last position of this walker
+            const currlen = this.dots[currWalker].length - 1
+            let position = this.dots[currWalker][currlen].copy()
+            const lastCorner = this.dotsCorners[currWalker][currlen]
+
+            // variables you can use in corner formula
+            const inputCorner = {
+                ...inputWalker,
+                W: currWalker,
+                c: lastCorner,
+                P: [position.x, position.y],
+                x: position.x,
+                y: position.y,
+            }
+
+            // what corner should I head for?
+            let myCorner = 0
+            myCorner =
+                math.safeNumber(
+                    this.cornerFormula.computeWithStatus(
+                        this.statusOf.cornerFormula,
+                        inputCorner
+                    )
+                ) ?? -1 // invalid
+            if (this.statusOf.cornerFormula.invalid()) return
+            if (myCorner < 0 || myCorner >= this.corners) {
+                this.statusOf.cornerFormula.warnings.length = 0
+                this.statusOf.cornerFormula.addWarning(
+                    'some cornerFormula values not in corner range'
+                )
+                myCorner = -1 // invalid
+            }
+            if (myCorner == -1) {
+                continue
+            }
+
+            // variables you can use in eagerness formula
+            const myCornerPosition = this.cornersList[myCorner]
+            const inputEagerness = {
+                ...inputCorner,
+                C: myCorner,
+                T: [myCornerPosition.x, myCornerPosition.y],
+            }
+            // determine new eagerness
+            const eagerness =
+                math.safeNumber(
+                    this.eagernessFormula.computeWithStatus(
+                        this.statusOf.eagernessFormula,
+                        inputEagerness
+                    )
+                ) ?? 0
+            if (this.statusOf.eagernessFormula.invalid()) return
+
+            // variables you can use in step formula
+            const inputStep = {
+                ...inputEagerness,
+                g: eagerness,
+            }
+            // determine new position
+            const rawPos = this.stepFormula.computeWithStatus(
+                this.statusOf.stepFormula,
+                inputStep
+            )
+            if (this.statusOf.stepFormula.invalid()) return
+            const rawPosValue = rawPos.valueOf()
+            const arrPos = Array.isArray(rawPos)
+                ? rawPos
+                : Array.isArray(rawPosValue)
+                  ? rawPosValue
+                  : [0, 0]
+            position = new p5.Vector(
+                math.safeNumber(arrPos[0]) ?? 0,
+                math.safeNumber(arrPos[1]) ?? 0
+            )
+
+            // Variables that can be used in the remaining formulas
+            const input = {
+                ...inputStep,
+                N: [position.x, position.y],
+                X: position.x,
+                Y: position.y,
+            }
+
+            // determine new color
+            const clr =
+                this.colorFormula.computeWithStatus(
+                    this.statusOf.colorFormula,
+                    input
+                ) ?? 0
+            if (this.statusOf.colorFormula.invalid()) return
+            // determine new dot size
+            let circSize = 0
+            circSize =
+                math.safeNumber(
+                    this.sizeFormula.computeWithStatus(
+                        this.statusOf.sizeFormula,
+                        input
+                    )
+                ) ?? 1
+            if (this.statusOf.sizeFormula.invalid()) return
+
+            // push everything if valid
+            this.dots[currWalker].push(position.copy())
+            this.dotsSizes[currWalker].push(math.safeNumber(circSize))
+            this.dotsSerial[currWalker].push(stepSerial)
+            this.dotsCorners[currWalker].push(myCorner)
+            this.dotsColors[currWalker].push(chroma(clr.toString()))
+        }
     }
 }
 

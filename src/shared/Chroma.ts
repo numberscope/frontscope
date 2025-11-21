@@ -172,33 +172,51 @@ export function overlay(bot: Chroma, top: Chroma): Chroma {
     const topa = retgl[ALPHA]
     const botgl = bot.gl()
     const bota = botgl[ALPHA] ?? 1.0
-    for (let c = 0; c <= ALPHA; ++c) {
-        let botval = botgl[c]
-        if (c < ALPHA) {
-            retgl[c] *= topa
-            botval *= bota
-        }
-        retgl[c] += botval * (1 - topa)
+    retgl[ALPHA] = bota * (1 - topa) + topa
+    for (let c = 0; c < ALPHA; ++c) {
+        retgl[c] =
+            (retgl[c] * topa + botgl[c] * bota * (1 - topa)) / retgl[ALPHA]
     }
     return chromaRaw(...retgl, 'gl')
+}
+
+/** md
+#### ply(color: Chroma, plies: number)
+
+Returns a newly-created Chroma object the same as _color_ except it represents
+overlaying _plies_ many times with that _color_. Equivalently, the
+chromatic components of _color_ are left alone, and the new opacity value
+is given by  1 - (1 - alpha)^plies, where alpha is the opacity of _color_.
+This operation is available in mathjs formulas using the ordinary
+multiplication operator `*`, and in such formulas, the color and factor
+may appear in either order. With these definitions and conventions, we have
+such expected identities as `c + c == 2*c` and so on.
+
+Combining the previous two operations in a linear combination in a
+mathjs formula such as `red + x*chroma(blue, 0.01)` provides one reasonable
+way to morph geometrically from `red` to `blue` as `x` goes from 1 to infinity,
+but note that when the colors used as endpoints are on opposite sides of the
+color wheel, the colors in the "middle" of this trajectory will be rather
+greyish/muddy. See the [chroma-js api](https://www.vis4.net/chromajs/)
+for other ways of creating color scales if direct alpha-compositing produces
+undesirable results.
+ **/
+export function ply(color: Chroma, plies: number) {
+    return chroma(color).alpha(1 - (1 - color.alpha()) ** plies)
 }
 
 /** md
 #### dilute(color: Chroma, factor: number)
 
 Returns a newly-created Chroma object the same as _color_ except that
-its alpha value has been multiplied by _factor_. This operation is available
-in mathjs formulas using the ordinary multiplication operator `*`, and in
-such formulas, the color and factor may appear in either order.
+its alpha value has been multiplied by _factor_.
 
-Combining the previous two operations in a linear combination in a
-mathjs formula such as `red + x*blue` provides one reasonable way to morph
-smoothly from `red` to `blue` as `x` goes from 0 to 1, but note that when
-the colors used as endpoints are on opposite sides of the color wheel, the
-colors in the middle of this trajectory will be rather greyish/muddy. See the
-[chroma-js api](https://www.vis4.net/chromajs/) for other ways of creating
-color scales if direct alpha-compositing produces undesirable results.
-**/
+Combining this with addition as in `red + dilute(blue, x)` provides one
+reasonable way to morph linearly from `red` to `blue` as `x` goes from
+0 to 1, with the same caveats about greyish/muddy colors in the middle of
+the trajectory.
+
+ **/
 export function dilute(color: Chroma, factor: number) {
     return chroma(color).alpha(factor * color.alpha())
 }

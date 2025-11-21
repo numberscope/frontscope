@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vitest'
 
-import {chroma, rainbow, isChroma, overlay, dilute} from '../Chroma'
+import {chroma, rainbow, isChroma, overlay, dilute, ply} from '../Chroma'
 
 const red = chroma('red')
 
@@ -46,7 +46,14 @@ describe('overlay', () => {
     })
     it('does alpha-compositing', () => {
         expect(overlay(chroma('red', 0.5), chroma('green', 0.5)).hex()).toBe(
-            '#404000bf'
+            '#555500bf'
+        )
+    })
+    it('is associative', () => {
+        const hg = chroma('green', 0.5)
+        const hb = chroma('blue', 0.5)
+        expect(overlay(overlay(red, hg), hb)).toStrictEqual(
+            overlay(red, overlay(hg, hb))
         )
     })
 })
@@ -55,5 +62,19 @@ describe('dilute', () => {
     it('multiplies opacity by a constant', () => {
         expect(dilute(red, 0.5)).toStrictEqual(chroma('red', 0.5))
         expect(dilute(chroma('blue', 0.7), 0.6).alpha()).toBe(0.7 * 0.6)
+    })
+})
+
+describe('ply', () => {
+    it('represents several plies of the same overlay', () => {
+        const hc = chroma('cyan', 0.5)
+        expect(ply(hc, 2)).toStrictEqual(overlay(hc, hc))
+        const qc = ply(hc, 0.5)
+        const mhc = overlay(qc, qc)
+        const amhc = mhc.alpha(Math.round(mhc.alpha() * 2 ** 20) / 2 ** 20)
+        expect(amhc).toStrictEqual(hc)
+    })
+    it('has no effect on opaque colors', () => {
+        expect(ply(red, 3.5)).toStrictEqual(red)
     })
 })

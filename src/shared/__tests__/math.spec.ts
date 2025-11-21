@@ -1,5 +1,4 @@
 import {describe, it, expect} from 'vitest'
-
 import {math} from '../math'
 
 const large = 9007199254740993n
@@ -264,13 +263,17 @@ describe('colors', () => {
             math.evaluate('chroma("blue") + chroma("yellow", 0.5)')
         ).toStrictEqual(chroma(0.5))
     })
-    it('scalar multiplies a color via alpha', () => {
+    it('multiplies alpha with dilute', () => {
         const g = chroma('lime')
-        expect(math.multiply(g, 0.5)).toStrictEqual(
-            chroma(0, 1, 0, 0.5, 'gl')
-        )
+        expect(math.dilute(g, 0.5)).toStrictEqual(chroma(0, 1, 0, 0.5, 'gl'))
         // make sure g is not modified
         expect(g.gl()).toStrictEqual([0, 1, 0, 1])
+    })
+    it('scalar multiplies consistent with addition', () => {
+        const hc = chroma('cyan', 0.3)
+        expect(math.evaluate('hc + hc', {hc})).toStrictEqual(
+            math.evaluate('2*hc', {hc})
+        )
     })
     it('provides a rainbow function', () => {
         expect(math.rainbow(45).hex()).toBe('#ed2400')
@@ -278,16 +281,18 @@ describe('colors', () => {
     })
     it('takes linear combinations in expressions', () => {
         expect(
-            math.evaluate('chroma("blue") + 0.5*chroma("yellow")')
+            math.evaluate('chroma("blue") + dilute(chroma("yellow"),0.5)')
         ).toStrictEqual(chroma(0.5))
         expect(
-            math.evaluate('0.5*chroma("blue") + 0.5*chroma("yellow")').gl()
-        ).toStrictEqual([0.5, 0.5, 0.25, 0.75])
+            math
+                .evaluate('chroma("blue", 0.5) + 2*chroma("yellow", 0.5)')
+                .gl()
+        ).toStrictEqual([6 / 7, 6 / 7, 1 / 7, 7 / 8])
     })
     it('allows direct use of color names in expressions', () => {
-        expect(math.evaluate('0.5*blue + 0.5*yellow').gl()).toStrictEqual([
-            0.5, 0.5, 0.25, 0.75,
-        ])
+        expect(
+            math.evaluate('dilute(blue, 0.5) + dilute(yellow, 0.5)').gl()
+        ).toStrictEqual([2 / 3, 2 / 3, 1 / 3, 0.75])
     })
     it('allows chroma.js operations in expressions', () => {
         // examples from https://gka.github.io/chroma.js/

@@ -23,6 +23,7 @@ export default tslint.config(
                 {allow: ['methods']},
             ],
             'max-len': ['error', {code: 80, comments: 80}],
+            'no-irregular-whitespace': ['error', {skipComments: true}],
             'no-trailing-spaces': 'error',
             'no-undef': 'error',
             'operator-linebreak': [
