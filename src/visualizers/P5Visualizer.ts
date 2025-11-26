@@ -197,7 +197,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                             if (!where) return true
                             if (
                                 where !== this.within
-                                    && !where.contains(this.within)
+                                && !where.contains(this.within)
                             ) {
                                 return true
                             }
@@ -206,7 +206,10 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                         }
                         continue
                     }
-                    if (method === 'mouseReleased' || method === 'mouseMoved') {
+                    if (
+                        method === 'mouseReleased'
+                        || method === 'mouseMoved'
+                    ) {
                         if (trivial) {
                             sketch[method] = (event: MouseEvent) => {
                                 this.mousePrimaryDown = isPrimaryDown(event)
@@ -223,15 +226,15 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                     if (trivial) continue
                     if (
                         method === 'keyPressed'
-                            || method === 'keyReleased'
-                            || method === 'keyTyped'
+                        || method === 'keyReleased'
+                        || method === 'keyTyped'
                     ) {
                         sketch[method] = (event: KeyboardEvent) => {
                             const active = document.activeElement
                             if (
                                 active
-                                    && (active.tagName === 'INPUT'
-                                        || active.tagName === 'TEXTAREA')
+                                && (active.tagName === 'INPUT'
+                                    || active.tagName === 'TEXTAREA')
                             ) {
                                 return true
                             }

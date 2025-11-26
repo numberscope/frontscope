@@ -148,6 +148,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     // dot control
     private radii = 50 // increments of radius in a dot
     private initialRadius = 50 // size of dots
+    private nGlyphs = 1 // number of glyphs to draw in a frame
 
     adjustTermsAndColumns(size: ViewSize) {
         // Calculate the number of terms we are actually going to show:
@@ -220,6 +221,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
             .background('black')
             .colorMode(this.sketch.HSB, 360, 100, 100)
             .frameRate(30)
+        this.nGlyphs = 1 // number of glyphs to draw to keep to 1 per frame
     }
 
     draw() {
@@ -227,17 +229,25 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
             this.sketch
                 .fill('red')
                 .text(
-                    'Factoring...', this.size.width / 2, this.size.height / 2)
+                    'Factoring...',
+                    this.size.width / 2,
+                    this.size.height / 2
+                )
+            ++this.nGlyphs // make sure we make up for lost time
             return
         }
-        if (this.changePosition()) this.sketch.background('black')
-        this.sketch.noStroke()
-        if (this.currentIndex > this.last) {
-            this.stop()
-            return
+        for (let i = 0; i < this.nGlyphs; ++i) {
+            if (this.changePosition()) this.sketch.background('black')
+            this.sketch.noStroke()
+            if (this.currentIndex > this.last) {
+                this.stop()
+                this.nGlyphs = 1
+                return
+            }
+            this.drawCircle(this.currentIndex)
+            ++this.currentIndex
         }
-        this.drawCircle(this.currentIndex)
-        ++this.currentIndex
+        this.nGlyphs = 1
     }
 
     drawCircle(ind: bigint) {
@@ -302,26 +312,21 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     changePosition(): boolean {
         this.initialRadius = Math.floor(this.positionIncrement / 2)
         this.radii = this.initialRadius
-        let first = false
         if (this.position.x === 0) {
-            first = true
             this.initialPosition = this.sketch.createVector(
                 this.initialRadius,
                 this.initialRadius
             )
             this.position = this.initialPosition.copy()
-        } else this.position.add(this.positionIncrement, 0)
+            return true
+        }
+        this.position.add(this.positionIncrement, 0)
         // if we need to go to next line
-        if (
-            math.divides(
-                this.columns,
-                this.currentIndex - this.seq.first + 1n
-            )
-        ) {
+        if (math.divides(this.columns, this.currentIndex - this.seq.first)) {
             this.position.x = this.initialPosition.x
             this.position.add(0, this.positionIncrement)
         }
-        return first
+        return false
     }
 
     isPrime(ind: bigint): boolean {

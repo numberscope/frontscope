@@ -22,7 +22,6 @@
 // INVALID_COLOR allows for initializing p5 color variables
 import {P5Visualizer, INVALID_COLOR} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
-import type {ViewSize} from '../visualizers/VisualizerInterface'
 
 // Standard parameter functionality:
 import type {GenericParamDescription} from '@/shared/Paramable'

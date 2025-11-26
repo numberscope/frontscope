@@ -1,6 +1,5 @@
 import {P5Visualizer, INVALID_COLOR} from './P5Visualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
-import type {ViewSize} from './VisualizerInterface'
 
 import {math, MathFormula} from '@/shared/math'
 import type {GenericParamDescription} from '@/shared/Paramable'

@@ -481,8 +481,9 @@ In addition, several keypress commands are recognized:
                 .fill('red')
                 .text(
                     'Scanning data to set scale...',
-                    this.size.width/2,
-                    this.size.height/2)
+                    this.size.width / 2,
+                    this.size.height / 2
+                )
             return
         }
 

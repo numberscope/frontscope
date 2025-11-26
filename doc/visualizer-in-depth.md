@@ -399,9 +399,9 @@ which runs asynchronously, meaning that the browser will not be blocked while
 this function completes. This facility is not a part of p5.js, but a part of
 the P5Visualizer design. The `presketch()` method is called by the framework
 with two boolean arguments: the first specifies whether the sequence has
-changed since the last `presketch()`, and the second specifies whether the size
-has changed. (Both arguments are true for initialization.) You can obtain the
-size of the canvas to be created via the `this.size` property, a ViewSize
+changed since the last `presketch()`, and the second specifies whether the
+size has changed. (Both arguments are true for initialization.) You can obtain
+the size of the canvas to be created via the `this.size` property, a ViewSize
 object with number fields `width` and `height`.
 
 If you implement `presketch()`, begin by calling
@@ -421,8 +421,8 @@ more signifcant changes but not on parameter changes, then `presketch()` is a
 good method.
 
 Note that since `presketch()` is called asynchronously, you cannot assume it
-has completed by the time any other method has been called, e.g. `setup()`
-or `draw()`. Therefore, P5Visualizer provides a boolean property
+has completed by the time any other method has been called, e.g. `setup()` or
+`draw()`. Therefore, P5Visualizer provides a boolean property
 `this.presketchComplete` that you can test to see if the presketch()
 initialization is done.
 

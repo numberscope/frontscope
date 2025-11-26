@@ -393,7 +393,8 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
                     // patchy; all we can rely on is that the closed
                     // interval from the _previous_ value of `this.first`
                     // to `this.lastValueCached` is full.
-                    if (!needsReset
+                    if (
+                        !needsReset
                         && (this.first < this.firstValueCached
                             || this.first > this.lastValueCached + 1n)
                     ) {
@@ -408,7 +409,8 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
                     // And then ditto for factoring. Here we will not
                     // kick off the factoring process because we don't
                     // even know if this sequence is being factored.
-                    if (!needsReset
+                    if (
+                        !needsReset
                         && (this.first < this.firstFactorCached
                             || this.first > this.lastFactorCached + 1n)
                     ) {

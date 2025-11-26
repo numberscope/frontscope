@@ -278,7 +278,8 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
             this.write(
                 `${this.precomputing} ${this.seq.lastFactorCached}`,
                 largeOffsetNumber,
-                textHeight * 2)
+                textHeight * 2
+            )
             this.continue()
             this.stop(3)
         }
@@ -352,7 +353,8 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         // Draws the markings on the Y-axis
         const tickLeft = yAxisPosition - largeOffsetNumber / 5
         const tickRight = yAxisPosition + largeOffsetNumber / 5
-        const rightJustify = bigTickWidth < tickLeft * scale - 2 * smallOffsetNumber
+        const rightJustify =
+            bigTickWidth < tickLeft * scale - 2 * smallOffsetNumber
         for (let i = 1; i <= nTicks; i++) {
             // Draws the tick marks
             let tickY = xAxisHeight - tickHeight * height * i

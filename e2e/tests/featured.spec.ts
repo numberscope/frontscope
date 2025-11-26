@@ -9,7 +9,7 @@ test.describe('Featured gallery images', () => {
         const featProps = parseSpecimenQuery(feature.query)
         const details = {}
         if (
-            featProps.visualizerKind === 'Histogram'
+            featProps.visualizerKind === 'FactorHistogram'
             || featProps.visualizerKind === 'Turtle'
             || featProps.visualizerKind === 'Chaos'
         ) {
