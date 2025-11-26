@@ -128,6 +128,8 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
             this.precomputing = ''
             return
         }
+        this.precomputing = 'Calculating sequence values ...'
+        await this.seq.fill(this.endIndex())
         this.precomputing = 'Factoring ...'
         await this.seq.fill(this.endIndex(), 'factors')
         this.precomputing = 'Collecting values ...'
@@ -275,8 +277,11 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
         if (this.precomputing) {
             sketch.fill('red')
+            const position = this.precomputing.startsWith('Factor')
+                ? this.seq.lastFactorCached
+                : this.seq.lastValueCached
             this.write(
-                `${this.precomputing} ${this.seq.lastFactorCached}`,
+                `${this.precomputing} ${position}`,
                 largeOffsetNumber,
                 textHeight * 2
             )

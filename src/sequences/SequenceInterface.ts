@@ -33,11 +33,12 @@ export interface SequenceInterface extends ParamableInterface {
     readonly length: ExtendedBigint
 
     /**
-     * HACK: We make the last factor cached accessible for the sake of
-     * showing progress information on long caching runs.
+     * HACKS: We make the last value cached and last factor cached accessible
+     * for the sake of showing progress information on long caching runs.
      * TODO: add a 'progress' function or something like that to do such
      * things in a more disciplined and flexible way.
      */
+    readonly lastValueCached: bigint
     readonly lastFactorCached: bigint
 
     /**

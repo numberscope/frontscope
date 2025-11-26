@@ -257,7 +257,7 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
         async fillValueCache(n: bigint) {
             const start = this.lastValueCached + 1n
             for (let i = start; i <= n; i++) {
-                if (i % 10000n == 0n) await yieldExecution()
+                if (i % 10000n === 0n) await yieldExecution()
                 const key = i.toString()
                 // trust values we find; hopefully we have cleared when
                 // needed, so that we can presume they are from some
@@ -299,7 +299,7 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
             const start = this.lastFactorCached + 1n
             for (let i = start; i <= n; ++i) {
                 // Can we yield execution?
-                if (i % 10000n == 0n) await yieldExecution()
+                if (i % 10000n === 0n) await yieldExecution()
                 const key = i.toString()
                 // trust values we find
                 if (!(key in this.factorCache)) {
