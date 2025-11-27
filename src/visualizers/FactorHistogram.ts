@@ -68,6 +68,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         'Displays a histogram of the number of prime factors of a sequence'
 
     precomputing = ''
+    factorCount: number[] = []
     binFactorArray: number[] = []
     numUnknown = 0
     fontsLoaded = false
@@ -94,8 +95,8 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     // Create an array with the value at n being the number of entries
     // of the sequence having n factors. Entries with unknown factorization
     // are put into -1
-    async factorCounts(): Promise<number[]> {
-        const factorCount = []
+    async factorCounts() {
+        this.factorCount = []
         const last = this.endIndex()
         for (let i = this.seq.first; i <= last; i++) {
             if (i % 10000n === 0n) await yieldExecution()
@@ -113,10 +114,9 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
             if (counter === 0 && math.bigabs(this.seq.getElement(i)) > 1) {
                 counter = -1
             }
-            if (counter in factorCount) factorCount[counter]++
-            else factorCount[counter] = 1
+            if (counter in this.factorCount) this.factorCount[counter]++
+            else this.factorCount[counter] = 1
         }
-        return factorCount
     }
 
     // Create an array with the frequency of each number
@@ -133,17 +133,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         this.precomputing = 'Factoring ...'
         await this.seq.fill(this.endIndex(), 'factors')
         this.precomputing = 'Collecting values ...'
-        const factorCount = await this.factorCounts()
-        let largestValue = factorCount.length - 1
-        if (largestValue < 0) largestValue = 0
-        this.binFactorArray = new Array(this.binOf(largestValue) + 1).fill(0)
-        factorCount.forEach(
-            (count, ix) => (this.binFactorArray[this.binOf(ix)] += count)
-        )
-        if ((-1) in factorCount) {
-            this.numUnknown = factorCount[-1]
-            this.binFactorArray[0] += this.numUnknown
-        } else this.numUnknown = 0
+        await this.factorCounts()
         this.precomputing = ''
     }
 
@@ -190,6 +180,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
             this.sketch.textFont(font)
             this.fontsLoaded = true
         })
+        this.binFactorArray = []
     }
 
     barLabel(binIndex: number) {
@@ -287,6 +278,22 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
             )
             this.continue()
             this.stop(3)
+            return
+        }
+
+        if (this.binFactorArray.length === 0) {
+            let largestValue = this.factorCount.length - 1
+            if (largestValue < 0) largestValue = 0
+            this.binFactorArray = new Array(
+                this.binOf(largestValue) + 1
+            ).fill(0)
+            this.factorCount.forEach(
+                (count, ix) => (this.binFactorArray[this.binOf(ix)] += count)
+            )
+            if ((-1) in this.factorCount) {
+                this.numUnknown = this.factorCount[-1]
+                this.binFactorArray[0] += this.numUnknown
+            } else this.numUnknown = 0
         }
 
         const binWidth = this.binWidth()
