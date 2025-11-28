@@ -201,30 +201,27 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         // Literally no idea why we only have to scale when scale > 1 :-/
         // but there's no arguing with it looking right
         if (scale > 1) textVerticalSpacing *= scale
-        let boxHeight = textVerticalSpacing * 2.4
-        if (showUnknown) boxHeight += textVerticalSpacing
         const margin = offset
         const boxRadius = Math.floor(margin)
 
         // Set up the texts to display:
-        const captions = ['Factors: ', 'Height: ']
-        const values = [
-            this.barLabel(binIndex),
-            this.binFactorArray[binIndex].toString(),
+        const amt = this.binFactorArray[binIndex]
+        const cnt = this.barLabel(binIndex)
+        const captions = [
+            `${amt} number${amt !== 1 ? 's' : ''} with`,
+            `${cnt} prime factor${cnt !== '1' ? 's' : ''}`,
         ]
         if (showUnknown) {
-            captions.push('Unknown: ')
-            values.push(this.numUnknown.toString())
+            captions.push(`(${this.numUnknown} with`)
+            captions.push(`unknown factors)`)
         }
-        let captionWidth = 0
         let totalWidth = 0
         for (let i = 0; i < captions.length; ++i) {
-            let width = sketch.textWidth(captions[i])
-            if (width > captionWidth) captionWidth = width
-            width += sketch.textWidth(values[i])
+            const width = sketch.textWidth(captions[i])
             if (width > totalWidth) totalWidth = width
         }
         totalWidth += 2 * margin
+        const boxHeight = textVerticalSpacing * (captions.length + 0.5)
 
         // don't want box to wander past right edge of canvas
         const boxX = Math.min(pX, sketch.width - totalWidth)
@@ -242,7 +239,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
         for (let i = 0; i < captions.length; ++i) {
             this.write(
-                captions[i] + values[i],
+                captions[i],
                 boxX + margin,
                 boxY + (i + 1) * textVerticalSpacing
             )
