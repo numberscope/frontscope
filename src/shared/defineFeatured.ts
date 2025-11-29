@@ -167,7 +167,7 @@ const featuredSIMs = [
         'Turtle',
         'OEIS A000045',
         'domain=0+1&angles=8+120&steps=40+400'
-            + '&animationControls=true&folds=200+0'
+            + '&animationControls=true&folds=200+0&showMode=0'
             + '&bgColor=4f4875&strokeColor=%23cec0c0',
         'modulus=9&last=999&length=1000'
     ),
