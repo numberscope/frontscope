@@ -645,7 +645,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         if (morphing && params.showMode === ShowMode.Whole_path) {
             if (this.seq.length > this.throttleLimit) {
                 status.addWarning(
-                    `Only paths up to ${this.throttleLimit} steps long may`
+                    `Only paths up to ${this.throttleLimit} steps long may `
                         + 'change shape on each frame.'
                 )
             } else if (this.seq.length > this.throttleWarn) {
