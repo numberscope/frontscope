@@ -190,6 +190,9 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         this.isCalculating = true
 
         try {
+            this.countPrime = 0
+            this.primeNum = []
+            this.hueMap.clear()
             await this.seq.fill(this.last, 'factors')
             // Obtain all prime numbers that appear as factors in the sequence
             for (let i = this.seq.first; i <= this.last; i++) {
