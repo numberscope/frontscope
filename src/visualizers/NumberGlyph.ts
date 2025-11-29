@@ -156,7 +156,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
         // Calculate the number of terms we are actually going to show:
         // w * h = n; w/h = ratio; n = w * w / ratio
         const ratio = size.width / size.height
-        this.n = typeof this.seq.length === 'bigint' ? this.seq.length : 128n
+        this.n = typeof this.seq.length === 'bigint' ? this.seq.length : 500n
         this.columns = math.safeNumber(
             math.floor(math.sqrt(math.safeNumber(this.n) * ratio))
         )
@@ -172,6 +172,12 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
             this.columns,
             Math.ceil(size.width / minIncrement)
         )
+
+        // If sequence is infinite, add a bit to fill the rectangle
+        if (this.seq.length === +Infinity) {
+            this.n = BigInt(this.rows * this.columns)
+        }
+        // If we somehow end up with too small a row/col display
         if (this.n > this.rows * this.columns) {
             this.n = BigInt(this.rows * this.columns)
         }
