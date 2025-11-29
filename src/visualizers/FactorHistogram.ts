@@ -29,7 +29,7 @@ The height of each bar shows how many entries in the sequence
 have a corresponding value of Omega. The leftmost bar corresponding to 0
 factors counts all sequence entries equal to 0 or 1, as well as those entries
 that could not be factored (because their values were too large for Numberscope
-to handle). The latter are indicated by hashing a portion of that leftmost bar
+to handle). The latter are indicated by hatching a portion of that leftmost bar
 proportional to the number of unfactored entries.
 
 ## Parameters
@@ -195,12 +195,9 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
     drawHoverBox(binIndex: number, offset: number) {
         const sketch = this.sketch
-        const {pX, pY, scale} = this.mouseToPlot()
+        const {pX, pY} = this.mouseToPlot()
         const showUnknown = binIndex === 0 && this.numUnknown > 0
-        let textVerticalSpacing = sketch.textAscent() + 1
-        // Literally no idea why we only have to scale when scale > 1 :-/
-        // but there's no arguing with it looking right
-        if (scale > 1) textVerticalSpacing *= scale
+        const textVerticalSpacing = sketch.textAscent() + 1
         const margin = offset
         const boxRadius = Math.floor(margin)
 
@@ -229,7 +226,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
         // create the box itself
         sketch.push()
-        sketch.translate(0, 0, 2)
+        sketch.translate(0, 0, 0.5)
         sketch.fill('white')
         sketch.rect(boxX, boxY, totalWidth, boxHeight, boxRadius)
 
@@ -312,7 +309,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         // Draw the x-axis
         sketch.line(0, xAxisHeight, sketch.width, xAxisHeight)
 
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < this.binFactorArray.length; i++) {
             if (this.mouseOver && inBin && i == binIndex) {
                 sketch.fill(200, 200, 200)
             } else {
@@ -404,11 +401,11 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
                 0.1 * sketch.height
             )
             this.write(
-                `Too many bins (${this.binFactorArray.length}),`,
+                `With ${this.binFactorArray.length} bins, zoom\n`
+                    + 'or pan to see more',
                 pX,
                 pY - textHeight * 3
             )
-            this.write('Displaying the first 30.', pX, pY - textHeight * 1.3)
         }
         // If mouse interaction, draw hover box
         if (this.mouseOver && inBin) {
