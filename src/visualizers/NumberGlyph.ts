@@ -139,10 +139,9 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     private initialPosition = new p5.Vector()
     private positionIncrement = 100
     private columns = 0
-    private boxIsShow = false
+  private rows = 0
     private primeNum: bigint[] = []
     private countPrime = 0
-    private showLabel = false
     private brightAdjust = 100
 
     // dot control
@@ -151,24 +150,29 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     private nGlyphs = 1 // number of glyphs to draw in a frame
 
     adjustTermsAndColumns(size: ViewSize) {
-        // Calculate the number of terms we are actually going to show:
-        this.n = typeof this.seq.length === 'bigint' ? this.seq.length : 64n
-        this.columns = math.safeNumber(math.floorSqrt(this.n))
-        if (this.n > this.columns * this.columns) ++this.columns
+            // Calculate the number of terms we are actually going to show:
+    // w * h = n; w/h = ratio; n = w * w / ratio
+        const ratio = size.width/size.height
+        this.n = typeof this.seq.length === 'bigint' ? this.seq.length : 128n
+        this.columns = math.safeNumber(math.floor(math.sqrt(math.safeNumber(this.n)*ratio)))
+        this.rows = math.safeNumber(math.floor(this.columns/ratio))
+        while (this.n > this.rows * this.columns) {
+    ++this.columns
+        this.rows = math.safeNumber(math.floor(this.columns/ratio))
+    }
 
         // Adjust columns downwards so that the discs will not be
         // too microscopic:
-        const fitTo = Math.min(size.width, size.height)
-        this.columns = Math.min(this.columns, Math.ceil(fitTo / minIncrement))
-        if (this.n > this.columns * this.columns) {
-            this.n = BigInt(this.columns * this.columns)
+        this.columns = Math.min(this.columns, Math.ceil(size.width / minIncrement))
+        if (this.n > this.rows * this.columns) {
+            this.n = BigInt(this.rows * this.columns)
         }
         // TODO: if this.n is less than this.seq.length, we should post a
         // warning; note that by construction, it can't be more.
 
-        this.positionIncrement = fitTo / this.columns
+        this.positionIncrement = size.width / this.columns
         this.last = this.seq.first + this.n - 1n
-    }
+            }
 
     async presketch(seqChanged: boolean, sizeChanged: boolean) {
         await super.presketch(seqChanged, sizeChanged)
