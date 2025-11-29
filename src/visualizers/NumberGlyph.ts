@@ -139,7 +139,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     private initialPosition = new p5.Vector()
     private positionIncrement = 100
     private columns = 0
-  private rows = 0
+    private rows = 0
     private primeNum: bigint[] = []
     private countPrime = 0
     private brightAdjust = 100
@@ -149,21 +149,29 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
     private initialRadius = 50 // size of dots
     private nGlyphs = 1 // number of glyphs to draw in a frame
 
+    // race condition avoidance
+    private isCalculating = false
+
     adjustTermsAndColumns(size: ViewSize) {
-            // Calculate the number of terms we are actually going to show:
-    // w * h = n; w/h = ratio; n = w * w / ratio
-        const ratio = size.width/size.height
+        // Calculate the number of terms we are actually going to show:
+        // w * h = n; w/h = ratio; n = w * w / ratio
+        const ratio = size.width / size.height
         this.n = typeof this.seq.length === 'bigint' ? this.seq.length : 128n
-        this.columns = math.safeNumber(math.floor(math.sqrt(math.safeNumber(this.n)*ratio)))
-        this.rows = math.safeNumber(math.floor(this.columns/ratio))
+        this.columns = math.safeNumber(
+            math.floor(math.sqrt(math.safeNumber(this.n) * ratio))
+        )
+        this.rows = math.safeNumber(math.floor(this.columns / ratio))
         while (this.n > this.rows * this.columns) {
-    ++this.columns
-        this.rows = math.safeNumber(math.floor(this.columns/ratio))
-    }
+            ++this.columns
+            this.rows = math.safeNumber(math.floor(this.columns / ratio))
+        }
 
         // Adjust columns downwards so that the discs will not be
         // too microscopic:
-        this.columns = Math.min(this.columns, Math.ceil(size.width / minIncrement))
+        this.columns = Math.min(
+            this.columns,
+            Math.ceil(size.width / minIncrement)
+        )
         if (this.n > this.rows * this.columns) {
             this.n = BigInt(this.rows * this.columns)
         }
@@ -172,46 +180,51 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
 
         this.positionIncrement = size.width / this.columns
         this.last = this.seq.first + this.n - 1n
-            }
+    }
 
     async presketch(seqChanged: boolean, sizeChanged: boolean) {
         await super.presketch(seqChanged, sizeChanged)
         this.adjustTermsAndColumns(this.size)
 
-        if (!seqChanged) return
+        if (!seqChanged || this.isCalculating) return
+        this.isCalculating = true
 
-        await this.seq.fill(this.last, 'factors')
-        // Obtain all prime numbers that appear as factors in the sequence
-        for (let i = this.seq.first; i <= this.last; i++) {
-            const checkCurrentFactors = this.seq.getFactors(i)
-            if (
-                checkCurrentFactors !== null
-                && checkCurrentFactors !== undefined
-            ) {
-                for (let j = 0; j < checkCurrentFactors.length; j++) {
-                    const checkCurrentPrime = checkCurrentFactors[j][0]
-                    if (
-                        !this.primeNum.includes(checkCurrentPrime)
-                        && checkCurrentPrime != 0n
-                        && checkCurrentPrime != -1n
-                    ) {
-                        this.primeNum.push(checkCurrentPrime)
-                        this.countPrime += 1
+        try {
+            await this.seq.fill(this.last, 'factors')
+            // Obtain all prime numbers that appear as factors in the sequence
+            for (let i = this.seq.first; i <= this.last; i++) {
+                const checkCurrentFactors = this.seq.getFactors(i)
+                if (
+                    checkCurrentFactors !== null
+                    && checkCurrentFactors !== undefined
+                ) {
+                    for (let j = 0; j < checkCurrentFactors.length; j++) {
+                        const checkCurrentPrime = checkCurrentFactors[j][0]
+                        if (
+                            !this.primeNum.includes(checkCurrentPrime)
+                            && checkCurrentPrime != 0n
+                            && checkCurrentPrime != -1n
+                        ) {
+                            this.primeNum.push(checkCurrentPrime)
+                            this.countPrime += 1
+                        }
                     }
                 }
             }
-        }
-        //assign hue to each prime number
-        const hueIncrement = 360 / this.countPrime
+            //assign hue to each prime number
+            const hueIncrement = 360 / this.countPrime
 
-        this.hueMap.set(1, 0)
-        let hue = 0
+            this.hueMap.set(1, 0)
+            let hue = 0
 
-        for (let i = 0; i < this.primeNum.length; i++) {
-            if (this.hueMap.has(this.primeNum[i]) == false) {
-                hue += hueIncrement
-                this.hueMap.set(this.primeNum[i], hue)
+            for (let i = 0; i < this.primeNum.length; i++) {
+                if (this.hueMap.has(this.primeNum[i]) == false) {
+                    hue += hueIncrement
+                    this.hueMap.set(this.primeNum[i], hue)
+                }
             }
+        } finally {
+            this.isCalculating = false
         }
     }
 
