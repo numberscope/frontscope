@@ -22,7 +22,6 @@
 // INVALID_COLOR allows for initializing p5 color variables
 import {P5Visualizer, INVALID_COLOR} from '../visualizers/P5Visualizer'
 import {VisualizerExportModule} from '../visualizers/VisualizerInterface'
-import type {ViewSize} from '../visualizers/VisualizerInterface'
 
 // Standard parameter functionality:
 import type {GenericParamDescription} from '@/shared/Paramable'
@@ -113,14 +112,14 @@ class P5VisualizerTemplate extends P5Visualizer(paramDesc) {
     textColor = INVALID_COLOR
     outlineColor = INVALID_COLOR
 
-    async presketch(size: ViewSize) {
+    async presketch(seqChanged: boolean, sizeChanged: boolean) {
         // === Asynchronous setup ===
         // If any pre-computations must be run before the sketch is created,
         // placing them in the `presketch()` function will allow them
         // to run asynchronously, i.e. without blocking the browser.
         // The sketch will not be created until this function completes.
 
-        await super.presketch(size)
+        await super.presketch(seqChanged, sizeChanged)
         // The above call performs the default behavior of intializing the
         // first cache block of the sequence.
         // So down here is where you can do any computation-heavy preparation

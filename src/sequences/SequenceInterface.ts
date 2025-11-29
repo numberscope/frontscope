@@ -33,6 +33,15 @@ export interface SequenceInterface extends ParamableInterface {
     readonly length: ExtendedBigint
 
     /**
+     * HACKS: We make the last value cached and last factor cached accessible
+     * for the sake of showing progress information on long caching runs.
+     * TODO: add a 'progress' function or something like that to do such
+     * things in a more disciplined and flexible way.
+     */
+    readonly lastValueCached: bigint
+    readonly lastFactorCached: bigint
+
+    /**
      * Initialize is called after validation. It allows us to wait
      * until all the parameters are appropriate before we actually
      * set up the sequence for computation.

@@ -1,6 +1,7 @@
 import type {Factorization, SequenceInterface} from './SequenceInterface'
 import simpleFactor from './simpleFactor'
 
+import {yieldExecution} from '@/shared/asynchronous'
 import {math, CachingError} from '@/shared/math'
 import type {ExtendedBigint} from '@/shared/math'
 import {Paramable, paramClone} from '@/shared/Paramable'
@@ -151,7 +152,7 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
         firstValueCached: ExtendedBigint = math.posInfinity
         lastFactorCached = -1024n // dummy value
         firstFactorCached: ExtendedBigint = math.posInfinity
-        valueCachingPromise = Promise.resolve()
+        valueCachingPromise: Promise<void> | undefined = undefined
         factorCachingPromise = Promise.resolve()
 
         /**
@@ -256,6 +257,7 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
         async fillValueCache(n: bigint) {
             const start = this.lastValueCached + 1n
             for (let i = start; i <= n; i++) {
+                if (i % 10000n === 0n) await yieldExecution()
                 const key = i.toString()
                 // trust values we find; hopefully we have cleared when
                 // needed, so that we can presume they are from some
@@ -269,16 +271,13 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
         }
 
         async cacheValues(n: bigint) {
-            // Let any existing value caching complete
-            await this.valueCachingPromise
-            // Let any pending parameter changes complete
             if (this.parChangePromise) await this.parChangePromise
+            if (this.valueCachingPromise) await this.valueCachingPromise
             if (n > this.lastValueCached) {
                 this.valueCachingPromise = this.fillValueCache(n)
                 await this.valueCachingPromise
-            } else {
-                this.valueCachingPromise = Promise.resolve()
             }
+            this.valueCachingPromise = undefined
         }
 
         getElement(n: bigint): bigint {
@@ -299,6 +298,8 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
             await this.cacheValues(n)
             const start = this.lastFactorCached + 1n
             for (let i = start; i <= n; ++i) {
+                // Can we yield execution?
+                if (i % 10000n === 0n) await yieldExecution()
                 const key = i.toString()
                 // trust values we find
                 if (!(key in this.factorCache)) {
@@ -393,10 +394,13 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
                     // interval from the _previous_ value of `this.first`
                     // to `this.lastValueCached` is full.
                     if (
-                        this.first < this.firstValueCached
-                        || this.first > this.lastValueCached + 1n
+                        !needsReset
+                        && (this.first < this.firstValueCached
+                            || this.first > this.lastValueCached + 1n)
                     ) {
-                        await this.valueCachingPromise
+                        if (this.valueCachingPromise) {
+                            await this.valueCachingPromise
+                        }
                         this.firstValueCached = math.posInfinity
                         this.lastValueCached = this.first - 1n
                         // Get the new cache rolling:
@@ -406,8 +410,9 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
                     // kick off the factoring process because we don't
                     // even know if this sequence is being factored.
                     if (
-                        this.first < this.firstFactorCached
-                        || this.first > this.lastFactorCached + 1n
+                        !needsReset
+                        && (this.first < this.firstFactorCached
+                            || this.first > this.lastFactorCached + 1n)
                     ) {
                         await this.factorCachingPromise
                         this.firstFactorCached = math.posInfinity
@@ -441,7 +446,9 @@ export function Cached<PD extends GenericParamDescription>(desc: PD) {
             }
             if (needsReset) {
                 this.ready = false
-                await this.valueCachingPromise
+                if (this.valueCachingPromise) {
+                    await this.valueCachingPromise
+                }
                 await this.factorCachingPromise
                 this.initialize()
             }

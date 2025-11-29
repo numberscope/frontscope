@@ -2,8 +2,9 @@ import {VisualizerExportModule} from './VisualizerInterface'
 import {P5GLVisualizer} from './P5GLVisualizer'
 
 import interFont from '@/assets/fonts/inter/Inter-VariableFont_slnt,wght.ttf'
+import {yieldExecution} from '@/shared/asynchronous'
 import {math} from '@/shared/math'
-import type {GenericParamDescription} from '@/shared/Paramable'
+import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
 import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
@@ -25,8 +26,11 @@ Omega(n),_number_of_prime_factors_of_n_(with_multiplicity)).
 The horizontal axis represents values of Omega.  Each
 bar corresponds to a range of possible Omega values (a bin).
 The height of each bar shows how many entries in the sequence
-have a corresponding value of Omega.
-
+have a corresponding value of Omega. The leftmost bar corresponding to 0
+factors counts all sequence entries equal to 0 or 1, as well as those entries
+that could not be factored (because their values were too large for Numberscope
+to handle). The latter are indicated by hatching a portion of that leftmost bar
+proportional to the number of unfactored entries.
 
 ## Parameters
 **/
@@ -63,10 +67,19 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     static description =
         'Displays a histogram of the number of prime factors of a sequence'
 
-    factoring = true
+    precomputing = ''
+    factorCount: number[] = []
     binFactorArray: number[] = []
     numUnknown = 0
     fontsLoaded = false
+
+    checkParameters(params: ParamValues<typeof paramDesc>) {
+        const status = super.checkParameters(params)
+        if (typeof this.seq.last !== 'bigint') {
+            status.addWarning('Using first 10000 terms of infinite sequence.')
+        }
+        return status
+    }
 
     // Obtain the binned difference of an input
     binOf(input: number): number {
@@ -74,8 +87,6 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     }
 
     endIndex(): bigint {
-        // TODO: Should post warning about artificial limitation here
-        // (when it takes effect)
         return typeof this.seq.last === 'bigint'
             ? this.seq.last
             : this.seq.first + 9999n
@@ -84,9 +95,14 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
     // Create an array with the value at n being the number of entries
     // of the sequence having n factors. Entries with unknown factorization
     // are put into -1
-    factorCounts(): number[] {
-        const factorCount = []
-        for (let i = this.seq.first; i <= this.endIndex(); i++) {
+    async factorCounts() {
+        this.factorCount = []
+        const last = this.endIndex()
+        for (let i = this.seq.first; i <= last; i++) {
+            if (i % 10000n === 0n) {
+                this.precomputing = `Collecting values ... ${i} /`
+                await yieldExecution()
+            }
             let counter = 0
             const factors = this.seq.getFactors(i)
             if (factors) {
@@ -101,28 +117,27 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
             if (counter === 0 && math.bigabs(this.seq.getElement(i)) > 1) {
                 counter = -1
             }
-            if (counter in factorCount) factorCount[counter]++
-            else factorCount[counter] = 1
+            if (counter in this.factorCount) this.factorCount[counter]++
+            else this.factorCount[counter] = 1
         }
-        return factorCount
     }
 
     // Create an array with the frequency of each number
     // of factors in the corresponding bins
-    async binFactorArraySetup() {
+    async presketch(seqChanged: boolean, sizeChanged: boolean) {
+        this.precomputing = 'Evaluating sequence entries ...'
+        await super.presketch(seqChanged, sizeChanged)
+        if (!seqChanged) {
+            this.precomputing = ''
+            return
+        }
+        this.precomputing = 'Calculating sequence values ...'
+        await this.seq.fill(this.endIndex())
+        this.precomputing = 'Factoring ...'
         await this.seq.fill(this.endIndex(), 'factors')
-        const factorCount = this.factorCounts()
-        let largestValue = factorCount.length - 1
-        if (largestValue < 0) largestValue = 0
-        this.binFactorArray = new Array(this.binOf(largestValue) + 1).fill(0)
-        factorCount.forEach(
-            (count, ix) => (this.binFactorArray[this.binOf(ix)] += count)
-        )
-        if ((-1) in factorCount) {
-            this.numUnknown = factorCount[-1]
-            this.binFactorArray[0] += this.numUnknown
-        } else this.numUnknown = 0
-        this.factoring = false
+        this.precomputing = 'Collecting values ...'
+        await this.factorCounts()
+        this.precomputing = ''
     }
 
     // Create a number that represents how
@@ -168,8 +183,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
             this.sketch.textFont(font)
             this.fontsLoaded = true
         })
-        this.factoring = true
-        this.binFactorArraySetup()
+        this.binFactorArray = []
     }
 
     barLabel(binIndex: number) {
@@ -184,36 +198,30 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
     drawHoverBox(binIndex: number, offset: number) {
         const sketch = this.sketch
-        const {pX, pY, scale} = this.mouseToPlot()
+        const {pX, pY} = this.mouseToPlot()
         const showUnknown = binIndex === 0 && this.numUnknown > 0
-        let textVerticalSpacing = sketch.textAscent() + 1
-        // Literally no idea why we only have to scale when scale > 1 :-/
-        // but there's no arguing with it looking right
-        if (scale > 1) textVerticalSpacing *= scale
-        let boxHeight = textVerticalSpacing * 2.4
-        if (showUnknown) boxHeight += textVerticalSpacing
+        const textVerticalSpacing = sketch.textAscent() + 1
         const margin = offset
         const boxRadius = Math.floor(margin)
 
         // Set up the texts to display:
-        const captions = ['Factors: ', 'Height: ']
-        const values = [
-            this.barLabel(binIndex),
-            this.binFactorArray[binIndex].toString(),
+        const amt = this.binFactorArray[binIndex]
+        const cnt = this.barLabel(binIndex)
+        const captions = [
+            `${amt} number${amt !== 1 ? 's' : ''} with`,
+            `${cnt} prime factor${cnt !== '1' ? 's' : ''}`,
         ]
         if (showUnknown) {
-            captions.push('Unknown: ')
-            values.push(this.numUnknown.toString())
+            captions.push(`(${this.numUnknown} with`)
+            captions.push(`unknown factors)`)
         }
-        let captionWidth = 0
         let totalWidth = 0
         for (let i = 0; i < captions.length; ++i) {
-            let width = sketch.textWidth(captions[i])
-            if (width > captionWidth) captionWidth = width
-            width += sketch.textWidth(values[i])
+            const width = sketch.textWidth(captions[i])
             if (width > totalWidth) totalWidth = width
         }
         totalWidth += 2 * margin
+        const boxHeight = textVerticalSpacing * (captions.length + 0.5)
 
         // don't want box to wander past right edge of canvas
         const boxX = Math.min(pX, sketch.width - totalWidth)
@@ -221,7 +229,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
         // create the box itself
         sketch.push()
-        sketch.translate(0, 0, 2)
+        sketch.translate(0, 0, 0.5)
         sketch.fill('white')
         sketch.rect(boxX, boxY, totalWidth, boxHeight, boxRadius)
 
@@ -231,7 +239,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
 
         for (let i = 0; i < captions.length; ++i) {
             this.write(
-                captions[i] + values[i],
+                captions[i],
                 boxX + margin,
                 boxY + (i + 1) * textVerticalSpacing
             )
@@ -249,17 +257,40 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         const {pX, scale} = this.mouseToPlot()
         sketch.textSize(Math.max(0.02 * sketch.height * scale, 10))
         const height = this.height() // "unit" height
-        const textHeight = sketch.textAscent() * scale
+        const textHeight = sketch.textAscent()
         const largeOffsetScalar = 0.945 // padding between axes and edge
         const smallOffsetScalar = 0.996
         const largeOffsetNumber = (1 - largeOffsetScalar) * sketch.width
         const smallOffsetNumber = (1 - smallOffsetScalar) * sketch.width
 
-        if (this.factoring) {
+        if (this.precomputing) {
             sketch.fill('red')
-            this.write('Factoring ...', largeOffsetNumber, textHeight * 2)
+            const position = this.precomputing.startsWith('Factor')
+                ? this.seq.lastFactorCached
+                : this.seq.lastValueCached
+            this.write(
+                `${this.precomputing} ${position}`,
+                largeOffsetNumber,
+                textHeight * 2
+            )
             this.continue()
             this.stop(3)
+            return
+        }
+
+        if (this.binFactorArray.length === 0) {
+            let largestValue = this.factorCount.length - 1
+            if (largestValue < 0) largestValue = 0
+            this.binFactorArray = new Array(
+                this.binOf(largestValue) + 1
+            ).fill(0)
+            this.factorCount.forEach(
+                (count, ix) => (this.binFactorArray[this.binOf(ix)] += count)
+            )
+            if ((-1) in this.factorCount) {
+                this.numUnknown = this.factorCount[-1]
+                this.binFactorArray[0] += this.numUnknown
+            } else this.numUnknown = 0
         }
 
         const binWidth = this.binWidth()
@@ -267,8 +298,10 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         const xAxisHeight = largeOffsetScalar * sketch.height
 
         // Checks to see whether the mouse is in the bin drawn on the screen
+        // only trigger if no mouse button is pressed (e.g., not in midst
+        // of drag).
         let inBin = false
-        if (this.mouseOver) {
+        if (this.mouseOver && !this.mousePrimaryDown) {
             inBin = this.mouseOverInBin(xAxisHeight, binIndex)
         }
 
@@ -279,7 +312,7 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         // Draw the x-axis
         sketch.line(0, xAxisHeight, sketch.width, xAxisHeight)
 
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < this.binFactorArray.length; i++) {
             if (this.mouseOver && inBin && i == binIndex) {
                 sketch.fill(200, 200, 200)
             } else {
@@ -326,26 +359,24 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         nTicks = Math.floor(sketch.height / (height * tickHeight))
         const bigTick = nTicks * tickHeight
         const bigTickWidth = sketch.textWidth(bigTick.toString())
-        // Draws the markings on the Y-axis
+        // Draw the markings on the Y-axis
         const tickLeft = yAxisPosition - largeOffsetNumber / 5
         const tickRight = yAxisPosition + largeOffsetNumber / 5
-        const rightJustify = bigTickWidth < tickLeft - 2 * smallOffsetNumber
+        const rightJustify =
+            bigTickWidth < tickLeft * scale - 2 * smallOffsetNumber
         for (let i = 1; i <= nTicks; i++) {
-            // Draws the tick marks
-            let tickY = xAxisHeight - tickHeight * height * i
-            sketch.line(tickLeft, tickY, tickRight, tickY)
-
-            const label = (tickHeight * i).toString()
-            let tickPos = tickRight + smallOffsetNumber
-            if (rightJustify) {
-                const labelWidth = sketch.textWidth(label)
-                tickPos = tickLeft - labelWidth - smallOffsetNumber
-            }
-
+            const tickY = xAxisHeight - tickHeight * height * i
+            const textY = tickY + textHeight / 2.5
             // Avoid placing text that will get cut off
-            tickY += textHeight / 2.5
-            if (tickY > sketch.textAscent()) {
-                this.write(label, tickPos, tickY)
+            if (textY > sketch.textAscent()) {
+                sketch.line(tickLeft, tickY, tickRight, tickY)
+                const label = (tickHeight * i).toString()
+                let tickPos = tickRight + smallOffsetNumber
+                if (rightJustify) {
+                    const labelWidth = sketch.textWidth(label)
+                    tickPos = tickLeft - labelWidth - smallOffsetNumber
+                }
+                this.write(label, tickPos, textY)
             }
         }
 
@@ -370,25 +401,25 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
                 0.1 * sketch.height
             )
             this.write(
-                `Too many bins (${this.binFactorArray.length}),`,
+                `With ${this.binFactorArray.length} bins, zoom\n`
+                    + 'or pan to see more',
                 pX,
                 pY - textHeight * 3
             )
-            this.write('Displaying the first 30.', pX, pY - textHeight * 1.3)
         }
         // If mouse interaction, draw hover box
         if (this.mouseOver && inBin) {
             this.drawHoverBox(binIndex, smallOffsetNumber)
         }
         // Once everything is loaded, no need to redraw until mouse moves
-        if (!this.fontsLoaded || this.factoring || sketch.mouseIsPressed) {
+        if (!this.fontsLoaded || this.precomputing || this.mousePrimaryDown) {
             this.continue()
             this.stop(3)
         }
     }
 
     mouseMoved() {
-        if (this.mouseOver || this.sketch.mouseIsPressed) {
+        if (this.mouseOver || this.mousePrimaryDown) {
             this.continue()
             this.stop(3)
         }

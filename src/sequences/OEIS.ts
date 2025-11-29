@@ -5,7 +5,7 @@ import type {Factorization} from './SequenceInterface'
 import simpleFactor from './simpleFactor'
 
 import {alertMessage} from '@/shared/alertMessage'
-import {breakableString} from '@/shared/layoutUtilities'
+import {breakableString} from '@/shared/layout'
 import {math} from '@/shared/math'
 import type {ExtendedBigint} from '@/shared/math'
 import type {GenericParamDescription} from '@/shared/Paramable'

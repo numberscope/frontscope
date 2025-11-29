@@ -9,13 +9,13 @@ test.describe('Featured gallery images', () => {
         const featProps = parseSpecimenQuery(feature.query)
         const details = {}
         if (
-            featProps.visualizerKind === 'Histogram'
+            featProps.visualizerKind === 'FactorHistogram'
             || featProps.visualizerKind === 'Turtle'
             || featProps.visualizerKind === 'Chaos'
         ) {
             details.tag = '@webGL'
         }
-        test(featProps.name, details, async ({page, browserName}) => {
+        test(featProps.name, details, async ({page}) => {
             const short = encodeURIComponent(
                 featProps.name.replaceAll(' ', '')
             )
@@ -27,9 +27,7 @@ test.describe('Featured gallery images', () => {
                 timeout: featProps.visualizerKind === 'Chaos' ? 60000 : 30000,
             })
             const matchParams =
-                browserName === 'firefox' && details.tag === '@webGL'
-                    ? {maxDiffPixelRatio: 0.01}
-                    : {}
+                details.tag === '@webGL' ? {maxDiffPixelRatio: 0.01} : {}
             expect(
                 await page.locator('#canvas-container').screenshot()
             ).toMatchSnapshot(`${short}.png`, matchParams)

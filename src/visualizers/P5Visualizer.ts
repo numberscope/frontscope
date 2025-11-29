@@ -41,7 +41,7 @@ class WithP5 extends Paramable {
     mouseDragged(_event: MouseEvent) {}
     mouseMoved(_event: MouseEvent) {}
     mousePressed(_event: MouseEvent) {}
-    mouseReleased() {}
+    mouseReleased(_event: MouseEvent) {}
     mouseWheel(_event: WheelEvent) {}
     touchEnded() {}
     touchMoved() {}
@@ -71,17 +71,25 @@ export const INVALID_COLOR = {} as p5.Color
 /* Flag to force a call to presketch in a reset() call: */
 export const P5ForcePresketch = true
 
+/* Helper for mouse handling */
+function isPrimaryDown(e: MouseEvent) {
+    const flags = e.buttons ?? e.which
+    return (flags & 1) === 1
+}
+
 export interface P5VizInterface extends VisualizerInterface, WithP5 {
     _sketch?: p5
     _canvas?: p5.Renderer
     _framesRemaining: number
     size: ViewSize
+    mousePrimaryDown: boolean
     drawingState: DrawingState
     readonly sketch: p5
     readonly canvas: p5.Renderer
     seq: SequenceInterface
+    presketchComplete: boolean
     _initializeSketch(): (sketch: p5) => void
-    presketch(size: ViewSize): Promise<void>
+    presketch(sequenceChanged: boolean, sizeChanged: boolean): Promise<void>
     hatchRect(x: number, y: number, w: number, h: number): void
     reset(): Promise<void>
 }
@@ -97,7 +105,9 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
         _canvas?: p5.Renderer
         _framesRemaining = Infinity
         size = nullSize
+        mousePrimaryDown = false
         drawingState: DrawingState = DrawingUnmounted
+        presketchComplete = false
 
         within?: HTMLElement
         popup?: HTMLElement = undefined
@@ -160,60 +170,80 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                 // `this[method]` is defined or undefined:
                 for (const method of p5methods) {
                     const definition = this[method]
-                    if (definition !== dummyWithP5[method]) {
-                        if (
-                            method === 'mousePressed'
-                            || method === 'mouseClicked'
-                            || method === 'mouseWheel'
-                        ) {
+                    const trivial = definition === dummyWithP5[method]
+                    if (
+                        method === 'mousePressed'
+                        || method === 'mouseClicked'
+                        || method === 'mouseWheel'
+                    ) {
+                        if (trivial) {
                             sketch[method] = (event: MouseEvent) => {
-                                if (!this.within) return true
-                                // Check that the event position is in bounds
-                                const rect =
-                                    this.within.getBoundingClientRect()
-                                const x = event.clientX
-                                if (x < rect.left || x >= rect.right) {
-                                    return true
-                                }
-                                const y = event.clientY
-                                if (y < rect.top || y >= rect.bottom) {
-                                    return true
-                                }
-                                // Check also that the event element is OK
-                                const where = document.elementFromPoint(x, y)
-                                if (!where) return true
-                                if (
-                                    where !== this.within
-                                    && !where.contains(this.within)
-                                ) {
-                                    return true
-                                }
-                                return this[method](event as never)
-                                // Cast makes typescript happy :-/
+                                this.mousePrimaryDown = isPrimaryDown(event)
+                                return true
                             }
                             continue
                         }
-                        if (
-                            method === 'keyPressed'
-                            || method === 'keyReleased'
-                            || method === 'keyTyped'
-                        ) {
-                            sketch[method] = (event: KeyboardEvent) => {
-                                const active = document.activeElement
-                                if (
-                                    active
-                                    && (active.tagName === 'INPUT'
-                                        || active.tagName === 'TEXTAREA')
-                                ) {
-                                    return true
-                                }
-                                return this[method](event)
+                        sketch[method] = (event: MouseEvent) => {
+                            this.mousePrimaryDown = isPrimaryDown(event)
+                            if (!this.within) return true
+                            // Check that the event position is in bounds
+                            const rect = this.within.getBoundingClientRect()
+                            const x = event.clientX
+                            if (x < rect.left || x >= rect.right) return true
+                            const y = event.clientY
+                            if (y < rect.top || y >= rect.bottom) return true
+                            // Check also that the event element is OK
+                            const where = document.elementFromPoint(x, y)
+                            if (!where) return true
+                            if (
+                                where !== this.within
+                                && !where.contains(this.within)
+                            ) {
+                                return true
                             }
-                            continue
+                            return this[method](event as never)
+                            // Cast makes typescript happy :-/
                         }
-                        // Otherwise no special condition, just forward event
-                        sketch[method] = definition.bind(this) as () => void
+                        continue
                     }
+                    if (
+                        method === 'mouseReleased'
+                        || method === 'mouseMoved'
+                    ) {
+                        if (trivial) {
+                            sketch[method] = (event: MouseEvent) => {
+                                this.mousePrimaryDown = isPrimaryDown(event)
+                                return true
+                            }
+                            continue
+                        }
+                        sketch[method] = (event: MouseEvent) => {
+                            this.mousePrimaryDown = isPrimaryDown(event)
+                            return this[method](event as never)
+                        }
+                        continue
+                    }
+                    if (trivial) continue
+                    if (
+                        method === 'keyPressed'
+                        || method === 'keyReleased'
+                        || method === 'keyTyped'
+                    ) {
+                        sketch[method] = (event: KeyboardEvent) => {
+                            const active = document.activeElement
+                            if (
+                                active
+                                && (active.tagName === 'INPUT'
+                                    || active.tagName === 'TEXTAREA')
+                            ) {
+                                return true
+                            }
+                            return this[method](event)
+                        }
+                        continue
+                    }
+                    // Otherwise no special condition, just forward event
+                    sketch[method] = definition.bind(this) as () => void
                 }
 
                 // And draw is special because of the error handling:
@@ -259,25 +289,27 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          *     The width and height the visualizer should occupy
          */
         async inhabit(element: HTMLElement, size: ViewSize) {
-            let needsPresketch = true
+            let sequenceChanged = true
+            let sizeChanged = true
             if (this.within) {
                 // oops, already inhabiting somewhere else; depart there
                 this.depart(this.within)
-                // Only do the presketch initialization if the size has
-                // changed, though:
-                needsPresketch =
+                sequenceChanged = false // viewing a new sequence departs
+                sizeChanged =
                     size.width !== this.size.width
                     || size.height !== this.size.height
             }
             this.size = size
             this.within = element
-            // Perform any necessary asynchronous preparation before
+            // Initiate any necessary asynchronous preparation before
             // creating sketch. For example, some Visualizers need sequence
-            // factorizations in setup().
-            if (needsPresketch) await this.presketch(size)
-            // TODO: Can presketch() sometimes take so long that we should
-            // show an hourglass icon in the meantime, or something like that?
-
+            // factorizations, which are expensive to compute.
+            if (sequenceChanged || sizeChanged) {
+                this.presketchComplete = false
+                this.presketch(sequenceChanged, sizeChanged).then(() => {
+                    this.presketchComplete = true
+                })
+            }
             // Now we can create the sketch
             this._sketch = new p5(this._initializeSketch(), element)
         }
@@ -287,8 +319,8 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
          * things that must happen asynchronously before a p5 visualizer
          * can create its sketch.
          */
-        async presketch(_size: ViewSize) {
-            await this.seq.fill()
+        async presketch(seqChange: boolean, _sizeChange: boolean) {
+            if (seqChange) await this.seq.fill()
         }
 
         /**

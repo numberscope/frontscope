@@ -113,7 +113,7 @@ const featuredSIMs = [
     ),
     specimenQuery(
         'Polyfactors',
-        'Histogram',
+        'FactorHistogram',
         'Formula',
         'binSize=1',
         'formula=n%5E3-n%5E2&length=1000'
