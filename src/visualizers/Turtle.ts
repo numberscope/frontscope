@@ -56,6 +56,11 @@ enum AngleUnit {
     Radians,
 }
 
+enum ShowMode {
+    WholePath,
+    NextSteps
+}
+
 const formulaSymbols = [
     'n',
     'a',
@@ -182,7 +187,7 @@ negative values (for moving backward) are allowed.
     animationControls: {
         default: false,
         type: ParamType.BOOLEAN,
-        displayName: 'Animation ↴',
+        displayName: 'Show morphing controls ↴',
         required: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.List,
