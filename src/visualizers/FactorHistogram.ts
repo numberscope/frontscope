@@ -99,7 +99,10 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         this.factorCount = []
         const last = this.endIndex()
         for (let i = this.seq.first; i <= last; i++) {
-            if (i % 10000n === 0n) await yieldExecution()
+            if (i % 10000n === 0n) {
+                this.precomputing = `Collecting values ... ${i} /`
+                await yieldExecution()
+            }
             let counter = 0
             const factors = this.seq.getFactors(i)
             if (factors) {
@@ -356,27 +359,24 @@ class FactorHistogram extends P5GLVisualizer(paramDesc) {
         nTicks = Math.floor(sketch.height / (height * tickHeight))
         const bigTick = nTicks * tickHeight
         const bigTickWidth = sketch.textWidth(bigTick.toString())
-        // Draws the markings on the Y-axis
+        // Draw the markings on the Y-axis
         const tickLeft = yAxisPosition - largeOffsetNumber / 5
         const tickRight = yAxisPosition + largeOffsetNumber / 5
         const rightJustify =
             bigTickWidth < tickLeft * scale - 2 * smallOffsetNumber
         for (let i = 1; i <= nTicks; i++) {
-            // Draws the tick marks
-            let tickY = xAxisHeight - tickHeight * height * i
-            sketch.line(tickLeft, tickY, tickRight, tickY)
-
-            const label = (tickHeight * i).toString()
-            let tickPos = tickRight + smallOffsetNumber
-            if (rightJustify) {
-                const labelWidth = sketch.textWidth(label)
-                tickPos = tickLeft - labelWidth - smallOffsetNumber
-            }
-
+            const tickY = xAxisHeight - tickHeight * height * i
+            const textY = tickY + textHeight / 2.5
             // Avoid placing text that will get cut off
-            tickY += textHeight / 2.5
-            if (tickY > sketch.textAscent()) {
-                this.write(label, tickPos, tickY)
+            if (textY > sketch.textAscent()) {
+                sketch.line(tickLeft, tickY, tickRight, tickY)
+                const label = (tickHeight * i).toString()
+                let tickPos = tickRight + smallOffsetNumber
+                if (rightJustify) {
+                    const labelWidth = sketch.textWidth(label)
+                    tickPos = tickLeft - labelWidth - smallOffsetNumber
+                }
+                this.write(label, tickPos, textY)
             }
         }
 
