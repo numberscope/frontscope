@@ -583,6 +583,10 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     private pathFailure = false
     private mouseCount = 0
 
+    // verifying whether sequence is suitable for table-based rule"
+    private checked = 0
+    private inDomain = 0
+
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
 
@@ -715,6 +719,10 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         // draw the entire path every frame if folding
         if (this.animating) this.growth = this.maxLength
 
+        // Get ready to check validity of table
+        this.checked = 0
+        this.inDomain = 0
+
         this.refresh()
     }
 
@@ -829,8 +837,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         const position = this.vertices[len].copy()
         const startIndex = this.firstIndex + BigInt(len)
         const endIndex = this.firstIndex + BigInt(targetLength)
-        let checked = 0
-        let inDomain = 0
         const threshold = 0.03
         for (let i = startIndex; i < endIndex; i++) {
             // get the current sequence element and infer
@@ -848,8 +854,8 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 }
             }
             if (this.ruleMode === RuleMode.List) {
-                ++checked
-                if (this.domain.includes(currElement)) inDomain++
+                ++this.checked
+                if (this.domain.includes(currElement)) ++this.inDomain
             }
             const input = {
                 n: Number(i),
@@ -927,10 +933,10 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         }
         if (this.ruleMode === RuleMode.List) {
             this.statusOf.domain.warnings.length = 0 // clear prior warning
-            if (inDomain / checked < threshold) {
+            if (this.inDomain / this.checked < threshold) {
                 this.statusOf.domain.addWarning(
-                    `only ${inDomain} of current group of ${checked} sequence`
-                        + 'entries are in this list; consider adjusting'
+                    `only ${this.inDomain} of ${this.checked} sequence entries `
+                        + 'so far are in this list; consider adjusting'
                 )
             }
         }
