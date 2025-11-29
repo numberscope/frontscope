@@ -77,7 +77,7 @@ click on the trash button on its preview card.
         addSequence,
         deleteSequence,
     } from '@/shared/browserCaching'
-    import {isMobile} from '@/shared/layoutUtilities'
+    import {isMobile} from '@/shared/layout'
     import {Specimen} from '@/shared/Specimen'
     import {
         specimenQuery,

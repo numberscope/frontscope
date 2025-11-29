@@ -298,6 +298,14 @@ fills it in from the `category`, and makes it read-only.
 
 ### Other properties
 
+#### Status of mouse primary button
+
+A P5Visualizer automatically maintains a property `mousePrimaryDown` that is
+true when the primary mouse button is in its pressed/down state. This property
+is in essence identical to `sketch.mouseIsPressed` but (a) it specifically
+only pays attention to the primary mouse button, and (b) has its value
+maintained more reliably in the face of events outside the sketch.
+
 #### Vue and reactive objects
 
 It is important to know that Vue will instrument (i.e., insert code into) your
@@ -390,17 +398,20 @@ opportunity to do pre-computation as well. That is the `presketch()` method,
 which runs asynchronously, meaning that the browser will not be blocked while
 this function completes. This facility is not a part of p5.js, but a part of
 the P5Visualizer design. The `presketch()` method is called by the framework
-with one argument, representing the size of the canvas to be created as a
-ViewSize object with number fields `width` and `height`.
+with two boolean arguments: the first specifies whether the sequence has
+changed since the last `presketch()`, and the second specifies whether the
+size has changed. (Both arguments are true for initialization.) You can obtain
+the size of the canvas to be created via the `this.size` property, a ViewSize
+object with number fields `width` and `height`.
 
 If you implement `presketch()`, begin by calling
-`await super.presketch(size)`, which will initialize the sequence that the
-visualizer is viewing. After this call, you have access to the values of the
-sequence, so you can do sequence-dependent initialization here. It is OK to
-set up internal data variables in this method. For example, this is a good
-place to populate an array with time-consuming precomputed values you will use
-repeatedly during the sketch. However, in `presketch()` you still have no
-access to the p5 canvas or the `this.sketch` object.
+`await super.presketch(seqChanged, sizeChanged)`, which will initialize the
+sequence that the visualizer is viewing. After this call, you have access to
+the values of the sequence, so you can do sequence-dependent initialization
+here. It is OK to set up internal data variables in this method. For example,
+this is a good place to populate an array with time-consuming precomputed
+values you will use repeatedly during the sketch. However, in `presketch()`
+you still have no access to the p5 canvas or the `this.sketch` object.
 
 Note also that `presketch()` is called when there is a new visualizer, when
 the sequence changes, when the canvas size changes, and when you reload the
@@ -408,6 +419,12 @@ page or visit a new Numberscope URL. It is not called when visualizer
 parameters change. So if there is initialization you want to do only on these
 more signifcant changes but not on parameter changes, then `presketch()` is a
 good method.
+
+Note that since `presketch()` is called asynchronously, you cannot assume it
+has completed by the time any other method has been called, e.g. `setup()` or
+`draw()`. Therefore, P5Visualizer provides a boolean property
+`this.presketchComplete` that you can test to see if the presketch()
+initialization is done.
 
 When a visualizer is resized, or the restart button on Numberscope is pressed,
 the class function `reset()` is called. By default, a new canvas is created on

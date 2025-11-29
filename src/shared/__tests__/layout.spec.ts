@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vitest'
 
-import {breakableString} from '../layoutUtilities'
+import {breakableString} from '../layout'
 // isMobile not easily unit testable, since it needs a browser context
 
 describe('breakableString', () => {

@@ -338,14 +338,14 @@ class FactorFence extends P5Visualizer(paramDesc) {
         this.collectDataForScale(barsInfo, size)
     }
 
-    async presketch(size: ViewSize) {
-        await super.presketch(size)
+    async presketch(seqChange: boolean, sizeChange: boolean) {
+        await super.presketch(seqChange, sizeChange)
 
         // Warn the backend we plan to factor: (Note we don't await because
         // we don't actually use the factors until later.)
         this.seq.fill(this.seq.first + this.initialLimitTerms, 'factor')
 
-        await this.standardizeView(size)
+        await this.standardizeView(this.size)
     }
 
     setup() {
@@ -474,6 +474,18 @@ In addition, several keypress commands are recognized:
         // clear the sketch
         this.sketch.clear(0, 0, 0, 0)
         this.sketch.background(this.palette.backgroundColor)
+
+        // If we are still initializing, just display a message
+        if (!this.presketchComplete) {
+            this.sketch
+                .fill('red')
+                .text(
+                    'Scanning data to set scale...',
+                    this.size.width / 2,
+                    this.size.height / 2
+                )
+            return
+        }
 
         // determine which terms will be on the screen so we only
         // bother with those

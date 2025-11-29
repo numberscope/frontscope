@@ -69,7 +69,11 @@ test.describe('Visualizer-sequence challenges', () => {
     for (const viz of vizKeys) {
         const vizPar = viz === 'Chaos' ? 'circSize=5' : '' // ow tough to see
         const details = {}
-        if (viz === 'Histogram' || viz === 'Turtle' || viz === 'Chaos') {
+        if (
+            viz === 'FactorHistogram'
+            || viz === 'Turtle'
+            || viz === 'Chaos'
+        ) {
             details.tag = '@webGL'
         }
         for (const seq of vizSeqs[viz]) {
