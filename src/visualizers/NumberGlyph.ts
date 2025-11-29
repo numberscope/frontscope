@@ -178,7 +178,7 @@ class NumberGlyph extends P5Visualizer(paramDesc) {
 
         await this.seq.fill(this.last, 'factors')
         // Obtain all prime numbers that appear as factors in the sequence
-        for (let i = this.seq.first; i < this.last; i++) {
+        for (let i = this.seq.first; i <= this.last; i++) {
             const checkCurrentFactors = this.seq.getFactors(i)
             if (
                 checkCurrentFactors !== null
