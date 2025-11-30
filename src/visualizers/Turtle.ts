@@ -26,17 +26,17 @@ For some domain of possible values, each entry in the sequence determines
 an angle and step length.  The visualizer displays the resulting polygonal
 path.
 
-There are two ways to animate the resulting path:
+There are two ways that the resulting path shown might change with each frame,
+which may be used individually or in combination:
 
-1.  By setting the speed parameter to be positive, you can watch the path
-being drawn some number of steps per frame, as long as more terms of the
-sequence are available.
+1.  You can select that the length of path drawn on each frame will increase
+by a fixed amount, starting from an empty path. (This type of path growth is
+the default behavior; the alternative is to draw the entire path at once.)
 
-2.  By setting non-zero values for the fold and stretch parameters in the
-animation section, the user can set the angles and/or step lengths to
-gradually change over time, resulting in a visual effect reminiscent of
-protein folding. In this mode, the same fixed number of stepsvof the path
-are re-drawn in every frame.
+2.  You can set non-zero values for the fold and stretch parameters in the
+"morphing controls" section, so that the angles and/or step lengths defining
+the turtle's path gradually change over time, resulting in a visual effect
+reminiscent of protein folding.
 
 ## Parameters
 **/
@@ -54,6 +54,11 @@ enum AngleMeaning {
 enum AngleUnit {
     Degrees,
     Radians,
+}
+
+enum DrawPath {
+    Incrementally,
+    All_at_once,
 }
 
 const formulaSymbols = [
@@ -182,7 +187,7 @@ negative values (for moving backward) are allowed.
     animationControls: {
         default: false,
         type: ParamType.BOOLEAN,
-        displayName: 'Animation ↴',
+        displayName: 'Show morphing controls ↴',
         required: false,
         visibleDependency: 'ruleMode',
         visibleValue: RuleMode.List,
@@ -191,7 +196,7 @@ negative values (for moving backward) are allowed.
     /** md
 - **Folding rate(s)**: Specifies (in units of 0.00001 degree) how each angle
 changes from one frame to the next. For example, if there is just one entry
-of "5" here, then in each frame of the animation, the angle for every
+of "5" here, then in each frame of the visualization, the angle for every
 element of **Domain** will increase by 0.00005 degree. Similarly, if
 **Domain** is "0 1" and this list is "200 -100" then in each frame the angle
 for 0 entries will increase by 0.002 degrees, and the angle for 1 entries
@@ -207,8 +212,8 @@ so many steps in a turtle path, a little goes a long way.
             'An angle increment (in units of 0.00001 degree), or list of '
             + 'angle increments in order corresponding to the sequence '
             + 'values listed in Domain. If any are nonzero, the path will '
-            + 'animate, adding the increment(s) to the angle(s) in the list '
-            + 'above before each frame; these additions accumulate from '
+            + 'change shape, adding the increment(s) to the angle(s) in the '
+            + 'list above before each frame; these additions accumulate from '
             + 'frame to frame. '
             + 'Produces a visual effect akin to protein folding.',
         hideDescription: false,
@@ -293,25 +298,43 @@ case you inadvertently left out a value.)
         required: true,
     },
     /** md
-- **Turtle speed**: a number.  If zero (or if any of the **Folding rate(s)**
-  or **Stretch rate(s)** are nonzero), the full path is drawn all at once.
-  Otherwise, the path drawing will be animated, and the **Turtle speed**
-  specifiesthe number of steps of the path to draw per frame. The drawing
-  continues as long as there are additional entries of the sequence to display.
-  The Turtle visualizer has a brake on it to prevent lag: this speed cannot
-  exceed 1000 steps per frame.
+- **Draw path...**: What portion of the path to show on each frame.
+  If the default option "Incrementally" is selected, the display begins with
+  an empty path, and the length of the path shown is increased by a fixed
+  amount on each frame. If "All at once" is selected, the entire path is
+  (re)drawn on every frame (so if there are no stretching or folding rates,
+  the image is static).
+     **/
+    drawPath: {
+        default: DrawPath.Incrementally,
+        type: ParamType.ENUM,
+        from: DrawPath,
+        displayName: 'Draw path...',
+        description:
+            'Draw the entire path at once, or add more steps on each frame',
+        required: true,
+        level: 0,
+    },
+    /** md
+- **Steps per frame**: a positive whole number. If the "Draw path..." parameter
+  is set to "Incrementally," this parameter specifies how many steps longer
+  the path should be each time it is drawn. The path will continue to lengthen
+  as long as there are additional entries of the sequence to display. To avoid
+  display lag, the steps per frame are limited to 1000.
      **/
     speed: {
         default: 1,
         type: ParamType.INTEGER,
-        displayName: 'Turtle speed',
+        displayName: 'Steps per frame',
         required: false,
-        description: 'Steps added per frame.',
-        hideDescription: false,
+        description: 'Increase in length of path each frame.',
+        hideDescription: true,
         validate: function (n: number, status: ValidationStatus) {
-            status.forbid(n < 0, 'must non-negative')
-            status.forbid(n > 1000, 'the speed is capped at 1000')
+            status.forbid(n < 1, 'must be positive')
+            status.forbid(n > 1000, 'capped at 1000')
         },
+        visibleDependency: 'drawPath',
+        visibleValue: DrawPath.Incrementally,
     },
     /** md
 - **Rule mode**: You may select "List" or "Formula". Generally speaking, the
@@ -340,7 +363,7 @@ case you inadvertently left out a value.)
 
   `f` The frame number of this drawing pass. If you use this variable, the
   visualization will be redrawn from the beginning on every frame,
-  animating the shape of the path.
+  altering the shape of the path accordingly.
 
   `b` The current bearing of the turtle, in degrees counterclockwise from its
   initial bearing. Note this value represents the bearing _before_ the
@@ -388,7 +411,7 @@ case you inadvertently left out a value.)
                     + '`M` - Maximum index, '
                     + '`A(...)` -- sequence entry at any index, '
                     + '`b` - current bearing, `x`,`y` - current position, '
-                    + '`f` - frame number (triggers animation).'
+                    + '`f` - frame number (so angles etc. can change over time)'
                 // If there are any invalid rules, reset them to their
                 // default values:
                 const freshRules = new Set<string>()
@@ -566,7 +589,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     // variables holding the parameter values
     // these don't change except in setup()
     private firstIndex = 0n // first term
-    private animating = false // whether there's any fold/stretch
+    private morphing = false // whether there's any fold/stretch
     private growth = 0 // growth of path per frame
     private maxLength = -1 // longest we will allow path to get
 
@@ -575,13 +598,17 @@ class Turtle extends P5GLVisualizer(paramDesc) {
     private foldDenom = 100000 // larger = more precision/slower
     private stretchDenom = 100 // larger = more precision/slower
 
-    // throttling (max step lengths for animating)
+    // throttling (max path lengths for morphing)
     private throttleWarn = 5000
     private throttleLimit = 15000
 
     // handling slow caching & mouse
     private pathFailure = false
     private mouseCount = 0
+
+    // verifying whether sequence is suitable for table-based rule"
+    private checked = 0
+    private inDomain = 0
 
     checkParameters(params: ParamValues<typeof paramDesc>) {
         const status = super.checkParameters(params)
@@ -606,32 +633,27 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             }
         }
 
-        let animating =
+        let morphing =
             params.folds.some(value => value !== 0)
             || params.stretches.some(value => value !== 0)
         if (params.ruleMode === RuleMode.Formula) {
-            animating = formulaParamNames.some(name =>
+            morphing = formulaParamNames.some(name =>
                 params[name].freevars.has('f')
             )
         }
         // warn when animation is turned on for long paths
-        // BUG:  when sequence params change this isn't re-run
-        // so the warning may be out of date
-        if (
-            animating
-            && this.seq.length > this.throttleWarn
-            && this.seq.length <= this.throttleLimit
-        ) {
-            status.addWarning(
-                `Animating with more than ${this.throttleWarn} steps is `
-                    + 'likely to have a very low frame rate.'
-            )
-        }
-        if (animating && this.seq.length > this.throttleLimit) {
-            status.addWarning(
-                `Path animation limited to the first ${this.throttleLimit} `
-                    + 'entries of the sequence.'
-            )
+        if (morphing && params.drawPath === DrawPath.All_at_once) {
+            if (this.seq.length > this.throttleLimit) {
+                status.addWarning(
+                    `Only paths up to ${this.throttleLimit} steps long may `
+                        + 'change shape on each frame.'
+                )
+            } else if (this.seq.length > this.throttleWarn) {
+                status.addWarning(
+                    `Changing path shape with more than ${this.throttleWarn} `
+                        + 'steps is likely to have a very low frame rate.'
+                )
+            }
         }
         return status
     }
@@ -701,19 +723,24 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         super.setup()
 
         // reset variables
-        this.animating = formulaParamNames.some(fmla =>
+        this.morphing = formulaParamNames.some(fmla =>
             this[fmla].freevars.has('f')
         )
         this.firstIndex = this.seq.first
-        this.maxLength = this.animating
+        this.maxLength = this.morphing
             ? this.throttleLimit
             : Number.MAX_SAFE_INTEGER
         if (this.seq.length < this.maxLength) {
             this.maxLength = Number(this.seq.length)
         }
-        this.growth = this.speed
-        // draw the entire path every frame if folding
-        if (this.animating) this.growth = this.maxLength
+        if (this.drawPath === DrawPath.All_at_once) {
+            this.maxLength = Math.min(this.maxLength, this.throttleLimit * 10)
+            this.growth = this.maxLength
+        } else this.growth = this.speed
+
+        // Get ready to check validity of table
+        this.checked = 0
+        this.inDomain = 0
 
         this.refresh()
     }
@@ -768,13 +795,14 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
     draw() {
         if (this.handleDrags()) this.cursor = 0
+        const verticesSoFar = Math.min(this.cursor, this.vertices.length - 1)
         const sketch = this.sketch
-        if (this.animating) this.refresh()
+        if (this.morphing) this.refresh()
         else if (this.cursor === 0) this.redraw()
 
         // compute more of path as needed:
         const targetLength = Math.min(
-            this.vertices.length - 1 + this.growth,
+            verticesSoFar + this.growth,
             this.maxLength
         )
         this.extendPath(sketch.frameCount, targetLength)
@@ -796,7 +824,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
 
         // See if we can create a new chunk:
         const fullChunks = Math.floor(this.cursor / CHUNK_SIZE)
-        if (!this.animating && fullChunks > this.chunks.length) {
+        if (!this.morphing && fullChunks > this.chunks.length) {
             // @ts-expect-error  The @types/p5 package omitted this function
             sketch.beginGeometry()
             this.drawVertices(
@@ -807,9 +835,9 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             this.chunks.push(sketch.endGeometry())
         }
 
-        // stop drawing if no animation
+        // stop drawing if not morphing
         if (
-            !this.animating
+            !this.morphing
             && !sketch.mouseIsPressed
             && this.vertices.length > this.maxLength
             && !this.pathFailure
@@ -829,8 +857,6 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         const position = this.vertices[len].copy()
         const startIndex = this.firstIndex + BigInt(len)
         const endIndex = this.firstIndex + BigInt(targetLength)
-        let checked = 0
-        let inDomain = 0
         const threshold = 0.03
         for (let i = startIndex; i < endIndex; i++) {
             // get the current sequence element and infer
@@ -848,8 +874,8 @@ class Turtle extends P5GLVisualizer(paramDesc) {
                 }
             }
             if (this.ruleMode === RuleMode.List) {
-                ++checked
-                if (this.domain.includes(currElement)) inDomain++
+                ++this.checked
+                if (this.domain.includes(currElement)) ++this.inDomain
             }
             const input = {
                 n: Number(i),
@@ -927,10 +953,10 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         }
         if (this.ruleMode === RuleMode.List) {
             this.statusOf.domain.warnings.length = 0 // clear prior warning
-            if (inDomain / checked < threshold) {
+            if (this.inDomain / this.checked < threshold) {
                 this.statusOf.domain.addWarning(
-                    `only ${inDomain} of current group of ${checked} sequence`
-                        + 'entries are in this list; consider adjusting'
+                    `only ${this.inDomain} of ${this.checked} sequence entries `
+                        + 'so far are in this list; consider adjusting'
                 )
             }
         }
