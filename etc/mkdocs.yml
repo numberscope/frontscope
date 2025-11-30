@@ -85,5 +85,6 @@ plugins:
 markdown_extensions:
     - def_list
     - markdown_grid_tables
-    - mdx_math
+    - pymdownx.arithmatex:
+        generic: true
     - pymdownx.superfences

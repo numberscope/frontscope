@@ -447,7 +447,7 @@ style="margin-left: 1em; margin-right: 0.5em"
 />](../assets/img/glyph/diff-func.png)
 
 This shows the integers under the growth
-function `25(1-cos(n*x)) % 25` and brightness adjustment 25.
+function \( 25(1-\cos(nx)) \) modulo 25 and brightness adjustment 25.
 
 ## Credit
 
