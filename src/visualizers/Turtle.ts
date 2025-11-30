@@ -56,9 +56,9 @@ enum AngleUnit {
     Radians,
 }
 
-enum ShowMode {
-    Whole_path,
-    Next_steps,
+enum DrawPath {
+    Incrementally,
+    All_at_once,
 }
 
 const formulaSymbols = [
@@ -298,27 +298,27 @@ case you inadvertently left out a value.)
         required: true,
     },
     /** md
-- **Each frame, draw...**: What portion of the path to show on each frame.
-  If "Whole path" is selected, the entire path is drawn from the beginning,
-  on every frame (so if there are no stretching or folding rates, the image
-  is static). If the default option "Next steps" is selected, then the
-  display begins with an empty path, and the length of the path shown is
-  increased by a fixed amount on each frame.
+- **Draw path...**: What portion of the path to show on each frame.
+  If the default option "Incrementally" is selected, the display begins with
+  an empty path, and the length of the path shown is increased by a fixed
+  amount on each frame. If "All at once" is selected, the entire path is
+  (re)drawn on every frame (so if there are no stretching or folding rates,
+  the image is static).
      **/
-    showMode: {
-        default: ShowMode.Next_steps,
+    drawPath: {
+        default: DrawPath.Incrementally,
         type: ParamType.ENUM,
-        from: ShowMode,
-        displayName: 'Each frame, draw...',
+        from: DrawPath,
+        displayName: 'Draw path...',
         description:
             'Draw the entire path at once, or add more steps on each frame',
         required: true,
         level: 0,
     },
     /** md
-- **Steps per frame**: a positive whole number. If in each frame, the
-  visualizer is displaying the next steps, this parameter specifies how many
-  steps longer the path should be each time. The path will continue to lengthen
+- **Steps per frame**: a positive whole number. If the "Draw path..." parameter
+  is set to "Incrementally," this parameter specifies how many steps longer
+  the path should be each time it is drawn. The path will continue to lengthen
   as long as there are additional entries of the sequence to display. To avoid
   display lag, the steps per frame are limited to 1000.
      **/
@@ -333,8 +333,8 @@ case you inadvertently left out a value.)
             status.forbid(n < 1, 'must be positive')
             status.forbid(n > 1000, 'capped at 1000')
         },
-        visibleDependency: 'showMode',
-        visibleValue: ShowMode.Next_steps,
+        visibleDependency: 'drawPath',
+        visibleValue: DrawPath.Incrementally,
     },
     /** md
 - **Rule mode**: You may select "List" or "Formula". Generally speaking, the
@@ -411,7 +411,7 @@ case you inadvertently left out a value.)
                     + '`M` - Maximum index, '
                     + '`A(...)` -- sequence entry at any index, '
                     + '`b` - current bearing, `x`,`y` - current position, '
-                    + '`f` - frame number (allows changing path shape).'
+                    + '`f` - frame number (so angles etc. can change over time)'
                 // If there are any invalid rules, reset them to their
                 // default values:
                 const freshRules = new Set<string>()
@@ -642,7 +642,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
             )
         }
         // warn when animation is turned on for long paths
-        if (morphing && params.showMode === ShowMode.Whole_path) {
+        if (morphing && params.drawPath === DrawPath.All_at_once) {
             if (this.seq.length > this.throttleLimit) {
                 status.addWarning(
                     `Only paths up to ${this.throttleLimit} steps long may `
@@ -733,7 +733,7 @@ class Turtle extends P5GLVisualizer(paramDesc) {
         if (this.seq.length < this.maxLength) {
             this.maxLength = Number(this.seq.length)
         }
-        if (this.showMode === ShowMode.Whole_path) {
+        if (this.drawPath === DrawPath.All_at_once) {
             this.maxLength = Math.min(this.maxLength, this.throttleLimit * 10)
             this.growth = this.maxLength
         } else this.growth = this.speed
