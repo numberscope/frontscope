@@ -526,7 +526,14 @@ case you inadvertently left out a value.)
             const turtle = this instanceof Turtle ? this : null
             if (turtle === null) return
             const cfIn = document.querySelector('.param-field #colorFormula')
-            if (!(cfIn instanceof HTMLInputElement)) return
+            if (
+                !(
+                    cfIn instanceof HTMLInputElement
+                    || cfIn instanceof HTMLTextAreaElement
+                )
+            ) {
+                return
+            }
             const cf = turtle.tentativeValues.colorFormula
             const start = cfIn.selectionStart ?? cf.length
             const end = cfIn.selectionEnd ?? start
