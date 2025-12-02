@@ -94,7 +94,7 @@ const featuredSIMs = [
         'Formula',
         'customize=true&growthFormula=%28log%28max%28abs'
             + '%28n%29%2C2%29%29+*+x%29+%25+1&brightCap=1',
-        'last=97&length=98'
+        'first=1&last=98'
     ),
     specimenQuery(
         'Doily-Dally',
