@@ -89,6 +89,14 @@ const featuredSIMs = [
         'formula=n%5E3%2B2n%2B1'
     ),
     specimenQuery(
+        'Natural History',
+        'NumberGlyph',
+        'Formula',
+        'customize=true&growthFormula=%28log%28max%28abs'
+            + '%28n%29%2C2%29%29+*+x%29+%25+1&brightCap=1',
+        'first=1&last=98'
+    ),
+    specimenQuery(
         'Doily-Dally',
         'Chaos',
         'Formula',
