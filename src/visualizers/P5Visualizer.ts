@@ -14,8 +14,11 @@ import type {
 } from './VisualizerInterface'
 
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
-import {clearErrorOverlay, errorOverlay, hasErrorOverlay}
-    from '@/shared/alertMessage'
+import {
+    clearErrorOverlay,
+    errorOverlay,
+    hasErrorOverlay,
+} from '@/shared/alertMessage'
 import {CachingError} from '@/shared/math'
 import {Paramable} from '@/shared/Paramable'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
