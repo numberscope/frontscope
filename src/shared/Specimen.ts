@@ -1,4 +1,4 @@
-import {alertMessage} from './alertMessage'
+import {errorOverlay} from './alertMessage'
 import {math} from './math'
 import {specimenQuery, parseSpecimenQuery} from './specimenEncoding'
 
@@ -164,7 +164,8 @@ export class Specimen {
         this.isSetup = true
         this.reset().catch(e => {
             console.error(`ERROR in Specimen "${this.name}" reset:`, e)
-            window.alert(alertMessage(e))
+            errorOverlay(e, location)
+            this._visualizer?.stop()
         })
     }
 
@@ -274,6 +275,9 @@ export class Specimen {
         )
         if (sameSize(this.size, newSize)) return
         this.size = newSize
+        // If we are not yet set up, there is nothing else to do
+        if (!this.isSetup) return
+
         // Reset the visualizer if the resized function isn't implemented
         // or returns false, meaning it didn't handle the redisplay
         let handled = false

@@ -14,6 +14,7 @@ import type {
 } from './VisualizerInterface'
 
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
+import {errorOverlay, hasErrorOverlay} from '@/shared/alertMessage'
 import {CachingError} from '@/shared/math'
 import {Paramable} from '@/shared/Paramable'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
@@ -248,6 +249,12 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
 
                 // And draw is special because of the error handling:
                 sketch.draw = () => {
+                    // If the sketch is not mounted or already in an error
+                    // state, do not proceed:
+                    if (!this.within || hasErrorOverlay(this.within)) {
+                        this.stop(0)
+                        return
+                    }
                     try {
                         this.draw()
                         if (--this._framesRemaining <= 0) {
@@ -258,12 +265,9 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                             sketch.cursor('progress')
                             return
                         } else {
-                            // TODO: This throw is typically going to go
-                            // uncaught (because there is a try..finally
-                            // block in p5.js with no catch) and so
-                            // just result in a console error message.
-                            // Should we pop up an alert message?
-                            throw e
+                            errorOverlay(e, this.within)
+                            this.stop(0)
+                            return
                         }
                     }
                     if (this.within) {
