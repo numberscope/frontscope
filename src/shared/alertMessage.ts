@@ -70,3 +70,15 @@ and difficult to read.
 export function hasErrorOverlay(where: HTMLElement) {
     return !!where.getElementsByClassName(eoClass).length
 }
+
+/** md
+### clearErrorOverlay(domLocation)
+
+Removes an errorOverlay in the given `domLocation` HTMLElement, if one is
+present.
+ **/
+export function clearErrorOverlay(where: HTMLElement) {
+    for (const child of where.getElementsByClassName(eoClass)) {
+        where.removeChild(child)
+    }
+}

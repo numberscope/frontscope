@@ -14,7 +14,8 @@ import type {
 } from './VisualizerInterface'
 
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
-import {errorOverlay, hasErrorOverlay} from '@/shared/alertMessage'
+import {clearErrorOverlay, errorOverlay, hasErrorOverlay}
+    from '@/shared/alertMessage'
 import {CachingError} from '@/shared/math'
 import {Paramable} from '@/shared/Paramable'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
@@ -453,6 +454,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             if (this.within !== element) return // that view already departed
             this.drawingState = DrawingUnmounted
             this._sketch.remove()
+            clearErrorOverlay(element)
             this._sketch = undefined
             this._canvas = undefined
             this.within = undefined
@@ -515,6 +517,7 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
                     this.requestedAspectRatio()
                 )
             }
+            clearErrorOverlay(element)
             await this.inhabit(element, size)
             this.show()
         }
