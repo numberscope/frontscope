@@ -1,5 +1,11 @@
-import {alertMessage} from '../alertMessage'
+import {
+    alertMessage,
+    clearErrorOverlay,
+    errorOverlay,
+    hasErrorOverlay
+} from '../alertMessage'
 import {describe, it, expect} from 'vitest'
+import {Window} from 'happy-dom'
 
 describe('alertMessage', () => {
     it('contains text about generating an error', () => {
@@ -8,7 +14,15 @@ describe('alertMessage', () => {
     it('contains the error', () => {
         expect(alertMessage('bar')).toContain('bar')
     })
-    // Should we also try to test errorOverlay? Is there a way to have
-    // a valid DOM (html page) in a vitest? I am not at this moment
-    // familiar with how that might work...
+    it('can manipulate error overlays', () => {
+        const window = new Window()
+        const doc = window.document
+        // happy-dom is not TypeScript-compliant with HTMLElement interface:
+        const container = doc.createElement('div') as unknown as HTMLElement
+        errorOverlay('baz', container)
+        expect(container.textContent).toContain('baz')
+        expect(hasErrorOverlay(container)).toBe(true)
+        clearErrorOverlay(container)
+        expect(hasErrorOverlay(container)).toBe(false)
+    })
 })
