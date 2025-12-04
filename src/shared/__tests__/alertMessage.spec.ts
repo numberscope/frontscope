@@ -2,7 +2,7 @@ import {
     alertMessage,
     clearErrorOverlay,
     errorOverlay,
-    hasErrorOverlay
+    hasErrorOverlay,
 } from '../alertMessage'
 import {describe, it, expect} from 'vitest'
 import {Window} from 'happy-dom'
