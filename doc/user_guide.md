@@ -10,8 +10,17 @@ That will bring you to:
 ## Errors
 
 If Numberscope experiences an error, you might see an alert with the error
-message. If you see one that does not resolve upon reloading the page and
-trying again, please let us know about the problem by
+message. Sometimes the error results from the parameters you've chosen for
+the visualization. For example, if you use a formula like `log(a)` and then
+one of the sequence entries used for the value of `a` turns out to be zero,
+you may get an error about trying to use -Infinity as a number.
+
+If you see an error that seems to be a part of Numberscope itself, rather than
+incompatible parameters, and it does not resolve upon reloading the page,
+please let us know about the problem by
 [filing an issue on GitHub](https://github.com/numberscope/frontscope/issues/new).
 Please describe as thoroughly as you can what you were doing when the alert
-ocurred and what it said -- a screenshot could be helpful. Thanks!
+occurred and what it said -- steps to reproduce it, a screenshot, and the URL
+you were looking at could all be helpful. You can select the error message
+using Ctrl-A/⌘-A (which grabs all text on the page) to copy-and-paste it.
+Thanks!
