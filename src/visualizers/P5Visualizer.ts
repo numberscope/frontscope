@@ -457,7 +457,10 @@ export function P5Visualizer<PD extends GenericParamDescription>(desc: PD) {
             if (this.within !== element) return // that view already departed
             this.drawingState = DrawingUnmounted
             this._sketch.remove()
-            clearErrorOverlay(element)
+            // NOTE: We do _not_ clear any error overlay, because there are
+            // other places that need to depart visualizers but want error
+            // indicators to say (specifically, Thumbnail.vue). So clearing
+            // errors is up to the caller of depart()
             this._sketch = undefined
             this._canvas = undefined
             this.within = undefined

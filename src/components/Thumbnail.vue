@@ -8,6 +8,7 @@
     import {thumbnailGCcount} from './thumbnails'
 
     import {Specimen} from '@/shared/Specimen'
+    import {clearErrorOverlay} from '@/shared/alertMessage'
     import {DrawingUnmounted} from '@/visualizers/VisualizerInterface'
 
     const canvasContainer = ref<HTMLDivElement | null>(null)
@@ -33,8 +34,10 @@
                 const {width, height} = canvas.getBoundingClientRect()
                 const vizShot = new Image(width, height)
                 vizShot.src = canvas.toDataURL()
+                // Note we do _not_ clear any possible error overlay here;
+                // we want it still to be visible to the user.
                 specimen.visualizer.depart(savedContainer)
-                savedContainer.appendChild(vizShot)
+                savedContainer.prepend(vizShot) // under any error overlay
             } else {
                 specimen.visualizer.stop()
             }
@@ -83,6 +86,7 @@
         if (!specimen || !(savedContainer instanceof HTMLElement)) {
             return
         }
+        clearErrorOverlay(savedContainer)
         const viz = specimen.visualizer
         if (viz.drawingState !== DrawingUnmounted) viz.depart(savedContainer)
     })
