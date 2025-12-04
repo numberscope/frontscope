@@ -24,7 +24,7 @@ export const alertMessage = (error: string | unknown) => {
     const errorMessage =
         'This visualization generated an error.\n\n' + `${error}\n\n`
     const suggestion =
-        'Please see the "Errors" section in the User Guide, '
+        'Please see User Guide > Introduction > Errors, '
         + 'accessible via the Help menu in the top bar. '
     return errorMessage + suggestion
 }
@@ -47,10 +47,12 @@ export function errorOverlay(error: string | unknown, where: HTMLElement) {
     const dangerSpan = document.createElement('span')
     dangerSpan.innerText = '⚠\n'
     dangerSpan.style.fontSize = '60px'
+    dangerSpan.style.paddingLeft = '1em'
     overlay.appendChild(dangerSpan)
-    const errorSpan = document.createElement('span')
-    errorSpan.innerText = alertMessage(error)
-    overlay.appendChild(errorSpan)
+    const errorDiv = document.createElement('div')
+    errorDiv.innerText = alertMessage(error)
+    errorDiv.style.paddingLeft = '1em'
+    overlay.appendChild(errorDiv)
     overlay.classList.add(eoClass)
     where.appendChild(overlay)
 }
