@@ -50,6 +50,8 @@
         bottom: 0;
         left: 0;
         right: 0;
+        user-select: text !important;
+        z-index: 3;
     }
 
     math {

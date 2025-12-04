@@ -23,12 +23,9 @@ window.alert( alertMessage(someError) )
 export const alertMessage = (error: string | unknown) => {
     const errorMessage =
         'This visualization generated an error.\n\n' + `${error}\n\n`
-    const reloadDirective = 'Reloading the page might help. '
-    const sendEmailDirective =
-        'If this issue persists, please send an '
-        + 'email to numberscope at colorado.edu with steps to reproduce '
-        + 'the error and the error message.'
-    return errorMessage + reloadDirective + sendEmailDirective
+    const suggestion = 'Please see the "Errors" section in the User Guide, '
+        + 'accessible via the Help menu in the top bar. '
+    return errorMessage + suggestion
 }
 
 const eoClass = 'error-overlay'
