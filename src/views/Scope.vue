@@ -164,6 +164,7 @@ visualizers you can select.
 <script lang="ts">
     import NavBar from './minor/NavBar.vue'
     import SpecimenBar from '../components/SpecimenBar.vue'
+    import {clearErrorOverlay} from '@/shared/alertMessage'
     import {getCurrent, updateCurrent} from '@/shared/browserCaching'
     import {isMobile} from '@/shared/layout'
 
@@ -472,6 +473,7 @@ visualizers you can select.
         // Save the current sequence for future use
         addSequence(specimen.sequenceKey, specimen.sequence.query)
         // Now clean up
+        clearErrorOverlay(canvasContainer)
         specimen.visualizer.depart(canvasContainer)
     })
 
