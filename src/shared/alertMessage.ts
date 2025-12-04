@@ -45,9 +45,8 @@ provides such appropriate styling by default.
 export function errorOverlay(error: string | unknown, where: HTMLElement) {
     const overlay = document.createElement('div')
     const dangerSpan = document.createElement('span')
-    dangerSpan.innerText = '⚠'
-    dangerSpan.style.fontSize = 'large'
-    dangerSpan.style.paddingRight = '0.5em'
+    dangerSpan.innerText = '⚠\n'
+    dangerSpan.style.fontSize = '60px'
     overlay.appendChild(dangerSpan)
     const errorSpan = document.createElement('span')
     errorSpan.innerText = alertMessage(error)

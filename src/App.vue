@@ -42,7 +42,7 @@
     }
 
     .error-overlay {
-        color: orange;
+        color: var(--ns-color-primary);
         background: #00000080;
         overflow: scroll;
         position: absolute;
