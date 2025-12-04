@@ -34,11 +34,26 @@
     a {
         color: inherit;
     }
+
     html,
     body {
         margin: 0;
         padding: 0;
     }
+
+    .error-overlay {
+        color: var(--ns-color-primary);
+        background: #00000080;
+        overflow: scroll;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        user-select: text !important;
+        z-index: 3;
+    }
+
     math {
         display: inline-flex;
         align-items: baseline;
