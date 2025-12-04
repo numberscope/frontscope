@@ -10,10 +10,10 @@ That will bring you to:
 ## Errors
 
 If Numberscope experiences an error, you might see an alert with the error
-message. Sometimes the error results from the parameters you've chosen for
-the visualization. For example, if you use a formula like `log(a)` and then
-one of the sequence entries used for the value of `a` turns out to be zero,
-you may get an error about trying to use -Infinity as a number.
+message. Sometimes the error results from the parameters you've chosen for the
+visualization. For example, if you use a formula like `log(a)` and then one of
+the sequence entries used for the value of `a` turns out to be zero, you may
+get an error about trying to use -Infinity as a number.
 
 If you see an error that seems to be a part of Numberscope itself, rather than
 incompatible parameters, and it does not resolve upon reloading the page,
