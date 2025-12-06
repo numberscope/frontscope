@@ -7,6 +7,7 @@ sources != shopt -s globstar && echo src/** index.html
 docs != shopt -s globstar &&\
         echo doc/** etc/doc_theme/** README.md CONTRIBUTING.md etc/mkdocs.yml
 tests != shopt -s globstar && echo e2e/tests/**
+rev != git rev-parse --short HEAD
 manifest := package.json package-lock.json requirements.txt tools/pyrun.mjs $(wildcard .husky/p*)
 typescript_config := $(wildcard tsconfig*json)
 e2e_local_config := e2e/playwright.config.ts
@@ -36,6 +37,8 @@ $(installed): $(manifest)
 |   touch $@
 
 $(typechecked): $(installed) $(typescript_config) $(sources)
+|   mkdir -p src/generated
+|   echo "export const rev = '$(rev)'" > src/generated/rev.ts
 |   npx vue-tsc --noEmit -p tsconfig.vitest.json --composite false
 |   @touch $@
 

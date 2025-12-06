@@ -1,6 +1,7 @@
+import {rev} from '@/generated/rev'
 /* This file defines how specimens are encoded into strings, and how
    strings are decoded into the information needed to create a specimen.
-   At the moment (and likely permanently), the encodes are URL query
+   At the moment (and likely permanently), the encodings are URL query
    parameter strings.
 */
 
@@ -51,6 +52,7 @@ export function specimenQuery(
     if (!sequenceKind) return ''
     const leadQuery = new URLSearchParams({
         name,
+        rev,
         [vizKey]: visualizerKind,
     })
     const sepQuery = new URLSearchParams({[seqKey]: sequenceKind})

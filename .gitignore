@@ -16,6 +16,7 @@ node_modules
 *~
 
 # Build files
+src/generated
 dist
 etc/npm_install_ran_at
 etc/typechecked_at
