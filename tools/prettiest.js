@@ -32,6 +32,11 @@ const options = {
         help: `The file name to use for processing stdin, which is
             specified by '-' as a file/dir/glob argument`,
     },
+    exclude: {
+        type: 'string',
+        short: 'x',
+        help: 'A pattern of files to exclude from examination',
+    },
     quiet: {type: 'boolean', short: 'q', help: "Don't display errors"},
     write: {type: 'boolean', help: 'Modify nonconformant files in place'},
 }
@@ -105,6 +110,7 @@ let status = 0
 let wroteErr = false
 let formatter
 for (let filePath of files) {
+    if (opt.exclude && filePath.includes(opt.exclude)) continue
     let original = ''
     let wasStdin = false
     if (filePath === '-') {

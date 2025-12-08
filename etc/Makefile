@@ -46,7 +46,7 @@ $(typechecked): $(installed) $(typescript_config) $(sources) $(package)
 |   @touch $@
 
 prettiest: $(installed)
-|   @node tools/prettiest.js $(flags) .
+|   @node tools/prettiest.js $(flags) -x generated .
 
 typecheck: $(typechecked)
 |   @echo TypeScript types check.

@@ -125,7 +125,7 @@ const featuredSIMs = [
     {
         query: specimenQuery(
             'Tau Many Primes',
-            'FactorFence',
+            'FactorStacks',
             'OEIS A000594',
             'signs=false'
         ),
