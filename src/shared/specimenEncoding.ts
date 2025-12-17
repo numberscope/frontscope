@@ -24,6 +24,7 @@ type QuerySpec = {
  * @param {string} sequenceKind  The kind of Sequence
  * @param {string?} visualizerQuery  Optional visualizer query parameter string
  * @param {string?} sequenceQuery  Optional sequence query parameter string
+ * @param {number?} frames Frames to run before pausing
  * @return {string} the URL query string encoding of the parameter
  */
 export function specimenQuery(
@@ -31,7 +32,8 @@ export function specimenQuery(
     visualizerKind?: string,
     sequenceKind?: string,
     visualizerQuery?: string,
-    sequenceQuery?: string
+    sequenceQuery?: string,
+    frames: number = 10
 ): string {
     let name = ''
     if (!visualizerKind) {
@@ -55,6 +57,7 @@ export function specimenQuery(
     if (visualizerQuery) queries.push(visualizerQuery)
     queries.push(sepQuery.toString())
     if (sequenceQuery) queries.push(sequenceQuery)
+    queries.push('frames=' + frames)
     return queries.join('&')
 }
 /**
