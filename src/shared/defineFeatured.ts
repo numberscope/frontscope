@@ -32,7 +32,7 @@ const featuredSIMs = [
             + '&colorFormula=%7B%22-3%22%3A+%2390EE90%2C+%22-2%22%3A+'
             + '%2300CED1%2C+%22-1%22%3A+%23FF7D4D%2C+%221%22%3A+'
             + '%231F93FF%2C+%222%22%3A+%23B63A71%2C+%223%22%3A+'
-            + '%23C71585%7D%5Bstring%28a%29%5D&seq=OEIS+A229214',
+            + '%23C71585%7D%5Bstring%28a%29%5D',
         'last=1040&length=1040'
     ),
     specimenQuery(
@@ -67,7 +67,7 @@ const featuredSIMs = [
         'corners=8&walkers=2&sizeFormula=0.6'
             + '&colorFormula=%5B%234D8E90%2C%23C6B06E%5D'
             + '%5Bmod%28w%2C2%29%2B1%5D&pixelsPerFrame=200',
-        'corners=8&walkers=8&alpha=0.7&pixelsPerFrame=2000',
+        '',
         15
     ),
     specimenQuery(
@@ -92,6 +92,17 @@ const featuredSIMs = [
         20
     ),
     specimenQuery(
+        'Lattice Murmuration',
+        'FormulaGrid',
+        'OEIS A293773',
+        'dimensions=200+5000&fillOrder=3&pathFormula=%5Bk%2C+floor'
+            + '%28r%2F2%29+-+a%5D&backgroundColor=D2E1FBFF'
+            + '&fillFormula={circle%3A+black}&inset=12',
+        '',
+        160
+    ),
+
+    specimenQuery(
         'Tau Many Primes',
         'FactorFence',
         'OEIS A000594',
@@ -114,6 +125,17 @@ const featuredSIMs = [
             + '&bgColor=4f4875&strokeColor=%23cec0c0',
         'modulus=9&last=999&length=1000'
     ),
+    specimenQuery(
+        'Baffling Beatty Bars',
+        'ModFill',
+        'Formula',
+        'modDimension=350'
+            + '&fillColor=floor(sqrt(3)n)+%25+2'
+            + '+%3F+%231a5fb44d+%3A+%2326a2694d',
+        'formula=floor(sqrt(2)n)',
+        250
+    ),
+
     specimenQuery(
         'Beatty DNA',
         'Turtle',
@@ -168,7 +190,7 @@ const featuredSIMs = [
         'Formula',
         'fillColor=isPrime(n)+%3F+%23f661511a+%3A+%231a5fb41a',
         '',
-        100
+        140
     ),
     specimenQuery(
         'The Murmurations of the Punctual Bird',
@@ -179,16 +201,6 @@ const featuredSIMs = [
             + '&fadeEffect=0.015',
         'first=1000&length=26349',
         10
-    ),
-    specimenQuery(
-        'Baffling Beatty Bars',
-        'ModFill',
-        'Formula',
-        'modDimension=350'
-            + '&fillColor=floor(sqrt(3)n)+%25+2'
-            + '+%3F+%231a5fb44d+%3A+%2326a2694d',
-        'formula=floor(sqrt(2)n)',
-        250
     ),
     specimenQuery(
         'Woven Residues',
@@ -215,7 +227,7 @@ const featuredSIMs = [
         'customize=true&growthFormula=%28log%28max%28abs'
             + '%28n%29%2C2%29%29+*+x%29+%25+1&brightCap=1',
         'first=1&last=98',
-        100
+        110
     ),
     specimenQuery(
         'Barnsley Fern',
@@ -289,16 +301,6 @@ const featuredSIMs = [
             + '&speed=10&bgColor=e0def7&strokeColor=%231E90FF',
         '',
         50
-    ),
-    specimenQuery(
-        'Lattice Murmuration',
-        'FormulaGrid',
-        'OEIS A293773',
-        'dimensions=200+5000&fillOrder=3&pathFormula=%5Bk%2C+floor'
-            + '%28r%2F2%29+-+a%5D&backgroundColor=D2E1FBFF'
-            + '&fillFormula={circle%3A+black}&inset=12',
-        '',
-        160
     ),
     specimenQuery(
         'Modular Multiplication Table',
