@@ -20,7 +20,7 @@
     let usingGC = false
     let needsSetup = true
     const TGClim = 7
-    const props = defineProps<{query: string}>()
+    const props = defineProps<{query: string; thumbFrames?: number}>()
 
     function captureAndDepart() {
         if (usingGC) {
@@ -57,10 +57,6 @@
         const checkInterval = setInterval(() => {
             if (!specimen || !savedContainer) return
             if (specimen.visualizer.drawingState === DrawingStopped) {
-                console.log(
-                    'specimen.visualizer.drawingState',
-                    specimen.visualizer.drawingState
-                )
                 clearInterval(checkInterval)
                 clearTimeout(maxWait)
                 captureAndDepart()
@@ -69,7 +65,10 @@
     }
 
     onMounted(async () => {
-        specimen = await Specimen.fromQuery(props.query)
+        const queryWithFrames = props.thumbFrames
+            ? `frames=${props.thumbFrames}&${props.query}`
+            : props.query
+        specimen = await Specimen.fromQuery(queryWithFrames)
         if (!(canvasContainer.value instanceof HTMLElement)) return
         savedContainer = canvasContainer.value
         if (specimen.visualizer.usesGL()) {

@@ -1,6 +1,6 @@
 <template>
     <div :id="spec.id || cid" class="card-body" @click="openSpecimen">
-        <Thumbnail :query="spec.query" />
+        <Thumbnail :query="spec.query" :thumb-frames="spec.thumbFrames" />
         <div class="card-title-box">
             <div>
                 <h5 class="card-title">
@@ -37,6 +37,7 @@
         subtitle: string
         lastEdited?: string
         canDelete?: boolean // if not present defaults to false
+        thumbFrames?: number // if not present, no frames limit, only time
     }
 
     let cid_count = 0

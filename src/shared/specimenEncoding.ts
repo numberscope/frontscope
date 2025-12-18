@@ -12,6 +12,7 @@ type QuerySpec = {
     sequenceKind: string
     visualizerQuery: string
     sequenceQuery: string
+    thumbFrames: number
 }
 /**
  * Generates a URL query string from the information specifying a specimen.
@@ -32,8 +33,7 @@ export function specimenQuery(
     visualizerKind?: string,
     sequenceKind?: string,
     visualizerQuery?: string,
-    sequenceQuery?: string,
-    frames: number = 10
+    sequenceQuery?: string
 ): string {
     let name = ''
     if (!visualizerKind) {
@@ -57,7 +57,6 @@ export function specimenQuery(
     if (visualizerQuery) queries.push(visualizerQuery)
     queries.push(sepQuery.toString())
     if (sequenceQuery) queries.push(sequenceQuery)
-    queries.push('frames=' + frames)
     return queries.join('&')
 }
 /**
