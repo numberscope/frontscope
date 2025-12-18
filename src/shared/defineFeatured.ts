@@ -38,7 +38,7 @@ const featuredSIMs = [
                 + '%23C71585%7D%5Bstring%28a%29%5D',
             'last=1040&length=1040'
         ),
-    thumbFrames: 15,
+        thumbFrames: 15,
     },
     {
         query: specimenQuery(
@@ -75,12 +75,14 @@ const featuredSIMs = [
             'Resistance is Futile',
             'Chaos',
             'OEIS A000005',
-            'corners=8&walkers=2&sizeFormula=0.6'
-                + '&colorFormula=%5B%234D8E90%2C%23C6B06E%5D'
-                + '%5Bmod%28w%2C2%29%2B1%5D&pixelsPerFrame=200',
+            'corners=8&walkers=6&sizeFormula=0.5'
+                + '&colorFormula='
+                + '[%235A5B5B%2C%239094A0%2C%23636467%2C%23858F99'
+                + '%2C%2333352A%2C%23C0E3B1][mod(w%2B3%2C6)%2B1]'
+                + '&pixelsPerFrame=200',
             ''
         ),
-        thumbFrames: 15,
+        thumbFrames: 35,
     },
     {
         query: specimenQuery(
@@ -95,18 +97,17 @@ const featuredSIMs = [
     },
     {
         query: specimenQuery(
-            'Hat Trick',
-            'Turtle',
-            'OEIS A363348',
-            'domain=0+1+2+3&angles=0&steps=15&widths=2&strokeColor=%2390EE90'
-                + '+%2300CED1+%23FF7D4D+%231F93FF+%23B63A71+%23C71585+%23FF7D4D'
-                + '&bgColor=795767&speed=10&ruleMode=1&angleFormula=a*30'
-                + '&widthFormula=3&colorFormula=chroma.scale%28%27YlGnBu%27%29'
-                + '.colors%2850%29%5Bmod%28n%2C30%29%2B1%5D'
-                + '&colorChooser=409CF5',
+            'Integerstellar',
+            'FormulaGrid',
+            'Formula',
+            'dimensions=200&backgroundColor=000000FF&speed=1024'
+                + '&fillFormula=%7Bcircle%3A%0A++yellow'
+                + '.mix%28black%2C+1-gcd%28x%2Cy%29%2Fsqrt%28x+y%29%29%2C%0A'
+                + 'mouseover%3A+%5B%0A++++%27gcd%28%27%2C+x%2C+%27%2C+%27%2C'
+                + '+y%2C+%27%29+%3D+%27%2C+gcd%28x%2Cy%29%0A%5D%7D&inset=0.8',
             ''
         ),
-        thumbFrames: 20,
+        thumbFrames: 60,
     },
     {
         query: specimenQuery(
@@ -144,9 +145,9 @@ const featuredSIMs = [
             'Turtle',
             'OEIS A000045',
             'domain=0+1&angles=8+120&steps=40+400'
-                + '&animationControls=true&folds=200+0&drawPath=1'
+                + '&animationControls=true&folds=400+0&width=0.5&&drawPath=1'
                 + '&bgColor=4f4875&strokeColor=%23cec0c0',
-            'modulus=9&last=999&length=1000'
+            'modulus=9&last=680&length=681'
         ),
     },
     {
@@ -160,6 +161,21 @@ const featuredSIMs = [
             'formula=floor(sqrt(2)n)'
         ),
         thumbFrames: 300,
+    },
+    {
+        query: specimenQuery(
+            'Ulam Divisors',
+            'FormulaGrid',
+            'OEIS A000005',
+            'dimensions=200+200&aspect=1&fillOrder=1&pathFormula=spiral%28k%29'
+                + '&backgroundColor=000000FF&speed=100'
+                + '&fillFormula=%7Bcircle%3A%0A++%230571b0'
+                + '.mix%28darkseagreen%2C+%28a-10%29%2F8%29%2C%0A'
+                + 'mouseover%3A+%5B%27d%28%27%2C+n%2C+%27%29+%3D+%27%2C+a%5D%7D'
+                + '&inset=0.8',
+            ''
+        ),
+        thumbFrames: 280,
     },
 
     {
@@ -208,27 +224,6 @@ const featuredSIMs = [
     },
     {
         query: specimenQuery(
-            "Virahanka's Prime Construct",
-            'ModFill',
-            'OEIS A000045',
-            'modDimension=130&backgroundColor=62a0ea'
-                + '&fillColor=isPrime(n)+%3F+%23e5a50a0d+%3A+%236135830d',
-            ''
-        ),
-        thumbFrames: 60,
-    },
-    {
-        query: specimenQuery(
-            'Prime Residues',
-            'ModFill',
-            'Formula',
-            'fillColor=isPrime(n)+%3F+%23f661511a+%3A+%231a5fb41a',
-            ''
-        ),
-        thumbFrames: 180,
-    },
-    {
-        query: specimenQuery(
             'The Murmurations of the Punctual Bird',
             'Chaos',
             'OEIS A132131',
@@ -238,28 +233,6 @@ const featuredSIMs = [
             'first=1000&length=26349'
         ),
         thumbFrames: 10,
-    },
-    {
-        query: specimenQuery(
-            'Woven Residues',
-            'ModFill',
-            'Random',
-            'modDimension=5000&fillColor=rainbow(n%2F2)',
-            'min=10000&max=100000'
-        ),
-        thumbFrames: 150,
-    },
-    {
-        query: specimenQuery(
-            "Picasso's Periods",
-            'ModFill',
-            'Formula',
-            'modDimension=100&backgroundColor=00000008'
-                + '&fillColor=isPrime(a)+%3F+%23bf838366+%3A+%231a5fb424'
-                + '&sunzi=true&frameRate=24',
-            'formula=n%5E3%2B2n%2B1'
-        ),
-        thumbFrames: 20,
     },
     {
         query: specimenQuery(
@@ -290,6 +263,19 @@ const featuredSIMs = [
     },
     {
         query: specimenQuery(
+            "Picasso's Periods",
+            'ModFill',
+            'Formula',
+            'modDimension=100&backgroundColor=00000008'
+                + '&fillColor=isPrime(a)+%3F+%23bf838366+%3A+%231a5fb424'
+                + '&sunzi=true&frameRate=24',
+            'formula=n%5E3%2B2n%2B1'
+        ),
+        thumbFrames: 20,
+    },
+
+    {
+        query: specimenQuery(
             'Wait For It',
             'Turtle',
             'Formula',
@@ -303,8 +289,19 @@ const featuredSIMs = [
                 + '+%237a9f6f50%7D%5Bstring%28a%29%5D',
             'formula=sign%28sin%28n%2B1%29%29'
         ),
-    thumbFrames: 80,
+        thumbFrames: 80,
     },
+    {
+        query: specimenQuery(
+            'Woven Residues',
+            'ModFill',
+            'Random',
+            'modDimension=5000&fillColor=rainbow(n%2F2)',
+            'min=10000&max=100000'
+        ),
+        thumbFrames: 150,
+    },
+
     {
         query: specimenQuery(
             'Zeta Zero #10143',
@@ -322,7 +319,7 @@ const featuredSIMs = [
     },
     {
         query: specimenQuery(
-            'PEMDASymmetry',
+            'PEMDA Symmetry',
             'Turtle',
             'Formula',
             'bgColor=22274e&speed=10&ruleMode=1&angleFormula=30%2B15a'
@@ -372,35 +369,23 @@ const featuredSIMs = [
         ),
         thumbFrames: 400,
     },
+
     {
         query: specimenQuery(
-            'Ulam Divisors',
-            'FormulaGrid',
-            'OEIS A000005',
-            'dimensions=200+200&aspect=1&fillOrder=1&pathFormula=spiral%28k%29'
-                + '&backgroundColor=000000FF&speed=100'
-                + '&fillFormula=%7Bcircle%3A%0A++%230571b0'
-                + '.mix%28darkseagreen%2C+%28a-10%29%2F8%29%2C%0A'
-                + 'mouseover%3A+%5B%27d%28%27%2C+n%2C+%27%29+%3D+%27%2C+a%5D%7D'
-                + '&inset=0.8',
+            'Hat Trick',
+            'Turtle',
+            'OEIS A363348',
+            'domain=0+1+2+3&angles=0&steps=15&widths=2&strokeColor=%2390EE90'
+                + '+%2300CED1+%23FF7D4D+%231F93FF+%23B63A71+%23C71585+%23FF7D4D'
+                + '&bgColor=795767&speed=10&ruleMode=1&angleFormula=a*30'
+                + '&widthFormula=3&colorFormula=chroma.scale%28%27YlGnBu%27%29'
+                + '.colors%2850%29%5Bmod%28n%2C30%29%2B1%5D'
+                + '&colorChooser=409CF5',
             ''
         ),
-        thumbFrames: 280,
+        thumbFrames: 20,
     },
-    {
-        query: specimenQuery(
-            'Integerstellar',
-            'FormulaGrid',
-            'Formula',
-            'dimensions=200&backgroundColor=000000FF&speed=1024'
-                + '&fillFormula=%7Bcircle%3A%0A++yellow'
-                + '.mix%28black%2C+1-gcd%28x%2Cy%29%2Fsqrt%28x+y%29%29%2C%0A'
-                + 'mouseover%3A+%5B%0A++++%27gcd%28%27%2C+x%2C+%27%2C+%27%2C'
-                + '+y%2C+%27%29+%3D+%27%2C+gcd%28x%2Cy%29%0A%5D%7D&inset=0.8',
-            ''
-        ),
-        thumbFrames: 60,
-    },
+
     {
         query: specimenQuery(
             'Deja vu Differences',
