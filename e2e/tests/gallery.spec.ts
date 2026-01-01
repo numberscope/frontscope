@@ -30,9 +30,9 @@ test.describe('Gallery', () => {
         )
     })
     test('clicking on a featured item', async ({page}) => {
-        const futileCard = await page.locator('.card-body >> nth=2')
+        const futileCard = await page.locator('.card-body >> nth=4')
         await expect(futileCard.locator('.titlespan')).toContainText(/Futile/)
-        await page.locator('.card-body >> nth=2').click()
+        await page.locator('.card-body >> nth=4').click()
         await expect(page.url()).not.toContain('gallery')
         await expect(
             await page.locator('#sequenceTab .item-name')
