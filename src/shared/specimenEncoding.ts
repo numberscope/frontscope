@@ -12,7 +12,8 @@ type QuerySpec = {
     sequenceKind: string
     visualizerQuery: string
     sequenceQuery: string
-    thumbFrames: number
+    thumbFrames?: number
+    thumbScale?: number
 }
 /**
  * Generates a URL query string from the information specifying a specimen.

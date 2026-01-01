@@ -66,7 +66,7 @@ const featuredSIMs = [
                 + '&backgroundColor=21218FFF'
                 + '&fillFormula=%7Bhexagon%3A+rainbow%2872a-100%29.desaturate'
                 + '%281.2%29.brighten%280.8%29%7D',
-            ''
+            'last=7600'
         ),
         thumbFrames: 90,
     },
@@ -224,7 +224,7 @@ const featuredSIMs = [
     },
     {
         query: specimenQuery(
-            'The Murmurations of the Punctual Bird',
+            'The Meandering of the Punctual Bird',
             'Chaos',
             'OEIS A132131',
             'corners=8&walkers=4&eagernessFormula=0.16&sizeFormula=2'
@@ -313,9 +313,11 @@ const featuredSIMs = [
                 + '&colorFormula=chroma%28chroma.scale%28%5B%23fafa6e%2C'
                 + '+%232A4858%2C+%23fafa6e%5D%29.mode%28%27lch%27'
                 + '%29.colors%28360%29%5Bfloor%28number%28b+rad%2C+deg%29+%25'
-                + '+360%29%2B1%5D%29.alpha%280.2%2Bn%2F1000%29',
+                + '+360%29%2B1%5D%29.alpha%280.2%2Bn%2F1000%29'
+                + '&viewpoint=0+160',
             'first=1&last=3183&length=3183'
         ),
+        thumbScale: 0.5,
     },
     {
         query: specimenQuery(
@@ -323,10 +325,12 @@ const featuredSIMs = [
             'Turtle',
             'Formula',
             'bgColor=22274e&speed=10&ruleMode=1&angleFormula=30%2B15a'
-                + '&stepFormula=4&colorFormula=rainbow(abs(y-160))',
+                + '&stepFormula=4&colorFormula=rainbow(abs(y-160))'
+                + '&viewpoint=-100+-160',
             'formula=(n%2F10)^2+-+n%2F10^2&last=8191&length=8192'
         ),
-        thumbFrames: 20,
+        thumbFrames: 100,
+        thumbScale: 0.33,
     },
     {
         query: specimenQuery(
@@ -402,8 +406,14 @@ const featuredSIMs = [
 // we want to record when they were added and show that information somehow?
 // Also, we freeze each featured specimen to make sure it is an error if
 // any part of frontscope tries to modify it.
-const theSIMs = featuredSIMs.map(({query, thumbFrames}) => {
-    return Object.freeze({query, date: '', canDelete: false, thumbFrames})
+const theSIMs = featuredSIMs.map(({query, thumbFrames, thumbScale}) => {
+    return Object.freeze({
+        query,
+        date: '',
+        canDelete: false,
+        thumbFrames,
+        thumbScale: thumbScale || 1,
+    })
 })
 
 export function getFeatured() {

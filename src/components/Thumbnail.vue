@@ -8,6 +8,10 @@
     import {thumbnailGCcount} from './thumbnails'
 
     import {Specimen} from '@/shared/Specimen'
+    import {
+        parseSpecimenQuery,
+        specimenQuery,
+    } from '@/shared/specimenEncoding'
     import {clearErrorOverlay} from '@/shared/alertMessage'
     import {
         DrawingUnmounted,
@@ -20,7 +24,11 @@
     let usingGC = false
     let needsSetup = true
     const TGClim = 7
-    const props = defineProps<{query: string; thumbFrames?: number}>()
+    const props = defineProps<{
+        query: string
+        thumbFrames?: number
+        thumbScale?: number
+    }>()
 
     function captureAndDepart() {
         if (usingGC) {
@@ -65,10 +73,16 @@
     }
 
     onMounted(async () => {
-        const queryWithFrames = props.thumbFrames
-            ? `frames=${props.thumbFrames}&${props.query}`
-            : props.query
-        specimen = await Specimen.fromQuery(queryWithFrames)
+        let useQuery = props.query
+        if (props.thumbScale !== 1) {
+            const spec = parseSpecimenQuery(useQuery)
+            spec.visualizerQuery += `&viewscale=${props.thumbScale}`
+            useQuery = specimenQuery(spec)
+        }
+        if (props.thumbFrames) {
+            useQuery = `frames=${props.thumbFrames}&${useQuery}`
+        }
+        specimen = await Specimen.fromQuery(useQuery)
         if (!(canvasContainer.value instanceof HTMLElement)) return
         savedContainer = canvasContainer.value
         if (specimen.visualizer.usesGL()) {

@@ -2,7 +2,7 @@ import p5 from 'p5'
 import {markRaw} from 'vue'
 
 import {INVALID_COLOR} from './P5Visualizer'
-import {P5GLVisualizer} from './P5GLVisualizer'
+import {p5GLparams, P5GLVisualizer} from './P5GLVisualizer'
 import {VisualizerExportModule} from './VisualizerInterface'
 import type {ViewSize} from './VisualizerInterface'
 
@@ -542,6 +542,12 @@ case you inadvertently left out a value.)
         },
     },
 } satisfies GenericParamDescription
+/** md
+- **Viewpoint**: The coordinates of the point that will initially be
+  centered in the display.
+- **Viewscale**: The initial scaling factor of the display.
+ **/
+Object.assign(paramDesc, p5GLparams)
 
 const formulaParamNames = [
     'angleFormula',
