@@ -216,8 +216,8 @@ const featuredSIMs = [
             'corners=4&walkers=2&sizeFormula=0.7'
                 + '&colorFormula=%5B%23103547%2C%2375795E%2C%23962020'
                 + '%2C%23D76533%2C%23385563%2C%23BDCAAE%2C%23DA9202'
-                + '%2C%23612B39%5D%5Bmod%28A%28n%29-A%28n%2B8%29%2C8'
-                + '%29%2B1%5D&pixelsPerFrame=200',
+                + '%2C%23612B39%5D%5Bmod%28A%28n%29-A%28min%28M%2Cn%2B8%29%29'
+                + '%2C8%29%2B1%5D&pixelsPerFrame=200',
             'formula=isPrime%28n%29*2%2BisPrime%28n%2B24%29'
                 + '&last=99999&length=100000'
         ),
