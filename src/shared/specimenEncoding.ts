@@ -12,6 +12,8 @@ type QuerySpec = {
     sequenceKind: string
     visualizerQuery: string
     sequenceQuery: string
+    thumbFrames?: number
+    thumbScale?: number
 }
 /**
  * Generates a URL query string from the information specifying a specimen.
@@ -24,6 +26,7 @@ type QuerySpec = {
  * @param {string} sequenceKind  The kind of Sequence
  * @param {string?} visualizerQuery  Optional visualizer query parameter string
  * @param {string?} sequenceQuery  Optional sequence query parameter string
+ * @param {number?} frames Frames to run before pausing
  * @return {string} the URL query string encoding of the parameter
  */
 export function specimenQuery(
