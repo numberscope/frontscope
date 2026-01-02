@@ -8,8 +8,15 @@
     import {thumbnailGCcount} from './thumbnails'
 
     import {Specimen} from '@/shared/Specimen'
+    import {
+        parseSpecimenQuery,
+        specimenQuery,
+    } from '@/shared/specimenEncoding'
     import {clearErrorOverlay} from '@/shared/alertMessage'
-    import {DrawingUnmounted} from '@/visualizers/VisualizerInterface'
+    import {
+        DrawingUnmounted,
+        DrawingStopped,
+    } from '@/visualizers/VisualizerInterface'
 
     const canvasContainer = ref<HTMLDivElement | null>(null)
     let savedContainer: HTMLDivElement | null = null
@@ -17,35 +24,65 @@
     let usingGC = false
     let needsSetup = true
     const TGClim = 7
-    const props = defineProps<{query: string}>()
+    const props = defineProps<{
+        query: string
+        thumbFrames?: number
+        thumbScale?: number
+    }>()
 
+    function captureAndDepart() {
+        if (usingGC) {
+            thumbnailGCcount.value -= 1
+            usingGC = false
+        }
+        if (!specimen || !savedContainer) return
+        const canvas = savedContainer.querySelector('canvas')
+        if (canvas instanceof HTMLCanvasElement) {
+            const {width, height} = canvas.getBoundingClientRect()
+            const vizShot = new Image(width, height)
+            vizShot.src = canvas.toDataURL()
+            // Note we do _not_ clear any possible error overlay here;
+            // we want it still to be visible to the user.
+            specimen.visualizer.depart(savedContainer)
+            savedContainer.prepend(vizShot) // under any error overlay
+        } else {
+            specimen.visualizer.stop()
+        }
+    }
     function setupSpecimen() {
         needsSetup = false
         if (!specimen || !savedContainer) return
         specimen.setup(savedContainer)
-        setTimeout(() => {
-            if (usingGC) {
-                thumbnailGCcount.value -= 1
-                usingGC = false
-            }
+
+        // Safety fallback
+        const maxWait = setTimeout(() => {
+            // Clean up the polling interval so it stops checking.
+            clearInterval(checkInterval)
+            captureAndDepart()
+        }, 30000)
+
+        // Poll to check if visualizer stopped
+        const checkInterval = setInterval(() => {
             if (!specimen || !savedContainer) return
-            const canvas = savedContainer.querySelector('canvas')
-            if (canvas instanceof HTMLCanvasElement) {
-                const {width, height} = canvas.getBoundingClientRect()
-                const vizShot = new Image(width, height)
-                vizShot.src = canvas.toDataURL()
-                // Note we do _not_ clear any possible error overlay here;
-                // we want it still to be visible to the user.
-                specimen.visualizer.depart(savedContainer)
-                savedContainer.prepend(vizShot) // under any error overlay
-            } else {
-                specimen.visualizer.stop()
+            if (specimen.visualizer.drawingState === DrawingStopped) {
+                clearInterval(checkInterval)
+                clearTimeout(maxWait)
+                captureAndDepart()
             }
-        }, 4000)
+        }, 100)
     }
 
     onMounted(async () => {
-        specimen = await Specimen.fromQuery(props.query)
+        let useQuery = props.query
+        if (props.thumbScale !== 1) {
+            const spec = parseSpecimenQuery(useQuery)
+            spec.visualizerQuery += `&viewscale=${props.thumbScale}`
+            useQuery = specimenQuery(spec)
+        }
+        if (props.thumbFrames) {
+            useQuery = `frames=${props.thumbFrames}&${useQuery}`
+        }
+        specimen = await Specimen.fromQuery(useQuery)
         if (!(canvasContainer.value instanceof HTMLElement)) return
         savedContainer = canvasContainer.value
         if (specimen.visualizer.usesGL()) {

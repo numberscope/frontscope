@@ -6,6 +6,33 @@ import type {P5VizInterface} from './P5Visualizer'
 
 import type {SequenceInterface} from '@/sequences/SequenceInterface'
 import type {GenericParamDescription, ParamValues} from '@/shared/Paramable'
+import {ParamType} from '@/shared/ParamType'
+
+// parameters that may be added to any P5GlVisualizer
+
+export const p5GLparams = {
+    viewpoint: {
+        default: new p5.Vector(0, 0),
+        type: ParamType.VECTOR,
+        displayName: 'Viewpoint',
+        required: false,
+        description: 'Point that will initially be centered in the display.',
+        hideDescription: true,
+    },
+    viewscale: {
+        default: 1,
+        type: ParamType.NUMBER,
+        displayName: 'Viewscale',
+        required: false,
+        description: 'Initial scaling of the display.',
+        hideDescription: true,
+    },
+} satisfies GenericParamDescription
+
+export interface P5GLParams {
+    viewpoint?: p5.Vector
+    viewscale: number
+}
 
 // Base class for implementing Visualizers that use p5.js in WebGL mode
 
@@ -14,7 +41,7 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
         desc
     ) as unknown as new (
         seq: SequenceInterface
-    ) => ReturnType<typeof P5Visualizer<PD>> & P5VizInterface) {
+    ) => ReturnType<typeof P5Visualizer<PD>> & P5VizInterface & P5GLParams) {
         name = 'uninitialized P5-based WebGL visualizer'
         camera: p5.Camera | undefined = undefined
         lastMX: number | undefined = undefined
@@ -47,6 +74,13 @@ export function P5GLVisualizer<PD extends GenericParamDescription>(desc: PD) {
                 )
             this.camera = markRaw(this.sketch.createCamera())
             this.initialCameraZ = this.camera.eyeZ
+            if (this.viewpoint) {
+                this.camera.move(this.viewpoint.x, this.viewpoint.y, 0)
+            }
+            if (this.viewscale && this.viewscale !== 1) {
+                const dz = (1 / this.viewscale - 1) * this.initialCameraZ
+                this.camera.move(0, 0, dz)
+            }
         }
 
         // returns the coordinates and scaling of an absolute viewport position
