@@ -8,12 +8,13 @@ import {ver} from '@/generated/ver'
 
 const vizKey = 'viz'
 export const seqKey = 'seq'
-type QuerySpec = {
+export type QuerySpec = {
     name: string
+    version?: string
     visualizerKind: string
     sequenceKind: string
-    visualizerQuery: string
-    sequenceQuery: string
+    visualizerQuery?: string
+    sequenceQuery?: string
     thumbFrames?: number
     thumbScale?: number
 }
@@ -23,7 +24,9 @@ type QuerySpec = {
  * @param {string | QuerySpec} nameOrSpec
  *     The name of the specimen, or an object with key `name` and all of
  *     the other argument names as keys, in which case the other arguments
- *     are taken from this object instead
+ *     are taken from this object instead. If this is specified as an object,
+ *     then the frontscope version number may also be set with the `version`
+ *     property.
  * @param {string} visualizerKind  The kind of Visualizer
  * @param {string} sequenceKind  The kind of Sequence
  * @param {string?} visualizerQuery  Optional visualizer query parameter string
@@ -39,21 +42,23 @@ export function specimenQuery(
     sequenceQuery?: string
 ): string {
     let name = ''
+    let version = ver
     if (!visualizerKind) {
         // Only one arg, must be query
         const spec = nameOrSpec as QuerySpec
         name = spec.name
         visualizerKind = spec.visualizerKind
         sequenceKind = spec.sequenceKind
-        visualizerQuery = spec.visualizerQuery
-        sequenceQuery = spec.sequenceQuery
+        visualizerQuery = spec.visualizerQuery || ''
+        sequenceQuery = spec.sequenceQuery || ''
+        version = spec.version || ver
     } else {
         name = nameOrSpec as string
     }
     if (!sequenceKind) return ''
     const leadQuery = new URLSearchParams({
         name,
-        ver,
+        ver: version,
         rev,
         [vizKey]: visualizerKind,
     })
