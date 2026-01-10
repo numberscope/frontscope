@@ -17,7 +17,7 @@ const testlist = {
     ],
     'Start deep in a sequence': [
         'B',
-        'FactorFence',
+        'FactorStacks',
         'Formula',
         '',
         'first=1020000',
@@ -29,6 +29,7 @@ test.describe('Stress-test Numberscope usage', () => {
             const query = specimenQuery(...testlist[k])
             const testURL = '/?frames=5&' + query
             await page.goto(testURL)
+            // Then wait for it to end
             await expect(
                 page.locator('#specimen-bar-desktop').getByText('play_arrow')
             ).toHaveId('pause-button', {timeout: 15000})

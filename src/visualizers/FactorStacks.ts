@@ -11,24 +11,24 @@ import {ParamType} from '@/shared/ParamType'
 import {ValidationStatus} from '@/shared/ValidationStatus'
 
 /** md
-# Factor Fence Visualizer
+# Factor Stacks Visualizer
 
 [<img
-  src="../../assets/img/FactorFence/naturals.png"
+  src="../../assets/img/FactorStacks/naturals.png"
   width=500
   style="margin-left: 1em; margin-right: 0.5em"
-/>](../assets/img/FactorFence/naturals.png)
+/>](../assets/img/FactorStacks/naturals.png)
 
 [<img
-  src="../../assets/img/FactorFence/ramanujan-tau.png"
+  src="../../assets/img/FactorStacks/ramanujan-tau.png"
   width=500
   style="margin-left: 1em; margin-right: 0.5em"
-/>](../assets/img/FactorFence/ramanujan-tau.png)
+/>](../assets/img/FactorStacks/ramanujan-tau.png)
 
 This visualizer shows the factorization of the terms of the sequence
-as a sort of coloured graph.  At position _n_ horizontally, there is a bar,
-or fencepost, which is of height log(_n_) and broken into different pieces
-of height log(_p_) for each prime divisor _p_ (with multiplicity).
+as a sort of coloured bar chart.  At position _n_ horizontally, there is a
+bar of height log(_n_), broken into different pieces of height log(_p_)
+for each prime divisor _p_ (with multiplicity).
 **/
 
 // colour palette class
@@ -160,8 +160,8 @@ const tryFrames = 3
 // helper function
 const isTrivial = (term: bigint) => term > -2n && term < 2n
 
-class FactorFence extends P5Visualizer(paramDesc) {
-    static category = 'FactorFence'
+class FactorStacks extends P5Visualizer(paramDesc) {
+    static category = 'FactorStacks'
     static description = 'Show the factors of your sequence log-visually.'
 
     // mouse control
@@ -173,7 +173,7 @@ class FactorFence extends P5Visualizer(paramDesc) {
     private dragStart = new p5.Vector()
     private graphCornerStart = new p5.Vector()
 
-    // store factorizations in FactorFence's internal format
+    // store factorizations in FactorStacks' internal format
     private factorizations: Record<string, Bar[]> = {}
 
     // scaling control
@@ -979,4 +979,4 @@ In addition, several keypress commands are recognized:
     }
 }
 
-export const exportModule = new VisualizerExportModule(FactorFence)
+export const exportModule = new VisualizerExportModule(FactorStacks)

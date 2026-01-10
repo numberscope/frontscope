@@ -1,6 +1,6 @@
 {
     "name": "frontscope",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "type": "module",
     "scripts": {
         "help:help": "echo Prints a list of available scripts and a reminder about how to get more help.",
