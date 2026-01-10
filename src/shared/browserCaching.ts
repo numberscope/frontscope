@@ -1,6 +1,6 @@
 import {getFeatured} from './defineFeatured'
 import {math} from './math'
-import {parseSpecimenQuery, specimenQuery} from './specimenEncoding'
+import {parseSpecimenQuery} from './specimenEncoding'
 
 /* This file is responsible for all of the state of Numberscope that is kept
    in browser localStorage. Currently that state consists of
@@ -16,11 +16,6 @@ import {parseSpecimenQuery, specimenQuery} from './specimenEncoding'
 /* A "SIM" (Specimen In Memory) is an object with two string properties:
    query - gives the url-query-encoding of the specimen
    date - gives the date on which it was last saved.
-
-   In a prior version of the code, SIMs used a base64-encoding of specimens,
-   so there is code below that reinterprets such encoding into query strings
-   on the fly, for backwards compatibility with specimens that may have been
-   saved before the switch to query-encoding.
 */
 
 // NON MEMORY RELATED HELPER FUNCTIONS
@@ -63,40 +58,6 @@ const currentKey = 'currentSpecimen'
 const cannedKey = 'sequenceHistory'
 const galleryKey = 'preferredGalleries'
 
-// For backward compatibility:
-function newSIMfromOld(oldSim: {date: string; en64: string}): SIM {
-    const data = JSON.parse(window.atob(oldSim.en64))
-    if (!('name' in data && 'sequence' in data && 'visualizer' in data))
-        return {
-            query: specimenQuery('Conversion Error', 'Unknown', 'Unknown'),
-            date: '',
-            canDelete: true,
-        }
-    let vizQuery = ''
-    if ('visualizerParams' in data && data.visualizerParams) {
-        const vizData = JSON.parse(window.atob(data.visualizerParams))
-        const vizParams = new URLSearchParams(vizData)
-        vizQuery = vizParams.toString()
-    }
-    let seqQuery = ''
-    if ('sequenceParams' in data && data.sequenceParams) {
-        const seqData = JSON.parse(window.atob(data.sequenceParams))
-        const seqParams = new URLSearchParams(seqData)
-        seqQuery = seqParams.toString()
-    }
-    return {
-        date: oldSim.date,
-        query: specimenQuery(
-            data.name,
-            data.visualizer,
-            data.sequence,
-            vizQuery,
-            seqQuery
-        ),
-        canDelete: true,
-    }
-}
-
 /**
  * Fetches the array of SIMs represented in memory.
  * @return {SIM[]}
@@ -110,10 +71,7 @@ export function getSIMs(): SIM[] {
     // Parses the saved SIMs if they exist
     if (savedSIMsJson)
         for (const sim of JSON.parse(savedSIMsJson))
-            if ('date' in sim)
-                if ('query' in sim) savedSIMs.push(sim)
-                else if ('en64' in sim) savedSIMs.push(newSIMfromOld(sim))
-
+            if ('date' in sim) savedSIMs.push(sim)
     return savedSIMs
 }
 
@@ -160,7 +118,6 @@ export function getCurrent(): SIM {
     if (savedCurrent) {
         const data = JSON.parse(savedCurrent)
         if ('query' in data) return data
-        if ('en64' in data) return newSIMfromOld(data)
     }
 
     // If there wasn't any current, set up the current to be

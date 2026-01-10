@@ -7,7 +7,10 @@ sources != shopt -s globstar && echo src/** index.html
 docs != shopt -s globstar &&\
         echo doc/** etc/doc_theme/** README.md CONTRIBUTING.md etc/mkdocs.yml
 tests != shopt -s globstar && echo e2e/tests/**
-manifest := package.json package-lock.json requirements.txt tools/pyrun.mjs $(wildcard .husky/p*)
+rev != git rev-parse --short HEAD
+package := package.json
+ver != grep -o -E '["][0-9]+[.][0-9]+[.][0-9]+["]' $(package)
+manifest := $(package) package-lock.json requirements.txt tools/pyrun.mjs $(wildcard .husky/p*)
 typescript_config := $(wildcard tsconfig*json)
 e2e_local_config := e2e/playwright.config.ts
 e2e_docker_config := $(e2e_local_config) e2e/playdocker.config.ts e2e/Dockerfile
@@ -35,12 +38,15 @@ $(installed): $(manifest)
 |   npm install
 |   touch $@
 
-$(typechecked): $(installed) $(typescript_config) $(sources)
+$(typechecked): $(installed) $(typescript_config) $(sources) $(package)
+|   mkdir -p src/generated
+|   echo "export const rev = '$(rev)'" > src/generated/rev.ts
+|   echo 'export const ver = $(ver)' > src/generated/ver.ts
 |   npx vue-tsc --noEmit -p tsconfig.vitest.json --composite false
 |   @touch $@
 
 prettiest: $(installed)
-|   @node tools/prettiest.js $(flags) .
+|   @node tools/prettiest.js $(flags) -x generated .
 
 typecheck: $(typechecked)
 |   @echo TypeScript types check.
