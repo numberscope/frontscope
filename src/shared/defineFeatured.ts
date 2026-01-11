@@ -98,10 +98,12 @@ const featuredSIMs = [
         sequenceKind: 'Formula',
         visualizerQuery:
             'dimensions=200&backgroundColor=000000FF&speed=1024'
-            + '&fillFormula=%7Bcircle%3A%0A++yellow'
-            + '.mix%28black%2C+1-gcd%28x%2Cy%29%2Fsqrt%28x+y%29%29%2C%0A'
-            + 'mouseover%3A+%5B%0A++++%27gcd%28%27%2C+x%2C+%27%2C+%27%2C'
-            + '+y%2C+%27%29+%3D+%27%2C+gcd%28x%2Cy%29%0A%5D%7D&inset=0.8',
+            + '&fillFormula=%7Bcircle%3A%0A++yellow.mix%28black%2C+1'
+            + '-gcd%28A%28x%29%2CA%28y%29%29%2Fsqrt%28A%28x%29A%28y%29%29%29'
+            + '%2C%0Amouseover%3A+%5B%0A++++%27%40%27%2C+x%2C+%27%2C+%27%2C'
+            + '+y%2C+%27%3A+gcd%28%27%2C+A%28x%29%2C+%27%2C+%27%2C+A%28y%29%2C'
+            + '+%27%29+%3D+%27%2C+gcd%28A%28x%29%2CA%28y%29%29%0A%5D%7D'
+            + '&inset=0.8',
         thumbFrames: 60,
     },
     {
