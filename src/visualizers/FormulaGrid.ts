@@ -760,7 +760,8 @@ class FormulaGrid extends P5Visualizer(paramDesc) {
                 || input.y < 1
                 || input.y > this.rows
             ) {
-                // Off screen, so nothing to do
+                // Off screen, so nothing to do except try next index
+                ++this.index
                 continue
             }
             input.s = invSpiral(input.x, input.y, this.rows, this.columns)
