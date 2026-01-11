@@ -126,6 +126,7 @@
         clearErrorOverlay(savedContainer)
         const viz = specimen.visualizer
         if (viz.drawingState !== DrawingUnmounted) viz.depart(savedContainer)
+        savedContainer = null // important, allows garbage collection
     })
 </script>
 

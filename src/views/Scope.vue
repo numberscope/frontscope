@@ -475,6 +475,8 @@ visualizers you can select.
         // Now clean up
         clearErrorOverlay(canvasContainer)
         specimen.visualizer.depart(canvasContainer)
+        // The following reassignment is important, allows garbage collection
+        canvasContainer = document.documentElement
     })
 
     onBeforeRouteUpdate((to, from) => {

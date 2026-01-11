@@ -133,7 +133,7 @@ const featuredSIMs = [
         sequenceKind: 'OEIS A000045',
         visualizerQuery:
             'domain=0+1&angles=8+120&steps=40+400'
-            + '&animationControls=true&folds=400+0&width=0.5&&drawPath=1'
+            + '&animationControls=true&folds=400+0&widths=0.5&&drawPath=1'
             + '&bgColor=4f4875&strokeColor=%23cec0c0',
         sequenceQuery: 'modulus=9&last=680&length=681',
     },
