@@ -286,7 +286,7 @@ export const typeFunctions: {
     [ParamType.BIGINT_ARRAY]: {
         validate: function (value, status) {
             status.mandate(
-                value.trim().match(/^(-?\d+(\s*[\s,]\s*-?\d+)*)?$/),
+                value.trim().match(/^(-?\d+((\s+|\s*,\s*)-?\d+)*)?$/),
                 'Input must be a list of integers '
                     + 'separated by whitespace or commas'
             )
