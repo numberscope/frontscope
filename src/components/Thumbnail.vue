@@ -74,7 +74,7 @@
 
     onMounted(async () => {
         let useQuery = props.query
-        if (props.thumbScale !== 1) {
+        if (props.thumbScale && props.thumbScale !== 1) {
             const spec = parseSpecimenQuery(useQuery)
             spec.visualizerQuery += `&viewscale=${props.thumbScale}`
             useQuery = specimenQuery(spec)
