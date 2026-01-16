@@ -86,7 +86,7 @@
         "postinstall": "git config --local include.path ../.gitconfig && python3 -m venv .venv && cd tools && node pyrun.mjs python -m pip install -U pip && node pyrun.mjs pip install -r requirements.txt"
     },
     "dependencies": {
-        "axios": "^1.6.8",
+        "axios": "^1.12.0",
         "bigint-isqrt": "^0.3.2",
         "bigint-mod-arith": "^3.3.1",
         "chroma-js": "^3.1.2",
