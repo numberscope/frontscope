@@ -90,7 +90,7 @@
         "bigint-isqrt": "^0.3.2",
         "bigint-mod-arith": "^3.3.1",
         "chroma-js": "^3.1.2",
-        "dompurify": "^3.2.1",
+        "dompurify": "^3.2.4",
         "interactjs": "^1.10.27",
         "p5": "^1.11.0",
         "temml": "^0.10.31",
