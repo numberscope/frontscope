@@ -1,19 +1,19 @@
 {
     "$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
-    "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+    "assist": {
+        "actions": {
+            "source": { "organizeImports": "off" }
+        },
+        "enabled": true
+    },
     "files": { "ignoreUnknown": false },
     "formatter": {
-        "enabled": true,
-        "formatWithErrors": false,
-        "indentStyle": "space",
-        "indentWidth": 4,
-        "lineEnding": "lf",
-        "lineWidth": 78,
         "attributePosition": "auto",
         "bracketSameLine": false,
         "bracketSpacing": true,
+        "enabled": true,
         "expand": "auto",
-        "useEditorconfig": true,
+        "formatWithErrors": false,
         "includes": [
             "**",
             "!**/*.el",
@@ -41,21 +41,12 @@
             "!e2e/*-snapshots",
             "!e2e/results",
             "!**/site"
-        ]
-    },
-    "linter": { "enabled": false },
-    "javascript": {
-        "formatter": {
-            "jsxQuoteStyle": "double",
-            "quoteProperties": "asNeeded",
-            "trailingCommas": "es5",
-            "semicolons": "asNeeded",
-            "arrowParentheses": "asNeeded",
-            "bracketSameLine": false,
-            "quoteStyle": "single",
-            "attributePosition": "auto",
-            "bracketSpacing": false
-        }
+        ],
+        "indentStyle": "space",
+        "indentWidth": 4,
+        "lineEnding": "lf",
+        "lineWidth": 78,
+        "useEditorconfig": true
     },
     "html": {
         "formatter": {
@@ -63,8 +54,20 @@
             "selfCloseVoidElements": "always"
         }
     },
-    "assist": {
-        "enabled": true,
-        "actions": { "source": { "organizeImports": "off" } }
-    }
+    "javascript": {
+        "formatter": {
+            "arrowParentheses": "asNeeded",
+            "attributePosition": "auto",
+            "bracketSameLine": false,
+            "bracketSpacing": false,
+            "jsxQuoteStyle": "double",
+            "operatorLinebreak": "before",
+            "quoteProperties": "asNeeded",
+            "quoteStyle": "single",
+            "semicolons": "asNeeded",
+            "trailingCommas": "es5"
+        }
+    },
+    "linter": { "enabled": false },
+    "vcs": { "clientKind": "git", "enabled": true, "useIgnoreFile": true }
 }

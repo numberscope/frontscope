@@ -859,8 +859,8 @@ earlier ones that use the _same_ style.)
         if (this.pathType === PathType.Spiral) {
             // Turn at the numberToTurn at which increases every other turn
             if (iteration === this.numberToTurnAtForSpiral) {
-                this.numberToTurnAtForSpiral
-                    += this.incrementForNumberToTurnAt
+                this.numberToTurnAtForSpiral +=
+                    this.incrementForNumberToTurnAt
                 if (this.whetherIncrementShouldIncrement) {
                     this.incrementForNumberToTurnAt += 1
                     this.whetherIncrementShouldIncrement = false
