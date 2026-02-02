@@ -21,7 +21,7 @@
     </svg>
 </template>
 
-<script setup>
+<script lang="ts" setup>
     defineProps({
         height: {
             default: 32,
