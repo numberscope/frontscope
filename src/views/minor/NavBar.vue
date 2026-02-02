@@ -268,6 +268,7 @@
             }
 
             #navbar-links {
+                align-items: center;
                 display: flex;
                 flex-direction: row;
                 margin-top: 0;
