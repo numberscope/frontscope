@@ -92,7 +92,7 @@
         background-color: var(--ns-color-primary);
     }
     .fade-card {
-        background-color: var(--ns-color-white);
+        background-color: var(--ns-color-bg);
         transition: background-color 2s linear;
     }
     .card-title-box {
@@ -121,7 +121,7 @@
             }
         }
         a:hover {
-            color: var(--ns-color-black);
+            color: var(--ns-color-fg);
         }
     }
     .card-text {
@@ -137,7 +137,7 @@
         margin-top: 1ex;
         color: var(--ns-color-grey);
         &:hover {
-            color: var(--ns-color-black);
+            color: var(--ns-color-fg);
         }
     }
 </style>

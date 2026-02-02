@@ -56,7 +56,7 @@
             }
         }
         a:hover {
-            color: var(--ns-color-black);
+            color: var(--ns-color-fg);
         }
     }
 </style>

@@ -361,7 +361,7 @@
         .content {
             position: absolute;
             top: 16px;
-            background-color: var(--ns-color-surface);
+            background-color: var(--ns-color-bg);
             width: 100%;
             height: calc(100% - 16px);
             overflow-y: scroll;

@@ -76,10 +76,11 @@
 
         /* Colors */
         --ns-color-primary: #809fff;
-        --ns-color-surface: light-dark(#ffffff, #282733);
+        --ns-color-bg: light-dark(#ffffff, #282733);
+        --ns-color-fg: light-dark(#2f2f2f, #ffffff);
         --ns-color-white: #ffffff;
         --ns-color-pale: light-dark(#e5e5e5, #4d4b63);
-        --ns-color-light: light-dark(#b5b5b5, red);
+        --ns-color-light: #b5b5b5;
         --ns-color-grey: light-dark(#636363, #838383);
         --ns-color-black: light-dark(#2f2f2f, #605e7a);
 
@@ -116,7 +117,7 @@
 
     /* dark mode */
     :root {
-      background-color: var(--ns-color-surface);
+      background-color: var(--ns-color-bg);
       color-scheme: light dark;
     }
 
