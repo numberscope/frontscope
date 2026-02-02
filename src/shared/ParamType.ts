@@ -16,6 +16,7 @@ import {ValidationStatus} from './ValidationStatus'
  */
 
 // prettier-ignore
+// biome-ignore format: otherwise the brace position is awkward
 export enum ParamType { /** table header to extract:
     | ParamType | Associated TypeScript type | Rendering in UI | Comments |
     | --------- | -------------------------- | --------------- | -------- | */
