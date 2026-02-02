@@ -76,11 +76,12 @@
 
         /* Colors */
         --ns-color-primary: #809fff;
+        --ns-color-surface: light-dark(#ffffff, #282733);
         --ns-color-white: #ffffff;
-        --ns-color-pale: #e5e5e5;
-        --ns-color-light: #b5b5b5;
-        --ns-color-grey: #636363;
-        --ns-color-black: #2f2f2f;
+        --ns-color-pale: light-dark(#e5e5e5, #4d4b63);
+        --ns-color-light: light-dark(#b5b5b5, red);
+        --ns-color-grey: light-dark(#636363, #838383);
+        --ns-color-black: light-dark(#2f2f2f, #605e7a);
 
         /* Bolditude */
         --ns-font-weight-medium: 500;
@@ -111,6 +112,12 @@
         /* Not actually used at the moment:
           --ns-breakpoint-desktop: 1200px;
          */
+    }
+
+    /* dark mode */
+    :root {
+      background-color: var(--ns-color-surface);
+      color-scheme: light dark;
     }
 
     /* Display font */

@@ -169,7 +169,7 @@
                     right: 0;
                     width: auto;
                     z-index: 10000;
-                    background-color: var(--ns-color-white);
+                    background-color: var(--ns-color-surface);
                     opacity: 1;
                     margin-top: 0.3ex;
                     padding-bottom: 0.5ex;

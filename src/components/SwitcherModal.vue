@@ -312,7 +312,7 @@ click on the trash button on its preview card.
         max-width: 900px;
         width: 100%;
         height: 100%;
-        background-color: var(--ns-color-white);
+        background-color: var(--ns-color-surface);
         display: flex;
         flex-direction: column;
     }

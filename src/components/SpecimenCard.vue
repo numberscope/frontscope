@@ -130,7 +130,7 @@
         margin-left: 8px;
         margin-right: 8px;
         margin-bottom: 8px;
-        color: #6c757d;
+        color: var(--ns-color-grey);
     }
     .delete-button {
         user-select: none;

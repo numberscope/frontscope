@@ -315,7 +315,7 @@
         visibility: hidden;
         width: max-content;
         max-width: 240px;
-        background-color: var(--ns-color-white);
+        background-color: var(--ns-color-surface);
         color: var(--ns-color-black);
         text-align: left;
         border: 1px solid var(--ns-color-black);
