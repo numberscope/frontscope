@@ -35,13 +35,13 @@
                                     {{ specimen.visualizerName() }}
                                     Visualizer
                                 </a>
-                                <BoxJoin :height="28" :width="24" />
+                                <BoxJoin />
                             </div>
                             <div class="leftdented tweakup">
                                 <a class="nav-link" :href="seqLink()">
                                     {{ seqWord() }} Sequence
                                 </a>
-                                <BoxCorner :height="28" :width="24" />
+                                <BoxCorner />
                             </div>
                             <div class="nav-link">
                                 <a href="/doc/">Full Documentation</a>

@@ -24,7 +24,7 @@
 <script lang="ts" setup>
     defineProps({
         height: {
-            default: 32,
+            default: 28,
             type: Number,
         },
         strokeWidth: {
@@ -32,7 +32,7 @@
             type: Number,
         },
         width: {
-            default: 32,
+            default: 24,
             type: Number,
         },
     })
