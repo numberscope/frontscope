@@ -117,8 +117,8 @@
 
     /* dark mode */
     :root {
-      background-color: var(--ns-color-bg);
-      color-scheme: light dark;
+        background-color: var(--ns-color-bg);
+        color-scheme: light dark;
     }
 
     /* Display font */
