@@ -33,11 +33,13 @@
                             <div class="leftdented">
                                 <a class="nav-link" :href="vizLink()">
                                     {{ specimen.visualizerName() }}
-                                    Visualizer </a>┤
+                                    Visualizer </a>
+                                <BoxJoin height="28" width="24" />
                             </div>
                             <div class="leftdented tweakup">
                                 <a class="nav-link" :href="seqLink()">
-                                    {{ seqWord() }} Sequence </a>┘
+                                    {{ seqWord() }} Sequence </a>
+                                <BoxCorner height="28" width="24" />
                             </div>
                             <div class="nav-link">
                                 <a href="/doc/">Full Documentation</a>
@@ -58,6 +60,8 @@
 
     import LogoWithMicroscope from '@/assets/img/logo.svg'
     import type {Specimen} from '@/shared/Specimen'
+    import BoxJoin from '@/components/BoxJoin.vue'
+    import BoxCorner from '@/components/BoxCorner.vue'
 
     const props = defineProps({
         specimen: {
@@ -177,18 +181,29 @@
                     border: 1px solid var(--ns-color-black);
 
                     .leftdented {
-                        padding-right: 0.5em;
+                      display: flex;
+                      align-items: center;
                     }
 
-                    .tweakup {
-                        position: relative;
-                        bottom: 6px;
+                    .boxing {
+                      --width: 24px;
+
+                      margin-left: .5ex;
+                      margin-right: calc(.5em - var(--width) / 2 + 2px);
+                      width: var(--width);
+
+                      /* looks better visually */
+                      margin-bottom: -1.5px;
                     }
 
                     .nav-link {
                         color: var(--ns-color-black);
                         padding-top: 0ex;
                         padding-bottom: 0ex;
+                        margin: 0;
+
+                        /* for aligning with the boxing */
+                        line-height: 1;
                     }
 
                     a {
