@@ -33,12 +33,14 @@
                             <div class="leftdented">
                                 <a class="nav-link" :href="vizLink()">
                                     {{ specimen.visualizerName() }}
-                                    Visualizer </a>
+                                    Visualizer
+                                </a>
                                 <BoxJoin height="28" width="24" />
                             </div>
                             <div class="leftdented tweakup">
                                 <a class="nav-link" :href="seqLink()">
-                                    {{ seqWord() }} Sequence </a>
+                                    {{ seqWord() }} Sequence
+                                </a>
                                 <BoxCorner height="28" width="24" />
                             </div>
                             <div class="nav-link">
@@ -181,19 +183,19 @@
                     border: 1px solid var(--ns-color-black);
 
                     .leftdented {
-                      display: flex;
-                      align-items: center;
+                        display: flex;
+                        align-items: center;
                     }
 
                     .boxing {
-                      --width: 24px;
+                        --width: 24px;
 
-                      margin-left: .5ex;
-                      margin-right: calc(.5em - var(--width) / 2 + 2px);
-                      width: var(--width);
+                        margin-left: 0.5ex;
+                        margin-right: calc(0.5em - var(--width) / 2 + 2px);
+                        width: var(--width);
 
-                      /* looks better visually */
-                      margin-bottom: -1.5px;
+                        /* looks better visually */
+                        margin-bottom: -1.5px;
                     }
 
                     .nav-link {
