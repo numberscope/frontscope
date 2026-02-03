@@ -161,7 +161,7 @@
                 padding-left: 0.5em;
 
                 padding-bottom: var(--popup-offset);
-                margin-bottom: calc(-1 * var(--popup-offset));
+                margin-bottom: calc(-1.05 * var(--popup-offset));
 
                 a {
                     font-family: var(--ns-font-display);
