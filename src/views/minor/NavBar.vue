@@ -150,6 +150,19 @@
                 position: relative;
                 padding-right: 0.5em;
 
+                /** vertical offset between #help-popup and the text */
+                --popup-offset: 0.3ex;
+
+                /*
+                 * increase the hoverable area so that the popup doesn't vanish
+                 * when moving the mouse from the popup trigger to the popup
+                 */
+                margin-left: -0.5em;
+                padding-left: 0.5em;
+
+                padding-bottom: var(--popup-offset);
+                margin-bottom: calc(-1.05 * var(--popup-offset));
+
                 a {
                     font-family: var(--ns-font-display);
                     text-decoration: none;
@@ -171,7 +184,7 @@
                     z-index: 10000;
                     background-color: var(--ns-color-white);
                     opacity: 1;
-                    margin-top: 0.3ex;
+                    margin-top: var(--popup-offset);
                     padding-bottom: 0.5ex;
                     padding-top: 0.5ex;
                     border: 1px solid var(--ns-color-black);
