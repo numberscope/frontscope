@@ -1,291 +1,295 @@
 <template>
-  <header>
-    <nav>
-      <div id="navbar-main">
-        <a href="/doc/doc/about/">
-          <img :src="LogoWithMicroscope" alt="A microscope icon." />
-        </a>
-        <button
-          id="navbar-toggler"
-          type="button"
-          aria-controls="navbarSupportedContent"
-          :aria-expanded="menuOpen"
-          aria-label="Toggle navigation."
-          @click="toggleMenu"
-        >
-          <span class="material-icons-sharp">menu</span>
-        </button>
-      </div>
-      <slot class="specimen-bar" />
-      <div class="burger-menu">
-        <div id="navbar-links" :class="{ open: menuOpen }">
-          <RouterLink class="nav-link" to="/gallery" @click="closeMenu">
-            Gallery
-          </RouterLink>
-          <div class="help-popper">
-            <a href="/doc/">Help</a>
-            <div id="help-popup" class="shadowed">
-              <div class="nav-link">
-                <a href="/doc/doc/user_guide/">User Guide</a>
-              </div>
-              <div class="leftdented">
-                <a class="nav-link" :href="vizLink()">
-                  {{ specimen.visualizerName() }}
-                  Visualizer </a
-                >┤
-              </div>
-              <div class="leftdented tweakup">
-                <a class="nav-link" :href="seqLink()">
-                  {{ seqWord() }} Sequence </a
-                >┘
-              </div>
-              <div class="nav-link">
-                <a href="/doc/">Full Documentation</a>
-              </div>
+    <header>
+        <nav>
+            <div id="navbar-main">
+                <a id="logo" href="/doc/doc/about/">
+                    <img :src="LogoWithMicroscope" alt="A microscope icon.">
+                </a>
+                <button
+                    id="navbar-toggler"
+                    type="button"
+                    aria-controls="navbarSupportedContent"
+                    :aria-expanded="menuOpen"
+                    aria-label="Toggle navigation."
+                    @click="toggleMenu">
+                    <span class="material-icons-sharp">menu</span>
+                </button>
             </div>
-          </div>
-        </div>
-        <div class="close material-icons-sharp">close</div>
-      </div>
-    </nav>
-  </header>
+            <slot class="specimen-bar" />
+            <div class="burger-menu">
+                <div id="navbar-links" :class="{open: menuOpen}">
+                    <RouterLink
+                        class="nav-link"
+                        to="/gallery"
+                        @click="closeMenu">
+                        Gallery
+                    </RouterLink>
+                    <div class="help-popper">
+                        <a href="/doc/">Help</a>
+                        <div id="help-popup" class="shadowed">
+                            <div class="nav-link">
+                                <a href="/doc/doc/user_guide/">User Guide</a>
+                            </div>
+                            <div class="leftdented">
+                                <a class="nav-link" :href="vizLink()">
+                                    {{ specimen.visualizerName() }}
+                                    Visualizer </a>┤
+                            </div>
+                            <div class="leftdented tweakup">
+                                <a class="nav-link" :href="seqLink()">
+                                    {{ seqWord() }} Sequence </a>┘
+                            </div>
+                            <div class="nav-link">
+                                <a href="/doc/">Full Documentation</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="close material-icons-sharp">close</div>
+            </div>
+        </nav>
+    </header>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import type { PropType, UnwrapNestedRefs } from "vue";
-import { RouterLink } from "vue-router";
+    import {ref} from 'vue'
+    import type {PropType, UnwrapNestedRefs} from 'vue'
+    import {RouterLink} from 'vue-router'
 
-import LogoWithMicroscope from "@/assets/img/logo.svg";
-import type { Specimen } from "@/shared/Specimen";
+    import LogoWithMicroscope from '@/assets/img/logo.svg'
+    import type {Specimen} from '@/shared/Specimen'
 
-const props = defineProps({
-  specimen: {
-    type: Object as PropType<UnwrapNestedRefs<Specimen>>,
-    required: true,
-  },
-});
+    const props = defineProps({
+        specimen: {
+            type: Object as PropType<UnwrapNestedRefs<Specimen>>,
+            required: true,
+        },
+    })
 
-const menuOpen = ref(false);
+    const menuOpen = ref(false)
 
-function toggleMenu() {
-  menuOpen.value = !menuOpen.value;
-}
+    function toggleMenu() {
+        menuOpen.value = !menuOpen.value
+    }
 
-function closeMenu() {
-  menuOpen.value = false;
-}
+    function closeMenu() {
+        menuOpen.value = false
+    }
 
-function seqWord() {
-  return props.specimen.sequenceName().split(/[\s:]/, 2)[0] || "";
-}
-function seqLink() {
-  return `/doc/src/sequences/${seqWord()}/`;
-}
-function vizLink() {
-  return `/doc/src/visualizers/${props.specimen.visualizerKey}/`;
-}
+    function seqWord() {
+        return props.specimen.sequenceName().split(/[\s:]/, 2)[0] || ''
+    }
+    function seqLink() {
+        return `/doc/src/sequences/${seqWord()}/`
+    }
+    function vizLink() {
+        return `/doc/src/visualizers/${props.specimen.visualizerKey}/`
+    }
 </script>
 
 <style scoped lang="scss">
-nav {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 8px 16px 8px 16px;
-  border-bottom: 1px solid var(--ns-color-black);
-  position: relative;
+    nav {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 8px 16px 8px 16px;
+        border-bottom: 1px solid var(--ns-color-black);
+        position: relative;
 
-  #navbar-main {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+        #navbar-main {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
 
-    #navbar-toggler {
-      background: none;
-      border: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+            #navbar-toggler {
+                background: none;
+                border: none;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+
+        .close {
+            display: none;
+            font-size: 32px;
+            cursor: pointer;
+        }
+
+        .burger-menu {
+            background-color: var(--ns-color-white);
+            color: var(--ns-color-black);
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+
+            &.open {
+                .material-icons-sharp {
+                    display: block;
+                }
+            }
+        }
+
+        #navbar-links {
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            color: var(--ns-color-black);
+            &.open {
+                display: flex;
+                z-index: 1000;
+            }
+
+            @media (max-width: $mobile-breakpoint) {
+                /* should not push content down */
+                background-color: var(--ns-color-white);
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                padding: 0.2em 0.5em;
+            }
+
+            @media (min-width: $mobile-breakpoint) {
+                display: flex;
+            }
+
+            @media (min-width: $tablet-breakpoint) {
+                margin-top: 8px;
+            }
+
+            .help-popper {
+                cursor: pointer;
+                font-family: var(--ns-font-display);
+                font-size: var(--ns-size-display);
+                position: relative;
+                padding-right: 0.5em;
+
+                a {
+                    font-family: var(--ns-font-display);
+                    text-decoration: none;
+                }
+                a:hover {
+                    text-decoration: underline;
+                }
+
+                #help-popup {
+                    visibility: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    align-content: flex-end;
+                    white-space: nowrap;
+                    position: absolute;
+                    right: 0;
+                    width: auto;
+                    z-index: 10000;
+                    background-color: var(--ns-color-white);
+                    opacity: 1;
+                    margin-top: 0.3ex;
+                    padding-bottom: 0.5ex;
+                    padding-top: 0.5ex;
+                    border: 1px solid var(--ns-color-black);
+
+                    .leftdented {
+                        padding-right: 0.5em;
+                    }
+
+                    .tweakup {
+                        position: relative;
+                        bottom: 6px;
+                    }
+
+                    .nav-link {
+                        color: var(--ns-color-black);
+                        padding-top: 0ex;
+                        padding-bottom: 0ex;
+                    }
+
+                    a {
+                        font-family: var(--ns-font-main);
+                        font-size: var(--ns-size-heading);
+                        text-decoration: none;
+                        padding-right: 0px;
+                    }
+
+                    a:hover {
+                        text-decoration: underline;
+                    }
+                }
+
+                &:hover #help-popup {
+                    visibility: visible;
+                    opacity: 1;
+                }
+            }
+
+            .nav-link {
+                font-family: var(--ns-font-display);
+                font-size: var(--ns-size-display);
+                color: var(--ns-color-black);
+                padding-right: 0.5em;
+                padding-bottom: 0.2ex;
+                text-decoration: none;
+
+                @media (min-width: $tablet-breakpoint) {
+                    margin-top: 8px;
+                    padding-top: 0.2ex;
+                    padding-left: 0.5em;
+                }
+
+                &:focus,
+                &:hover {
+                    text-decoration: underline;
+                }
+
+                a:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
     }
-  }
+    #logo {
+        img {
+            height: 24px;
 
-  .close {
-    display: none;
-    font-size: 32px;
-    cursor: pointer;
-  }
-
-  .burger-menu {
-    background-color: var(--ns-color-white);
-    color: var(--ns-color-black);
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-
-    &.open {
-      .material-icons-sharp {
-        display: block;
-      }
+            @media (min-width: $tablet-breakpoint) {
+                height: 32px;
+            }
+        }
     }
-  }
-
-  #navbar-links {
-    width: 100%;
-    display: none;
-    flex-direction: column;
-    color: var(--ns-color-black);
-    &.open {
-      display: flex;
-      z-index: 1000;
-    }
-
-    @media (max-width: $mobile-breakpoint) {
-      /* should not push content down */
-      background-color: var(--ns-color-white);
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 100%;
-      padding: 0.2em 0.5em;
-    }
-
-    @media (min-width: $mobile-breakpoint) {
-      display: flex;
+    .specimen-bar {
+        display: none;
     }
 
     @media (min-width: $tablet-breakpoint) {
-      margin-top: 8px;
-    }
+        nav {
+            justify-content: space-between;
+            align-items: center;
+            flex-direction: row;
+            height: var(--ns-desktop-navbar-height);
+            #navbar-main {
+                #navbar-toggler {
+                    display: none;
+                }
+            }
 
-    .help-popper {
-      cursor: pointer;
-      font-family: var(--ns-font-display);
-      font-size: var(--ns-size-display);
-      position: relative;
-      padding-right: 0.5em;
-
-      a {
-        font-family: var(--ns-font-display);
-        text-decoration: none;
-      }
-      a:hover {
-        text-decoration: underline;
-      }
-
-      #help-popup {
-        visibility: hidden;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        align-content: flex-end;
-        white-space: nowrap;
-        position: absolute;
-        right: 0;
-        width: auto;
-        z-index: 10000;
-        background-color: var(--ns-color-white);
-        opacity: 1;
-        margin-top: 0.3ex;
-        padding-bottom: 0.5ex;
-        padding-top: 0.5ex;
-        border: 1px solid var(--ns-color-black);
-
-        .leftdented {
-          padding-right: 0.5em;
+            #navbar-links {
+                align-items: center;
+                display: flex;
+                flex-direction: row;
+                margin-top: 0;
+                border-bottom: none;
+                width: unset;
+                gap: 24px;
+                .nav-link {
+                    margin-top: 0;
+                }
+            }
         }
-
-        .tweakup {
-          position: relative;
-          bottom: 6px;
+        .specimen-bar {
+            display: flex;
         }
-
-        .nav-link {
-          color: var(--ns-color-black);
-          padding-top: 0ex;
-          padding-bottom: 0ex;
-        }
-
-        a {
-          font-family: var(--ns-font-main);
-          font-size: var(--ns-size-heading);
-          text-decoration: none;
-          padding-right: 0px;
-        }
-
-        a:hover {
-          text-decoration: underline;
-        }
-      }
-
-      &:hover #help-popup {
-        visibility: visible;
-        opacity: 1;
-      }
     }
-
-    .nav-link {
-      font-family: var(--ns-font-display);
-      font-size: var(--ns-size-display);
-      color: var(--ns-color-black);
-      padding-right: 0.5em;
-      padding-bottom: 0.2ex;
-      text-decoration: none;
-
-      @media (min-width: $tablet-breakpoint) {
-        margin-top: 8px;
-        padding-top: 0.2ex;
-        padding-left: 0.5em;
-      }
-
-      &:focus,
-      &:hover {
-        text-decoration: underline;
-      }
-
-      a:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-}
-#logo {
-  img {
-    height: 32px;
-  }
-}
-.specimen-bar {
-  display: none;
-}
-
-@media (min-width: $tablet-breakpoint) {
-  nav {
-    justify-content: space-between;
-    align-items: center;
-    flex-direction: row;
-    height: var(--ns-desktop-navbar-height);
-    #navbar-main {
-      #navbar-toggler {
-        display: none;
-      }
-    }
-
-    #navbar-links {
-      align-items: center;
-      display: flex;
-      flex-direction: row;
-      margin-top: 0;
-      border-bottom: none;
-      width: unset;
-      gap: 24px;
-      .nav-link {
-        margin-top: 0;
-      }
-    }
-  }
-  .specimen-bar {
-    display: flex;
-  }
-}
 </style>
