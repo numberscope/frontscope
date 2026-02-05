@@ -331,7 +331,7 @@ visualizers you can select.
      * Used when the window is resized.
      */
     export function positionAndSizeAllTabs(): void {
-    if (isMobile()) return;
+        if (isMobile()) return
         // First reset the "empty" classes and recompute them, just in case:
         document
             .querySelectorAll('.dropzone')
@@ -492,7 +492,7 @@ visualizers you can select.
     })
 
     onMounted(() => {
-            positionAndSizeAllTabs()
+        positionAndSizeAllTabs()
         canvasContainer = document.getElementById('canvas-container')!
 
         if (!initialLoad) throw new Error("showURL didn't promise Specimen")
@@ -684,7 +684,7 @@ visualizers you can select.
         display: none;
     }
     #main {
-      flex: 1;
+        flex: 1;
         display: flex;
         height: 100%;
     }
@@ -735,14 +735,17 @@ visualizers you can select.
     }
     #specimen-bar-phone {
         order: 2;
-        padding-left: auto;
-        padding-right: auto;
+        padding: 8px;
         border-bottom: 1px solid var(--ns-color-black);
+        position: fixed;
+        bottom: 0;
+        z-index: 1;
+        left: 0;
+        background: var(--ns-color-white);
 
-        display: none;
-
-        &.visible {
-            display: block;
+        /* align with label */
+        :deep(.spec-name) {
+            padding-left: 0;
         }
     }
 
@@ -754,6 +757,7 @@ visualizers you can select.
             overflow: hidden;
             position: absolute;
             transition: height 150ms ease-in-out;
+            z-index: 2;
 
             &.visible {
                 height: calc(0.5 * (100vh - var(--ns-mobile-navbar-height)));
