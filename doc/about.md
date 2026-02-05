@@ -36,7 +36,9 @@ You can find [Numberscope on GitHub](https://github.com/numberscope) or
 +---------------------------------+-------------------------------+
 | • Aaron Fenyes                  | • Liam Mulhall                |
 +---------------------------------+-------------------------------+
-| • Brendan Heaney                | • Daniel H. Taylor            |
+| • Brendan Heaney                | • Yuri Sulyma                 |
++---------------------------------+-------------------------------+
+|                                 | • Daniel H. Taylor            |
 +---------------------------------+-------------------------------+
 | • Delft CSE2000 Spring '24 Team: Matej Bavec, Ziggy Beijer,<br> |
 | &nbsp; &nbsp;Kaldis Bērziņš, Max Derbenwick, and Gido Vitner    |
