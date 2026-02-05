@@ -201,7 +201,7 @@
             }
         }
         a:hover {
-            color: var(--ns-color-black);
+            color: var(--ns-color-fg);
         }
     }
 
@@ -257,7 +257,7 @@
 
     .error-box {
         border: 1px solid #ff2222;
-        background: var(--ns-color-white);
+        background: var(--ns-color-bg);
         padding: 2px 8px;
     }
 

@@ -312,7 +312,7 @@ click on the trash button on its preview card.
         max-width: 900px;
         width: 100%;
         height: 100%;
-        background-color: var(--ns-color-white);
+        background-color: var(--ns-color-bg);
         display: flex;
         flex-direction: column;
     }
@@ -329,7 +329,7 @@ click on the trash button on its preview card.
     #bar {
         height: 48px;
         padding: 16px;
-        background-color: var(--ns-color-white);
+        background-color: var(--ns-color-bg);
         display: flex;
         justify-content: end;
         align-items: center;
@@ -340,7 +340,7 @@ click on the trash button on its preview card.
             border: none;
             cursor: pointer;
             padding: 4px;
-            color: var(--ns-color-black);
+            color: var(--ns-color-fg);
         }
     }
 

@@ -116,7 +116,7 @@
         }
 
         .burger-menu {
-            color: var(--ns-color-black);
+            color: var(--ns-color-fg);
             display: flex;
             flex-direction: row;
             justify-content: space-between;
@@ -133,7 +133,7 @@
             display: none;
             flex-direction: column;
             margin-top: 8px;
-            color: var(--ns-color-black);
+            color: var(--ns-color-fg);
             &.open {
                 display: flex;
                 z-index: 1000;
@@ -182,7 +182,7 @@
                     right: 0;
                     width: auto;
                     z-index: 10000;
-                    background-color: var(--ns-color-white);
+                    background-color: var(--ns-color-bg);
                     opacity: 1;
                     margin-top: var(--popup-offset);
                     padding-bottom: 0.5ex;
@@ -199,7 +199,7 @@
                     }
 
                     .nav-link {
-                        color: var(--ns-color-black);
+                        color: var(--ns-color-fg);
                         padding-top: 0ex;
                         padding-bottom: 0ex;
                     }
@@ -225,7 +225,7 @@
             .nav-link {
                 font-family: var(--ns-font-display);
                 font-size: var(--ns-size-display);
-                color: var(--ns-color-black);
+                color: var(--ns-color-fg);
                 margin-top: 8px;
                 padding-left: 0.5em;
                 padding-right: 0.5em;

@@ -92,7 +92,7 @@
         background-color: var(--ns-color-primary);
     }
     .fade-card {
-        background-color: var(--ns-color-white);
+        background-color: var(--ns-color-bg);
         transition: background-color 2s linear;
     }
     .card-title-box {
@@ -121,7 +121,7 @@
             }
         }
         a:hover {
-            color: var(--ns-color-black);
+            color: var(--ns-color-fg);
         }
     }
     .card-text {
@@ -130,14 +130,14 @@
         margin-left: 8px;
         margin-right: 8px;
         margin-bottom: 8px;
-        color: #6c757d;
+        color: var(--ns-color-grey);
     }
     .delete-button {
         user-select: none;
         margin-top: 1ex;
         color: var(--ns-color-grey);
         &:hover {
-            color: var(--ns-color-black);
+            color: var(--ns-color-fg);
         }
     }
 </style>
