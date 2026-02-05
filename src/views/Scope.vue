@@ -47,6 +47,40 @@ visualizers you can select.
             id="specimen-bar-desktop"
             :specimen
             @update-specimen-name="handleSpecimenUpdate" />
+        <div id="phone-opener-container">
+            <button
+                aria-controls="sequenceTab"
+                :aria-expanded="Boolean(sequenceTabOpen)"
+                class="phone-opener"
+                type="button"
+                @click="
+                    () => {
+                        sequenceTabOpen = !sequenceTabOpen
+                        visualizerTabOpen = false
+                    }
+                ">
+                <PhDna
+                    alt="Toggle specimen bar"
+                    :size="24"
+                    color="currentColor" />
+            </button>
+            <button
+                aria-controls="visualizerTab"
+                :aria-expanded="Boolean(visualizerTabOpen)"
+                class="phone-opener"
+                type="button"
+                @click="
+                    () => {
+                        visualizerTabOpen = !visualizerTabOpen
+                        sequenceTabOpen = false
+                    }
+                ">
+                <PhMicroscope
+                    alt="Toggle visualizer bar"
+                    :size="24"
+                    color="currentColor" />
+            </button>
+        </div>
     </NavBar>
     <div id="specimen-container">
         <SwitcherModal
@@ -70,10 +104,11 @@ visualizers you can select.
                     changeVisualizerOpen = false
                 }
             " />
-        <tab
+        <Tab
             id="sequenceTab"
             class="tab docked"
             docked="top-right"
+            :class="{visible: sequenceTabOpen}"
             :last-coords-x="Math.floor(tabWidth / 3)"
             :last-coords-y="Math.floor(tabWidth / 3)">
             <ParamEditor
@@ -87,10 +122,11 @@ visualizers you can select.
                         updateURL()
                     }
                 " />
-        </tab>
-        <tab
-            id="visualiserTab"
+        </Tab>
+        <Tab
+            id="visualizerTab"
             class="tab docked"
+            :class="{visible: visualizerTabOpen}"
             docked="bottom-right"
             last-dropzone="bottom-right"
             :last-coords-x="Math.floor((2 * tabWidth) / 3)"
@@ -105,7 +141,7 @@ visualizers you can select.
                         updateURL()
                     }
                 " />
-        </tab>
+        </Tab>
         <SpecimenBar
             id="specimen-bar-phone"
             class="specimen-bar"
@@ -162,6 +198,7 @@ visualizers you can select.
 </template>
 
 <script lang="ts">
+    import {PhDna, PhMicroscope} from '@phosphor-icons/vue'
     import NavBar from './minor/NavBar.vue'
     import SpecimenBar from '../components/SpecimenBar.vue'
     import {clearErrorOverlay} from '@/shared/alertMessage'
@@ -372,6 +409,9 @@ visualizers you can select.
     const changeSequenceOpen = ref(false)
     const changeVisualizerOpen = ref(false)
 
+    const sequenceTabOpen = ref(false)
+    const visualizerTabOpen = ref(false)
+
     const router = useRouter()
     const route = useRoute()
 
@@ -451,7 +491,9 @@ visualizers you can select.
     })
 
     onMounted(() => {
-        positionAndSizeAllTabs()
+        if (!isMobile) {
+            positionAndSizeAllTabs()
+        }
         canvasContainer = document.getElementById('canvas-container')!
 
         if (!initialLoad) throw new Error("showURL didn't promise Specimen")
@@ -619,6 +661,23 @@ visualizers you can select.
 
 <style scoped lang="scss">
     // mobile styles
+    #phone-opener-container {
+        align-items: center;
+        display: flex;
+        gap: 0.5em;
+        margin-right: 0.5em;
+    }
+
+    .phone-opener {
+        /* remove button styles */
+        background: none;
+        border-style: none;
+
+        /* center contents */
+        display: inline-flex;
+        align-items: center;
+    }
+
     .navbar {
         display: unset;
     }
@@ -636,6 +695,10 @@ visualizers you can select.
         min-height: fit-content;
         padding-left: auto;
         padding-right: auto;
+
+        @media (max-width: $mobile-breakpoint) {
+            flex: 1;
+        }
     }
     #canvas-container {
         flex: 1;
@@ -647,7 +710,6 @@ visualizers you can select.
         order: 1;
         z-index: -1;
         border-bottom: 1px solid var(--ns-color-black);
-        height: 300px;
         width: 100%;
     }
     .dropzone-container {
@@ -662,27 +724,44 @@ visualizers you can select.
         display: none;
     }
     #sequenceTab {
-        width: 100%;
-        padding-left: auto;
-        padding-right: auto;
         order: 3;
-        border-bottom: 1px solid var(--ns-color-black);
-        height: fit-content;
     }
-    #visualiserTab {
+    #visualizerTab {
         width: 100%;
         padding-left: auto;
         padding-right: auto;
         order: 4;
         border-bottom: 1px solid var(--ns-color-black);
-        height: fit-content;
     }
     #specimen-bar-phone {
         order: 2;
         padding-left: auto;
         padding-right: auto;
         border-bottom: 1px solid var(--ns-color-black);
+
+        display: none;
+
+        &.visible {
+            display: block;
+        }
     }
+
+    @media (max-width: $mobile-breakpoint) {
+        .tab {
+            background: var(--ns-color-white);
+            bottom: 0;
+            height: 0;
+            overflow: hidden;
+            position: absolute;
+            transition: height 150ms ease-in-out;
+
+            &.visible {
+                height: calc(0.5 * (100vh - var(--ns-mobile-navbar-height)));
+                overflow: auto;
+            }
+        }
+    }
+
     // tablet & desktop styles
     @media (min-width: $tablet-breakpoint) {
         #specimen-bar-desktop {
@@ -696,7 +775,8 @@ visualizers you can select.
             border: 0px;
         }
         #sequenceTab,
-        #visualiserTab {
+        #visualizerTab {
+            display: block;
             width: var(--ns-desktop-tab-width);
         }
         #specimen-container {
@@ -708,7 +788,6 @@ visualizers you can select.
         }
 
         #canvas-container {
-            height: unset;
             order: unset;
             flex: 1;
             position: relative;
@@ -773,8 +852,16 @@ visualizers you can select.
 
         .tab {
             width: 300px;
-            position: absolute;
             order: unset;
+            height: fit-content;
+
+            padding-left: auto;
+            padding-right: auto;
+            border-bottom: 1px solid var(--ns-color-black);
+        }
+
+        #phone-opener-container {
+            display: none;
         }
     }
 </style>

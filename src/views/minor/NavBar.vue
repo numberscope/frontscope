@@ -1,21 +1,20 @@
 <template>
     <header>
         <nav>
-            <div id="navbar-main">
-                <a id="logo" href="/doc/doc/about/">
-                    <img :src="LogoWithMicroscope" alt="A microscope icon.">
-                </a>
-                <button
-                    id="navbar-toggler"
-                    type="button"
-                    aria-controls="navbarSupportedContent"
-                    :aria-expanded="menuOpen"
-                    aria-label="Toggle navigation."
-                    @click="toggleMenu">
-                    <span class="material-icons-sharp">menu</span>
-                </button>
-            </div>
+            <a id="logo" href="/doc/doc/about/">
+                <img :src="LogoWithMicroscope" alt="A microscope icon.">
+            </a>
+
             <slot class="specimen-bar" />
+            <button
+                id="navbar-toggler"
+                type="button"
+                aria-controls="navbarSupportedContent"
+                :aria-expanded="menuOpen"
+                aria-label="Toggle navigation."
+                @click="toggleMenu">
+                <span class="material-icons-sharp">menu</span>
+            </button>
             <div class="burger-menu">
                 <div id="navbar-links" :class="{open: menuOpen}">
                     <RouterLink
@@ -90,24 +89,17 @@
 <style scoped lang="scss">
     nav {
         display: flex;
-        flex-direction: column;
-        justify-content: center;
+        justify-content: space-between;
         padding: 8px 16px 8px 16px;
         border-bottom: 1px solid var(--ns-color-black);
         position: relative;
 
-        #navbar-main {
+        #navbar-toggler {
+            background: none;
+            border: none;
             display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-
-            #navbar-toggler {
-                background: none;
-                border: none;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
+            justify-content: center;
+            align-items: center;
         }
 
         .close {
@@ -251,11 +243,15 @@
         }
     }
     #logo {
+        @media (max-width: $mobile-breakpoint) {
+            margin-right: auto;
+        }
+
         img {
             height: 24px;
 
             @media (min-width: $tablet-breakpoint) {
-                height: 32px;
+                height: 35px;
             }
         }
     }
@@ -269,10 +265,9 @@
             align-items: center;
             flex-direction: row;
             height: var(--ns-desktop-navbar-height);
-            #navbar-main {
-                #navbar-toggler {
-                    display: none;
-                }
+
+            #navbar-toggler {
+                display: none;
             }
 
             #navbar-links {
