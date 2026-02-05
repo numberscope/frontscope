@@ -309,8 +309,7 @@
         display: none;
     }
     .tab {
-        width: 300px;
-        height: fit-content;
+        width: 100%;
     }
     .content {
         padding: 0px 16px 16px 16px;
