@@ -117,9 +117,9 @@
     }
 
     function blurName() {
-        for (const input of window.document.getElementsByClassName(
-            'spec-name'
-        )) {
+        for (const input of Array.from(
+            document.getElementsByClassName('spec-name')
+        ) as HTMLInputElement[]) {
             input.blur()
         }
     }
