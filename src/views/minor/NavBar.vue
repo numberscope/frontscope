@@ -1,21 +1,20 @@
 <template>
     <header>
         <nav>
-            <div id="navbar-main">
-                <a href="/doc/doc/about/">
-                    <img :src="LogoWithMicroscope" alt="A microscope icon.">
-                </a>
-                <button
-                    id="navbar-toggler"
-                    type="button"
-                    aria-controls="navbarSupportedContent"
-                    :aria-expanded="menuOpen"
-                    aria-label="Toggle navigation."
-                    @click="toggleMenu">
-                    <span class="material-icons-sharp">menu</span>
-                </button>
-            </div>
+            <a id="logo" href="/doc/doc/about/">
+                <img :src="LogoWithMicroscope" alt="A microscope icon.">
+            </a>
+
             <slot class="specimen-bar" />
+            <button
+                id="navbar-toggler"
+                type="button"
+                aria-controls="navbarSupportedContent"
+                :aria-expanded="menuOpen"
+                aria-label="Toggle navigation."
+                @click="toggleMenu">
+                <span class="material-icons-sharp">menu</span>
+            </button>
             <div class="burger-menu">
                 <div id="navbar-links" :class="{open: menuOpen}">
                     <RouterLink
@@ -90,23 +89,17 @@
 <style scoped lang="scss">
     nav {
         display: flex;
-        flex-direction: column;
-        justify-content: center;
+        justify-content: space-between;
         padding: 8px 16px 8px 16px;
         border-bottom: 1px solid var(--ns-color-black);
+        position: relative;
 
-        #navbar-main {
+        #navbar-toggler {
+            background: none;
+            border: none;
             display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-
-            #navbar-toggler {
-                background: none;
-                border: none;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
+            justify-content: center;
+            align-items: center;
         }
 
         .close {
@@ -116,11 +109,13 @@
         }
 
         .burger-menu {
+            background-color: var(--ns-color-white);
             color: var(--ns-color-black);
             display: flex;
             flex-direction: row;
             justify-content: space-between;
             align-items: center;
+
             &.open {
                 .material-icons-sharp {
                     display: block;
@@ -132,15 +127,28 @@
             width: 100%;
             display: none;
             flex-direction: column;
-            margin-top: 8px;
             color: var(--ns-color-black);
             &.open {
                 display: flex;
                 z-index: 1000;
             }
 
+            @media (max-width: $mobile-breakpoint) {
+                /* should not push content down */
+                background-color: var(--ns-color-white);
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                padding: 0.2em 0.5em;
+            }
+
             @media (min-width: $mobile-breakpoint) {
                 display: flex;
+            }
+
+            @media (min-width: $tablet-breakpoint) {
+                margin-top: 8px;
             }
 
             .help-popper {
@@ -226,12 +234,15 @@
                 font-family: var(--ns-font-display);
                 font-size: var(--ns-size-display);
                 color: var(--ns-color-black);
-                margin-top: 8px;
-                padding-left: 0.5em;
                 padding-right: 0.5em;
-                padding-top: 0.2ex;
                 padding-bottom: 0.2ex;
                 text-decoration: none;
+
+                @media (min-width: $tablet-breakpoint) {
+                    margin-top: 8px;
+                    padding-top: 0.2ex;
+                    padding-left: 0.5em;
+                }
 
                 &:focus,
                 &:hover {
@@ -245,8 +256,16 @@
         }
     }
     #logo {
+        @media (max-width: $mobile-breakpoint) {
+            margin-right: auto;
+        }
+
         img {
-            height: 32px;
+            height: 24px;
+
+            @media (min-width: $tablet-breakpoint) {
+                height: 35px;
+            }
         }
     }
     .specimen-bar {
@@ -259,10 +278,9 @@
             align-items: center;
             flex-direction: row;
             height: var(--ns-desktop-navbar-height);
-            #navbar-main {
-                #navbar-toggler {
-                    display: none;
-                }
+
+            #navbar-toggler {
+                display: none;
             }
 
             #navbar-links {

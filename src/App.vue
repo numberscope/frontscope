@@ -11,7 +11,7 @@
 </script>
 
 <!-- Global styles. This style tag is explicitly unscoped. -->
-<style>
+<style lang="scss">
     #container {
         display: flex;
         flex-direction: column;
@@ -86,6 +86,8 @@
         --ns-font-weight-medium: 500;
 
         /* Dimensions */
+        /* TODO: compute this dynamically */
+        --ns-mobile-navbar-height: 45px;
         --ns-desktop-navbar-height: 76px;
         --ns-desktop-tab-width: 300px;
         --ns-specimen-card-width: 216px;
@@ -106,8 +108,8 @@
         // Large devices (desktops)
         @media (min-width: $desktop-breakpoint) { ... }
         */
-        --ns-breakpoint-mobile: $mobile-breakpoint;
-        --ns-breakpoint-tablet: $tablet-breakpoint;
+        --ns-breakpoint-mobile: #{$mobile-breakpoint};
+        --ns-breakpoint-tablet: #{$tablet-breakpoint};
         /* Not actually used at the moment:
           --ns-breakpoint-desktop: 1200px;
          */
