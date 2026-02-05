@@ -60,7 +60,7 @@ visualizers you can select.
                     }
                 ">
                 <PhDna
-                    alt="Toggle specimen bar"
+                    alt="Toggle sequence tab"
                     :size="24"
                     color="currentColor" />
             </button>
@@ -76,7 +76,7 @@ visualizers you can select.
                     }
                 ">
                 <PhMicroscope
-                    alt="Toggle visualizer bar"
+                    alt="Toggle visualizer tab"
                     :size="24"
                     color="currentColor" />
             </button>
@@ -331,6 +331,7 @@ visualizers you can select.
      * Used when the window is resized.
      */
     export function positionAndSizeAllTabs(): void {
+    if (isMobile()) return;
         // First reset the "empty" classes and recompute them, just in case:
         document
             .querySelectorAll('.dropzone')
@@ -491,9 +492,7 @@ visualizers you can select.
     })
 
     onMounted(() => {
-        if (!isMobile) {
             positionAndSizeAllTabs()
-        }
         canvasContainer = document.getElementById('canvas-container')!
 
         if (!initialLoad) throw new Error("showURL didn't promise Specimen")
@@ -685,6 +684,7 @@ visualizers you can select.
         display: none;
     }
     #main {
+      flex: 1;
         display: flex;
         height: 100%;
     }
@@ -854,6 +854,7 @@ visualizers you can select.
             width: 300px;
             order: unset;
             height: fit-content;
+            position: absolute;
 
             padding-left: auto;
             padding-right: auto;
