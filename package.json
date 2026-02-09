@@ -106,7 +106,7 @@
         "@tsconfig/node20": "^20.1.4",
         "@types/chroma-js": "^3.1.0",
         "@types/jsdom": "^21.1.7",
-        "@types/node": "^20.14.10",
+        "@types/node": "^25.0.9",
         "@types/p5": "^1.7.6",
         "@vitejs/plugin-vue": "^5.2.1",
         "@vue/test-utils": "^2.4.6",
