@@ -4,7 +4,7 @@
             <label>
                 Specimen name
                 <input
-                    id="spec-name"
+                    class="spec-name"
                     type="text"
                     :value="specimen.name"
                     @keyup.enter="blurName()"
@@ -117,7 +117,11 @@
     }
 
     function blurName() {
-        window.document.getElementById('spec-name')?.blur()
+        for (const input of Array.from(
+            document.getElementsByClassName('spec-name')
+        ) as HTMLInputElement[]) {
+            input.blur()
+        }
     }
 
     function refresh() {
