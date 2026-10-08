@@ -121,7 +121,7 @@
         cursor: pointer;
     }
     .unchosen:hover {
-        color: var(--ns-color-black);
+        color: var(--ns-color-fg);
     }
     #spec-wrap {
         overflow: auto;
@@ -160,11 +160,11 @@
         text-transform: capitalize;
     }
     td:last-child {
-        background-color: var(--ns-color-white);
+        background-color: var(--ns-color-bg);
         text-align: center;
         color: var(--ns-color-grey);
         &:hover {
-            color: var(--ns-color-black);
+            color: var(--ns-color-fg);
         }
     }
 

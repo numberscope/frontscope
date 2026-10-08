@@ -182,7 +182,7 @@
         right: -8px;
         width: 200%;
         z-index: 3;
-        background: var(--ns-color-white);
+        background: var(--ns-color-bg);
         cursor: pointer;
 
         .mono {
@@ -206,7 +206,7 @@
             }
         }
         a:hover {
-            color: var(--ns-color-black);
+            color: var(--ns-color-fg);
         }
     }
 
