@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.47.0-noble
+FROM mcr.microsoft.com/playwright:v1.64.0-jammy
 
 # Copy frontscope (including tests)
 COPY . /test
@@ -9,7 +9,7 @@ WORKDIR /test
 RUN rm -rf src dist e2e/results/* e2e/tests
 
 # Install system dependencies
-RUN apt update && apt install python3.12-venv -y
+RUN apt update && apt install python3.10-venv -y
 
 # Install node dependencies
 RUN npm install
