@@ -9,6 +9,10 @@ export default defineConfig({
     test: {
         globals: true,
         environment: 'happy-dom',
+        execArgv:
+            +process.versions.node.split('.')[0] >= 25
+                ? ['--no-experimental-webstorage']
+                : [],
         exclude: [
             '**/node_modules/**',
             '**/e2e/**',

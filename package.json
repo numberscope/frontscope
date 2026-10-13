@@ -100,9 +100,9 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.10.0",
-        "@playwright/browser-chromium": "^1.46.1",
-        "@playwright/browser-firefox": "^1.46.1",
-        "@playwright/test": "^1.57.0",
+        "@playwright/browser-chromium": "^1.64.0",
+        "@playwright/browser-firefox": "^1.64.0",
+        "@playwright/test": "^1.64.0",
         "@tsconfig/node20": "^20.1.4",
         "@types/chroma-js": "^3.1.0",
         "@types/jsdom": "^21.1.7",
@@ -127,5 +127,10 @@
         "vitest": "^4.0.17",
         "vue-eslint-parser": "^9.4.3",
         "vue-tsc": "^2.2.0"
+    },
+    "allowScripts": {
+        "esbuild@0.25.12": true,
+        "@playwright/browser-firefox@1.64.0": true,
+        "@playwright/browser-chromium@1.64.0": true
     }
 }
